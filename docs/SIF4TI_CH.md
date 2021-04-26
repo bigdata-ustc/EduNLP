@@ -7,7 +7,8 @@
 2. 使用 \$\SIFUnderline\$ 替换横线，对于选择题中的括号使用 \$\SIFBrackets\$ 替换.
 3. 图片 ID 以公式的形式嵌入文本中：`$\PictureID{ uuid1 }$`（对内）或用 base64 编码表示。
 5. 其余诸如，英文字母、罗马字符、数字等数学符号一律需要使用 latex 格式表示，即嵌在 `$$` 之中。
-6. 目前对 latex 内部语法没有要求。
+6. 分子式的录入标准暂且参考 [INCHI](https://zh.wikipedia.org/wiki/%E5%9B%BD%E9%99%85%E5%8C%96%E5%90%88%E7%89%A9%E6%A0%87%E8%AF%86)
+7. 目前对 latex 内部语法没有要求。
 
 ```
 1. Item -> CHARACTER|EN_PUN_LIST|CH_PUN_LIST|FORMULA|SPECIAL_TOKEN
