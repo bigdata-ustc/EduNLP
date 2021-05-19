@@ -65,4 +65,4 @@ version: 0.2
 
 修改：
 1. 原用 \$\SIFUnderline\$ 和 \$\SIFBracket\$ 来替换填空题中的横线和选择题中的括号，现分别用 \$\SIFBlank\$ 和 \$\SIFChoice\$ 替换。 
-2. 原统一用`$\PictureID{ uuid1 }$`表示图片，现使用`$\FigureID{ uuid1 }$`，其中对于数据公式，用`$\FormFigureID{ uuid1 }$`来表示。
+2. 原统一用`$\PictureID{ uuid }$`表示图片，现使用`$\FigureID{ uuid }$`，其中对于数据公式，用`$\FormFigureID{ uuid }$`来表示。
