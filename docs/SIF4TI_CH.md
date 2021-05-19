@@ -7,22 +7,23 @@ version: 0.2
 ## 语法规则
 1. 题目文本中只允许出现中文字符、中英文标点和换行符。
 2. 使用 \$\SIFBlank\$ 替换横线，对于选择题中的括号使用 \$\SIFChoice\$ 替换。
-3. 图片 ID 以公式的形式嵌入文本中：`$\FigureID{ uuid1 }$`（对内）或用 base64 编码表示，特别的，内容为公式的图片用`$\FormFigureID{ uuid1 }$`表示。
+3. 图片 ID 以公式的形式嵌入文本中：`$\FigureID{ uuid }$`（对内）或用 base64 编码表示，特别的，内容为公式的图片用`$\FormFigureID{ uuid }$`表示。
 5. 其余诸如，英文字母、罗马字符、数字等数学符号一律需要使用 latex 格式表示，即嵌在 `$$` 之中。
 6. 分子式的录入标准暂且参考 [INCHI](https://zh.wikipedia.org/wiki/%E5%9B%BD%E9%99%85%E5%8C%96%E5%90%88%E7%89%A9%E6%A0%87%E8%AF%86)
 7. 目前对 latex 内部语法没有要求。
 
 ```
-1. Item -> CHARACTER|EN_PUN_LIST|CH_PUN_LIST|FORMULA|SPECIAL_TOKEN
+1. Item -> CHARACTER|EN_PUN_LIST|CH_PUN_LIST|FORMULA|QUES_MARK
 2. EN_PUN_LIST -> [',', '.', '?', '!', ':', ';', '\'', '\"', '(', ')', ' ','_','/','|','\\','<','>','[',']','-']
 3. CH_PUN_LIST -> ['，', '。', '！', '？', '：','；', '‘', '’', '“', '”', '（', '）', ' ', '、','《','》','—','．']
-4. FORMULA -> $latex formula$ | FIGURE
-5. FIGURE -> $\FIGUREID{DIGITAL}$ | $\FORMFIGUREID{DIGITAL}$
-6. CHARACTER -> CHAR_EN | CHAR_CH
-7. CHAR_EN -> [a-zA-Z]+
-8. CHAR_CH -> []+
-9. DIGITAL -> [0-9]+
-10. SPECIAL_TOKEN -> $\SIFBlank$ | $\SIFChoice$
+4. FORMULA -> $latex formula$ | $\FormFigureID{UUID}$
+5. FIGURE -> $\FigureID{UUID}$
+6. UUID -> [a-zA-Z\-0-9]+
+7. CHARACTER -> CHAR_EN | CHAR_CH
+8. CHAR_EN -> [a-zA-Z]+
+9. CHAR_CH -> [\u4e00-\u9fa5]+
+10. DIGITAL -> [0-9]+
+11. QUES_MARK -> $\SIFBlank$ | $\SIFChoice$
 ```
 
 ### 注意事项
