@@ -313,7 +313,7 @@ class Formula(object):
 
 
 class FormulaGroup(object):
-    def __init__(self, formula_list, variable_standardization=False, const_mathord=None):
+    def __init__(self, formula_list: List[str], variable_standardization=False, const_mathord=None):
         """
 
         Parameters
