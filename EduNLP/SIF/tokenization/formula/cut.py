@@ -203,7 +203,7 @@ def linear_tokenize(formula, preserve_braces=True, number_as_tag=False, *args, *
     _formula_cut = cut(formula, preserve_braces=preserve_braces, number_as_tag=number_as_tag, *args, **kwargs)
     _formula_reduce = reduce(_formula_cut)
     _formula_con = connect_char(_formula_reduce)
-    return formula_con
+    return _formula_con
 
 
 if __name__ == '__main__':

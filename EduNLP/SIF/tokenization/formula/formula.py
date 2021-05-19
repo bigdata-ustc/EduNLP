@@ -1,6 +1,7 @@
 # coding: utf-8
 # 2021/5/18 @ tongshiwei
 
+import warnings
 from .cut import linear_tokenize
 import networkx as nx
 from EduNLP.Formula import Formula
@@ -36,14 +37,12 @@ from EduNLP.Formula import Formula
 #         _inorder_traversal(node)
 #     return nodes
 
-
-def ast_tokenize(formula, ord2token=False, var_numbering=False):
+def traversal_formula(ast, ord2token=False, var_numbering=False, *args, **kwargs):
     tokens = []
-    ast = Formula(formula).variable_standardization(inplace=True).ast
     for i in nx.dfs_postorder_nodes(ast):
         node = ast.nodes[i]
         if ord2token is True and node["type"] in ["mathord", "textord"]:
-            if node["type"] == "mathord" and var_numbering is True:
+            if var_numbering is True and node["type"] == "mathord":
                 tokens.append("%s_%s" % (node["type"], node.get("var", "con")))
             else:
                 tokens.append(node["type"])
@@ -52,7 +51,19 @@ def ast_tokenize(formula, ord2token=False, var_numbering=False):
     return tokens
 
 
-def tokenize(formula, method="ast", errors="raise", **kwargs):
+def ast_tokenize(formula, ord2token=False, var_numbering=False, return_type="formula", *args, **kwargs):
+    if return_type == "list":
+        ast = Formula(formula).ast
+        return traversal_formula(ast, ord2token=ord2token, var_numbering=var_numbering)
+    elif return_type == "formula":
+        return Formula(formula)
+    elif return_type == "ast":
+        return Formula(formula).ast
+    else:
+        raise ValueError()
+
+
+def tokenize(formula, method="linear", errors="raise", **kwargs):
     """
 
     Parameters
@@ -75,7 +86,8 @@ def tokenize(formula, method="ast", errors="raise", **kwargs):
             return ast_tokenize(formula, **kwargs)
         except TypeError as e:
             if errors == "coerce":
-                linear_tokenize(formula)
+                warnings.warn("A type error is detected, linear tokenize is applied")
+                return linear_tokenize(formula)
             else:
                 raise e
     else:
