@@ -1,5 +1,7 @@
 # coding: utf-8
 # 2021/5/18 @ tongshiwei
+import base64
+import numpy as np
 import re
 from ..constants import Symbol, TEXT_SYMBOL, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL
 
@@ -12,12 +14,48 @@ class LatexFormulaSegment(str):
     pass
 
 
-class FigureFormulaSegment(str):
-    pass
+class Figure(object):
+    def __init__(self, is_base64=False):
+        self.base64 = is_base64
+        self.figure = None
+
+    @classmethod
+    def base64_to_numpy(cls, figure):
+        return np.frombuffer(base64.decodebytes(figure), dtype=np.float64)
 
 
-class FigureSegment(str):
-    pass
+class FigureFormulaSegment(Figure):
+    def __init__(self, src, is_base64=False, figure_instances: dict = None):
+        super(FigureFormulaSegment, self).__init__(is_base64)
+        self.src = src
+        if self.base64 is True:
+            self.figure = self.src[len("FormFigureBase64") + 1: -1]
+        else:
+            self.figure = self.src[len("FormFigureID") + 1: -1]
+            if isinstance(figure_instances, dict):
+                self.figure = figure_instances[self.figure]
+
+    def __repr__(self):
+        if self.base64 is True:
+            return FORMULA_SYMBOL
+        return str(self.src)
+
+
+class FigureSegment(Figure):
+    def __init__(self, src, is_base64=False, figure_instances: dict = None):
+        super(FigureSegment, self).__init__(is_base64)
+        self.src = src
+        if self.base64 is True:
+            self.figure = self.src[len("FigureBase64") + 1: -1]
+        else:
+            self.figure = self.src[len("FigureID") + 1: -1]
+            if isinstance(figure_instances, dict):
+                self.figure = figure_instances[self.figure]
+
+    def __repr__(self):
+        if self.base64 is True:
+            return FIGURE_SYMBOL
+        return str(self.src)
 
 
 class QuesMarkSegment(str):
@@ -37,9 +75,9 @@ class SegmentList(object):
                 continue
             if not re.match(r"\$.+?\$", segment):
                 self.append(TextSegment(segment))
-            elif re.match(r"\$FormFigureID\{.+?}\$", segment):
-                self.append(LatexFormulaSegment(segment[1:-1]))
-            elif re.match(r"\$FigureID\{.+?}\$", segment):
+            elif re.match(r"\$\\(FormFigureID)|(FormFigureBase64)\{.+?}\$", segment):
+                self.append(FigureFormulaSegment(segment[1:-1]))
+            elif re.match(r"\$\\(FigureID)|(FigureBase64)\{.+?}\$", segment):
                 self.append(FigureSegment(segment[1:-1]))
             elif re.match(r"\$\\(SIFBlank)|(SIFChoice)\$", segment):
                 self.append(QuesMarkSegment(segment[1:-1]))
