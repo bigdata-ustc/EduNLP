@@ -16,8 +16,8 @@ version: 0.2
 1. Item -> CHARACTER|EN_PUN_LIST|CH_PUN_LIST|FORMULA|QUES_MARK
 2. EN_PUN_LIST -> [',', '.', '?', '!', ':', ';', '\'', '\"', '(', ')', ' ','_','/','|','\\','<','>','[',']','-']
 3. CH_PUN_LIST -> ['，', '。', '！', '？', '：','；', '‘', '’', '“', '”', '（', '）', ' ', '、','《','》','—','．']
-4. FORMULA -> $latex formula$ | $\FormFigureID{UUID}$ | <img src="BASE64">
-5. FIGURE -> $\FigureID{UUID}$ | <img src="BASE64">
+4. FORMULA -> $latex formula$ | $\FormFigureID{UUID}$ | $\FormFigureBase64{BASE64}$
+5. FIGURE -> $\FigureID{UUID}$ | $\FigureBase64{BASE64}$
 6. UUID -> [a-zA-Z\-0-9]+
 7. CHARACTER -> CHAR_EN | CHAR_CH
 8. CHAR_EN -> [a-zA-Z]+
