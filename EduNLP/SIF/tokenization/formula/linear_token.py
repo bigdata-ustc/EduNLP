@@ -226,14 +226,14 @@ def linear_tokenize(formula, preserve_braces=True, number_as_tag=False, *args, *
     return _formula_con
 
 
-if __name__ == '__main__':
-    s = r"${x + y}^\frac{1}{2} + 1 = 0$"
-    l2 = re.split(r"(\$.+?\$)", s)
-
-    formula_cut = cut(s, with_dollar=True, preserve_braces=True)
-    formula_reduce = reduce(formula_cut)
-    formula_con = connect_char(formula_reduce)
-    print("s:", s)
-    print("formula_cut", formula_cut)
-    print("ormula_reduce", formula_reduce)
-    print("formula_con", formula_con)
+# if __name__ == '__main__':
+#     s = r"${x + y}^\frac{1}{2} + 1 = 0$"
+#     l2 = re.split(r"(\$.+?\$)", s)
+#
+#     formula_cut = cut(s, with_dollar=True, preserve_braces=True)
+#     formula_reduce = reduce(formula_cut)
+#     formula_con = connect_char(formula_reduce)
+#     print("s:", s)
+#     print("formula_cut", formula_cut)
+#     print("ormula_reduce", formula_reduce)
+#     print("formula_con", formula_con)
