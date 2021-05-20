@@ -101,7 +101,3 @@ class TreePlotter(_MPLTreeExporter):
                 ann.set_fontsize(size)
 
         return anns
-
-
-TreePlotter().export(123)
-plt.show()
