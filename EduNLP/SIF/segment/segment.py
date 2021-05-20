@@ -29,9 +29,9 @@ class FigureFormulaSegment(Figure):
         super(FigureFormulaSegment, self).__init__(is_base64)
         self.src = src
         if self.base64 is True:
-            self.figure = self.src[len("FormFigureBase64") + 1: -1]
+            self.figure = self.src[len(r"\FormFigureBase64") + 1: -1]
         else:
-            self.figure = self.src[len("FormFigureID") + 1: -1]
+            self.figure = self.src[len(r"\FormFigureID") + 1: -1]
             if isinstance(figure_instances, dict):
                 self.figure = figure_instances[self.figure]
 
@@ -46,9 +46,9 @@ class FigureSegment(Figure):
         super(FigureSegment, self).__init__(is_base64)
         self.src = src
         if self.base64 is True:
-            self.figure = self.src[len("FigureBase64") + 1: -1]
+            self.figure = self.src[len(r"\FigureBase64") + 1: -1]
         else:
-            self.figure = self.src[len("FigureID") + 1: -1]
+            self.figure = self.src[len(r"\FigureID") + 1: -1]
             if isinstance(figure_instances, dict):
                 self.figure = figure_instances[self.figure]
 
@@ -63,7 +63,7 @@ class QuesMarkSegment(str):
 
 
 class SegmentList(object):
-    def __init__(self, item):
+    def __init__(self, item, figures: dict = None):
         self._segments = []
         self._text_segments = []
         self._formula_segments = []
@@ -75,11 +75,15 @@ class SegmentList(object):
                 continue
             if not re.match(r"\$.+?\$", segment):
                 self.append(TextSegment(segment))
-            elif re.match(r"\$\\(FormFigureID)|(FormFigureBase64)\{.+?}\$", segment):
-                self.append(FigureFormulaSegment(segment[1:-1]))
-            elif re.match(r"\$\\(FigureID)|(FigureBase64)\{.+?}\$", segment):
-                self.append(FigureSegment(segment[1:-1]))
-            elif re.match(r"\$\\(SIFBlank)|(SIFChoice)\$", segment):
+            elif re.match(r"\$\\FormFigureID\{.+?}\$", segment):
+                self.append(FigureFormulaSegment(segment[1:-1], is_base64=False, figure_instances=figures))
+            elif re.match(r"\$\\FormFigureBase64\{.+?}\$", segment):
+                self.append(FigureFormulaSegment(segment[1:-1], is_base64=True, figure_instances=figures))
+            elif re.match(r"\$\\FigureID\{.+?}\$", segment):
+                self.append(FigureSegment(segment[1:-1], is_base64=False, figure_instances=figures))
+            elif re.match(r"\$\\FigureBase64\{.+?}\$", segment):
+                self.append(FigureSegment(segment[1:-1], is_base64=True, figure_instances=figures))
+            elif re.match(r"\$\\(SIFBlank|SIFChoice)\$", segment):
                 self.append(QuesMarkSegment(segment[1:-1]))
             else:
                 self.append(LatexFormulaSegment(segment[1:-1]))
@@ -155,8 +159,8 @@ class SegmentList(object):
                 self.to_symbol(idx, Symbol(QUES_MARK_SYMBOL))
 
 
-def seg(item, symbol=None):
-    segments = SegmentList(item)
+def seg(item, figures=None, symbol=None):
+    segments = SegmentList(item, figures)
     if symbol is not None:
         segments.symbolize(symbol)
     return segments
