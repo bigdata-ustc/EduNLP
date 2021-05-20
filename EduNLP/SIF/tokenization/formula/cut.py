@@ -5,7 +5,7 @@ import re
 
 
 def cut(formula, preserve_braces=True, with_dollar=False,
-        preserve_dollar=False, number_as_tag=False, preserve_src=True):
+        preserve_dollar=False, number_as_tag=False, preserve_src=True):  # pragma: no cover
     class States(IntFlag):
         CHAR = 0
         MATH = 1
@@ -134,7 +134,7 @@ def cut(formula, preserve_braces=True, with_dollar=False,
     return rv
 
 
-def reduce(fea):
+def reduce(fea):  # pragma: no cover
     rules = [
         ('a r c s i n', 'arcsin'),
         ('a r c c o s', 'arccos'),
@@ -164,7 +164,7 @@ def reduce(fea):
     return fea.strip().split()
 
 
-def connect_char(words):
+def connect_char(words):  # pragma: no cover
     result = []
     buffer = ""
     for w in words:
@@ -190,7 +190,7 @@ def connect_char(words):
 
 
 def latex_parse(formula, preserve_braces=True, with_dollar=True,
-                preserve_dollar=False, number_as_tag=False, preserve_src=True):
+                preserve_dollar=False, number_as_tag=False, preserve_src=True):  # pragma: no cover
     # cut
     formula_cut = cut(formula, preserve_braces, with_dollar,
                       preserve_dollar, number_as_tag, preserve_src)
@@ -200,6 +200,26 @@ def latex_parse(formula, preserve_braces=True, with_dollar=True,
 
 
 def linear_tokenize(formula, preserve_braces=True, number_as_tag=False, *args, **kwargs):
+    """
+
+    Parameters
+    ----------
+    formula
+    preserve_braces
+    number_as_tag
+    args
+    kwargs
+
+    Returns
+    -------
+
+    Examples
+    --------
+    >>> linear_tokenize(r"{x + y}^\\frac{1}{2} + 1 = 0")
+    ['{', 'x', '+', 'y', '}', '^', '\\\\frac', '{', '1', '}', '{', '2', '}', '+', '1', '=', '0']
+    >>> linear_tokenize(r"ABC,AB,AC")
+    ['ABC', ',', 'AB', ',', 'AC']
+    """
     _formula_cut = cut(formula, preserve_braces=preserve_braces, number_as_tag=number_as_tag, *args, **kwargs)
     _formula_reduce = reduce(_formula_cut)
     _formula_con = connect_char(_formula_reduce)
