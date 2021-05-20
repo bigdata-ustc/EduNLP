@@ -6,11 +6,16 @@ test_deps = [
     'pytest-flake8',
 ]
 
+tutor_deps = [
+    "pillow",
+]
+
 setup(
     name='EduNLP',
     version='0.0.1',
     extras_require={
         'test': test_deps,
+        "tutor": tutor_deps
     },
     install_requires=[
         'networkx',
