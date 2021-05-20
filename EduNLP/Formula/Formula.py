@@ -96,9 +96,6 @@ class FormulaGroup(object):
     def __iter__(self):
         return iter(self._formulas)
 
-    def __next__(self) -> Formula:
-        return next(self._formulas)
-
     def __getitem__(self, item) -> Formula:
         return self._formulas[item]
 
