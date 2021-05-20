@@ -268,6 +268,7 @@ def get_edges(forest):
 
 class Formula(object):
     def __init__(self, formula, is_str=True, variable_standardization=False, const_mathord=None):
+        self._formula = formula
         self._ast = str2ast(formula) if is_str else formula
         if variable_standardization:
             const_mathord = CONST_MATHORD if const_mathord is None else const_mathord
@@ -308,8 +309,11 @@ class Formula(object):
         tree.add_edges_from(edges)
         return tree
 
-    def __repr__(self):
+    def str(self):
         return pformat(self._ast)
+
+    def __repr__(self):
+        return "<Formula: %s>" % self._formula
 
 
 class FormulaGroup(object):
@@ -360,5 +364,8 @@ class FormulaGroup(object):
             ret.append(formula.variable_standardization(inplace=inplace, const_mathord=const_mathord))
         return ret
 
-    def __repr__(self):
+    def str(self):
         return pformat(self._formulas)
+
+    def __repr__(self):
+        return "<FormulaGroup: %s>" % ";".join([repr(_formula) for _formula in self._formulas])
