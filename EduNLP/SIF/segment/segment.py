@@ -25,12 +25,12 @@ class Figure(object):
 
 
 class FigureFormulaSegment(Figure):
-    def __init__(self, src, is_base64=False, figure_instance: dict = None):
+    def __init__(self, src, is_base64=False, figure_instance: (dict, bool) = None):
         super(FigureFormulaSegment, self).__init__(is_base64)
         self.src = src
         if self.base64 is True:
             self.figure = self.src[len(r"\FormFigureBase64") + 1: -1]
-            if figure_instance is True or figure_instance.get("base64") is True:
+            if figure_instance is True or (isinstance(figure_instance, dict) and figure_instance.get("base64") is True):
                 self.figure = self.base64_to_numpy(self.figure)
         else:
             self.figure = self.src[len(r"\FormFigureID") + 1: -1]
@@ -44,12 +44,12 @@ class FigureFormulaSegment(Figure):
 
 
 class FigureSegment(Figure):
-    def __init__(self, src, is_base64=False, figure_instance: dict = None):
+    def __init__(self, src, is_base64=False, figure_instance: (dict, bool) = None):
         super(FigureSegment, self).__init__(is_base64)
         self.src = src
         if self.base64 is True:
             self.figure = self.src[len(r"\FigureBase64") + 1: -1]
-            if figure_instance is True or figure_instance.get("base64") is True:
+            if figure_instance is True or (isinstance(figure_instance, dict) and figure_instance.get("base64") is True):
                 self.figure = self.base64_to_numpy(self.figure)
         else:
             self.figure = self.src[len(r"\FigureID") + 1: -1]
