@@ -8,7 +8,7 @@
 
 [Jinze Wu](https://github.com/hxwujinze)
 
-[Xin Wang]()
+[Xin Wang](https://github.com/WangXin1198)
 
 
 The stared contributors are the corresponding authors. 
