@@ -22,6 +22,7 @@ setup(
         'networkx',
         'numpy',
         'jieba',
+        'js2py'
     ],  # And any other dependencies foo needs
     entry_points={
     },
