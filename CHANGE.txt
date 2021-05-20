@@ -1,0 +1,4 @@
+v0.0.1:
+    1. Add Formula class to parse latex formula, which will generate the abstract syntax tree.
+    2. Add SIF v0.0.2.
+    3. Add sif4sci function which serves as a preprocess function for downstream tasks.
