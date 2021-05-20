@@ -38,6 +38,16 @@ def sif4sci(item: str, figures: dict = None, safe=True, symbol: str = None, toke
     -------
     When tokenization is False, return SegmentList;
     When tokenization is True, return TokenList
+
+    Examples
+    --------
+    >>> test_item = r"如图所示，则$\\bigtriangleup ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
+    >>> sif4sci(test_item)
+    ['如图所示', '\\\\bigtriangleup', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]
+    >>> sif4sci(test_item, symbol="gm", tokenization_params={"formula_params": {"method": "ast"}})
+    ['如图所示', <Formula: \\bigtriangleup ABC>, '面积', '[MARK]', '[FIGURE]']
+    >>> sif4sci(test_item, symbol="tfgm")
+    ['[TEXT]', '[FORMULA]', '[TEXT]', '[MARK]', '[TEXT]', '[FIGURE]']
     """
     if safe is True and is_sif(item) is not True:
         item = to_sif(item)
