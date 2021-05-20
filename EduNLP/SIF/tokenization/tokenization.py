@@ -106,7 +106,7 @@ class TokenList(object):
 
     @property
     def text_tokens(self):
-        return [self.tokens[i] for i in self._text_tokens]
+        return [self._tokens[i] for i in self._text_tokens]
 
     def __add_token(self, token, tokens):
         if isinstance(token, Formula):
@@ -131,20 +131,23 @@ class TokenList(object):
     def formula_tokens(self):
         tokens = []
         for i in self._formula_tokens:
-            self.__add_token(self.tokens[i], tokens)
+            self.__add_token(self._tokens[i], tokens)
         return tokens
 
     @property
     def figure_tokens(self):
         tokens = []
         for i in self._figure_tokens:
-            self.__add_token(self.tokens[i], tokens)
+            self.__add_token(self._tokens[i], tokens)
         return tokens
 
     @property
     def ques_mark_tokens(self):
-        return [self.tokens[i] for i in self._ques_mark_tokens]
+        return [self._tokens[i] for i in self._ques_mark_tokens]
+
+    def __repr__(self):
+        return str(self.tokens)
 
 
 def tokenize(segment_list: SegmentList, text_params=None, formula_params=None):
-    return TokenList(segment_list, text_params, formula_params).tokens
+    return TokenList(segment_list, text_params, formula_params)

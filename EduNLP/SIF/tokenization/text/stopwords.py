@@ -11,7 +11,7 @@ DEFAULT_FILEPATH = os.path.abspath(
 
 def get_stopwords(filepath=DEFAULT_FILEPATH):
     _stopwords = set()
-    with open(filepath) as f:
+    with open(filepath, encoding="utf-8") as f:
         for line in f:
             _stopwords.add(line.strip())
 
