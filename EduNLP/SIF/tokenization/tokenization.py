@@ -24,9 +24,12 @@ class TokenList(object):
 
     def _variable_standardization(self):
         if self.formula_tokenize_method == "ast":
-            link_variable(list(it.chain(*[self._tokens[i].element for i in self._formula_tokens])))
-            for i in self._formula_tokens:
-                self._tokens[i].variable_standardization(inplace=True)
+            ast_formulas = [self._tokens[i].element for i in self._formula_tokens if
+                            isinstance(self._tokens[i], Formula)]
+            if ast_formulas:
+                link_variable(list(it.chain(*ast_formulas)))
+                for i in self._formula_tokens:
+                    self._tokens[i].variable_standardization(inplace=True)
 
     @property
     def tokens(self):
@@ -34,11 +37,6 @@ class TokenList(object):
         for token in self._tokens:
             self.__add_token(token, tokens)
         return tokens
-
-    def add(self, *segment):
-        for seg in segment:
-            self.append(seg, False)
-        self._variable_standardization()
 
     def append_text(self, segment, symbol=False):
         if symbol is False:
@@ -146,5 +144,5 @@ class TokenList(object):
         return str(self.tokens)
 
 
-def tokenize(segment_list: SegmentList, text_params=None, formula_params=None):
-    return TokenList(segment_list, text_params, formula_params)
+def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
+    return TokenList(segment_list, text_params, formula_params, figure_params)
