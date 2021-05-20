@@ -95,9 +95,9 @@ class TokenList(object):
             elif segment == QUES_MARK_SYMBOL:
                 self.append_ques_mark(segment, symbol=True)
             else:
-                raise TypeError()
+                raise TypeError("Unknown symbol type: %s" % segment)
         else:
-            raise TypeError()
+            raise TypeError("Unknown segment type: %s" % type(segment))
 
     def extend(self, segments):
         for segment in segments:
@@ -118,10 +118,7 @@ class TokenList(object):
                 tokens.append(token)
         elif isinstance(token, Figure):
             if self.figure_params.get("figure_instance") is True:
-                if token.base64 is True:
-                    tokens.append(token.base64_to_numpy(token.figure))
-                else:
-                    tokens.append(token)
+                tokens.append(token.figure)
             else:
                 tokens.append(token)
         else:

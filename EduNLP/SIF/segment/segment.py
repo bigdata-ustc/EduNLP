@@ -20,20 +20,22 @@ class Figure(object):
         self.figure = None
 
     @classmethod
-    def base64_to_numpy(cls, figure):
-        return np.frombuffer(base64.decodebytes(figure), dtype=np.float64)
+    def base64_to_numpy(cls, figure: str):
+        return np.frombuffer(base64.b64decode(figure), dtype=np.uint8)
 
 
 class FigureFormulaSegment(Figure):
-    def __init__(self, src, is_base64=False, figure_instances: dict = None):
+    def __init__(self, src, is_base64=False, figure_instance: dict = None):
         super(FigureFormulaSegment, self).__init__(is_base64)
         self.src = src
         if self.base64 is True:
             self.figure = self.src[len(r"\FormFigureBase64") + 1: -1]
+            if figure_instance is True or figure_instance.get("base64") is True:
+                self.figure = self.base64_to_numpy(self.figure)
         else:
             self.figure = self.src[len(r"\FormFigureID") + 1: -1]
-            if isinstance(figure_instances, dict):
-                self.figure = figure_instances[self.figure]
+            if isinstance(figure_instance, dict):
+                self.figure = figure_instance[self.figure]
 
     def __repr__(self):
         if self.base64 is True:
@@ -42,15 +44,17 @@ class FigureFormulaSegment(Figure):
 
 
 class FigureSegment(Figure):
-    def __init__(self, src, is_base64=False, figure_instances: dict = None):
+    def __init__(self, src, is_base64=False, figure_instance: dict = None):
         super(FigureSegment, self).__init__(is_base64)
         self.src = src
         if self.base64 is True:
             self.figure = self.src[len(r"\FigureBase64") + 1: -1]
+            if figure_instance is True or figure_instance.get("base64") is True:
+                self.figure = self.base64_to_numpy(self.figure)
         else:
             self.figure = self.src[len(r"\FigureID") + 1: -1]
-            if isinstance(figure_instances, dict):
-                self.figure = figure_instances[self.figure]
+            if isinstance(figure_instance, dict):
+                self.figure = figure_instance[self.figure]
 
     def __repr__(self):
         if self.base64 is True:
@@ -76,13 +80,13 @@ class SegmentList(object):
             if not re.match(r"\$.+?\$", segment):
                 self.append(TextSegment(segment))
             elif re.match(r"\$\\FormFigureID\{.+?}\$", segment):
-                self.append(FigureFormulaSegment(segment[1:-1], is_base64=False, figure_instances=figures))
+                self.append(FigureFormulaSegment(segment[1:-1], is_base64=False, figure_instance=figures))
             elif re.match(r"\$\\FormFigureBase64\{.+?}\$", segment):
-                self.append(FigureFormulaSegment(segment[1:-1], is_base64=True, figure_instances=figures))
+                self.append(FigureFormulaSegment(segment[1:-1], is_base64=True, figure_instance=figures))
             elif re.match(r"\$\\FigureID\{.+?}\$", segment):
-                self.append(FigureSegment(segment[1:-1], is_base64=False, figure_instances=figures))
+                self.append(FigureSegment(segment[1:-1], is_base64=False, figure_instance=figures))
             elif re.match(r"\$\\FigureBase64\{.+?}\$", segment):
-                self.append(FigureSegment(segment[1:-1], is_base64=True, figure_instances=figures))
+                self.append(FigureSegment(segment[1:-1], is_base64=True, figure_instance=figures))
             elif re.match(r"\$\\(SIFBlank|SIFChoice)\$", segment):
                 self.append(QuesMarkSegment(segment[1:-1]))
             else:
@@ -160,6 +164,40 @@ class SegmentList(object):
 
 
 def seg(item, figures=None, symbol=None):
+    """
+
+    Parameters
+    ----------
+    item
+    figures
+    symbol
+
+    Returns
+    -------
+
+    Examples
+    --------
+    >>> test_item = r"如图所示，则$\\bigtriangleup ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
+    >>> s = seg(test_item)
+    >>> s
+    ['如图所示，则', '\\\\bigtriangleup ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
+    >>> seg(test_item, symbol="fgm")
+    ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
+    >>> seg(test_item, symbol="tfgm")
+    ['[TEXT]', '[FORMULA]', '[TEXT]', '[MARK]', '[TEXT]', '[FIGURE]']
+    >>> seg(r"如图所示，则$\\FormFigureID{0}$的面积是$\\SIFBlank$。$\\FigureID{1}$")
+    ['如图所示，则', \\FormFigureID{0}, '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
+    >>> seg(r"如图所示，则$\\FormFigureID{0}$的面积是$\\SIFBlank$。$\\FigureID{1}$", symbol="fgm")
+    ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
+    >>> s.text_segments
+    ['如图所示，则', '的面积是', '。']
+    >>> s.formula_segments
+    ['\\\\bigtriangleup ABC']
+    >>> s.figure_segments
+    [\\FigureID{1}]
+    >>> s.ques_mark_segments
+    ['\\\\SIFBlank']
+    """
     segments = SegmentList(item, figures)
     if symbol is not None:
         segments.symbolize(symbol)
