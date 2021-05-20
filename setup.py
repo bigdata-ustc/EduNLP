@@ -20,7 +20,7 @@ setup(
     install_requires=[
         'networkx',
         'numpy',
-        'jieba'
+        'jieba',
     ],  # And any other dependencies foo needs
     entry_points={
     },
