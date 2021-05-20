@@ -2,7 +2,7 @@
 # 2021/5/18 @ tongshiwei
 
 import itertools as it
-from EduNLP.Formula.Formula import link_variable, Formula
+from EduNLP.Formula import link_variable, Formula
 from ..constants import Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL
 from ..segment import (SegmentList, TextSegment, FigureSegment, LatexFormulaSegment, FigureFormulaSegment,
                        QuesMarkSegment, Figure)

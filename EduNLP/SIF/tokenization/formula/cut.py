@@ -207,14 +207,6 @@ def linear_tokenize(formula, preserve_braces=True, number_as_tag=False, *args, *
 
 
 if __name__ == '__main__':
-    s = r"5\cdot 2\^{\large{-3t}}=45"
-    s = r"￥ 10"
-    """
-    x080420779f2207d0	$8.01 + 24.192 = $
-    x6f863260844c73f2	we know that $\displaystyle\frac{3{{x}^{2}}}{1+{{x}^{3}}}=3{{x}^{2}}-3{{x}^{5}}+3{{x}^{8}}- +{{\left( -1 \right)}^{n+1}}3{{x}^{3n-1}}+ $ for $x\in (-1,1)$ using this fact, find the power series for $\ln(1+x^3)$ 
-    """
-    # s = "complete to solve $56+ 4$. $\phantom{=}56+4$ $=(50+$ $$ $)+ 4$ $=\,\,50 + ($$$ $+ $ $4)$ $=\,\,50 + $ $$ $=$"
-    # s = "$\\\hell{=}56+4$"
     s = r"${x + y}^\frac{1}{2} + 1 = 0$"
     l2 = re.split(r"(\$.+?\$)", s)
 
