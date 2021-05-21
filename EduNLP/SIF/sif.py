@@ -2,7 +2,7 @@
 # 2021/5/16 @ tongshiwei
 
 from .segment import seg
-from .tokenization import tokenize
+from .tokenization import tokenize, link_formulas
 
 
 def is_sif(item):
@@ -60,6 +60,24 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     >>> sif4sci(test_item, symbol="gm",
     ... tokenization_params={"formula_params": {"method": "ast", "return_type": "list"}})
     ['如图所示', '\\\\bigtriangleup', 'A', 'B', 'C', '面积', '[MARK]', '[FIGURE]']
+    >>> test_item_1 = {
+    ...     "stem": r"若$x=2$, $y=\\sqrt{x}$，则下列说法正确的是$\\SIFChoice$",
+    ...     "options": [r"$x < y$", r"$y = x$", r"$y < x$"]
+    ... }
+    >>> tls = [
+    ...     sif4sci(e, symbol="gm",
+    ...     tokenization_params={
+    ...         "formula_params": {
+    ...             "method": "ast", "return_type": "list", "ord2token": True, "var_numbering": True,
+    ...             "link_variable": False}
+    ...     })
+    ...     for e in ([test_item_1["stem"]] + test_item_1["options"])
+    ... ]
+    >>> tls[1:]
+    [['mathord_0', '<', 'mathord_1'], ['mathord_0', '=', 'mathord_1'], ['mathord_0', '<', 'mathord_1']]
+    >>> link_formulas(*tls)
+    >>> tls[1:]
+    [['mathord_0', '<', 'mathord_1'], ['mathord_1', '=', 'mathord_0'], ['mathord_1', '<', 'mathord_0']]
     """
     if safe is True and is_sif(item) is not True:
         item = to_sif(item)

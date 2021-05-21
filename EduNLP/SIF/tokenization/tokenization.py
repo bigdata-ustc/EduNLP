@@ -8,6 +8,8 @@ from ..segment import (SegmentList, TextSegment, FigureSegment, LatexFormulaSegm
                        QuesMarkSegment, Figure)
 from . import text, formula
 
+__all__ = ["TokenList", "tokenize", "link_formulas"]
+
 
 class TokenList(object):
     def __init__(self, segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
@@ -28,8 +30,11 @@ class TokenList(object):
                             isinstance(self._tokens[i], Formula)]
             if ast_formulas:
                 link_variable(list(it.chain(*ast_formulas)))
-                for i in self._formula_tokens:
-                    self._tokens[i].variable_standardization(inplace=True)
+                self.variable_standardization()
+
+    def variable_standardization(self):
+        for i in self._formula_tokens:
+            self._tokens[i].variable_standardization(inplace=True)
 
     @property
     def tokens(self):
@@ -143,6 +148,23 @@ class TokenList(object):
     def __repr__(self):
         return str(self.tokens)
 
+    @property
+    def inner_formula_tokens(self):
+        return [self._tokens[i] for i in self._formula_tokens]
+
 
 def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
     return TokenList(segment_list, text_params, formula_params, figure_params)
+
+
+def link_formulas(*token_list: TokenList):
+    ast_formulas = []
+    for tl in token_list:
+        if tl.formula_tokenize_method == "ast":
+            ast_formulas.extend([
+                token.element for token in tl.inner_formula_tokens
+                if isinstance(token, Formula)
+            ])
+    link_variable(list(it.chain(*ast_formulas)))
+    for tl in token_list:
+        tl.variable_standardization()
