@@ -79,12 +79,12 @@ def ast_tokenize(formula, ord2token=False, var_numbering=False, return_type="for
     <Formula: {x + y}^\\frac{\\pi}{2} + 1 = x>
     """
     if return_type == "list":
-        ast = Formula(formula, variable_standardization=True).ast
+        ast = Formula(formula, variable_standardization=True).ast_graph
         return traversal_formula(ast, ord2token=ord2token, var_numbering=var_numbering)
     elif return_type == "formula":
         return Formula(formula)
     elif return_type == "ast":
-        return Formula(formula).ast
+        return Formula(formula).ast_graph
     else:
         raise ValueError()
 

@@ -2,11 +2,13 @@
 # 2021/5/18 @ tongshiwei
 
 import itertools as it
-from EduNLP.Formula import link_variable, Formula
+from EduNLP.Formula import link_formulas as _link_formulas, Formula
 from ..constants import Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL
 from ..segment import (SegmentList, TextSegment, FigureSegment, LatexFormulaSegment, FigureFormulaSegment,
                        QuesMarkSegment, Figure)
 from . import text, formula
+
+__all__ = ["TokenList", "tokenize", "link_formulas"]
 
 
 class TokenList(object):
@@ -24,12 +26,9 @@ class TokenList(object):
 
     def _variable_standardization(self):
         if self.formula_tokenize_method == "ast":
-            ast_formulas = [self._tokens[i].element for i in self._formula_tokens if
-                            isinstance(self._tokens[i], Formula)]
+            ast_formulas = [self._tokens[i] for i in self._formula_tokens if isinstance(self._tokens[i], Formula)]
             if ast_formulas:
-                link_variable(list(it.chain(*ast_formulas)))
-                for i in self._formula_tokens:
-                    self._tokens[i].variable_standardization(inplace=True)
+                _link_formulas(*ast_formulas)
 
     @property
     def tokens(self):
@@ -109,9 +108,9 @@ class TokenList(object):
     def __add_token(self, token, tokens):
         if isinstance(token, Formula):
             if self.formula_params.get("return_type") == "list":
-                tokens.extend(formula.traversal_formula(token.ast, **self.formula_params))
+                tokens.extend(formula.traversal_formula(token.ast_graph, **self.formula_params))
             elif self.formula_params.get("return_type") == "ast":
-                tokens.append(token.ast)
+                tokens.append(token.ast_graph)
             else:
                 tokens.append(token)
         elif isinstance(token, Figure):
@@ -143,6 +142,18 @@ class TokenList(object):
     def __repr__(self):
         return str(self.tokens)
 
+    @property
+    def inner_formula_tokens(self):
+        return [self._tokens[i] for i in self._formula_tokens]
+
 
 def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
     return TokenList(segment_list, text_params, formula_params, figure_params)
+
+
+def link_formulas(*token_list: TokenList):
+    ast_formulas = []
+    for tl in token_list:
+        if tl.formula_tokenize_method == "ast":
+            ast_formulas.extend([token for token in tl.inner_formula_tokens if isinstance(token, Formula)])
+    _link_formulas(*ast_formulas)
