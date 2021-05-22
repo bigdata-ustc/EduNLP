@@ -7,8 +7,8 @@ from .watex import watex
 __all__ = ["str2ast", "get_edges", "ast", "link_variable"]
 
 
-def str2ast(formula: str):
-    return ast(formula, is_str=True)
+def str2ast(formula: str, *args, **kwargs):
+    return ast(formula, is_str=True, *args, **kwargs)
 
 
 def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, is_str=False):
@@ -18,7 +18,7 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
     Parameters
     ----------
     formula: str or List[Dict]
-
+        公式字符串或通过katex解析得到的结构体
     index: int
         本子树在树上的位置
     forest_begin: int
@@ -224,8 +224,11 @@ def link_variable(forest):
                 l_v = [] + v
                 index = l_v.pop(i)
                 forest[index]['structure']['forest'] = l_v
-
-    return forest
+    variable_connect_dict = {
+        "var2id": forest_connect_dict,
+        "var_code": {}
+    }
+    return variable_connect_dict
 
 
 def get_edges(forest):
