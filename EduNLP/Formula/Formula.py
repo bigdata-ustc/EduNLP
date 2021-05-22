@@ -14,8 +14,36 @@ __all__ = ["Formula", "FormulaGroup", "CONST_MATHORD", "link_formulas"]
 
 
 class Formula(object):
+    """
+    Examples
+    --------
+    >>> f = Formula("x")
+    >>> f
+    <Formula: x>
+    >>> f.ast
+    [{'val': {'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, \
+'structure': {'bro': [None, None], 'child': None, 'father': None, 'forest': None}}]
+    >>> f.elements
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}]
+    >>> f.variable_standardization(inplace=True)
+    <Formula: x>
+    >>> f.elements
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
+    """
+
     def __init__(self, formula: (str, List[Dict]), variable_standardization=False, const_mathord=None,
                  *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        formula: str or List[Dict]
+            latex formula string or the parsed abstracted syntax tree
+        variable_standardization
+        const_mathord
+        args
+        kwargs
+        """
         self._formula = formula
         self._ast = None
         self.reset_ast(
@@ -43,11 +71,15 @@ class Formula(object):
             return Formula(ast_tree, is_str=False)
 
     @property
-    def element(self):
+    def ast(self):
         return self._ast
 
     @property
-    def ast(self) -> (nx.Graph, nx.DiGraph):
+    def elements(self):
+        return [self.ast_graph.nodes[node] for node in self.ast_graph.nodes]
+
+    @property
+    def ast_graph(self) -> (nx.Graph, nx.DiGraph):
         edges = [(edge[0], edge[1]) for edge in get_edges(self._ast) if edge[2] == 3]
         tree = nx.DiGraph()
         for node in self._ast:
@@ -67,8 +99,9 @@ class Formula(object):
         else:
             return super(Formula, self).__repr__()
 
-    def reset_ast(self, formula_ensure_str=True, variable_standardization=False, const_mathord=None, *args, **kwargs):
-        if formula_ensure_str is True and self.resetable is True:
+    def reset_ast(self, formula_ensure_str: bool = True, variable_standardization=False, const_mathord=None, *args,
+                  **kwargs):
+        if formula_ensure_str is True and self.resetable is False:
             raise TypeError("formula must be str, now is %s" % type(self._formula))
         self._ast = str2ast(self._formula, *args, **kwargs) if isinstance(self._formula, str) else self._formula
         if variable_standardization:
@@ -82,34 +115,49 @@ class Formula(object):
 
 
 class FormulaGroup(object):
+    """
+    Examples
+    ---------
+    >>> fg = FormulaGroup(["x + y", "y + x", "z + x"])
+    >>> fg
+    <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
+    >>> fg = FormulaGroup(["x + y", Formula("y + x"), "z + x"])
+    >>> fg
+    <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
+    >>> fg = FormulaGroup(["x", Formula("y"), "x"])
+    >>> fg.elements
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None},\
+ {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None}]
+    >>> fg = FormulaGroup(["x", Formula("y"), "x"], variable_standardization=True)
+    >>> fg.elements
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, \
+{'id': 1, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}, \
+{'id': 2, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
+    """
+
     def __init__(self,
-                 formula_list: (List[(str, Formula, dict)]),
+                 formula_list: (list, List[str], List[Formula]),
                  variable_standardization=False,
                  const_mathord=None,
                  detach=True
                  ):
-        """
-
-        Parameters
-        ----------
-        formula_list: List[str]
-        """
         forest = []
         self._formulas = []
-        for index in range(0, len(formula_list)):
-            formula = formula_list[index]
+        for formula in formula_list:
             if isinstance(formula, str):
-                tree = str2ast(
+                formula = Formula(
                     formula,
                     forest_begin=len(forest),
                 )
-                self._formulas.append(Formula(tree))
+                self._formulas.append(formula)
+                tree = formula.ast
             elif isinstance(formula, Formula):
                 if detach:
                     formula = deepcopy(formula)
                 tree = formula.reset_ast(
                     formula_ensure_str=True,
                     variable_standardization=False,
+                    forest_begin=len(forest),
                 )
                 self._formulas.append(formula)
             else:
@@ -149,11 +197,15 @@ class FormulaGroup(object):
         return "<FormulaGroup: %s>" % ";".join([repr(_formula) for _formula in self._formulas])
 
     @property
-    def element(self):
+    def ast(self):
         return self._forest
 
     @property
-    def ast(self) -> (nx.Graph, nx.DiGraph):
+    def elements(self):
+        return [self.ast_graph.nodes[node] for node in self.ast_graph.nodes]
+
+    @property
+    def ast_graph(self) -> (nx.Graph, nx.DiGraph):
         edges = [(edge[0], edge[1]) for edge in get_edges(self._forest) if edge[2] == 3]
         tree = nx.DiGraph()
         for node in self._forest:
