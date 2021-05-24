@@ -1,3 +1,6 @@
+v0.0.2:
+    1. fix potential ModuleNotFoundError
+
 v0.0.1:
     1. Add Formula class to parse latex formula, which will generate the abstract syntax tree.
     2. Add SIF v0.0.2.

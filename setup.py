@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 test_deps = [
     'pytest>=4',
@@ -13,11 +13,12 @@ tutor_deps = [
 
 setup(
     name='EduNLP',
-    version='0.0.1',
+    version='0.0.2',
     extras_require={
         'test': test_deps,
         "tutor": tutor_deps
     },
+    packages=find_packages(),
     install_requires=[
         'networkx',
         'numpy',
