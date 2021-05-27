@@ -27,22 +27,25 @@ from EduNLP.SIF import sif4sci, link_formulas
 # print(sif4sci(item, tokenization_params={"formula_params": {"method": "ast", "return_type": "formula"}}))
 
 e = r"$x$ 是 $y$ 那么 $y$ 和 $z$ 是什么 $x,y,z$"
-print(sif4sci(e, symbol="gm",
-              tokenization_params={
-                  "formula_params": {
-                      "method": "ast", "return_type": "list", "ord2token": True, "var_numbering": True,
-                  }
-              }))
-
-test_item_1 = [r"$x < y$", r"$y = x$", r"$y < x$"]
-tls = [
-    sif4sci(e, symbol="gm",
-            tokenization_params={
-                "formula_params": {
-                    "method": "ast", "return_type": "list", "ord2token": True, "var_numbering": True,
-                }
-            })
-    for e in test_item_1
-]
-link_formulas(*tls)
-print(tls)
+# print(sif4sci(e, symbol="gm",
+#               tokenization_params={
+#                   "formula_params": {
+#                       "method": "ast", "return_type": "list", "ord2token": True, "var_numbering": True,
+#                   }
+#               }))
+#
+# test_item_1 = [r"$x < y$", r"$y = x$", r"$y < x$"]
+# tls = [
+#     sif4sci(e, symbol="gm",
+#             tokenization_params={
+#                 "formula_params": {
+#                     "method": "ast", "return_type": "list", "ord2token": True, "var_numbering": True,
+#                 }
+#             })
+#     for e in test_item_1
+# ]
+# link_formulas(*tls)
+# print(tls)
+seg = sif4sci(e, tokenization=False)
+with seg.filter(keep="t"):
+    print(seg)
