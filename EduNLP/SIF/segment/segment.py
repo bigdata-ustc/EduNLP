@@ -3,6 +3,7 @@
 import base64
 import numpy as np
 import re
+from contextlib import contextmanager
 from ..constants import Symbol, TEXT_SYMBOL, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL
 
 
@@ -91,9 +92,10 @@ class SegmentList(object):
                 self.append(QuesMarkSegment(segment[1:-1]))
             else:
                 self.append(LatexFormulaSegment(segment[1:-1]))
+        self._seg_idx = None
 
     def __repr__(self):
-        return str(self._segments)
+        return str(self.segments)
 
     def __len__(self):
         return len(self._segments)
@@ -113,7 +115,10 @@ class SegmentList(object):
 
     @property
     def segments(self):
-        return self._segments
+        if self._seg_idx is None:
+            return self._segments
+        else:
+            return [s for i, s in enumerate(self._segments) if i in self._seg_idx]
 
     @property
     def text_segments(self):
@@ -162,6 +167,33 @@ class SegmentList(object):
             for idx in self._ques_mark_segments:
                 self.to_symbol(idx, Symbol(QUES_MARK_SYMBOL))
 
+    @contextmanager
+    def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
+        _drop = {c for c in drop} if isinstance(drop, str) else drop
+        if keep == "*":
+            _keep = {c for c in "tfgm" if c not in _drop}
+        else:
+            _keep = {c for c in keep if c not in _drop} if isinstance(keep, str) else keep
+        self._seg_idx = set()
+        if "t" in _keep:
+            self._seg_idx |= set(self._text_segments)
+        if "f" in _keep:
+            self._seg_idx |= set(self._formula_segments)
+        if "g" in _keep:
+            self._seg_idx |= set(self._figure_segments)
+        if "m" in _keep:
+            self._seg_idx |= set(self._ques_mark_segments)
+        yield
+        self._seg_idx = None
+
+    def describe(self):
+        return {
+            "t": len(self._text_segments),
+            "f": len(self._formula_segments),
+            "g": len(self._figure_segments),
+            "m": len(self._ques_mark_segments),
+        }
+
 
 def seg(item, figures=None, symbol=None):
     """
@@ -180,6 +212,17 @@ def seg(item, figures=None, symbol=None):
     >>> test_item = r"如图所示，则$\\bigtriangleup ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
     >>> s = seg(test_item)
     >>> s
+    ['如图所示，则', '\\\\bigtriangleup ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
+    >>> s.describe()
+    {'t': 3, 'f': 1, 'g': 1, 'm': 1}
+    >>> with s.filter("f"):
+    ...     s
+    ['如图所示，则', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
+    >>> with s.filter(keep="t"):
+    ...     s
+    ['如图所示，则', '的面积是', '。']
+    >>> with s.filter():
+    ...     s
     ['如图所示，则', '\\\\bigtriangleup ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
     >>> seg(test_item, symbol="fgm")
     ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']

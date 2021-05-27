@@ -1,7 +1,7 @@
 # coding: utf-8
 # 2021/5/18 @ tongshiwei
 
-import itertools as it
+from contextlib import contextmanager
 from EduNLP.Formula import link_formulas as _link_formulas, Formula
 from ..constants import Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL
 from ..segment import (SegmentList, TextSegment, FigureSegment, LatexFormulaSegment, FigureFormulaSegment,
@@ -23,6 +23,7 @@ class TokenList(object):
         self.formula_tokenize_method = self.formula_params.get("method")
         self.figure_params = figure_params if figure_params is not None else {}
         self.extend(segment_list.segments)
+        self._token_idx = None
 
     def _variable_standardization(self):
         if self.formula_tokenize_method == "ast":
@@ -33,8 +34,13 @@ class TokenList(object):
     @property
     def tokens(self):
         tokens = []
-        for token in self._tokens:
-            self.__add_token(token, tokens)
+        if self._token_idx is not None:
+            for i, token in enumerate(self._tokens):
+                if i in self._token_idx:
+                    self.__add_token(token, tokens)
+        else:
+            for token in self._tokens:
+                self.__add_token(token, tokens)
         return tokens
 
     def append_text(self, segment, symbol=False):
@@ -145,6 +151,33 @@ class TokenList(object):
     @property
     def inner_formula_tokens(self):
         return [self._tokens[i] for i in self._formula_tokens]
+
+    @contextmanager
+    def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
+        _drop = {c for c in drop} if isinstance(drop, str) else drop
+        if keep == "*":
+            _keep = {c for c in "tfgm" if c not in _drop}
+        else:
+            _keep = {c for c in keep if c not in _drop} if isinstance(keep, str) else keep
+        self._token_idx = set()
+        if "t" in _keep:
+            self._token_idx |= set(self._text_tokens)
+        if "f" in _keep:
+            self._token_idx |= set(self._formula_tokens)
+        if "g" in _keep:
+            self._token_idx |= set(self._figure_tokens)
+        if "m" in _keep:
+            self._token_idx |= set(self._ques_mark_tokens)
+        yield
+        self._token_idx = None
+
+    def describe(self):
+        return {
+            "t": len(self._text_tokens),
+            "f": len(self._formula_tokens),
+            "g": len(self._figure_tokens),
+            "m": len(self._ques_mark_tokens),
+        }
 
 
 def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):

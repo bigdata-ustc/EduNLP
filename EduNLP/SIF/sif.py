@@ -45,6 +45,17 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     >>> tl = sif4sci(test_item)
     >>> tl
     ['如图所示', '\\\\bigtriangleup', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]
+    >>> tl.describe()
+    {'t': 2, 'f': 2, 'g': 1, 'm': 1}
+    >>> with tl.filter('fgm'):
+    ...     tl
+    ['如图所示', '面积']
+    >>> with tl.filter(keep='t'):
+    ...     tl
+    ['如图所示', '面积']
+    >>> with tl.filter():
+    ...     tl
+    ['如图所示', '\\\\bigtriangleup', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]
     >>> tl.text_tokens
     ['如图所示', '面积']
     >>> tl.formula_tokens
