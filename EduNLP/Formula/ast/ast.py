@@ -167,6 +167,10 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
                 citem['role'] = 'body'
             tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
 
+        elif tree_node['val']['type'] == "kern":
+            # \quad
+            tree.append(tree_node)
+
         else:
             tree_node['structure']['child'] = [1 + private_index + index]
 
@@ -247,7 +251,7 @@ def get_edges(forest):
     """
     edges = []
     for node in forest:
-        index = forest.index(node)
+        index = node["val"]["id"]
         edges.append((index, index, 1))
         if node['structure']['bro'][1] is not None:
             edges.append((index, node['structure']['bro'][1], 2))
