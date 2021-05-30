@@ -3,10 +3,10 @@
 
 from contextlib import contextmanager
 
-ann_format = r"$\SIFAnn{{{}}}$"
-ann_begin_format = r"$\SIFAnn{{{}_begin}}$"
-ann_end_format = r"$\SIFAnn{{{}_end}}$"
-ann_list_no_format = r"$\SIFAnn{{list_{}}}$"
+ann_format = r"$\SIFTag{{{}}}$"
+ann_begin_format = r"$\SIFTag{{{}_begin}}$"
+ann_end_format = r"$\SIFTag{{{}_end}}$"
+ann_list_no_format = r"$\SIFTag{{list_{}}}$"
 
 
 @contextmanager
