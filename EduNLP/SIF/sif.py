@@ -1,6 +1,8 @@
 # coding: utf-8
 # 2021/5/16 @ tongshiwei
 
+import traceback
+import warnings
 from .segment import seg
 from .tokenization import tokenize, link_formulas
 
@@ -14,7 +16,7 @@ def to_sif(item):
 
 
 def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = None, tokenization=True,
-            tokenization_params=None):
+            tokenization_params=None, error=""):
     """
 
     Default to use linear Tokenizer, change the tokenizer by specifying tokenization_params
@@ -33,6 +35,12 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
         The parameters only useful for "ast":
             ord2token: whether to transfer the variables (mathord) and constants (textord) to special tokens.
             var_numbering: whether to use number suffix to denote different variables
+    error:
+        warn
+        raise
+        coerce
+        strict
+        ignore
 
     Returns
     -------
@@ -90,12 +98,19 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     >>> tls[1:]
     [['mathord_0', '<', 'mathord_1'], ['mathord_1', '=', 'mathord_0'], ['mathord_1', '<', 'mathord_0']]
     """
-    if safe is True and is_sif(item) is not True:
-        item = to_sif(item)
+    try:
+        if safe is True and is_sif(item) is not True:
+            item = to_sif(item)
 
-    ret = seg(item, figures, symbol)
+        ret = seg(item, figures, symbol)
 
-    if tokenization is True:
-        ret = tokenize(ret, **(tokenization_params if tokenization_params is not None else {}))
+        if tokenization is True:
+            ret = tokenize(ret, **(tokenization_params if tokenization_params is not None else {}))
 
-    return ret
+        return ret
+    except Exception as e:
+        msg = traceback.format_exc()
+        if error == "warn":
+            warnings.warn(msg)
+        elif error == "raise":
+            raise e
