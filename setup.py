@@ -1,24 +1,22 @@
 from setuptools import setup, find_packages
 
-test_deps = [
-    'pytest>=4',
-    'pytest-cov>=2.6.0',
-    'pytest-flake8',
-    "pillow"
+pretrain_deps = [
+    "gensim"
 ]
-
-dev_deps = [
-    "requests"
-]
-
 tutor_deps = [
     "pillow",
     "tqdm"
 ]
+test_deps = [
+                'pytest>=4',
+                'pytest-cov>=2.6.0',
+                'pytest-flake8',
+                "pillow"
+            ] + pretrain_deps + tutor_deps
 
-pretrain_deps = [
-    "gensim"
-]
+dev_deps = [
+               "requests"
+           ] + test_deps
 
 setup(
     name='EduNLP',
