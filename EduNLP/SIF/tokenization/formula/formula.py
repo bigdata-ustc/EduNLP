@@ -30,8 +30,6 @@ def tokenize(formula, method="linear", errors="raise", **kwargs):
     <Formula: \\frac{\\pi}{x + y} + 1 = x>
     >>> tokenize(r"\\frac{\\pi}{x + y} + 1 = x", method="ast", ord2token=True, return_type="list")
     ['mathord', '{ }', 'mathord', '+', 'mathord', '{ }', '\\\\frac', '+', 'textord', '=', 'mathord']
-    >>> tokenize(r"\\phantom{=}56+4", method="ast", errors="coerce")
-    ['\\\\phantom', '{', '=', '}', '56', '+', '4']
     """
     if method == "linear":
         return linear_tokenize(formula, **kwargs)
