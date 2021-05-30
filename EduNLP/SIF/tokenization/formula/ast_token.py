@@ -34,11 +34,19 @@ from EduNLP.Formula import Formula
 #         _inorder_traversal(node)
 #     return nodes
 
-def traversal_formula(ast, ord2token=False, var_numbering=False, *args, **kwargs):
+def traversal_formula(ast, ord2token=False, var_numbering=False, strategy="post", *args, **kwargs):
     tokens = []
-    for i in nx.dfs_postorder_nodes(ast):
+    if strategy == "post":
+        order = nx.dfs_postorder_nodes(ast)
+    elif strategy == "linear":
+        order = ast.nodes
+    else:
+        raise ValueError("Unknown traversal strategy: %s" % strategy)
+    for i in order:
         node = ast.nodes[i]
-        if ord2token is True and node["type"] in ["mathord", "textord"]:
+        if node["type"] == "ignore":
+            continue
+        if ord2token is True and node["type"] in ["mathord", "textord", "text"]:
             if var_numbering is True and node["type"] == "mathord":
                 tokens.append("%s_%s" % (node["type"], node.get("var", "con")))
             else:
