@@ -16,7 +16,7 @@ def to_sif(item):
 
 
 def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = None, tokenization=True,
-            tokenization_params=None, error=""):
+            tokenization_params=None, errors=""):
     """
 
     Default to use linear Tokenizer, change the tokenizer by specifying tokenization_params
@@ -35,7 +35,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
         The parameters only useful for "ast":
             ord2token: whether to transfer the variables (mathord) and constants (textord) to special tokens.
             var_numbering: whether to use number suffix to denote different variables
-    error:
+    errors:
         warn
         raise
         coerce
@@ -110,7 +110,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
         return ret
     except Exception as e:
         msg = traceback.format_exc()
-        if error == "warn":
+        if errors == "warn":
             warnings.warn(msg)
-        elif error == "raise":
+        elif errors == "raise":
             raise e
