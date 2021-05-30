@@ -10,32 +10,32 @@ ann_list_no_format = r"$\SIFTag{{list_{}}}$"
 
 
 @contextmanager
-def add_annotation(key, annotation_mode, tar: list, key_as_annotation=True):
-    if key_as_annotation is True:
-        if annotation_mode == "delimiter":
+def add_annotation(key, tag_mode, tar: list, key_as_tag=True):
+    if key_as_tag is True:
+        if tag_mode == "delimiter":
             tar.append(ann_begin_format.format(key))
-        elif annotation_mode == "head":
+        elif tag_mode == "head":
             tar.append(ann_format.format(key))
     yield
-    if key_as_annotation is True:
-        if annotation_mode == "delimiter":
+    if key_as_tag is True:
+        if tag_mode == "delimiter":
             tar.append(ann_end_format.format(key))
-        elif annotation_mode == "tail":
+        elif tag_mode == "tail":
             tar.append(ann_format.format(key))
 
 
-def dict2str4sif(obj: dict, key_as_annotation=True, annotation_mode="delimiter", add_list_no_annotation=True) -> str:
+def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_tag=True) -> str:
     r"""
 
     Parameters
     ----------
     obj
-    key_as_annotation
-    annotation_mode
-        delimiter: add $\SIFAnn{key_begin}$ in the head and add $\SIFAnn{key_end}$ at the end
-        head: add $\SIFAnn{key}$ in the head
-        tail: add $\SIFAnn{key}$ at the end
-    add_list_no_annotation
+    key_as_tag
+    tag_mode
+        delimiter: add $\SIFTag{key_begin}$ in the head and add $\SIFTag{key_end}$ at the end
+        head: add $\SIFTag{key}$ in the head
+        tail: add $\SIFTag{key}$ at the end
+    add_list_no_tag
 
     Returns
     -------
@@ -46,29 +46,29 @@ def dict2str4sif(obj: dict, key_as_annotation=True, annotation_mode="delimiter",
     >>> item
     {'stem': '若复数$z=1+2 i+i^{3}$，则$|z|=$', 'options': ['0', '1', '$\\sqrt{2}$', '2']}
     >>> dict2str4sif(item) # doctest: +ELLIPSIS
-    '$\\SIFAnn{stem_begin}$...$\\SIFAnn{stem_end}$$\\SIFAnn{options_begin}$...$\\SIFAnn{options_end}$'
-    >>> dict2str4sif(item, add_list_no_annotation=True) # doctest: +ELLIPSIS
-    '...$\\SIFAnn{options_begin}$$\\SIFAnn{list_0}$0$\\SIFAnn{list_1}$1...$\\SIFAnn{options_end}$'
-    >>> dict2str4sif(item, annotation_mode="head") # doctest: +ELLIPSIS
-    '$\\SIFAnn{stem}$...$\\SIFAnn{options}$...'
-    >>> dict2str4sif(item, annotation_mode="tail") # doctest: +ELLIPSIS
-    '若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFAnn{stem}$...2$\\SIFAnn{options}$'
-    >>> dict2str4sif(item, add_list_no_annotation=False) # doctest: +ELLIPSIS
-    '$\\SIFAnn{stem_begin}$...，则$|z|=$$\\SIFAnn{stem_end}$$\\SIFAnn{options_begin}$0,1,...$\\SIFAnn{options_end}$'
-    >>> dict2str4sif(item, key_as_annotation=False)
+    '$\\SIFTag{stem_begin}$...$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$...$\\SIFTag{options_end}$'
+    >>> dict2str4sif(item, add_list_no_tag=True) # doctest: +ELLIPSIS
+    '...$\\SIFTag{options_begin}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1...$\\SIFTag{options_end}$'
+    >>> dict2str4sif(item, tag_mode="head") # doctest: +ELLIPSIS
+    '$\\SIFTag{stem}$...$\\SIFTag{options}$...'
+    >>> dict2str4sif(item, tag_mode="tail") # doctest: +ELLIPSIS
+    '若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem}$...2$\\SIFTag{options}$'
+    >>> dict2str4sif(item, add_list_no_tag=False) # doctest: +ELLIPSIS
+    '$\\SIFTag{stem_begin}$...，则$|z|=$$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$0,1,...$\\SIFTag{options_end}$'
+    >>> dict2str4sif(item, key_as_tag=False)
     '若复数$z=1+2 i+i^{3}$，则$|z|=$0,1,$\\sqrt{2}$,2'
     """
     ret = []
 
     for key, value in obj.items():
         _obj = []
-        with add_annotation(key, annotation_mode, _obj, key_as_annotation):
+        with add_annotation(key, tag_mode, _obj, key_as_tag):
             if isinstance(value, str):
                 _obj.append(value)
             elif isinstance(value, list):
                 for i, v in enumerate(value):
                     v = str(v)
-                    if key_as_annotation is True and add_list_no_annotation is True:
+                    if key_as_tag is True and add_list_no_tag is True:
                         _obj.append(ann_list_no_format.format(i))
                     else:
                         if i > 0:
