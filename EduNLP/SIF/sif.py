@@ -17,7 +17,7 @@ def to_sif(item):
 
 def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = None, tokenization=True,
             tokenization_params=None, errors=""):
-    """
+    r"""
 
     Default to use linear Tokenizer, change the tokenizer by specifying tokenization_params
 
@@ -49,10 +49,10 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
 
     Examples
     --------
-    >>> test_item = r"如图所示，则$\\bigtriangleup ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
+    >>> test_item = r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$"
     >>> tl = sif4sci(test_item)
     >>> tl
-    ['如图所示', '\\\\bigtriangleup', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]
+    ['如图所示', '\\bigtriangleup', 'ABC', '面积', '\\SIFBlank', \FigureID{1}]
     >>> tl.describe()
     {'t': 2, 'f': 2, 'g': 1, 'm': 1}
     >>> with tl.filter('fgm'):
@@ -63,24 +63,24 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     ['如图所示', '面积']
     >>> with tl.filter():
     ...     tl
-    ['如图所示', '\\\\bigtriangleup', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]
+    ['如图所示', '\\bigtriangleup', 'ABC', '面积', '\\SIFBlank', \FigureID{1}]
     >>> tl.text_tokens
     ['如图所示', '面积']
     >>> tl.formula_tokens
-    ['\\\\bigtriangleup', 'ABC']
+    ['\\bigtriangleup', 'ABC']
     >>> tl.figure_tokens
-    [\\FigureID{1}]
+    [\FigureID{1}]
     >>> tl.ques_mark_tokens
-    ['\\\\SIFBlank']
+    ['\\SIFBlank']
     >>> sif4sci(test_item, symbol="gm", tokenization_params={"formula_params": {"method": "ast"}})
-    ['如图所示', <Formula: \\bigtriangleup ABC>, '面积', '[MARK]', '[FIGURE]']
+    ['如图所示', <Formula: \bigtriangleup ABC>, '面积', '[MARK]', '[FIGURE]']
     >>> sif4sci(test_item, symbol="tfgm")
     ['[TEXT]', '[FORMULA]', '[TEXT]', '[MARK]', '[TEXT]', '[FIGURE]']
     >>> sif4sci(test_item, symbol="gm",
     ... tokenization_params={"formula_params": {"method": "ast", "return_type": "list"}})
-    ['如图所示', '\\\\bigtriangleup', 'A', 'B', 'C', '面积', '[MARK]', '[FIGURE]']
+    ['如图所示', '\\bigtriangleup', 'A', 'B', 'C', '面积', '[MARK]', '[FIGURE]']
     >>> test_item_1 = {
-    ...     "stem": r"若$x=2$, $y=\\sqrt{x}$，则下列说法正确的是$\\SIFChoice$",
+    ...     "stem": r"若$x=2$, $y=\sqrt{x}$，则下列说法正确的是$\SIFChoice$",
     ...     "options": [r"$x < y$", r"$y = x$", r"$y < x$"]
     ... }
     >>> tls = [
@@ -97,6 +97,18 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     >>> link_formulas(*tls)
     >>> tls[1:]
     [['mathord_0', '<', 'mathord_1'], ['mathord_1', '=', 'mathord_0'], ['mathord_1', '<', 'mathord_0']]
+    >>> from EduNLP.utils import dict2str4sif
+    >>> test_item_1_str = dict2str4sif(test_item_1, tag_mode="head", add_list_no_tag=False)
+    >>> test_item_1_str
+    '$\\SIFTag{stem}$若$x=2$, $y=\\sqrt{x}$，则下列说法正确的是$\\SIFChoice$$\\SIFTag{options}$$x < y$,$y = x$,$y < x$'
+    >>> tl1 = sif4sci(test_item_1_str, symbol="gm",
+    ... tokenization_params={"formula_params": {"method": "ast", "return_type": "list", "ord2token": True}})
+    >>> tl1.get_segments()[0]
+    ['\\SIFTag{stem}']
+    >>> tl1.get_segments()[1:3]
+    [['[TEXT_BEGIN]', '[TEXT_END]'], ['[FORMULA_BEGIN]', 'mathord', '=', 'textord', '[FORMULA_END]']]
+    >>> tl1.get_segments(add_seg_type=False)[0:3]
+    [['\\SIFTag{stem}'], ['mathord', '=', 'textord'], ['mathord', '=', 'mathord', '{ }', '\\sqrt']]
     """
     try:
         if safe is True and is_sif(item) is not True:
