@@ -3,9 +3,12 @@
 
 from contextlib import contextmanager
 from EduNLP.Formula import link_formulas as _link_formulas, Formula
-from ..constants import Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL
+from ..constants import (
+    Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL,
+    TEXT_BEGIN, TEXT_END, FORMULA_BEGIN, FORMULA_END
+)
 from ..segment import (SegmentList, TextSegment, FigureSegment, LatexFormulaSegment, FigureFormulaSegment,
-                       QuesMarkSegment, Figure)
+                       QuesMarkSegment, Figure, TagSegment)
 from . import text, formula
 
 __all__ = ["TokenList", "tokenize", "link_formulas"]
@@ -18,6 +21,15 @@ class TokenList(object):
         self._formula_tokens = []
         self._figure_tokens = []
         self._ques_mark_tokens = []
+        self._tag_tokens = []
+        self._segments = []
+        self._seg_types = {
+            "t": [],
+            "f": [],
+            "g": [],
+            "m": [],
+            "a": []
+        }
         self.text_params = text_params if text_params is not None else {}
         self.formula_params = formula_params if formula_params is not None else {"method": "linear"}
         self.formula_tokenize_method = self.formula_params.get("method")
@@ -30,6 +42,65 @@ class TokenList(object):
             ast_formulas = [self._tokens[i] for i in self._formula_tokens if isinstance(self._tokens[i], Formula)]
             if ast_formulas:
                 _link_formulas(*ast_formulas)
+
+    @contextmanager
+    def add_seg_type(self, seg_type, tar: list, add_seg_type=True):
+        if add_seg_type is True:
+            if seg_type == "t":
+                tar.append(TEXT_BEGIN)
+            elif seg_type == "f" and (
+                    self.formula_params.get("method") == "ast" and self.formula_params.get("return_type", "list")
+            ):
+                tar.append(FORMULA_BEGIN)
+        yield
+        if add_seg_type is True:
+            if seg_type == "t":
+                tar.append(TEXT_END)
+            elif seg_type == "f" and (
+                    self.formula_params.get("method") == "ast" and self.formula_params.get("return_type", "list")
+            ):
+                tar.append(FORMULA_END)
+
+    def get_segments(self, add_seg_type=True, keep="*"):
+        keep = set("tfgma" if keep == "*" else keep)
+        _segments = []
+        for start, end, seg_type in self._segments:
+            _segment = []
+            if seg_type not in keep:
+                continue
+            with self.add_seg_type(seg_type, _segment, add_seg_type):
+                for token in self._tokens[start: end]:
+                    self.__add_token(token, _segment)
+            if _segment:
+                _segments.append(_segment)
+        return _segments
+
+    def __get_segments(self, seg_type):
+        _segments = []
+        for i in self._seg_types[seg_type]:
+            _segment = []
+            start, end, _ = self._segments[i]
+            for token in self._tokens[start: end]:
+                self.__add_token(token, _segment)
+            if _segment:
+                _segments.append(_segment)
+        return _segments
+
+    @property
+    def text_segments(self):
+        return self.__get_segments("t")
+
+    @property
+    def formula_segments(self):
+        return self.__get_segments("f")
+
+    @property
+    def figure_segments(self):
+        return self.__get_segments("g")
+
+    @property
+    def ques_mark_segments(self):
+        return self.__get_segments("m")
 
     @property
     def tokens(self):
@@ -44,38 +115,55 @@ class TokenList(object):
         return tokens
 
     def append_text(self, segment, symbol=False):
-        if symbol is False:
-            tokens = text.tokenize(segment, **self.text_params)
-            for token in tokens:
+        with self._append("t"):
+            if symbol is False:
+                tokens = text.tokenize(segment, **self.text_params)
+                for token in tokens:
+                    self._text_tokens.append(len(self._tokens))
+                    self._tokens.append(token)
+            else:
                 self._text_tokens.append(len(self._tokens))
-                self._tokens.append(token)
-        else:
-            self._text_tokens.append(len(self._tokens))
-            self._tokens.append(segment)
+                self._tokens.append(segment)
 
     def append_formula(self, segment, symbol=False, init=True):
-        if symbol is True:
-            self._formula_tokens.append(len(self._tokens))
-            self._tokens.append(segment)
-        elif isinstance(segment, FigureFormulaSegment):
-            self._formula_tokens.append(len(self._tokens))
-            self._tokens.append(segment)
-        elif self.formula_params.get("method") == "ast":
-            self._formula_tokens.append(len(self._tokens))
-            self._tokens.append(Formula(segment, init=init))
-        else:
-            tokens = formula.tokenize(segment, **self.formula_params)
-            for token in tokens:
+        with self._append("f"):
+            if symbol is True:
                 self._formula_tokens.append(len(self._tokens))
-                self._tokens.append(token)
+                self._tokens.append(segment)
+            elif isinstance(segment, FigureFormulaSegment):
+                self._formula_tokens.append(len(self._tokens))
+                self._tokens.append(segment)
+            elif self.formula_params.get("method") == "ast":
+                self._formula_tokens.append(len(self._tokens))
+                self._tokens.append(Formula(segment, init=init))
+            else:
+                tokens = formula.tokenize(segment, **self.formula_params)
+                for token in tokens:
+                    self._formula_tokens.append(len(self._tokens))
+                    self._tokens.append(token)
 
     def append_figure(self, segment, **kwargs):
-        self._figure_tokens.append(len(self._tokens))
-        self._tokens.append(segment)
+        with self._append("g"):
+            self._figure_tokens.append(len(self._tokens))
+            self._tokens.append(segment)
 
     def append_ques_mark(self, segment, **kwargs):
-        self._ques_mark_tokens.append(len(self._tokens))
-        self._tokens.append(segment)
+        with self._append("m"):
+            self._ques_mark_tokens.append(len(self._tokens))
+            self._tokens.append(segment)
+
+    def append_tag(self, segment, **kwargs):
+        with self._append("a"):
+            self._tag_tokens.append(len(self._tokens))
+            self._tokens.append(segment)
+
+    @contextmanager
+    def _append(self, seg_type):
+        start = len(self._tokens)
+        yield
+        end = len(self._tokens)
+        self._seg_types[seg_type].append(len(self._segments))
+        self._segments.append((start, end, seg_type))
 
     def append(self, segment, lazy=False):
         if isinstance(segment, TextSegment):
@@ -88,6 +176,8 @@ class TokenList(object):
             self.append_figure(segment)
         elif isinstance(segment, QuesMarkSegment):
             self.append_ques_mark(segment)
+        elif isinstance(segment, TagSegment):
+            self.append_tag(segment)
         elif isinstance(segment, Symbol):
             if segment == TEXT_SYMBOL:
                 self.append_text(segment, symbol=True)
@@ -156,7 +246,7 @@ class TokenList(object):
     def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
         _drop = {c for c in drop} if isinstance(drop, str) else drop
         if keep == "*":
-            _keep = {c for c in "tfgm" if c not in _drop}
+            _keep = {c for c in "tfgma" if c not in _drop}
         else:
             _keep = {c for c in keep if c not in _drop} if isinstance(keep, str) else keep
         self._token_idx = set()
@@ -168,6 +258,8 @@ class TokenList(object):
             self._token_idx |= set(self._figure_tokens)
         if "m" in _keep:
             self._token_idx |= set(self._ques_mark_tokens)
+        if "a" in _keep:
+            self._token_idx |= set(self._tag_tokens)
         yield
         self._token_idx = None
 
