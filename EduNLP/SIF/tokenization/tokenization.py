@@ -53,7 +53,7 @@ class TokenList(object):
             self._text_tokens.append(len(self._tokens))
             self._tokens.append(segment)
 
-    def append_formula(self, segment, symbol=False):
+    def append_formula(self, segment, symbol=False, init=True):
         if symbol is True:
             self._formula_tokens.append(len(self._tokens))
             self._tokens.append(segment)
@@ -62,7 +62,7 @@ class TokenList(object):
             self._tokens.append(segment)
         elif self.formula_params.get("method") == "ast":
             self._formula_tokens.append(len(self._tokens))
-            self._tokens.append(Formula(segment))
+            self._tokens.append(Formula(segment, init=init))
         else:
             tokens = formula.tokenize(segment, **self.formula_params)
             for token in tokens:
@@ -81,7 +81,7 @@ class TokenList(object):
         if isinstance(segment, TextSegment):
             self.append_text(segment)
         elif isinstance(segment, (LatexFormulaSegment, FigureFormulaSegment)):
-            self.append_formula(segment)
+            self.append_formula(segment, init=not lazy)
             if lazy is False:
                 self._variable_standardization()
         elif isinstance(segment, FigureSegment):
@@ -104,7 +104,7 @@ class TokenList(object):
 
     def extend(self, segments):
         for segment in segments:
-            self.append(segment, False)
+            self.append(segment, True)
         self._variable_standardization()
 
     @property
