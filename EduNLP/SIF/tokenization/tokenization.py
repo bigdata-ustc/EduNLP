@@ -4,7 +4,7 @@
 from contextlib import contextmanager
 from EduNLP.Formula import link_formulas as _link_formulas, Formula
 from ..constants import (
-    Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL, SEP_SYMBOL,
+    Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL,
     TEXT_BEGIN, TEXT_END, FORMULA_BEGIN, FORMULA_END
 )
 from ..segment import (SegmentList, TextSegment, FigureSegment, LatexFormulaSegment, FigureFormulaSegment,
@@ -196,6 +196,8 @@ class TokenList(object):
                 self.append_figure(segment, symbol=True)
             elif segment == QUES_MARK_SYMBOL:
                 self.append_ques_mark(segment, symbol=True)
+            elif segment == TAG_SYMBOL:
+                self.append_tag(segment, symbol=True)
             elif segment == SEP_SYMBOL:
                 self.append_sep(segment, symbol=True)
             else:

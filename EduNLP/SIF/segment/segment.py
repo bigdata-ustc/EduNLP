@@ -4,7 +4,7 @@ import base64
 import numpy as np
 import re
 from contextlib import contextmanager
-from ..constants import Symbol, TEXT_SYMBOL, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, SEP_SYMBOL
+from ..constants import Symbol, TEXT_SYMBOL, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
 
 
 class TextSegment(str):
@@ -188,6 +188,9 @@ class SegmentList(object):
         if "m" in to_symbolize:
             for idx in self._ques_mark_segments:
                 self.to_symbol(idx, Symbol(QUES_MARK_SYMBOL))
+        if "a" in to_symbolize:
+            for idx in self._tag_segments:
+                self.to_symbol(idx, Symbol(TAG_SYMBOL))
         if "s" in to_symbolize:
             for idx in self._sep_segments:
                 self.to_symbol(idx, Symbol(SEP_SYMBOL))
