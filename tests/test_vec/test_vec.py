@@ -31,6 +31,7 @@ def test_w2v(stem_data, tmpdir, method):
     w2v = W2V(filepath, method=method)
     w2v(stem_data[0])
     assert len(w2v["[FIGURE]"]) == 10
+    assert len(list(w2v("[FIGURE]"))) == 1
 
 
 def test_d2v(stem_data, tmpdir):
