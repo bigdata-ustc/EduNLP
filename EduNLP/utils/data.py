@@ -77,7 +77,7 @@ def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_t
                         if i > 0:
                             _obj.append(r"$\SIFSep$")
                     _obj.append(v)
-            else:
+            else:  # pragma: no cover
                 raise TypeError("Cannot handle %s" % type(value))
         ret.append("".join(_obj))
     return str("".join(ret))
