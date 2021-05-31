@@ -63,7 +63,7 @@ test_item_1 = {
 e = dict2str4sif(test_item_1, tag_mode="head", add_list_no_tag=False)
 seg = sif4sci(
     e,
-    symbol="gm",
+    symbol="tfgmas",
     tokenization_params={
         "formula_params": {
             "method": "ast", "return_type": "list", "ord2token": True
@@ -71,7 +71,8 @@ seg = sif4sci(
     },
     errors="raise"
 )
-print(seg.get_segments())
+print(seg.tokens)
+# print(seg.get_segments())
 #
 # import json
 # from tqdm import tqdm
