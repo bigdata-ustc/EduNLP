@@ -24,7 +24,7 @@ def add_annotation(key, tag_mode, tar: list, key_as_tag=True):
             tar.append(ann_format.format(key))
 
 
-def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_tag=True) -> str:
+def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_tag=True, keys=None) -> str:
     r"""
 
     Parameters
@@ -36,12 +36,13 @@ def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_t
         head: add $\SIFTag{key}$ in the head
         tail: add $\SIFTag{key}$ at the end
     add_list_no_tag
+    keys
 
     Returns
     -------
     >>> item = {
     ...     "stem": r"若复数$z=1+2 i+i^{3}$，则$|z|=$",
-    ...     "options": ['0', '1', '$\sqrt{2}$', '2'],
+    ...     "options": ['0', '1', r'$\sqrt{2}$', '2'],
     ... }
     >>> item
     {'stem': '若复数$z=1+2 i+i^{3}$，则$|z|=$', 'options': ['0', '1', '$\\sqrt{2}$', '2']}
@@ -59,13 +60,15 @@ def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_t
     '若复数$z=1+2 i+i^{3}$，则$|z|=$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2'
     """
     ret = []
-
-    for key, value in obj.items():
+    keys = obj.keys() if keys is None else keys
+    for key in keys:
         _obj = []
+        value = obj[key]
         with add_annotation(key, tag_mode, _obj, key_as_tag):
             if isinstance(value, str):
                 _obj.append(value)
-            elif isinstance(value, list):
+            elif isinstance(value, (list, dict)):
+                value = value.values() if isinstance(value, dict) else value
                 for i, v in enumerate(value):
                     v = str(v)
                     if key_as_tag is True and add_list_no_tag is True:
