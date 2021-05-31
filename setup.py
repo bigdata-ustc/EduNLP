@@ -31,7 +31,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'networkx',
-        'numpy',
+        'numpy>1.16.2',
         'jieba',
         'js2py',
     ],  # And any other dependencies foo needs
