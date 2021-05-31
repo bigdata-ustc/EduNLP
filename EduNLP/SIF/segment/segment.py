@@ -126,7 +126,7 @@ class SegmentList(object):
         elif isinstance(segment, TagSegment):
             self._tag_segments.append(len(self))
         elif isinstance(segment, SepSegment):
-            pass
+            self._sep_segments.append(len(self))
         else:
             raise TypeError("Unknown Segment Type: %s" % type(segment))
         self._segments.append(segment)
@@ -289,6 +289,8 @@ def seg(item, figures=None, symbol=None):
     >>> s1.tag_segments  # doctest: +ELLIPSIS
     ['\\SIFTag{stem_begin}', '\\SIFTag{stem_end}', '\\SIFTag{options_begin}', ... '\\SIFTag{options_end}']
     >>> test_item_1_str_2 = dict2str4sif(test_item_1, tag_mode="head", add_list_no_tag=False)
+    >>> seg(test_item_1_str_2, symbol="tfgmas")  # doctest: +ELLIPSIS
+    ['[TAG]', ... '[TAG]', '[TEXT]', '[SEP]', '[TEXT]', '[SEP]', '[FORMULA]', '[SEP]', '[TEXT]']
     >>> s2 = seg(test_item_1_str_2, symbol="fgm")
     >>> s2.tag_segments
     ['\\SIFTag{stem}', '\\SIFTag{options}']
