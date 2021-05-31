@@ -32,7 +32,7 @@ class Formula(object):
     """
 
     def __init__(self, formula: (str, List[Dict]), variable_standardization=False, const_mathord=None,
-                 *args, **kwargs):
+                 init=True, *args, **kwargs):
         """
 
         Parameters
@@ -41,16 +41,18 @@ class Formula(object):
             latex formula string or the parsed abstracted syntax tree
         variable_standardization
         const_mathord
+        init
         args
         kwargs
         """
         self._formula = formula
         self._ast = None
-        self.reset_ast(
-            formula_ensure_str=False,
-            variable_standardization=variable_standardization,
-            const_mathord=const_mathord, *args, **kwargs
-        )
+        if init is True:
+            self.reset_ast(
+                formula_ensure_str=False,
+                variable_standardization=variable_standardization,
+                const_mathord=const_mathord, *args, **kwargs
+            )
 
     def variable_standardization(self, inplace=False, const_mathord=None, variable_connect_dict=None):
         const_mathord = const_mathord if const_mathord is not None else CONST_MATHORD
@@ -217,13 +219,13 @@ class FormulaGroup(object):
         return tree
 
 
-def link_formulas(*formula: Formula, **kwargs):
+def link_formulas(*formula: Formula, link_vars=True, **kwargs):
     forest = []
     for form in formula:
         forest += form.reset_ast(
             forest_begin=len(forest),
             **kwargs
         )
-    variable_connect_dict = link_variable(forest)
+    variable_connect_dict = link_variable(forest) if link_vars else None
     for form in formula:
         form.variable_standardization(inplace=True, variable_connect_dict=variable_connect_dict, **kwargs)

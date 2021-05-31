@@ -2,7 +2,7 @@
 # 2021/5/20 @ tongshiwei
 from typing import List, Dict
 
-from .watex import watex
+from .katex import katex
 
 __all__ = ["str2ast", "get_edges", "ast", "link_variable"]
 
@@ -33,10 +33,11 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
     tree: List[Dict]
         重新解析形成的特征树
 
+    todo: finish all types
     """
     tree = []
     index += forest_begin
-    json_ast: List[Dict] = watex.katex.__parse(formula).to_list() if is_str else formula
+    json_ast: List[Dict] = katex.katex.__parse(formula).to_list() if is_str else formula
     last_node = None
 
     for item in json_ast:
@@ -127,7 +128,8 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree += ast([item['base']], index=len(tree) + index, father_tree=tree)
 
         elif tree_node['val']['type'] == "supsub":
-            item['base']['role'] = 'base'
+            if item['base'] is not None:
+                item['base']['role'] = 'base'
 
             if 'sup' in item and item['sup']:
                 bp = 'sup'
@@ -143,7 +145,12 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             item[bp]['role'] = bp
             tree_node['structure']['child'] = [1 + private_index + index]
             tree.append(tree_node)
-            tree += ast([item['base'], item[bp]], index=len(tree) + index, father_tree=tree)
+            _tree = []
+            if item['base'] is not None:
+                _tree.append(item['base'])
+            if item[bp] is not None:
+                _tree.append(item[bp])
+            tree += ast(_tree, index=len(tree) + index, father_tree=tree)
 
         elif tree_node['val']['type'] == "ordgroup":
             tree_node['structure']['child'] = [1 + private_index + index]
@@ -167,11 +174,24 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
                 citem['role'] = 'body'
             tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
 
+        elif tree_node['val']['type'] in {"kern"}:
+            # \quad
+            tree_node['val']['text'] = tree_node['val']['type']
+            tree_node['val']['type'] = "ignore"
+            tree.append(tree_node)
+
+        elif tree_node['val']['type'] == "text":
+            # \text{}
+            tree_node['val']['text'] = "".join([e['text'] for e in item["body"]])
+            tree.append(tree_node)
+
         else:
             tree_node['structure']['child'] = [1 + private_index + index]
 
             if "text" in item:
                 tree_node['val']['text'] = item["text"]
+            else:
+                tree_node['val']['text'] = item["type"]
             tree_node['val']['type'] = "other"
             tree.append(tree_node)
             Role = ['body', 'base', 'sup', 'sub', 'numer', 'denom', 'index', 'blew', 'other']
@@ -179,8 +199,12 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
 
             for role_item in Role:
                 if role_item in item:
-                    item[role_item]['role'] = role_item
-                    childrole.append(item[role_item])
+                    if role_item == "body" and isinstance(item[role_item], dict) is False:
+                        # \text{}
+                        childrole.extend(item[role_item])
+                    else:
+                        item[role_item]['role'] = role_item
+                        childrole.append(item[role_item])
             tree += ast(childrole, index=len(tree) + index, father_tree=tree)
         if item:
             if item != json_ast[0]:
@@ -247,7 +271,7 @@ def get_edges(forest):
     """
     edges = []
     for node in forest:
-        index = forest.index(node)
+        index = node["val"]["id"]
         edges.append((index, index, 1))
         if node['structure']['bro'][1] is not None:
             edges.append((index, node['structure']['bro'][1], 2))
