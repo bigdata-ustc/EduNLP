@@ -4,7 +4,7 @@ import base64
 import numpy as np
 import re
 from contextlib import contextmanager
-from ..constants import Symbol, TEXT_SYMBOL, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL
+from ..constants import Symbol, TEXT_SYMBOL, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, SEP_SYMBOL
 
 
 class TextSegment(str):
@@ -71,6 +71,10 @@ class TagSegment(str):
     pass
 
 
+class SepSegment(str):
+    pass
+
+
 class SegmentList(object):
     def __init__(self, item, figures: dict = None):
         self._segments = []
@@ -79,6 +83,7 @@ class SegmentList(object):
         self._figure_segments = []
         self._ques_mark_segments = []
         self._tag_segments = []
+        self._sep_segments = []
         segments = re.split(r"(\$.+?\$)", item)
         for segment in segments:
             if not segment:
@@ -97,6 +102,8 @@ class SegmentList(object):
                 self.append(QuesMarkSegment(segment[1:-1]))
             elif re.match(r"\$\\SIFTag\{.+?}\$", segment):
                 self.append(TagSegment(segment[1:-1]))
+            elif re.match(r"\$\\SIFSep\$", segment):
+                self.append(SepSegment(segment[1:-1]))
             else:
                 self.append(LatexFormulaSegment(segment[1:-1]))
         self._seg_idx = None
@@ -118,6 +125,8 @@ class SegmentList(object):
             self._ques_mark_segments.append(len(self))
         elif isinstance(segment, TagSegment):
             self._tag_segments.append(len(self))
+        elif isinstance(segment, SepSegment):
+            pass
         else:
             raise TypeError("Unknown Segment Type: %s" % type(segment))
         self._segments.append(segment)
@@ -179,12 +188,15 @@ class SegmentList(object):
         if "m" in to_symbolize:
             for idx in self._ques_mark_segments:
                 self.to_symbol(idx, Symbol(QUES_MARK_SYMBOL))
+        if "s" in to_symbolize:
+            for idx in self._sep_segments:
+                self.to_symbol(idx, Symbol(SEP_SYMBOL))
 
     @contextmanager
     def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
         _drop = {c for c in drop} if isinstance(drop, str) else drop
         if keep == "*":
-            _keep = {c for c in "tfgma" if c not in _drop}
+            _keep = {c for c in "tfgmas" if c not in _drop}
         else:
             _keep = {c for c in keep if c not in _drop} if isinstance(keep, str) else keep
         self._seg_idx = set()
@@ -198,6 +210,8 @@ class SegmentList(object):
             self._seg_idx |= set(self._ques_mark_segments)
         if "a" in _keep:
             self._seg_idx |= set(self._tag_segments)
+        if "s" in _keep:
+            self._seg_idx |= set(self._sep_segments)
         yield
         self._seg_idx = None
 
@@ -262,19 +276,19 @@ def seg(item, figures=None, symbol=None):
     >>> from EduNLP.utils import dict2str4sif
     >>> test_item_1_str = dict2str4sif(test_item_1)
     >>> test_item_1_str  # doctest: +ELLIPSIS
-    '$\\SIFAnn{stem_begin}$...$\\SIFAnn{stem_end}$$\\SIFAnn{options_begin}$$\\SIFAnn{list_0}$0...$\\SIFAnn{options_end}$'
+    '$\\SIFTag{stem_begin}$...$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$$\\SIFTag{list_0}$0...$\\SIFTag{options_end}$'
     >>> s1 = seg(test_item_1_str, symbol="tfgm")
     >>> s1  # doctest: +ELLIPSIS
-    ['\\SIFAnn{stem_begin}'...'\\SIFAnn{stem_end}', '\\SIFAnn{options_begin}', '\\SIFAnn{list_0}', ...]
+    ['\\SIFTag{stem_begin}'...'\\SIFTag{stem_end}', '\\SIFTag{options_begin}', '\\SIFTag{list_0}', ...]
     >>> with s1.filter(keep="a"):
     ...     s1  # doctest: +ELLIPSIS
-    [...'\\SIFAnn{list_0}', '\\SIFAnn{list_1}', '\\SIFAnn{list_2}', '\\SIFAnn{list_3}', '\\SIFAnn{options_end}']
+    [...'\\SIFTag{list_0}', '\\SIFTag{list_1}', '\\SIFTag{list_2}', '\\SIFTag{list_3}', '\\SIFTag{options_end}']
     >>> s1.tag_segments  # doctest: +ELLIPSIS
-    ['\\SIFAnn{stem_begin}', '\\SIFAnn{stem_end}', '\\SIFAnn{options_begin}', ... '\\SIFAnn{options_end}']
+    ['\\SIFTag{stem_begin}', '\\SIFTag{stem_end}', '\\SIFTag{options_begin}', ... '\\SIFTag{options_end}']
     >>> test_item_1_str_2 = dict2str4sif(test_item_1, tag_mode="head", add_list_no_tag=False)
     >>> s2 = seg(test_item_1_str_2, symbol="fgm")
     >>> s2.tag_segments
-    ['\\SIFAnn{stem}', '\\SIFAnn{options}']
+    ['\\SIFTag{stem}', '\\SIFTag{options}']
     """
     segments = SegmentList(item, figures)
     if symbol is not None:

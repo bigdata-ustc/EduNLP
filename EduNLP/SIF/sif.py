@@ -99,8 +99,8 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     [['mathord_0', '<', 'mathord_1'], ['mathord_1', '=', 'mathord_0'], ['mathord_1', '<', 'mathord_0']]
     >>> from EduNLP.utils import dict2str4sif
     >>> test_item_1_str = dict2str4sif(test_item_1, tag_mode="head", add_list_no_tag=False)
-    >>> test_item_1_str
-    '$\\SIFTag{stem}$若$x=2$, $y=\\sqrt{x}$，则下列说法正确的是$\\SIFChoice$$\\SIFTag{options}$$x < y$,$y = x$,$y < x$'
+    >>> test_item_1_str  # doctest: +ELLIPSIS
+    '$\\SIFTag{stem}$...则下列说法正确的是$\\SIFChoice$$\\SIFTag{options}$$x < y$$\\SIFSep$$y = x$$\\SIFSep$$y < x$'
     >>> tl1 = sif4sci(test_item_1_str, symbol="gm",
     ... tokenization_params={"formula_params": {"method": "ast", "return_type": "list", "ord2token": True}})
     >>> tl1.get_segments()[0]
@@ -109,6 +109,20 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     [['[TEXT_BEGIN]', '[TEXT_END]'], ['[FORMULA_BEGIN]', 'mathord', '=', 'textord', '[FORMULA_END]']]
     >>> tl1.get_segments(add_seg_type=False)[0:3]
     [['\\SIFTag{stem}'], ['mathord', '=', 'textord'], ['mathord', '=', 'mathord', '{ }', '\\sqrt']]
+    >>> test_item_2 = {"options": [r"$x < y$", r"$y = x$", r"$y < x$"]}
+    >>> test_item_2
+    {'options': ['$x < y$', '$y = x$', '$y < x$']}
+    >>> test_item_2_str = dict2str4sif(test_item_2, tag_mode="head", add_list_no_tag=False)
+    >>> test_item_2_str
+    '$\\SIFTag{options}$$x < y$$\\SIFSep$$y = x$$\\SIFSep$$y < x$'
+    >>> tl2 = sif4sci(test_item_2_str, symbol="gms",
+    ... tokenization_params={"formula_params": {"method": "ast", "return_type": "list"}})
+    >>> tl2
+    ['\\SIFTag{options}', 'x', '<', 'y', '\\SIFSep', 'y', '=', 'x', '\\SIFSep', 'y', '<', 'x']
+    >>> tl2.get_segments(add_seg_type=False)
+    [['\\SIFTag{options}'], ['x', '<', 'y'], ['\\SIFSep'], ['y', '=', 'x'], ['\\SIFSep'], ['y', '<', 'x']]
+    >>> tl2.get_segments(add_seg_type=False, drop="s")
+    [['\\SIFTag{options}'], ['x', '<', 'y'], ['y', '=', 'x'], ['y', '<', 'x']]
     """
     try:
         if safe is True and is_sif(item) is not True:

@@ -54,9 +54,9 @@ def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_t
     >>> dict2str4sif(item, tag_mode="tail") # doctest: +ELLIPSIS
     '若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem}$...2$\\SIFTag{options}$'
     >>> dict2str4sif(item, add_list_no_tag=False) # doctest: +ELLIPSIS
-    '$\\SIFTag{stem_begin}$...，则$|z|=$$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$0,1,...$\\SIFTag{options_end}$'
+    '...$\\SIFTag{options_begin}$0$\\SIFSep$1$\\SIFSep$...$\\SIFTag{options_end}$'
     >>> dict2str4sif(item, key_as_tag=False)
-    '若复数$z=1+2 i+i^{3}$，则$|z|=$0,1,$\\sqrt{2}$,2'
+    '若复数$z=1+2 i+i^{3}$，则$|z|=$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2'
     """
     ret = []
 
@@ -72,7 +72,7 @@ def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_t
                         _obj.append(ann_list_no_format.format(i))
                     else:
                         if i > 0:
-                            _obj.append(",")
+                            _obj.append(r"$\SIFSep$")
                     _obj.append(v)
             else:
                 raise TypeError("Cannot handle %s" % type(value))

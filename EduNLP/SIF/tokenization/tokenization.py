@@ -4,11 +4,11 @@
 from contextlib import contextmanager
 from EduNLP.Formula import link_formulas as _link_formulas, Formula
 from ..constants import (
-    Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL,
+    Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL, SEP_SYMBOL,
     TEXT_BEGIN, TEXT_END, FORMULA_BEGIN, FORMULA_END
 )
 from ..segment import (SegmentList, TextSegment, FigureSegment, LatexFormulaSegment, FigureFormulaSegment,
-                       QuesMarkSegment, Figure, TagSegment)
+                       QuesMarkSegment, Figure, TagSegment, SepSegment)
 from . import text, formula
 
 __all__ = ["TokenList", "tokenize", "link_formulas"]
@@ -22,13 +22,15 @@ class TokenList(object):
         self._figure_tokens = []
         self._ques_mark_tokens = []
         self._tag_tokens = []
+        self._sep_tokens = []
         self._segments = []
         self._seg_types = {
             "t": [],
             "f": [],
             "g": [],
             "m": [],
-            "a": []
+            "a": [],
+            "s": []
         }
         self.text_params = text_params if text_params is not None else {}
         self.formula_params = formula_params if formula_params is not None else {"method": "linear"}
@@ -61,8 +63,8 @@ class TokenList(object):
             ):
                 tar.append(FORMULA_END)
 
-    def get_segments(self, add_seg_type=True, keep="*"):
-        keep = set("tfgma" if keep == "*" else keep)
+    def get_segments(self, add_seg_type=True, keep="*", drop=""):
+        keep = set("tfgmas" if keep == "*" else keep) - set(drop)
         _segments = []
         for start, end, seg_type in self._segments:
             _segment = []
@@ -157,6 +159,11 @@ class TokenList(object):
             self._tag_tokens.append(len(self._tokens))
             self._tokens.append(segment)
 
+    def append_sep(self, segment, **kwargs):
+        with self._append("s"):
+            self._sep_tokens.append(len(self._tokens))
+            self._tokens.append(segment)
+
     @contextmanager
     def _append(self, seg_type):
         start = len(self._tokens)
@@ -178,6 +185,8 @@ class TokenList(object):
             self.append_ques_mark(segment)
         elif isinstance(segment, TagSegment):
             self.append_tag(segment)
+        elif isinstance(segment, SepSegment):
+            self.append_sep(segment)
         elif isinstance(segment, Symbol):
             if segment == TEXT_SYMBOL:
                 self.append_text(segment, symbol=True)
@@ -187,6 +196,8 @@ class TokenList(object):
                 self.append_figure(segment, symbol=True)
             elif segment == QUES_MARK_SYMBOL:
                 self.append_ques_mark(segment, symbol=True)
+            elif segment == SEP_SYMBOL:
+                self.append_sep(segment, symbol=True)
             else:
                 raise TypeError("Unknown symbol type: %s" % segment)
         else:
@@ -246,7 +257,7 @@ class TokenList(object):
     def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
         _drop = {c for c in drop} if isinstance(drop, str) else drop
         if keep == "*":
-            _keep = {c for c in "tfgma" if c not in _drop}
+            _keep = {c for c in "tfgmas" if c not in _drop}
         else:
             _keep = {c for c in keep if c not in _drop} if isinstance(keep, str) else keep
         self._token_idx = set()
@@ -260,6 +271,8 @@ class TokenList(object):
             self._token_idx |= set(self._ques_mark_tokens)
         if "a" in _keep:
             self._token_idx |= set(self._tag_tokens)
+        if "s" in _keep:
+            self._token_idx |= set(self._sep_tokens)
         yield
         self._token_idx = None
 
