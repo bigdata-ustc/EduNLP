@@ -16,7 +16,7 @@ def to_sif(item):
 
 
 def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = None, tokenization=True,
-            tokenization_params=None, errors=""):
+            tokenization_params=None, errors="raise"):
     r"""
 
     Default to use linear Tokenizer, change the tokenizer by specifying tokenization_params
@@ -118,9 +118,9 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     >>> tl2 = sif4sci(test_item_2_str, symbol="gms",
     ... tokenization_params={"formula_params": {"method": "ast", "return_type": "list"}})
     >>> tl2
-    ['\\SIFTag{options}', 'x', '<', 'y', '\\SIFSep', 'y', '=', 'x', '\\SIFSep', 'y', '<', 'x']
+    ['\\SIFTag{options}', 'x', '<', 'y', '[SEP]', 'y', '=', 'x', '[SEP]', 'y', '<', 'x']
     >>> tl2.get_segments(add_seg_type=False)
-    [['\\SIFTag{options}'], ['x', '<', 'y'], ['\\SIFSep'], ['y', '=', 'x'], ['\\SIFSep'], ['y', '<', 'x']]
+    [['\\SIFTag{options}'], ['x', '<', 'y'], ['[SEP]'], ['y', '=', 'x'], ['[SEP]'], ['y', '<', 'x']]
     >>> tl2.get_segments(add_seg_type=False, drop="s")
     [['\\SIFTag{options}'], ['x', '<', 'y'], ['y', '=', 'x'], ['y', '<', 'x']]
     """
@@ -134,7 +134,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
             ret = tokenize(ret, **(tokenization_params if tokenization_params is not None else {}))
 
         return ret
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         msg = traceback.format_exc()
         if errors == "warn":
             warnings.warn(msg)
