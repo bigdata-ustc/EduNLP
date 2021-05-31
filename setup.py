@@ -8,15 +8,15 @@ tutor_deps = [
     "tqdm"
 ]
 test_deps = [
-                'pytest>=4',
-                'pytest-cov>=2.6.0',
-                'pytest-flake8',
-                "pillow"
-            ] + pretrain_deps + tutor_deps
+    'pytest>=4',
+    'pytest-cov>=2.6.0',
+    'pytest-flake8',
+    "pillow"
+]
 
 dev_deps = [
-               "requests"
-           ] + test_deps
+    "requests"
+]
 
 setup(
     name='EduNLP',
