@@ -274,7 +274,7 @@ def seg(item, figures=None, symbol=None):
     ['\\SIFBlank']
     >>> test_item_1 = {
     ...     "stem": r"若复数$z=1+2 i+i^{3}$，则$|z|=$",
-    ...     "options": ['0', '1', '$\sqrt{2}$', '2']
+    ...     "options": ['0', '1', r'$\sqrt{2}$', '2']
     ... }
     >>> from EduNLP.utils import dict2str4sif
     >>> test_item_1_str = dict2str4sif(test_item_1)
