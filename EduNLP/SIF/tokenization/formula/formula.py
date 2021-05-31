@@ -36,7 +36,7 @@ def tokenize(formula, method="linear", errors="raise", **kwargs):
     elif method == "ast":
         try:
             return ast_tokenize(formula, **kwargs)
-        except TypeError as e:
+        except TypeError as e:  # pragma: no cover
             if errors == "coerce":
                 warnings.warn("A type error is detected, linear tokenize is applied")
                 return linear_tokenize(formula)

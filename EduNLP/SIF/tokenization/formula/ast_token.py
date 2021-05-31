@@ -38,9 +38,9 @@ def traversal_formula(ast, ord2token=False, var_numbering=False, strategy="post"
     tokens = []
     if strategy == "post":
         order = nx.dfs_postorder_nodes(ast)
-    elif strategy == "linear":
+    elif strategy == "linear":  # pragma: no cover
         order = ast.nodes
-    else:
+    else:  # pragma: no cover
         raise ValueError("Unknown traversal strategy: %s" % strategy)
     for i in order:
         node = ast.nodes[i]
