@@ -4,14 +4,25 @@ from EduNLP import logger
 import multiprocessing
 import gensim
 from gensim.models import word2vec
+from gensim.models.doc2vec import TaggedDocument
 from gensim.models.callbacks import CallbackAny2Vec
 from EduNLP.SIF.sif import sif4sci
+from copy import deepcopy
+import itertools as it
 
-__all__ = ["GensimWordTokenizer", "train_vector"]
+__all__ = ["GensimWordTokenizer", "train_vector", "GensimSegTokenizer"]
 
 
 class GensimWordTokenizer(object):
     def __init__(self, symbol="gm"):
+        """
+
+        Parameters
+        ----------
+        symbol:
+            gm
+            fgm
+        """
         self.symbol = symbol
         self.tokenization_params = {
             "formula_params": {
@@ -26,8 +37,53 @@ class GensimWordTokenizer(object):
 
     def __call__(self, item):
         return sif4sci(
-            item, symbol=self.symbol, tokenization_params=self.tokenization_params
+            item, symbol=self.symbol, tokenization_params=self.tokenization_params, errors="ignore"
         )
+
+
+class GensimSegTokenizer(object):  # pragma: no cover
+    def __init__(self, symbol="gms", depth=None, flatten=False, **kwargs):
+        """
+
+        Parameters
+        ----------
+        symbol:
+            gms
+            fgm
+        """
+        self.symbol = symbol
+        self.tokenization_params = {
+            "formula_params": {
+                "method": "ast",
+                "return_type": "list",
+                "ord2token": True
+            }
+        }
+        self.kwargs = dict(
+            add_seg_type=True if depth in {0, 1, 2} else False,
+            add_seg_mode="head",
+            depth=depth,
+            drop="s" if depth not in {0, 1, 2} else ""
+        )
+        self.kwargs.update(kwargs)
+        self.flatten = flatten
+
+    def __call__(self, item, flatten=None, **kwargs):
+        flatten = self.flatten if flatten is None else flatten
+        tl = sif4sci(
+            item, symbol=self.symbol, tokenization_params=self.tokenization_params, errors="ignore"
+        )
+        if kwargs:
+            _kwargs = deepcopy(self.kwargs)
+            _kwargs.update(kwargs)
+        else:
+            _kwargs = self.kwargs
+        if tl:
+            ret = tl.get_segments(**_kwargs)
+            if flatten is True:
+                return it.chain(*ret)
+            return ret
+        return tl
 
 
 class MonitorCallback(CallbackAny2Vec):
@@ -58,7 +114,6 @@ def train_vector(items, w2v_prefix, embedding_dim, method="sg", binary=None, tra
         )
         binary = binary if binary is not None else False
     elif method == "fasttext":
-
         if train_params is not None:
             _train_params.update(train_params)
         model = gensim.models.FastText(
@@ -66,8 +121,16 @@ def train_vector(items, w2v_prefix, embedding_dim, method="sg", binary=None, tra
             **_train_params
         )
         binary = binary if binary is not None else True
+    elif method == "d2v":
+        if train_params is not None:
+            _train_params.update(train_params)
+        docs = [TaggedDocument(doc, [i]) for i, doc in enumerate(items)]
+        model = gensim.models.Doc2Vec(
+            docs, **_train_params
+        )
+        binary = binary if binary is not None else True
     else:
-        raise TypeError()
+        raise ValueError("Unknown method: %s" % method)
 
     filepath = w2v_prefix + "%s_%s" % (method, embedding_dim)
     if binary is True:
@@ -75,8 +138,8 @@ def train_vector(items, w2v_prefix, embedding_dim, method="sg", binary=None, tra
         logger.info("model is saved to %s" % filepath)
         model.save(filepath)
     else:
-        if method == "fasttext":
-            logger.warning("binary should be True for fasttext, otherwise all vectors for ngrams will be lost.")
+        if method in {"fasttext", "d2v"}:  # pragma: no cover
+            logger.warning("binary should be True for %s, otherwise all vectors for ngrams will be lost." % method)
         filepath += ".kv"
         logger.info("model is saved to %s" % filepath)
         model.wv.save(filepath)
