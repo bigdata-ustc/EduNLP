@@ -123,6 +123,15 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     [['\\SIFTag{options}'], ['x', '<', 'y'], ['[SEP]'], ['y', '=', 'x'], ['[SEP]'], ['y', '<', 'x']]
     >>> tl2.get_segments(add_seg_type=False, drop="s")
     [['\\SIFTag{options}'], ['x', '<', 'y'], ['y', '=', 'x'], ['y', '<', 'x']]
+    >>> tl3 = sif4sci(test_item_1["stem"], symbol="gs")
+    >>> tl3.text_segments
+    [['说法', '正确']]
+    >>> tl3.formula_segments
+    [['x', '=', '2'], ['y', '=', '\\sqrt', '{', 'x', '}']]
+    >>> tl3.figure_segments
+    []
+    >>> tl3.ques_mark_segments
+    [['\\SIFChoice']]
     """
     try:
         if safe is True and is_sif(item) is not True:
