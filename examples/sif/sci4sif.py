@@ -55,14 +55,15 @@ from EduNLP.SIF import sif4sci, link_formulas
 # e = r'已知集合$A=\left\{x \mid x^{2}-3 x-4<0\right\}, \quad B=\{-4,1,3,5\}, \quad$ 则 $A \cap B=$'
 
 from EduNLP.utils import dict2str4sif
+
 test_item_1 = {
-    "stem": r"若$x=2$, $y=\sqrt{x}$，则下列说法正确的是$\SIFChoice$",
-    "options": [r"$x < y$", r"$y = x$", r"$y < x$"]
+    "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+    "options": ['\\{-4,1\\}', '\\{1,5\\}', '\\{3,5\\}', '\\{1,3\\}'],
 }
 e = dict2str4sif(test_item_1, tag_mode="head", add_list_no_tag=False)
 seg = sif4sci(
     e,
-    symbol="g",
+    symbol="gm",
     tokenization_params={
         "formula_params": {
             "method": "ast", "return_type": "list", "ord2token": True
