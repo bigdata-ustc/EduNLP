@@ -43,11 +43,11 @@ class TokenList(object):
         if self.formula_tokenize_method == "ast":
             ast_formulas = [self._tokens[i] for i in self._formula_tokens if isinstance(self._tokens[i], Formula)]
             if ast_formulas:
-                _link_formulas(*ast_formulas)
+                _link_formulas(*ast_formulas, link_vars=self.formula_params.get("var_numbering", False))
 
     @contextmanager
-    def add_seg_type(self, seg_type, tar: list, add_seg_type=True):
-        if add_seg_type is True:
+    def add_seg_type(self, seg_type, tar: list, add_seg_type=True, mode="delimiter"):
+        if add_seg_type is True and mode in {"delimiter", "head"}:
             if seg_type == "t":
                 tar.append(TEXT_BEGIN)
             elif seg_type == "f" and (
@@ -55,7 +55,7 @@ class TokenList(object):
             ):
                 tar.append(FORMULA_BEGIN)
         yield
-        if add_seg_type is True:
+        if add_seg_type is True and mode in {"delimiter", "tail"}:
             if seg_type == "t":
                 tar.append(TEXT_END)
             elif seg_type == "f" and (
@@ -63,18 +63,51 @@ class TokenList(object):
             ):
                 tar.append(FORMULA_END)
 
-    def get_segments(self, add_seg_type=True, keep="*", drop=""):
+    def get_segments(self, add_seg_type=True, add_seg_mode="delimiter", keep="*", drop="", depth=None):
+        r"""
+
+        Parameters
+        ----------
+        add_seg_type
+        add_seg_mode:
+            delimiter: both in the head and at the tail
+            head: only in the head
+            tail: only at the tail
+        keep
+        drop
+        depth: int or None
+            0: only separate at \SIFSep
+            1: only separate at \SIFTag
+            2: separate at \SIFTag and \SIFSep
+            otherwise, separate all segments
+
+        Returns
+        -------
+
+        """
         keep = set("tfgmas" if keep == "*" else keep) - set(drop)
         _segments = []
+        _segment = []
+        close_tag = False
         for start, end, seg_type in self._segments:
-            _segment = []
-            if seg_type not in keep:
-                continue
-            with self.add_seg_type(seg_type, _segment, add_seg_type):
-                for token in self._tokens[start: end]:
-                    self.__add_token(token, _segment)
-            if _segment:
+            if depth == 0:
+                if seg_type == "s":
+                    close_tag = True
+            elif depth == 1:
+                if seg_type == "a":
+                    close_tag = True
+            elif depth == 2:
+                if seg_type in {"s", "a"}:
+                    close_tag = True
+            else:
+                close_tag = True
+            if seg_type in keep:
+                with self.add_seg_type(seg_type, _segment, add_seg_type, add_seg_mode):
+                    for token in self._tokens[start: end]:
+                        self.__add_token(token, _segment)
+            if close_tag is True and _segment:
                 _segments.append(_segment)
+                _segment = []
         return _segments
 
     def __get_segments(self, seg_type):
@@ -291,9 +324,9 @@ def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, f
     return TokenList(segment_list, text_params, formula_params, figure_params)
 
 
-def link_formulas(*token_list: TokenList):
+def link_formulas(*token_list: TokenList, link_vars=True):
     ast_formulas = []
     for tl in token_list:
         if tl.formula_tokenize_method == "ast":
             ast_formulas.extend([token for token in tl.inner_formula_tokens if isinstance(token, Formula)])
-    _link_formulas(*ast_formulas)
+    _link_formulas(*ast_formulas, link_vars=link_vars)
