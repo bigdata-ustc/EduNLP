@@ -63,7 +63,8 @@ class TokenList(object):
             ):
                 tar.append(FORMULA_END)
 
-    def get_segments(self, add_seg_type=True, add_seg_mode="delimiter", keep="*", drop="", depth=None):
+    def get_segments(self, add_seg_type=True, add_seg_mode="delimiter", keep="*", drop="",
+                     depth=None):  # pragma: no cover
         r"""
 
         Parameters
