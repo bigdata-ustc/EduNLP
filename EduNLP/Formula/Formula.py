@@ -219,13 +219,13 @@ class FormulaGroup(object):
         return tree
 
 
-def link_formulas(*formula: Formula, **kwargs):
+def link_formulas(*formula: Formula, link_vars=True, **kwargs):
     forest = []
     for form in formula:
         forest += form.reset_ast(
             forest_begin=len(forest),
             **kwargs
         )
-    variable_connect_dict = link_variable(forest)
+    variable_connect_dict = link_variable(forest) if link_vars else None
     for form in formula:
         form.variable_standardization(inplace=True, variable_connect_dict=variable_connect_dict, **kwargs)
