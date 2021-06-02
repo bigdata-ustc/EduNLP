@@ -143,8 +143,7 @@ class Parser:
             self.head += 1
             if self.text[left] == '（':
                 # 匹配到一个左括号
-                while (self.text[self.head] == ' '
-                       or self.text[self.head] == '\u3000' or self.text[self.head] == '\xa0'):
+                while self.text[self.head] == ' ' or self.text[self.head] == '\xa0':
                     self.head += 1
                 if self.text[self.head] == '）':
                     self.head += 1
@@ -160,8 +159,7 @@ class Parser:
             self.head += 1
             if self.text[left] == '(':
                 # 匹配到一个左括号
-                while (self.text[self.head] == ' '
-                       or self.text[self.head] == '\u3000' or self.text[self.head] == '\xa0'):
+                while self.text[self.head] == ' ' or self.text[self.head] == '\xa0':
                     self.head += 1
                 if self.text[self.head] == ')':
                     self.head += 1
@@ -268,4 +266,3 @@ class Parser:
         else:
             self.error_flag = 0
             # print('parse successfully!')
-
