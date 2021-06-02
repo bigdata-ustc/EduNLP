@@ -5,13 +5,20 @@ import traceback
 import warnings
 from .segment import seg
 from .tokenization import tokenize, link_formulas
+from .parser import Parser
 
 
 def is_sif(item):
-    return True
+    itemparser = Parser(item)
+    itemparser.description_list()
+    if itemparser.error_flag == 0 and itemparser.modify_flag == 0:
+        return True
 
 
 def to_sif(item):
+    itemparser = Parser(item)
+    itemparser.description_list()
+    item = itemparser.text
     return item
 
 
