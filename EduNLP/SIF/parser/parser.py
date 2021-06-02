@@ -170,8 +170,7 @@ class Parser:
             if self.text[left] == '_':
                 # 匹配到一个下划线
                 # print('this is an underline')
-                while (self.text[self.head] == '_'
-                       or self.text[self.head] == ' ' or self.text[self.head] == '\xa0'):
+                while (self.text[self.head] == '_' or self.text[self.head] == ' '):
                     self.head += 1
                     if self.head >= len(self.text):
                         break
