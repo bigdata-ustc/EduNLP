@@ -10,8 +10,8 @@ class Parser:
         self.warnning = 0
 
         # 定义特殊变量
-        self.len_bracket = len('$\\SIFBrackets$')
-        self.len_underline = len('$\\SIFUnderline$')
+        self.len_bracket = len('$\\SIFChoice$')
+        self.len_underline = len('$\\SIFBlank$')
 
         # 定义 token
         self.error = -1
@@ -99,8 +99,8 @@ class Parser:
                         self.head += 2
                         self.modify_flag = 1
                         return self.modify
-            self.call_error()
-            return self.error
+            # self.call_error()
+            # return self.error
 
         elif self.is_number(ch):
             # 匹配公式之外的数字，只对两个汉字之间的数字做修正，其余匹配到的情况视为不合 latex 语法录入的公式
@@ -129,8 +129,8 @@ class Parser:
                         self.head += 2
                         self.modify_flag = 1
                         return self.modify
-            self.call_error()
-            return self.error
+            # self.call_error()
+            # return self.error
 
         elif ch == '\n':
             # 匹配换行符
