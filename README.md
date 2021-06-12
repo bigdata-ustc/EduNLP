@@ -28,7 +28,7 @@ pip install EduNLP
 ```
 
 ### Resource
-We will continously publish new datasets in Standard Item Format (SIF) to encourage the relavant research works. The data resourses can be accessed via another EduX project [EduData](https://github.com/bigdata-ustc/EduData)
+We will continously publish new datasets in [Standard Item Format (SIF)](https://github.com/bigdata-ustc/EduNLP/blob/master/docs/SIF4TI_CH.md) to encourage the relavant research works. The data resourses can be accessed via another EduX project [EduData](https://github.com/bigdata-ustc/EduData)
 
 ### Tutorial
 
