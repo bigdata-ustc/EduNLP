@@ -9,6 +9,13 @@
 
 NLP tools for Educational data (e.g., exercise, papers)
 
+## Introduction
+EduNLP is a library for advanced Natural Language Processing in Python. It's built on the very latest research, and was designed from day one to be used in real educational products.
+
+EduNLP now comes with pretrained pipelines and currently supports segment, tokenization and vertorization. It supports varies of preprocessing for NLP in educational scenario, such as formula passing, multi-modal segment.
+
+EduNLP is commercial open-source software, released under the Apache-2.0 license.
+
 ## Contribute
 
 EduNLP is still under development. More algorithms and features are going to be added and we always welcome contributions to help make EduNLP better. If you would like to contribute, please follow this [guideline](CONTRIBUTE.md).
