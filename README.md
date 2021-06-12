@@ -10,7 +10,7 @@
 NLP tools for Educational data (e.g., exercise, papers)
 
 ## Introduction
-EduNLP is a library for advanced Natural Language Processing in Python. It's built on the very latest research, and was designed from day one to be used in real educational products.
+EduNLP is a library for advanced Natural Language Processing in Python and is one of the projects of EduX plan of BDAA. It's built on the very latest research, and was designed from day one to be used in real educational products.
 
 EduNLP now comes with pretrained pipelines and currently supports segment, tokenization and vertorization. It supports varies of preprocessing for NLP in educational scenario, such as formula passing, multi-modal segment.
 
@@ -26,6 +26,13 @@ or install from pypi:
 ```
 pip install EduNLP
 ```
+
+### Resource
+We will continously publish new datasets in Standard Item Format (SIF) to encourage the relavant research works. The data resourses can be accessed via another EduX project [EduData](https://github.com/bigdata-ustc/EduData)
+
+### Tutorial
+
+TBA
 
 ## Contribute
 
