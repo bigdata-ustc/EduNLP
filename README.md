@@ -32,7 +32,11 @@ We will continously publish new datasets in [Standard Item Format (SIF)](https:/
 
 ### Tutorial
 
-TBA
+* Overview (TBA)
+* [Formula Parsing](https://github.com/bigdata-ustc/EduNLP/tree/master/examples/formula)
+* [Segment and Tokenization](https://github.com/bigdata-ustc/EduNLP/blob/master/examples/sif/sif.ipynb)
+* [Vectorization](https://github.com/bigdata-ustc/EduNLP/tree/master/examples/pretrain)
+* Pretrained Model (TBA)
 
 ## Contribute
 
