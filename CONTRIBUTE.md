@@ -3,7 +3,7 @@
 [中文版本](CONTRIBUTE_CH.md)
 
 ## Guidance
-Thank you for your interest in contributing to EduCDM! 
+Thank you for your interest in contributing to EduNLP! 
 Before you begin writing code, it is important that you share your intention to contribute with the team, 
 based on the type of contribution:
 
