@@ -26,68 +26,6 @@
 
 有关新数据集或数据分析，请移步至 [EduData](https://github.com/bigdata-ustc/EduData) 。
 
-### 添加新的 CDM 模型
-
-新实现的 CDM 模型需要：
-1. 数据集的预处理。
-2. 继承 `EduNLP/meta.py` 中的的 `class NLP`，并实现中间的四个方法。
-3. 编写模型对应的 example 代码（这里指的是可供其他人运行测试使用的 demo），例子可见[此处](examples/sif)：至少应当包括：[notebook](examples/sif/sif.ipynb) 和 [script](examples/sif/sci4sif.py)
-4. 编写模型对应的测试代码，保证测试覆盖度为100%，例子可见[此处](tests/test_sif)
-
-#### 数据预处理
-
-关于数据集的预处理，我们提供如下两种建议：
-
-1. 编写一个 script，完成：
-   - 对原始数据集中进行处理，转换。
-   - 训练/验证/测试集划分。
-2. 提交或使用 [CDBD](https://github.com/bigdata-ustc/EduData) 数据集（已划分好训练/验证/测试集）。
-
-#### 模块编写
-
-编写的新 NLP 模型，其中几个重要模块需要继承 `EduNLP/meta.py` 中的 `class NLP`。
-需要注意的是，我们并不对您的神经网络、算法（例如，网络构造、优化器、损失函数定义等）进行约束。
-
-- 训练模块
-
-该模块为训练模块，用于对模型、算法进行训练。
-
-```python3
-    def train(self, *args, **kwargs) -> ...:
-        raise NotImplementedError
-```
-
-- 测试模块
-
-该模块为测试模块，用于对模型、算法进行验证、测试。
-
-```python3
-    def eval(self, *args, **kwargs) -> ...:
-        raise NotImplementedError
-```
-
-- 模型存储模块
-
-该模块为存储模块，用于保存训练好了的模型、算法。
-
-```python3
-    def save(self, *args, **kwargs) -> ...:
-        raise NotImplementedError
-```
-
-- 模型读取模块
-
-该模块为模型读取模块，用于读取保存好了的模型、算法。
-
-```python3
-    def load(self, *args, **kwargs) -> ...:
-        raise NotImplementedError
-```
-
-#### 编写 Demo
-
-编写模型对应的 Example 代码，例子可见[]() ：
-
 #### 代码注释风格
 
 请使用 Numpy 代码注释风格：
