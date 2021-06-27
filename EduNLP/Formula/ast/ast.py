@@ -63,9 +63,16 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree.append(tree_node)
 
         elif tree_node['val']['type'] == "op":
-            tree_node['val']['text'] = item['name']
-            tree.append(tree_node)
-
+            for ii in item:
+                print(ii,item[ii])
+            tree_node['val']['text'] = "\\op" if 'name' not in item else item['name']
+            if item['symbol'] and 'body' in item:
+                tree_node['structure']['child'] = [1 + private_index + index]
+                tree.append(tree_node)
+                tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+            else:
+                tree_node['val']['text'] = item['name']
+                tree.append(tree_node)
         elif tree_node['val']['type'] == "genfrac":
             item['numer']['role'] = 'numer'
             item['denom']['role'] = 'denom'
@@ -120,7 +127,6 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
 
         elif tree_node['val']['type'] == "accent":
-
             tree_node['val']['text'] = item['label']
             tree_node['structure']['child'] = [1 + private_index + index]
             tree.append(tree_node)
@@ -128,29 +134,24 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree += ast([item['base']], index=len(tree) + index, father_tree=tree)
 
         elif tree_node['val']['type'] == "supsub":
-            if item['base'] is not None:
+            _tree = []
+            if 'base' in item and item['base'] is not None:
                 item['base']['role'] = 'base'
-
+                _tree.append(item['base'])
+            if 'sub' in item and item['sub']:
+                bp = 'sub'
+                item['sub']['role'] = 'sub'
+                _tree.append(item['sub'])
             if 'sup' in item and item['sup']:
                 bp = 'sup'
-                bptext = '^'
+                item['sup']['role'] = 'sup'
+                _tree.append(item['sup'])
+            if _tree != []:
+                tree_node['structure']['child'] = [1 + private_index + index]
+                tree.append(tree_node)
+                tree += ast(_tree, index=len(tree) + index, father_tree=tree)
             else:
-                bp = 'sub'
-                bptext = '_'
-
-            if 'text' in item:
-                bptext = item['text']
-
-            tree_node['val']['text'] = bptext
-            item[bp]['role'] = bp
-            tree_node['structure']['child'] = [1 + private_index + index]
-            tree.append(tree_node)
-            _tree = []
-            if item['base'] is not None:
-                _tree.append(item['base'])
-            if item[bp] is not None:
-                _tree.append(item[bp])
-            tree += ast(_tree, index=len(tree) + index, father_tree=tree)
+                tree.append(tree_node)
 
         elif tree_node['val']['type'] == "ordgroup":
             tree_node['structure']['child'] = [1 + private_index + index]
@@ -161,6 +162,7 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
 
         elif tree_node['val']['type'] == "mclass":
+            tree_node['val']['text'] = item['mclass']
             for citem in item['body']:
                 citem['role'] = 'body'
             tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
@@ -203,12 +205,13 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree_node['val']['text'] = item['side']
             tree_node['structure']['child'] = [1 + private_index + index]
             tree.append(tree_node)      
-            # item['label']['role'] = 'label' # ?new role
+            item['label']['role'] = 'label'
             tree += ast([item['label']], index=len(tree) + index, father_tree=tree)
         elif tree_node['val']['type'] == "cdlabelparent":
             tree_node['val']['text'] = "\\cdlabelparent"
             tree_node['structure']['child'] = [1 + private_index + index]
             tree.append(tree_node)
+            item['fragment']['role'] = 'fragment'
             tree += ast([item['fragment']], index=len(tree) + index, father_tree=tree)
         elif tree_node['val']['type'] == "color":
             tree_node['val']['text'] = "\\color"
@@ -264,6 +267,7 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree_node['val']['text'] = item['name']
             tree_node['structure']['child'] = [1 + private_index + index]
             tree.append(tree_node)
+            item['nameGroup']['role'] = 'nameGroup'
             tree += ast([item['nameGroup']], index=len(tree) + index, father_tree=tree)
         elif tree_node['val']['type'] == "url":
             # continue
@@ -286,8 +290,8 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree_node['structure']['child'] = [1 + private_index + index]
             tree_node['val']['text'] = "\\htmlmathml"
             tree.append(tree_node)
-            html_item = {'type':'nodelist','role': 'htmlmathml_html','body': item['html']} # ?
-            mathml_item = {'type':'nodelist','role': 'htmlmathml_mathml','body': item['mathml']} # ?
+            html_item = {'type':'nodelist','role': 'html','body': item['html']} # ?
+            mathml_item = {'type':'nodelist','role': 'mathml','body': item['mathml']} # ?
             tree += ast([html_item,mathml_item], index=len(tree) + index, father_tree=tree)
         elif tree_node['val']['type'] == "includegraphics":
             # continue
@@ -313,6 +317,7 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree_node['structure']['child'] = [1 + private_index + index]
             tree_node['val']['text'] = item['label']
             tree.append(tree_node)
+            item['base']['role'] = 'base'
             tree += ast([item['base']], index=len(tree) + index, father_tree=tree)
         elif tree_node['val']['type'] == "lap":
             # layout setting (overlap) 
@@ -392,9 +397,8 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
                 tree_node['val']['text'] = item["type"]
             tree_node['val']['type'] = "other"
             tree.append(tree_node)
-            Role = ['body', 'base', 'sup', 'sub', 'numer', 'denom', 'index', 'blew', 'other']
+            Role = ['body', 'base', 'sup', 'sub', 'numer', 'denom', 'index', 'below','nameGroup','fragment','label', 'other']
             childrole = []
-
             for role_item in Role:
                 if role_item in item:
                     if role_item == "body" and isinstance(item[role_item], dict) is False:

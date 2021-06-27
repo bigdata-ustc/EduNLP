@@ -20,6 +20,7 @@ ast_str_list.append(r"\def\foo{x^2} \foo + \foo")
 ast_str_list.append( r"thank \hphantom{xyz} you")
 ast_str_list.append(r"\mathchoice{D}{T}{S}{SS}")
 ast_str_list.append(r"\bigotimes")
+ast_str_list.append(r"{AB}_b^c")
 
 # work only when katex is in 'display' mode :
 ast_str_list.append(r"\begin{matrix} a & b \\ c & d \end{matrix}")
@@ -40,7 +41,7 @@ ast_str_list.append(r"\includegraphics[height=0.8em, totalheight=0.9em, width=0.
 
 for ast_str in ast_str_list:
   print("="*120)
-  print("="*20+" "+ast_str+" " + "="*20)
+  print(ast_str)
   print("="*120)
   ast_tree = str2ast(ast_str)
   for node in ast_tree:
