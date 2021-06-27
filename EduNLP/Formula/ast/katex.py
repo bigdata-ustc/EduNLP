@@ -5731,7 +5731,10 @@ def PyJs_anonymous_0_(this, arguments, var=var):
                     return var.get('row').get('length')
                 PyJs_anonymous_252_._set_name('anonymous')
                 var.put('numCols', var.get('Math').get('max').callprop('apply', var.get('Math'), Js([Js(0.0)]).callprop('concat', var.get('res').get('body').callprop('map', PyJs_anonymous_252_))))
-                var.get('res').put('cols', var.get('Array').create(var.get('numCols')).callprop('fill', Js({'type':Js('align'),'align':var.get('colAlign')})))
+                # qinlonghu : error in ast 
+                # tmp1 = var.get('Array').create(var.get('numCols')) # [test]
+                # tmp2 = Js({'type':Js('align'),'align':var.get('colAlign')}) # [test]
+                # var.get('res').put('cols', var.get('Array').create(var.get('numCols')).callprop('fill', Js({'type':Js('align'),'align':var.get('colAlign')})))
                 return (Js({'type':Js('leftright'),'mode':var.get('context').get('mode'),'body':Js([var.get('res')]),'left':var.get('delimiters').get('0'),'right':var.get('delimiters').get('1'),'rightColor':var.get('undefined')}) if var.get('delimiters') else var.get('res'))
             PyJs_handler_251_._set_name('handler')
             return var.get('defineEnvironment')(Js({'type':Js('array'),'names':Js([Js('matrix'), Js('pmatrix'), Js('bmatrix'), Js('Bmatrix'), Js('vmatrix'), Js('Vmatrix'), Js('matrix*'), Js('pmatrix*'), Js('bmatrix*'), Js('Bmatrix*'), Js('vmatrix*'), Js('Vmatrix*')]),'props':Js({'numArgs':Js(0.0)}),'handler':PyJs_handler_251_,'htmlBuilder':var.get('array_htmlBuilder'),'mathmlBuilder':var.get('array_mathmlBuilder')}))

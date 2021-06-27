@@ -37,7 +37,7 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
     """
     tree = []
     index += forest_begin
-    json_ast: List[Dict] = katex.katex.__parse(formula).to_list() if is_str else formula
+    json_ast: List[Dict] = katex.katex.__parse(formula,{'displayMode':True,'trust': True}).to_list() if is_str else formula
     last_node = None
 
     for item in json_ast:
@@ -184,7 +184,205 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             # \text{}
             tree_node['val']['text'] = "".join([e['text'] for e in item["body"]])
             tree.append(tree_node)
-
+        # --------------------- new node --------------------- # 
+        elif tree_node['val']['type'] == "size":
+            # nknown usage : different from "sizing"
+            continue
+        elif tree_node['val']['type'] == "internal": 
+            # unknown usage
+            continue
+        elif tree_node['val']['type'] == "cr":
+            # new line
+            continue
+        elif tree_node['val']['type'] == "infix":
+            continue
+        elif tree_node['val']['type'] == "rule":
+            # ignore layout setting
+            continue
+        elif tree_node['val']['type'] == "cdlabel":
+            tree_node['val']['text'] = item['side']
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)      
+            # item['label']['role'] = 'label' # ?new role
+            tree += ast([item['label']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "cdlabelparent":
+            tree_node['val']['text'] = "\\cdlabelparent"
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)
+            tree += ast([item['fragment']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "color":
+            tree_node['val']['text'] = "\\color"
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)
+            tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "color-token":
+            tree_node['val']['text'] = "\\color-token"
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "raw":
+            tree_node['val']['text'] = item['string']
+            tree.append(tree_node)
+        elif tree_node['val']['type'] == "styling":
+            # to be confirmed
+            tree_node['val']['text'] = "\\styling" 
+            # tree_node['val']['text'] = item["style"] ！= None ? item["style"]: "\\styling"
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)
+            tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "tag":
+            # can only be used in 'display' equations
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = '\\tag' # equations with order number
+            tree.append(tree_node)
+            body_item = {'type':'nodelist','role': 'body','body': item['body']}
+            tag_item = {'type':'nodelist','role': 'tag','body': item['tag']}
+            tree += ast([body_item, tag_item], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "verb":
+            tree_node['val']['text'] = item['body'] # "original copy", source code
+            tree.append(tree_node)
+        elif tree_node['val']['type'] in ["spacing","accent-token","op-token"]:
+            tree_node['val']['text'] = item['text']
+            tree.append(tree_node) 
+        elif tree_node['val']['type'] in ["accent","accentUnder"]: 
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = item["label"]
+            tree.append(tree_node)
+            item['base']['role'] = 'base'
+            tree += ast([item['base']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "delimsizing":
+            # contains symbols for size settings, including "(",")", etc
+            tree_node['val']['text'] = item['delim']
+            tree.append(tree_node)
+        elif tree_node['val']['type'] == "enclose":
+            # unknown usage (setting deleting line effect?)
+            tree_node['val']['text'] = item['label']
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "environment":
+            tree_node['val']['text'] = item['name']
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)
+            tree += ast([item['nameGroup']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "url":
+            # continue
+            tree_node['val']['text'] = item['url']
+            tree.append(tree_node)
+        elif tree_node['val']['type'] == "href":
+            # continue
+            tree_node['val']['text'] = item['href']
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)
+            tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "html":
+            # continue
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\html"  
+            tree.append(tree_node)
+            tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "htmlmathml":
+            # continue
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\htmlmathml"
+            tree.append(tree_node)
+            html_item = {'type':'nodelist','role': 'htmlmathml_html','body': item['html']} # ?
+            mathml_item = {'type':'nodelist','role': 'htmlmathml_mathml','body': item['mathml']} # ?
+            tree += ast([html_item,mathml_item], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "includegraphics":
+            # continue
+            tree_node['val']['text'] = item['src']
+            tree.append(tree_node)
+        elif tree_node['val']['type'] == "font":
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = item["font"]  # font name
+            tree.append(tree_node)
+            item['body']['role'] = 'body'
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "hbox":
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = '\\hbox' # box layout
+            tree.append(tree_node)
+            tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "vcenter":
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = '\\vcenter' # box layout
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "horizBrace":
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = item['label']
+            tree.append(tree_node)
+            tree += ast([item['base']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "lap":
+            # layout setting (overlap) 
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = item["alignment"] # methods of overlap (llap | rlap)
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "sizing":
+            # consider ignoring size
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\sizing"
+            tree.append(tree_node)
+            tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "smash":
+            # layout setting : smash (height | width)
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\smash"
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "mathchoice":
+            # provides content that is dependent on the current style (display, text, script, or scriptscript).
+            # eg: \mathchoice {#1}{#2}{#3}{#4}
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\mathchoice"
+            tree.append(tree_node)
+            mathchoiceList = []
+            for choice in ["display","text","script","scriptscript"]:
+                citem = {'type':'nodelist','role':choice, 'body':item[choice]}
+                mathchoiceList.append(citem)
+            tree += ast(mathchoiceList, index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "operatorname":
+            # unknown usage
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\operatorname"
+            tree.append(tree_node)
+            tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] in ["overline","underline"]:
+            # consider ignoring line
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\" + tree_node['val']['type']
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "raisebox":
+            # raise or lower the height of the text
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\raisebox"
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == "leftright-right":
+            # paired with leftright
+            tree_node['val']['text'] = item["delim"]
+            tree.append(tree_node)
+        elif tree_node['val']['type'] == "middle":
+            # symbols with height setting, such as "|"
+            tree_node['val']['text'] = item["delim"]
+            tree.append(tree_node)
+        elif tree_node['val']['type'] in ["phantom","hphantom","vphantom"]:
+            # set space distance by the length of content
+            # continue 
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\" + tree_node['val']['type']
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+        elif tree_node['val']['type'] == 'nodelist':
+            # process node list specially
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree_node['val']['text'] = "\\" + item["role"]
+            tree.append(tree_node)
+            tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
+        
         else:
             tree_node['structure']['child'] = [1 + private_index + index]
 
