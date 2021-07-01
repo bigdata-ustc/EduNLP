@@ -5731,9 +5731,7 @@ def PyJs_anonymous_0_(this, arguments, var=var):
                     return var.get('row').get('length')
                 PyJs_anonymous_252_._set_name('anonymous')
                 var.put('numCols', var.get('Math').get('max').callprop('apply', var.get('Math'), Js([Js(0.0)]).callprop('concat', var.get('res').get('body').callprop('map', PyJs_anonymous_252_))))
-                # qinlonghu : error in ast 
-                # tmp1 = var.get('Array').create(var.get('numCols')) # [test]
-                # tmp2 = Js({'type':Js('align'),'align':var.get('colAlign')}) # [test]
+                # js2py error
                 # var.get('res').put('cols', var.get('Array').create(var.get('numCols')).callprop('fill', Js({'type':Js('align'),'align':var.get('colAlign')})))
                 return (Js({'type':Js('leftright'),'mode':var.get('context').get('mode'),'body':Js([var.get('res')]),'left':var.get('delimiters').get('0'),'right':var.get('delimiters').get('1'),'rightColor':var.get('undefined')}) if var.get('delimiters') else var.get('res'))
             PyJs_handler_251_._set_name('handler')

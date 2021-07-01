@@ -21,6 +21,7 @@ ast_str_list.append( r"thank \hphantom{xyz} you")
 ast_str_list.append(r"\mathchoice{D}{T}{S}{SS}")
 ast_str_list.append(r"\bigotimes")
 ast_str_list.append(r"{AB}_b^c")
+ast_str_list.append(r"\left\{\begin{array}{c}2 x+y-2 \leq 0 \\ x-y-1 \geq 0 \\ y+1 \geq 0\end{array}\right.")
 
 # work only when katex is in 'display' mode :
 ast_str_list.append(r"\begin{matrix} a & b \\ c & d \end{matrix}")

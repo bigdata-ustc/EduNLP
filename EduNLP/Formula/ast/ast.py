@@ -63,8 +63,6 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree.append(tree_node)
 
         elif tree_node['val']['type'] == "op":
-            for ii in item:
-                print(ii,item[ii])
             tree_node['val']['text'] = "\\op" if 'name' not in item else item['name']
             if item['symbol'] and 'body' in item:
                 tree_node['structure']['child'] = [1 + private_index + index]

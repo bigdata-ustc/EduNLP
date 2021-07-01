@@ -16,7 +16,13 @@ def get_katex_from_url(version, tar):
     tar.write(content)
     return url
 
-
+'''
+    Note:
+        In that some formulas can not parse well by katex.py for some js2py errors, 
+        we need to manually omit a few codes after ketex.py is built.
+        eg 1. Array.fill() error :
+            # var.get('res').put('cols', var.get('Array').create(var.get('numCols')).callprop('fill', Js({'type':Js('align'),'align':var.get('colAlign')})))
+'''
 def update_katex_py(src=None, tar="katex.py"):
     src = "katex.js" if src is None else src
     if PurePath(src).suffix == ".js":
