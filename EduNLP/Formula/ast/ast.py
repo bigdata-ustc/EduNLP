@@ -232,8 +232,8 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree.append(tree_node)
             tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
         elif tree_node['val']['type'] == "tag":
-            continue # couldn't work 
-            # can only be used in 'display' equations
+            conntinue
+            # not supported in Katex yet
             # tree_node['structure']['child'] = [1 + private_index + index]
             # tree_node['val']['text'] = '\\tag' # equations with order number
             # tree.append(tree_node)
@@ -257,12 +257,11 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree_node['val']['text'] = item['delim']
             tree.append(tree_node)
         elif tree_node['val']['type'] == "enclose":
-            continue # # couldn't work 
-            # unknown usage (setting deleting line effect?)
-            # tree_node['val']['text'] = item['label']
-            # tree_node['structure']['child'] = [1 + private_index + index]
-            # tree.append(tree_node)
-            # tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
+            # setting deleting line effect
+            tree_node['val']['text'] = item['label']
+            tree_node['structure']['child'] = [1 + private_index + index]
+            tree.append(tree_node)
+            tree += ast([item['body']], index=len(tree) + index, father_tree=tree)
         elif tree_node['val']['type'] == "environment":
             tree_node['val']['text'] = item['name']
             tree_node['structure']['child'] = [1 + private_index + index]
