@@ -1,15 +1,18 @@
 import pytest
 from EduNLP.Formula.ast.ast import str2ast
 
+
 '''
 Note : Some functions not supportd in katex
-    eg : tag 
+    eg : tag
     (tag can not yet be applied to individual environment rows in Katex.)
 
-    ast_str_list.append(r"\begin{equation} \tag{tagName} F=ma \end{equation}")
-    ast_str_list.append(r"\begin{align} y=x+z \end{align} \tag{1}")
-    ast_str_list.append(r"\tag*{hi} x+y^{2x}")
+    ast_str_list.append("\\begin{equation} \\tag{tagName} F=ma \\end{equation}")
+    ast_str_list.append("\\begin{align} y=x+z \\end{align} \\tag{1}")
+    ast_str_list.append("\\tag*{hi} x+y^{2x}")
 '''
+
+
 def test_ast():
     ast_str_list = []
     # normal examples
@@ -49,7 +52,7 @@ def test_ast():
     ast_str_list.append(r"\htmlClass{foo}{x}")
     ast_str_list.append("\\includegraphics[height=0.8em, totalheight=0.9em, \
     width=0.9em, alt=KA logo]{https://katex.org/img/khan-academy.png}")
-    
+
     for ast_str in ast_str_list:
         print("=" * 120)
         print(ast_str)
@@ -57,6 +60,6 @@ def test_ast():
         ast_tree = str2ast(ast_str)
         for node in ast_tree:
             print(node)
-    
+
 
 test_ast()
