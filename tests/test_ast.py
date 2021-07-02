@@ -3,7 +3,7 @@ from EduNLP.Formula.ast.ast import str2ast
 
 
 '''
-Note : Some functions not supportd in katex
+Note : Some functions are not supportd in katex
     eg : tag
     (tag can not yet be applied to individual environment rows in Katex.)
 

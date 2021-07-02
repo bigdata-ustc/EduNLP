@@ -232,7 +232,7 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
             tree.append(tree_node)
             tree += ast(item['body'], index=len(tree) + index, father_tree=tree)
         elif tree_node['val']['type'] == "tag":
-            conntinue
+            continue
             # not supported in Katex yet
             # tree_node['structure']['child'] = [1 + private_index + index]
             # tree_node['val']['text'] = '\\tag' # equations with order number
