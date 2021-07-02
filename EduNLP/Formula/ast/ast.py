@@ -137,13 +137,13 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
                 item['base']['role'] = 'base'
                 _tree.append(item['base'])
             if 'sub' in item and item['sub']:
-                bp = 'sub'
                 item['sub']['role'] = 'sub'
                 _tree.append(item['sub'])
             if 'sup' in item and item['sup']:
-                bp = 'sup'
                 item['sup']['role'] = 'sup'
                 _tree.append(item['sup'])
+
+            tree_node['val']['text'] = "\\supsub"
             if _tree != []:
                 tree_node['structure']['child'] = [1 + private_index + index]
                 tree.append(tree_node)
