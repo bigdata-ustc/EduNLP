@@ -74,13 +74,13 @@ def ast_tokenize(formula, ord2token=False, var_numbering=False, return_type="for
     Examples
     --------
     >>> ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x", return_type="list")
-    ['x', '+', 'y', '{ }', '\\\\pi', '{ }', '2', '{ }', '\\\\frac', '^', '+', '1', '=', 'x']
+    ['x', '+', 'y', '{ }', '\\\\pi', '{ }', '2', '{ }', '\\\\frac', '\\\\supsub', '+', '1', '=', 'x']
     >>> ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x", return_type="list", ord2token=True)
-    ['mathord', '+', 'mathord', '{ }', 'mathord', '{ }', 'textord', '{ }', '\\\\frac', '^', '+', 'textord', \
+    ['mathord', '+', 'mathord', '{ }', 'mathord', '{ }', 'textord', '{ }', '\\\\frac', '\\\\supsub', '+', 'textord', \
 '=', 'mathord']
     >>> ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x", return_type="list", ord2token=True, var_numbering=True)
-    ['mathord_0', '+', 'mathord_1', '{ }', 'mathord_con', '{ }', 'textord', '{ }', '\\\\frac', '^', '+', 'textord', \
-'=', 'mathord_0']
+    ['mathord_0', '+', 'mathord_1', '{ }', 'mathord_con', '{ }', 'textord', '{ }', '\\\\frac', '\\\\supsub', \
+'+', 'textord', '=', 'mathord_0']
     >>> len(ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x", return_type="ast").nodes)
     14
     >>> ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x")
