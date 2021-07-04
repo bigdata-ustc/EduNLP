@@ -1,3 +1,7 @@
+from EduNLP.Formula.ast import str2ast
+# from EduNLP.Formula.ast import katex
+
+
 class Parser:
     def __init__(self, data):
         self.lookahead = 0
@@ -8,6 +12,8 @@ class Parser:
         self.error_flag = 0
         self.modify_flag = 0
         self.warnning = 0
+        self.fomula_illegal_flag = 0
+        self.fomula_illegal_message = ''
 
         # 定义特殊变量
         self.len_bracket = len('$\\SIFChoice$')
@@ -56,6 +62,24 @@ class Parser:
             return True
         else:
             return False
+
+    def is_formula_legal(self, formula_str):
+        legal_tags = ['FormFigureID', 'FormFigureBase64', 'FigureID', 'FigureBase64',
+                      'SIFBlank', 'SIFChoice', 'SIFTag', 'SIFSep', 'SIFUnderline']
+        for tag in legal_tags:
+            if tag in formula_str:
+                return True
+        try:
+            str2ast(formula_str)
+            # katex.katex.__parse(ss,{'displayMode':True,'trust': True})
+        except Exception as e:
+            if 'ParseError' in str(e):
+                self.fomula_illegal_message = "[FormulaError] " + str(e)
+            else:
+                self.fomula_illegal_message = "[KatexError] " + str(e)
+            self.fomula_illegal_flag = 1
+            return False
+        return True
 
     def call_error(self):
         """语法解析函数"""
@@ -186,6 +210,7 @@ class Parser:
             # 匹配 latex 公式
             self.head += 1
             flag = 1
+            formula_start = self.head
             while self.text[self.head] != '$':
                 ch_informula = self.text[self.head]
                 if flag and self.is_chinese(ch_informula):
@@ -195,6 +220,10 @@ class Parser:
                     flag = 0
                 self.head += 1
             if self.head >= len(self.text):
+                return self.error
+            # 检查latex公式的完整性和可解析性
+            if not self.is_formula_legal(self.text[formula_start:self.head]):
+                self.call_error()
                 return self.error
             self.head += 1
             # print('is latex!')
