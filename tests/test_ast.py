@@ -4,12 +4,16 @@ from EduNLP.Formula.ast.ast import str2ast
 
 '''
 Note : Some functions are not supportd in katex
-    eg : tag
-    (tag can not yet be applied to individual environment rows in Katex.)
-
+    eg :
+    1. tag (tag can not yet be applied to individual environment rows in Katex.)
     ast_str_list.append("\\begin{equation} \\tag{tagName} F=ma \\end{equation}")
-    ast_str_list.append("\\begin{align} y=x+z \\end{align} \\tag{1}")
+    ast_str_list.append("\\begin{aligned} y=x+z \\end{align} \\tag{1}")
     ast_str_list.append("\\tag*{hi} x+y^{2x}")
+
+    2. dddot (not supportd in katex yet)
+    ast_str_list.append('\\frac{ \\dddot y }{ x }')
+
+    3. other: https://github.com/KaTeX/KaTeX/blob/master/docs/support_table.md
 '''
 
 
@@ -54,12 +58,4 @@ def test_ast():
     width=0.9em, alt=KA logo]{https://katex.org/img/khan-academy.png}")
 
     for ast_str in ast_str_list:
-        print("=" * 120)
-        print(ast_str)
-        print("=" * 120)
-        ast_tree = str2ast(ast_str)
-        for node in ast_tree:
-            print(node)
-
-
-test_ast()
+        str2ast(ast_str)
