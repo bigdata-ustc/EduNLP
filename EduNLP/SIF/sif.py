@@ -12,7 +12,6 @@ def is_sif(item):
     itemparser = Parser(item)
     itemparser.description_list()
     if itemparser.fomula_illegal_flag:
-        # print(itemparser.fomula_illegal_message)
         raise Exception(itemparser.fomula_illegal_message)
     if itemparser.error_flag == 0 and itemparser.modify_flag == 0:
         return True
