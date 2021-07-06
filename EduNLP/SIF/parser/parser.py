@@ -1,5 +1,5 @@
-from EduNLP.Formula.ast import str2ast
-from EduNLP.Formula.ast import katex_parse
+from EduNLP.Formula.ast import str2ast, katex_parse
+# from EduNLP.Formula.ast import katex
 # import traceback
 
 
