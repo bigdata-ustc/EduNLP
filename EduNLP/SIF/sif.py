@@ -9,18 +9,18 @@ from .parser import Parser
 
 
 def is_sif(item):
-    itemparser = Parser(item)
-    itemparser.description_list()
-    if itemparser.fomula_illegal_flag:
-        raise Exception(itemparser.fomula_illegal_message)
-    if itemparser.error_flag == 0 and itemparser.modify_flag == 0:
+    item_parser = Parser(item)
+    item_parser.description_list()
+    if item_parser.fomula_illegal_flag:
+        raise ValueError(item_parser.fomula_illegal_message)
+    if item_parser.error_flag == 0 and item_parser.modify_flag == 0:
         return True
 
 
 def to_sif(item):
-    itemparser = Parser(item)
-    itemparser.description_list()
-    item = itemparser.text
+    item_parser = Parser(item)
+    item_parser.description_list()
+    item = item_parser.text
     return item
 
 

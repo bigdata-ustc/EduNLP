@@ -1,5 +1,6 @@
 from EduNLP.Formula.ast import str2ast
-# from EduNLP.Formula.ast import katex
+from EduNLP.Formula.ast import katex_parse
+# import traceback
 
 
 class Parser:
@@ -70,13 +71,12 @@ class Parser:
             if tag in formula_str:
                 return True
         try:
-            str2ast(formula_str)
-            # katex.katex.__parse(ss,{'displayMode':True,'trust': True})
+            katex_parse(formula_str)
         except Exception as e:
-            if 'ParseError' in str(e):
-                self.fomula_illegal_message = "[FormulaError] " + str(e)
-            else:
-                self.fomula_illegal_message = "[KatexError] " + str(e)
+            # traceback.print_exc()
+            # print(e)
+            assert 'ParseError' in str(e)
+            self.fomula_illegal_message = "[FormulaError] " + str(e)
             self.fomula_illegal_flag = 1
             return False
         return True
@@ -211,7 +211,7 @@ class Parser:
             self.head += 1
             flag = 1
             formula_start = self.head
-            while self.text[self.head] != '$':
+            while self.head < len(self.text) and self.text[self.head] != '$':
                 ch_informula = self.text[self.head]
                 if flag and self.is_chinese(ch_informula):
                     # latex 中出现中文字符，打印且只打印一次 warning
@@ -220,6 +220,7 @@ class Parser:
                     flag = 0
                 self.head += 1
             if self.head >= len(self.text):
+                self.call_error()
                 return self.error
             # 检查latex公式的完整性和可解析性
             if not self.is_formula_legal(self.text[formula_start:self.head]):

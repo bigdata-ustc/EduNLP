@@ -1,20 +1,5 @@
 import pytest
-from EduNLP.Formula.ast.ast import str2ast
-
-
-'''
-Note : Some functions are not supportd in katex
-    eg :
-    1. tag (tag can not yet be applied to individual environment rows in Katex.)
-    ast_str_list.append("\\begin{equation} \\tag{tagName} F=ma \\end{equation}")
-    ast_str_list.append("\\begin{aligned} y=x+z \\end{align} \\tag{1}")
-    ast_str_list.append("\\tag*{hi} x+y^{2x}")
-
-    2. dddot (not supportd in katex yet)
-    ast_str_list.append('\\frac{ \\dddot y }{ x }')
-
-    3. other: https://github.com/KaTeX/KaTeX/blob/master/docs/support_table.md
-'''
+from EduNLP.Formula.ast import str2ast
 
 
 def test_ast():

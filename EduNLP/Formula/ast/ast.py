@@ -1,10 +1,14 @@
 # coding: utf-8
 # 2021/5/20 @ tongshiwei
 from typing import List, Dict
-
 from .katex import katex
 
-__all__ = ["str2ast", "get_edges", "ast", "link_variable"]
+
+__all__ = ["str2ast", "get_edges", "ast", "link_variable", "katex_parse"]
+
+
+def katex_parse(formula):
+    return katex.katex.__parse(formula,{'displayMode':True,'trust': True}).to_list()
 
 
 def str2ast(formula: str, *args, **kwargs):
@@ -34,6 +38,18 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
         重新解析形成的特征树
 
     todo: finish all types
+
+    Notes
+    ----------
+    Some functions are not supportd in katex
+    eg :
+    1. tag
+    '\\begin{equation} \\tag{tagName} F=ma \\end{equation}'
+    '\\begin{align} \\tag{1} y=x+z \\end{align}'
+    '\\tag*{hi} x+y^{2x}'
+    2. dddot
+    '\\frac{ \\dddot y }{ x }'
+    3. see other: https://github.com/KaTeX/KaTeX/blob/master/docs/support_table.md
     """
     tree = []
     index += forest_begin
