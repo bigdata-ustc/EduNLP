@@ -1,6 +1,4 @@
 from EduNLP.Formula.ast import str2ast, katex_parse
-# from EduNLP.Formula.ast import katex
-# import traceback
 
 
 class Parser:
@@ -64,7 +62,19 @@ class Parser:
         else:
             return False
 
-    def is_formula_legal(self, formula_str):
+    def _is_formula_legal(self, formula_str):
+        r"""
+        Judge whether the current formula meet our specification or not.
+
+        Parameters
+        ----------
+        formula_str
+
+        Returns
+        -------
+        True or False
+
+        """
         legal_tags = ['FormFigureID', 'FormFigureBase64', 'FigureID', 'FigureBase64',
                       'SIFBlank', 'SIFChoice', 'SIFTag', 'SIFSep', 'SIFUnderline']
         for tag in legal_tags:
@@ -73,8 +83,6 @@ class Parser:
         try:
             katex_parse(formula_str)
         except Exception as e:
-            # traceback.print_exc()
-            # print(e)
             assert 'ParseError' in str(e)
             self.fomula_illegal_message = "[FormulaError] " + str(e)
             self.fomula_illegal_flag = 1
@@ -223,7 +231,7 @@ class Parser:
                 self.call_error()
                 return self.error
             # 检查latex公式的完整性和可解析性
-            if not self.is_formula_legal(self.text[formula_start:self.head]):
+            if not self._is_formula_legal(self.text[formula_start:self.head]):
                 self.call_error()
                 return self.error
             self.head += 1
@@ -285,6 +293,38 @@ class Parser:
             self.match(self.lookahead)
 
     def description_list(self):
+        r"""
+        use Parser to process and describe the txt
+
+        Parameters
+        ----------
+
+        Returns
+        ----------
+
+        Examples
+        --------
+        >>> text = '生产某种零件的A工厂25名工人的日加工零件数_   _'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        >>> text_parser.text
+        '生产某种零件的$A$工厂$25$名工人的日加工零件数$\\SIFBlank$'
+        >>> text = 'X的分布列为(   )'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        >>> text_parser.text
+        '$X$的分布列为$\\SIFChoice$'
+        >>> text = '① AB是⊙O的直径，AC是⊙O的切线，BC交⊙O于点E．AC的中点为D'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        >>> text_parser.error_flag
+        1
+        >>> text = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        >>> text_parser.fomula_illegal_flag
+        1
+        """
         # print('call description_list')
         self.description()
         if self.error_flag:
