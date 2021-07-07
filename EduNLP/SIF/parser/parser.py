@@ -251,8 +251,8 @@ class Parser:
 
     def match(self, terminal):
         #         print('call match')
-        if self.error_flag:
-            return
+        # if self.error_flag:
+        #     return
         if self.lookahead == terminal:
             self.next_token()
             if self.error_flag:
@@ -327,11 +327,3 @@ class Parser:
         """
         # print('call description_list')
         self.description()
-        if self.error_flag:
-            # print("Error")
-            return
-        if self.lookahead != self.empty:
-            self.description_list()
-        else:
-            self.error_flag = 0
-            # print('parse successfully!')
