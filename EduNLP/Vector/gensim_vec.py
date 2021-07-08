@@ -13,7 +13,7 @@ class W2V(object):
             if method == "fasttext":
                 self.wv = FastText.load(filepath).wv
             else:
-                self.wv = Word2Vec.load(filepath).wv
+                self.wv = Word2Vec.load(filepath).wv  # pragma: no cover
         else:
             self.wv = KeyedVectors.load(filepath, mmap="r")
 

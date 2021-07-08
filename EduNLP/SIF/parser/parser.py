@@ -327,3 +327,11 @@ class Parser:
         """
         # print('call description_list')
         self.description()
+        if self.error_flag:
+            # print("Error")
+            return
+        if self.lookahead != self.empty:
+            self.description_list()  # pragma: no cover
+        else:
+            self.error_flag = 0
+            # print('parse successfully!')
