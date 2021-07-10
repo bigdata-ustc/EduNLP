@@ -48,6 +48,18 @@ def test_d2v(stem_data, tmpdir):
     assert len(d2v(stem_data[0])) == 10
 
 
+@pytest.mark.parametrize("method", ["bow", "tfidf"])
+def test_d2v_bow_tfidf(stem_data, tmpdir, method):
+    filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
+    filepath = train_vector(
+        stem_data,
+        filepath_prefix,
+        method=method
+    )
+    d2v = D2V(filepath, method=method)
+    d2v(stem_data[0])
+
+
 def test_exception(stem_data, tmpdir):
     filepath_prefix = str(tmpdir.mkdir("error").join("stem_tf_"))
     with pytest.raises(ValueError):

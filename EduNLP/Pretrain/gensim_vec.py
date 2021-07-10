@@ -134,8 +134,8 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
         model = gensim.corpora.Dictionary(items)
         binary = binary if binary is not None else True
     elif method == "tfidf":
-        dictionary_path = train_vector(items, w2v_prefix, method = "bow")
-        dictionary = D2V(dictionary_path, method = "bow")
+        dictionary_path = train_vector(items, w2v_prefix, method="bow")
+        dictionary = D2V(dictionary_path, method="bow")
         # dictionary =  gensim.corpora.Dictionary(items)
         corpus = [dictionary(item) for item in items]
         model = gensim.models.TfidfModel(corpus)
@@ -144,8 +144,8 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
         raise ValueError("Unknown method: %s" % method)
 
     filepath = w2v_prefix + method
-    if embedding_dim != None:
-        filepath = w2v_prefix + "_" + embedding_dim
+    if embedding_dim is not None:
+        filepath = w2v_prefix + "_" + str(embedding_dim)
 
     if binary is True:
         filepath += ".bin"

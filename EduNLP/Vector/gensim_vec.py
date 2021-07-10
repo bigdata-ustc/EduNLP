@@ -2,8 +2,9 @@
 # 2021/5/29 @ tongshiwei
 
 from pathlib import PurePath
-from gensim.models import KeyedVectors, Word2Vec, FastText, Doc2Vec,TfidfModel
+from gensim.models import KeyedVectors, Word2Vec, FastText, Doc2Vec, TfidfModel
 from gensim import corpora
+import re
 
 
 class W2V(object):
@@ -14,7 +15,7 @@ class W2V(object):
             if method == "fasttext":
                 self.wv = FastText.load(filepath).wv
             else:
-                self.wv = Word2Vec.load(filepath).wv
+                self.wv = Word2Vec.load(filepath).wv  # pragma: no cover
         else:
             self.wv = KeyedVectors.load(filepath, mmap="r")
 
@@ -27,7 +28,7 @@ class W2V(object):
 
 
 class D2V(object):
-    def __init__(self, filepath, method = "d2v"):
+    def __init__(self, filepath, method="d2v"):
         self._method = method
         self._filepath = filepath
         if self._method == "d2v":
@@ -46,10 +47,9 @@ class D2V(object):
             return self.d2v.doc2bow(item)
         elif self._method == "tfidf":
             # 'tfidf' model shold be used based on 'bow' model
-            dictionary_path = self._filepath.replace("tfidf","bow")
-            dictionary = D2V(dictionary_path, method = "bow")
+            dictionary_path = re.sub(r"(.*)tfidf", r"\1bow", self._filepath)
+            dictionary = D2V(dictionary_path, method="bow")
             item = dictionary(item)
             return self.d2v[item]
         else:
             pass
-        
