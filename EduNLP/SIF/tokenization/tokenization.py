@@ -212,7 +212,7 @@ class TokenList(object):
         elif isinstance(segment, (LatexFormulaSegment, FigureFormulaSegment)):
             self.append_formula(segment, init=not lazy)
             if lazy is False:
-                self._variable_standardization()  # pragma: no cover
+                self._variable_standardization()
         elif isinstance(segment, FigureSegment):
             self.append_figure(segment)
         elif isinstance(segment, QuesMarkSegment):
@@ -231,7 +231,7 @@ class TokenList(object):
             elif segment == QUES_MARK_SYMBOL:
                 self.append_ques_mark(segment, symbol=True)
             elif segment == TAG_SYMBOL:
-                self.append_tag(segment, symbol=True)  # pragma: no cover
+                self.append_tag(segment, symbol=True)
             elif segment == SEP_SYMBOL:
                 self.append_sep(segment, symbol=True)
             else:
