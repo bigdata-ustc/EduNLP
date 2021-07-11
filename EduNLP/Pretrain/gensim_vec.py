@@ -136,7 +136,6 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
     elif method == "tfidf":
         dictionary_path = train_vector(items, w2v_prefix, method="bow")
         dictionary = D2V(dictionary_path, method="bow")
-        # dictionary =  gensim.corpora.Dictionary(items)
         corpus = [dictionary(item) for item in items]
         model = gensim.models.TfidfModel(corpus)
         binary = binary if binary is not None else True

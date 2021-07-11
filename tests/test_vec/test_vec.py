@@ -70,3 +70,5 @@ def test_exception(stem_data, tmpdir):
             method="error",
             train_params=dict(min_count=0)
         )
+    with pytest.raises(ValueError):
+        D2V("error_path", method="error")

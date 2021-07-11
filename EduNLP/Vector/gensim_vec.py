@@ -15,7 +15,7 @@ class W2V(object):
             if method == "fasttext":
                 self.wv = FastText.load(filepath).wv
             else:
-                self.wv = Word2Vec.load(filepath).wv  # pragma: no cover
+                self.wv = Word2Vec.load(filepath).wv
         else:
             self.wv = KeyedVectors.load(filepath, mmap="r")
 
@@ -27,6 +27,18 @@ class W2V(object):
         return self.wv[item]
 
 
+class TfidfLoader():
+    def __init__(self, filepath):
+        self.tfidf_model = TfidfModel.load(filepath)
+        # 'tfidf' model shold be used based on 'bow' model
+        dictionary_path = re.sub(r"(.*)tfidf", r"\1bow", filepath)
+        self.dictionary = corpora.Dictionary.load(dictionary_path)
+
+    def infer_vector(self, item):
+        item = self.dictionary.doc2bow(item)
+        return self.tfidf_model[item]
+
+
 class D2V(object):
     def __init__(self, filepath, method="d2v"):
         self._method = method
@@ -36,20 +48,12 @@ class D2V(object):
         elif self._method == "bow":
             self.d2v = corpora.Dictionary.load(filepath)
         elif self._method == "tfidf":
-            self.d2v = TfidfModel.load(filepath)
+            self.d2v = TfidfLoader(filepath)
         else:
-            pass
+            raise ValueError("Unknown method: %s" % method)
 
     def __call__(self, item):
-        if self._method == "d2v":
-            return self.d2v.infer_vector(item)
-        elif self._method == "bow":
+        if self._method == "bow":
             return self.d2v.doc2bow(item)
-        elif self._method == "tfidf":
-            # 'tfidf' model shold be used based on 'bow' model
-            dictionary_path = re.sub(r"(.*)tfidf", r"\1bow", self._filepath)
-            dictionary = D2V(dictionary_path, method="bow")
-            item = dictionary(item)
-            return self.d2v[item]
         else:
-            pass
+            return self.d2v.infer_vector(item)
