@@ -7,6 +7,7 @@ from gensim.models import word2vec
 from gensim.models.doc2vec import TaggedDocument
 from gensim.models.callbacks import CallbackAny2Vec
 from EduNLP.SIF.sif import sif4sci
+from EduNLP.Vector import D2V
 from copy import deepcopy
 import itertools as it
 
@@ -96,7 +97,7 @@ class MonitorCallback(CallbackAny2Vec):
         self.epoch += 1
 
 
-def train_vector(items, w2v_prefix, embedding_dim, method="sg", binary=None, train_params=None):
+def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None, train_params=None):
     monitor = MonitorCallback(["word", "I", "less"])
     _train_params = dict(
         min_count=0,
@@ -129,10 +130,22 @@ def train_vector(items, w2v_prefix, embedding_dim, method="sg", binary=None, tra
             docs, **_train_params
         )
         binary = binary if binary is not None else True
+    elif method == "bow":
+        model = gensim.corpora.Dictionary(items)
+        binary = binary if binary is not None else True
+    elif method == "tfidf":
+        dictionary_path = train_vector(items, w2v_prefix, method="bow")
+        dictionary = D2V(dictionary_path, method="bow")
+        corpus = [dictionary(item) for item in items]
+        model = gensim.models.TfidfModel(corpus)
+        binary = binary if binary is not None else True
     else:
         raise ValueError("Unknown method: %s" % method)
 
-    filepath = w2v_prefix + "%s_%s" % (method, embedding_dim)
+    filepath = w2v_prefix + method
+    if embedding_dim is not None:
+        filepath = w2v_prefix + "_" + str(embedding_dim)
+
     if binary is True:
         filepath += ".bin"
         logger.info("model is saved to %s" % filepath)
