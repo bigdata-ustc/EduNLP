@@ -1,3 +1,6 @@
+from EduNLP.Formula.ast import str2ast, katex_parse
+
+
 class Parser:
     def __init__(self, data):
         self.lookahead = 0
@@ -8,6 +11,8 @@ class Parser:
         self.error_flag = 0
         self.modify_flag = 0
         self.warnning = 0
+        self.fomula_illegal_flag = 0
+        self.fomula_illegal_message = ''
 
         # 定义特殊变量
         self.len_bracket = len('$\\SIFChoice$')
@@ -56,6 +61,33 @@ class Parser:
             return True
         else:
             return False
+
+    def _is_formula_legal(self, formula_str):
+        r"""
+        Judge whether the current formula meet our specification or not.
+
+        Parameters
+        ----------
+        formula_str
+
+        Returns
+        -------
+        True or False
+
+        """
+        legal_tags = ['FormFigureID', 'FormFigureBase64', 'FigureID', 'FigureBase64',
+                      'SIFBlank', 'SIFChoice', 'SIFTag', 'SIFSep', 'SIFUnderline']
+        for tag in legal_tags:
+            if tag in formula_str:
+                return True
+        try:
+            katex_parse(formula_str)
+        except Exception as e:
+            assert 'ParseError' in str(e)
+            self.fomula_illegal_message = "[FormulaError] " + str(e)
+            self.fomula_illegal_flag = 1
+            return False
+        return True
 
     def call_error(self):
         """语法解析函数"""
@@ -186,7 +218,8 @@ class Parser:
             # 匹配 latex 公式
             self.head += 1
             flag = 1
-            while self.text[self.head] != '$':
+            formula_start = self.head
+            while self.head < len(self.text) and self.text[self.head] != '$':
                 ch_informula = self.text[self.head]
                 if flag and self.is_chinese(ch_informula):
                     # latex 中出现中文字符，打印且只打印一次 warning
@@ -195,6 +228,11 @@ class Parser:
                     flag = 0
                 self.head += 1
             if self.head >= len(self.text):
+                self.call_error()
+                return self.error
+            # 检查latex公式的完整性和可解析性
+            if not self._is_formula_legal(self.text[formula_start:self.head]):
+                self.call_error()
                 return self.error
             self.head += 1
             # print('is latex!')
@@ -213,8 +251,8 @@ class Parser:
 
     def match(self, terminal):
         #         print('call match')
-        if self.error_flag:
-            return
+        # if self.error_flag:
+        #     return
         if self.lookahead == terminal:
             self.next_token()
             if self.error_flag:
@@ -255,13 +293,45 @@ class Parser:
             self.match(self.lookahead)
 
     def description_list(self):
+        r"""
+        use Parser to process and describe the txt
+
+        Parameters
+        ----------
+
+        Returns
+        ----------
+
+        Examples
+        --------
+        >>> text = '生产某种零件的A工厂25名工人的日加工零件数_   _'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        >>> text_parser.text
+        '生产某种零件的$A$工厂$25$名工人的日加工零件数$\\SIFBlank$'
+        >>> text = 'X的分布列为(   )'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        >>> text_parser.text
+        '$X$的分布列为$\\SIFChoice$'
+        >>> text = '① AB是⊙O的直径，AC是⊙O的切线，BC交⊙O于点E．AC的中点为D'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        >>> text_parser.error_flag
+        1
+        >>> text = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        >>> text_parser.fomula_illegal_flag
+        1
+        """
         # print('call description_list')
         self.description()
         if self.error_flag:
             # print("Error")
             return
         if self.lookahead != self.empty:
-            self.description_list()
+            self.description_list()  # pragma: no cover
         else:
             self.error_flag = 0
             # print('parse successfully!')
