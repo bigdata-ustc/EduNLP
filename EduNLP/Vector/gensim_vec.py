@@ -24,6 +24,9 @@ class W2V(object):
         self.method = method
         self.constants = {UNK: 0, PAD: 1}
 
+    def __len__(self):
+        return len(self.constants) + len(self.wv.key_to_index)
+
     def key_to_index(self, word):
         if word in self.constants:
             return self.constants[word]
@@ -47,6 +50,10 @@ class W2V(object):
 
     def __getitem__(self, item):
         return self.wv[item] if item not in self.constants else np.zeros((self.vector_size,))
+
+    def infer_vector(self, item, agg="mean"):
+        tokens = list(self(*item))
+        return eval("np.%s" % agg)(tokens, axis=0)
 
 
 class TfidfLoader(object):
