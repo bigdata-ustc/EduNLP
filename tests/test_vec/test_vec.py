@@ -69,6 +69,7 @@ def test_d2v_bow_tfidf(stem_data, tmpdir, method):
     )
     d2v = D2V(filepath, method=method)
     d2v(stem_data[0])
+    assert d2v.vector_size > 0
 
 
 def test_exception(stem_data, tmpdir):
