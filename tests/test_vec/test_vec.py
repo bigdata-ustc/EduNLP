@@ -1,6 +1,7 @@
 # coding: utf-8
 # 2021/5/30 @ tongshiwei
 
+import numpy as np
 import pytest
 from EduNLP.Pretrain import train_vector, GensimWordTokenizer
 from EduNLP.Vector import W2V, D2V
@@ -19,19 +20,28 @@ def stem_data(data):
 
 
 @pytest.mark.parametrize("method", ["sg", "cbow", "fasttext"])
-def test_w2v(stem_data, tmpdir, method):
+@pytest.mark.parametrize("binary", [True, False, None])
+def test_w2v(stem_data, tmpdir, method, binary):
     filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
     filepath = train_vector(
         stem_data,
         filepath_prefix,
         10,
         method=method,
+        binary=binary,
         train_params=dict(min_count=0)
     )
-    w2v = W2V(filepath, method=method)
-    w2v(stem_data[0])
+    w2v = W2V(filepath, method=method, binary=binary)
+    assert w2v.embedding_dim == 10
+    w2v(*stem_data[0])
+    w2v.key_to_index(stem_data[0][0])
     assert len(w2v["[FIGURE]"]) == 10
     assert len(list(w2v("[FIGURE]"))) == 1
+    assert np.array_equal(w2v["[UNK]"], np.zeros((10, )))
+    assert np.array_equal(w2v["[PAD]"], np.zeros((10,)))
+    assert w2v.vectors.shape == (len(w2v.wv.vectors) + len(w2v.constants), w2v.embedding_dim)
+    assert w2v.key_to_index("[UNK]") == 0
+    assert w2v.key_to_index("OOV") == 0
 
 
 def test_d2v(stem_data, tmpdir):
