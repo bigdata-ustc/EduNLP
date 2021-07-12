@@ -35,10 +35,10 @@ class W2V(object):
 
     @property
     def vectors(self):
-        return np.concatenate([np.zeros((len(self.constants), self.embedding_dim)), self.wv.vectors], axis=0)
+        return np.concatenate([np.zeros((len(self.constants), self.vector_size)), self.wv.vectors], axis=0)
 
     @property
-    def embedding_dim(self):
+    def vector_size(self):
         return self.wv.vector_size
 
     def __call__(self, *words):
@@ -46,10 +46,10 @@ class W2V(object):
             yield self[word]
 
     def __getitem__(self, item):
-        return self.wv[item] if item not in self.constants else np.zeros((self.embedding_dim,))
+        return self.wv[item] if item not in self.constants else np.zeros((self.vector_size,))
 
 
-class TfidfLoader():
+class TfidfLoader(object):
     def __init__(self, filepath):
         self.tfidf_model = TfidfModel.load(filepath)
         # 'tfidf' model shold be used based on 'bow' model
@@ -79,3 +79,10 @@ class D2V(object):
             return self.d2v.doc2bow(item)
         else:
             return self.d2v.infer_vector(item)
+
+    @property
+    def vector_size(self):
+        if self._method == "d2v":
+            return self.d2v.vector_size
+        else:  # pragma: no cover
+            raise NotImplementedError  # todo: enable this feature for bow and tfidf
