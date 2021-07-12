@@ -15,7 +15,7 @@ __all__ = ["GensimWordTokenizer", "train_vector", "GensimSegTokenizer"]
 
 
 class GensimWordTokenizer(object):
-    def __init__(self, symbol="gm"):
+    def __init__(self, symbol="gm", general = False):
         """
 
         Parameters
@@ -25,13 +25,22 @@ class GensimWordTokenizer(object):
             fgm
         """
         self.symbol = symbol
-        self.tokenization_params = {
-            "formula_params": {
-                "method": "ast",
-                "return_type": "list",
-                "ord2token": True
+        if general == True:
+            self.tokenization_params = {
+                "formula_params": {
+                    "method": "linear",
+                    "symbolize_figureformula": True
+                }
             }
-        }
+        else:
+            self.tokenization_params = {
+                "formula_params": {
+                    "method": "ast",
+                    "return_type": "list",
+                    "ord2token": True
+                }
+            }
+        
 
     def batch_process(self, *items):
         pass
@@ -144,7 +153,7 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
 
     filepath = w2v_prefix + method
     if embedding_dim is not None:
-        filepath = w2v_prefix + "_" + str(embedding_dim)
+        filepath = filepath + "_" + str(embedding_dim)
 
     if binary is True:
         filepath += ".bin"

@@ -8,7 +8,7 @@ import re
 
 
 class W2V(object):
-    def __init__(self, filepath, method, binary=None):
+    def __init__(self, filepath, method = "sg", binary=None):
         fp = PurePath(filepath)
         self.binary = binary if binary is not None else (True if fp.suffix == ".bin" else False)
         if self.binary is True:
