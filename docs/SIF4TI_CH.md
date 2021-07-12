@@ -8,6 +8,7 @@ version: 0.2
 1. 题目文本中只允许出现中文字符、中英文标点和换行符。
 2. 使用 \$\SIFBlank\$ 替换横线，对于选择题中的括号使用 \$\SIFChoice\$ 替换。
 3. 图片 ID 以公式的形式嵌入文本中：`$\FigureID{ uuid }$` 或用 base64 编码表示，特别的，内容为公式的图片用`$\FormFigureID{ uuid }$`表示。
+4. 文本标注格式：统一用 `$\textf{item,CHAR_EN}$` 表示，目前定义的有：b-加粗，i-斜体，u-下划线，w-下划波浪线，d-加点，t-标题。标注可以混用，按字母顺序排序，例如：$\textf{EduNLP, biu}$ 表示 <u>***EduNLP***</u>
 5. 其余诸如，英文字母、罗马字符、数字等数学符号一律需要使用 latex 格式表示，即嵌在 `$$` 之中。
 6. 分子式的录入标准暂且参考 [INCHI](https://zh.wikipedia.org/wiki/%E5%9B%BD%E9%99%85%E5%8C%96%E5%90%88%E7%89%A9%E6%A0%87%E8%AF%86)
 7. 目前对 latex 内部语法没有要求。
@@ -66,3 +67,10 @@ version: 0.2
 修改：
 1. 原用 \$\SIFUnderline\$ 和 \$\SIFBracket\$ 来替换填空题中的横线和选择题中的括号，现分别用 \$\SIFBlank\$ 和 \$\SIFChoice\$ 替换。 
 2. 原统一用`$\PictureID{ uuid }$`表示图片，现使用`$\FigureID{ uuid }$`，其中对于数据公式，用`$\FormFigureID{ uuid }$`来表示。
+
+2021-06-28 
+  
+添加： 
+1. 注明 `$$` 之中不能出现换行符。 
+2. 添加文本标注格式说明。 
+

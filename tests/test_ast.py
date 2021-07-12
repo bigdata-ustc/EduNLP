@@ -1,4 +1,5 @@
 import pytest
+
 from EduNLP.Formula.ast import str2ast
 
 
