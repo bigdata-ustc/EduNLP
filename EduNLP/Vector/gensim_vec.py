@@ -60,6 +60,10 @@ class TfidfLoader(object):
         item = self.dictionary.doc2bow(item)
         return self.tfidf_model[item]
 
+    @property
+    def vector_size(self):
+        return len(self.dictionary.token2id)
+
 
 class D2V(object):
     def __init__(self, filepath, method="d2v"):
@@ -82,7 +86,7 @@ class D2V(object):
 
     @property
     def vector_size(self):
-        if self._method == "d2v":
+        if self._method in {"d2v", "tfidf"}:
             return self.d2v.vector_size
-        else:  # pragma: no cover
-            raise NotImplementedError  # todo: enable this feature for bow and tfidf
+        elif self._method == "bow":
+            return len(self.d2v.token2id)
