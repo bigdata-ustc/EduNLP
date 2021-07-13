@@ -10,7 +10,7 @@ from .const import UNK, PAD
 
 
 class W2V(object):
-    def __init__(self, filepath, method = "sg", binary=None):
+    def __init__(self, filepath, method="sg", binary=None):
         fp = PurePath(filepath)
         self.binary = binary if binary is not None else (True if fp.suffix == ".bin" else False)
         if self.binary is True:
@@ -49,6 +49,24 @@ class W2V(object):
         return self.wv[item] if item not in self.constants else np.zeros((self.vector_size,))
 
 
+class BowLoader(object):
+    def __init__(self, filepath):
+        self.dictionary = corpora.Dictionary.load(filepath)
+
+    def infer_vector(self, item, return_vec=False):
+        item = self.dictionary.doc2bow(item)
+        if not return_vec:
+            return item  # return dic as default
+        vec = [0 for i in range(len(self.dictionary.keys()))]
+        for i, v in item:
+            vec[i] = v
+        return vec
+
+    @property
+    def vector_size(self):
+        return len(self.dictionary.keys())
+
+
 class TfidfLoader(object):
     def __init__(self, filepath):
         self.tfidf_model = TfidfModel.load(filepath)
@@ -56,9 +74,20 @@ class TfidfLoader(object):
         dictionary_path = re.sub(r"(.*)tfidf", r"\1bow", filepath)
         self.dictionary = corpora.Dictionary.load(dictionary_path)
 
-    def infer_vector(self, item):
-        item = self.dictionary.doc2bow(item)
-        return self.tfidf_model[item]
+    def infer_vector(self, item, return_vec=False):
+        dic_item = self.dictionary.doc2bow(item)
+        tfidf_item = self.tfidf_model[dic_item]
+        # return dic as default
+        if not return_vec:
+            return item  # pragma: no cover
+        vec = [0 for i in range(len(self.dictionary.keys()))]
+        for i, v in tfidf_item:
+            vec[i] = v
+        return tfidf_item
+
+    @property
+    def vector_size(self):
+        return len(self.dictionary.keys())
 
 
 class D2V(object):
@@ -68,21 +97,25 @@ class D2V(object):
         if self._method == "d2v":
             self.d2v = Doc2Vec.load(filepath)
         elif self._method == "bow":
-            self.d2v = corpora.Dictionary.load(filepath)
+            self.d2v = BowLoader(filepath)
         elif self._method == "tfidf":
             self.d2v = TfidfLoader(filepath)
         else:
             raise ValueError("Unknown method: %s" % method)
 
     def __call__(self, item):
-        if self._method == "bow":
-            return self.d2v.doc2bow(item)
-        else:
+        if self._method == "d2v":
             return self.d2v.infer_vector(item)
+        else:
+            return self.d2v.infer_vector(item, return_vec=True)
 
     @property
     def vector_size(self):
         if self._method == "d2v":
             return self.d2v.vector_size
-        else:  # pragma: no cover
-            raise NotImplementedError  # todo: enable this feature for bow and tfidf
+        if self._method == "bow":
+            return self.d2v.vector_size
+        if self._method == "tfidf":
+            return self.d2v.vector_size
+        # else:  # pragma: no cover
+        #     raise NotImplementedError  # todo: enable this feature for bow and tfidf

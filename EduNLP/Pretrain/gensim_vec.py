@@ -7,7 +7,7 @@ from gensim.models import word2vec
 from gensim.models.doc2vec import TaggedDocument
 from gensim.models.callbacks import CallbackAny2Vec
 from EduNLP.SIF.sif import sif4sci
-from EduNLP.Vector import D2V
+from EduNLP.Vector import D2V, BowLoader
 from copy import deepcopy
 import itertools as it
 
@@ -15,7 +15,7 @@ __all__ = ["GensimWordTokenizer", "train_vector", "GensimSegTokenizer"]
 
 
 class GensimWordTokenizer(object):
-    def __init__(self, symbol="gm", general = False):
+    def __init__(self, symbol="gm", general=False):
         """
 
         Parameters
@@ -25,7 +25,7 @@ class GensimWordTokenizer(object):
             fgm
         """
         self.symbol = symbol
-        if general == True:
+        if general is True:
             self.tokenization_params = {
                 "formula_params": {
                     "method": "linear",
@@ -40,7 +40,6 @@ class GensimWordTokenizer(object):
                     "ord2token": True
                 }
             }
-        
 
     def batch_process(self, *items):
         pass
@@ -144,8 +143,8 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
         binary = binary if binary is not None else True
     elif method == "tfidf":
         dictionary_path = train_vector(items, w2v_prefix, method="bow")
-        dictionary = D2V(dictionary_path, method="bow")
-        corpus = [dictionary(item) for item in items]
+        dictionary = BowLoader(dictionary_path)
+        corpus = [dictionary.infer_vector(item) for item in items]
         model = gensim.models.TfidfModel(corpus)
         binary = binary if binary is not None else True
     else:

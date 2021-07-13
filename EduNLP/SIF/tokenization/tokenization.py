@@ -33,7 +33,10 @@ class TokenList(object):
             "s": []
         }
         self.text_params = text_params if text_params is not None else {}
-        self.symbolize_figureformula = formula_params.pop("symbolize_figureformula") if "symbolize_figureformula" in formula_params else False
+        if formula_params is not None and "symbolize_figureformula" in formula_params:
+            self.symbolize_figureformula = formula_params.pop("symbolize_figureformula")
+        else:
+            self.symbolize_figureformula = False
         self.formula_params = formula_params if formula_params is not None else {"method": "linear"}
         self.formula_tokenize_method = self.formula_params.get("method")
         self.figure_params = figure_params if figure_params is not None else {}
@@ -167,7 +170,7 @@ class TokenList(object):
             if symbol is True:
                 self._formula_tokens.append(len(self._tokens))
                 self._tokens.append(segment)
-            elif self.symbolize_figureformula == True and isinstance(segment, FigureFormulaSegment):
+            elif self.symbolize_figureformula and isinstance(segment, FigureFormulaSegment):
                 self._formula_tokens.append(len(self._tokens))
                 self._tokens.append(Symbol(FORMULA_SYMBOL))
             elif isinstance(segment, FigureFormulaSegment):
