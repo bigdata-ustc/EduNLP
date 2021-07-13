@@ -4,7 +4,7 @@
 import numpy as np
 import pytest
 from EduNLP.Pretrain import train_vector, GensimWordTokenizer
-from EduNLP.Vector import W2V, D2V, RNNModel
+from EduNLP.Vector import W2V, D2V, RNNModel, I2V
 
 
 @pytest.fixture(scope="module")
@@ -34,7 +34,7 @@ def test_w2v(stem_data, tmpdir, method, binary):
     w2v = W2V(filepath, method=method, binary=binary)
     assert w2v.vector_size == 10
     w2v(*stem_data[0])
-    assert len(w2v.infer_vector(stem_data[0])) == w2v.vector_size
+    assert len(w2v.infer_vector([stem_data[0]])[0]) == w2v.vector_size
     w2v.key_to_index(stem_data[0][0])
     assert len(w2v) > 0
     assert len(w2v["[FIGURE]"]) == 10
@@ -44,6 +44,9 @@ def test_w2v(stem_data, tmpdir, method, binary):
     assert w2v.vectors.shape == (len(w2v.wv.vectors) + len(w2v.constants), w2v.vector_size)
     assert w2v.key_to_index("[UNK]") == 0
     assert w2v.key_to_index("OOV") == 0
+
+    i2v = I2V("w2v", filepath=filepath, method=method, binary=binary)
+    assert len(i2v(stem_data[:1])[0]) == i2v.vector_size
 
 
 def test_rnn(stem_data, tmpdir):
@@ -67,7 +70,10 @@ def test_rnn(stem_data, tmpdir):
         tokens = rnn.infer_tokens(stem_data[:1])
         item = rnn.infer_vector(stem_data[:1])
         assert tokens.shape == (1, len(stem_data[0]), 20 * (2 if rnn.rnn.bidirectional else 1))
-        assert item.shape == ((2 if rnn.rnn.bidirectional else 1), 1, 20)
+        assert item.shape == (1, rnn.vector_size)
+
+        i2v = I2V(rnn_type, w2v, 20)
+        assert len(i2v(stem_data[:1])[0]) == i2v.vector_size
 
 
 def test_d2v(stem_data, tmpdir):
@@ -83,6 +89,9 @@ def test_d2v(stem_data, tmpdir):
     d2v = D2V(filepath)
     assert len(d2v(stem_data[0])) == 10
     assert d2v.vector_size == 10
+
+    i2v = I2V("d2v", filepath)
+    assert len(i2v(stem_data[:1])[0]) == i2v.vector_size
 
 
 @pytest.mark.parametrize("method", ["bow", "tfidf"])
