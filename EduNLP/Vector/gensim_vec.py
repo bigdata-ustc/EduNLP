@@ -24,6 +24,9 @@ class W2V(object):
         self.method = method
         self.constants = {UNK: 0, PAD: 1}
 
+    def __len__(self):
+        return len(self.constants) + len(self.wv.key_to_index)
+
     def key_to_index(self, word):
         if word in self.constants:
             return self.constants[word]
@@ -47,6 +50,10 @@ class W2V(object):
 
     def __getitem__(self, item):
         return self.wv[item] if item not in self.constants else np.zeros((self.vector_size,))
+
+    def infer_vector(self, item, agg="mean"):
+        tokens = list(self(*item))
+        return eval("np.%s" % agg)(tokens, axis=0)
 
 
 class BowLoader(object):
@@ -89,6 +96,10 @@ class TfidfLoader(object):
     def vector_size(self):
         return len(self.dictionary.keys())
 
+    @property
+    def vector_size(self):
+        return len(self.dictionary.token2id)
+
 
 class D2V(object):
     def __init__(self, filepath, method="d2v"):
@@ -113,9 +124,7 @@ class D2V(object):
     def vector_size(self):
         if self._method == "d2v":
             return self.d2v.vector_size
-        if self._method == "bow":
+        elif self._method == "bow":
             return self.d2v.vector_size
-        if self._method == "tfidf":
+        elif self._method == "tfidf":
             return self.d2v.vector_size
-        # else:  # pragma: no cover
-        #     raise NotImplementedError  # todo: enable this feature for bow and tfidf
