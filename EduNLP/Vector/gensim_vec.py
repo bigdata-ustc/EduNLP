@@ -94,10 +94,6 @@ class TfidfLoader(object):
 
     @property
     def vector_size(self):
-        return len(self.dictionary.keys())
-
-    @property
-    def vector_size(self):
         return len(self.dictionary.token2id)
 
 
