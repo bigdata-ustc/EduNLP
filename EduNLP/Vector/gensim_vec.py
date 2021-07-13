@@ -7,6 +7,7 @@ from gensim.models import KeyedVectors, Word2Vec, FastText, Doc2Vec, TfidfModel
 from gensim import corpora
 import re
 from .const import UNK, PAD
+from .meta import Vector
 
 
 class W2V(object):
@@ -51,9 +52,12 @@ class W2V(object):
     def __getitem__(self, item):
         return self.wv[item] if item not in self.constants else np.zeros((self.vector_size,))
 
-    def infer_vector(self, item, agg="mean"):
-        tokens = list(self(*item))
-        return eval("np.%s" % agg)(tokens, axis=0)
+    def infer_vector(self, items, agg="mean", *args, **kwargs) -> np.ndarray:
+        tokens = self.infer_tokens(items, *args, **kwargs)
+        return eval("np.%s" % agg)(tokens, axis=1)
+
+    def infer_tokens(self, items, *args, **kwargs) -> list:
+        return [list(self(*item)) for item in items]
 
 
 class BowLoader(object):
@@ -86,18 +90,18 @@ class TfidfLoader(object):
         tfidf_item = self.tfidf_model[dic_item]
         # return dic as default
         if not return_vec:
-            return item  # pragma: no cover
+            return tfidf_item  # pragma: no cover
         vec = [0 for i in range(len(self.dictionary.keys()))]
         for i, v in tfidf_item:
             vec[i] = v
-        return tfidf_item
+        return vec
 
     @property
     def vector_size(self):
         return len(self.dictionary.token2id)
 
 
-class D2V(object):
+class D2V(Vector):
     def __init__(self, filepath, method="d2v"):
         self._method = method
         self._filepath = filepath
@@ -124,3 +128,9 @@ class D2V(object):
             return self.d2v.vector_size
         elif self._method == "tfidf":
             return self.d2v.vector_size
+
+    def infer_vector(self, items, *args, **kwargs) -> list:
+        return [self(item) for item in items]
+
+    def infer_tokens(self, item, *args, **kwargs) -> ...:
+        raise NotImplementedError

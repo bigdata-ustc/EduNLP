@@ -4,3 +4,4 @@
 from .gensim_vec import W2V, D2V, BowLoader, TfidfLoader
 from .const import *
 from .rnn import RNNModel
+from .i2v import I2V
