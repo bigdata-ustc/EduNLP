@@ -11,7 +11,7 @@ from .meta import Vector
 
 
 class W2V(Vector):
-    def __init__(self, filepath, method="sg", binary=None):
+    def __init__(self, filepath, method=None, binary=None):
         fp = PurePath(filepath)
         self.binary = binary if binary is not None else (True if fp.suffix == ".bin" else False)
         if self.binary is True:

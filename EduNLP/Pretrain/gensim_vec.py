@@ -23,13 +23,34 @@ class GensimWordTokenizer(object):
         symbol:
             gm
             fgm
+            gmas
+            fgmas
+        general:
+            True when item isn't in standard format, and want to tokenize formulas(except formulas in figure) linearly.
+            False when use 'ast' mothed to tokenize formulas instead of 'linear'.
+
+        Returns
+        ----------
+
+        Examples
+        ----------
+        >>> tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
+        >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+        ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+        >>> print(token_item.tokens[:10])
+        ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
+        >>> tokenizer = GensimWordTokenizer(symbol="fgmas", general=False)
+        >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+        ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+        >>> print(token_item.tokens[:10])
+        ['公式', '[FORMULA]', '如图', '[FIGURE]', '[FORMULA]', '约束条件', '公式', '[FORMULA]', '[SEP]', '[FORMULA]']
         """
         self.symbol = symbol
         if general is True:
             self.tokenization_params = {
                 "formula_params": {
                     "method": "linear",
-                    "symbolize_figureformula": True
+                    "symbolize_figure_formula": True
                 }
             }
         else:
