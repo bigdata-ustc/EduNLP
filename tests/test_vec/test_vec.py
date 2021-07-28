@@ -19,6 +19,25 @@ def stem_data(data):
     return _data
 
 
+@pytest.fixture(scope="module")
+def stem_data_general(data):
+    test_items = [
+        {'stem': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
+            如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'},
+        {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
+            若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
+    ]
+    data = test_items + data
+    _data = []
+    tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
+    for e in data[:10]:
+        d = tokenizer(e["stem"])
+        if d is not None:
+            _data.append(d.tokens)
+    assert _data
+    return _data
+
+
 @pytest.mark.parametrize("method", ["sg", "cbow", "fasttext"])
 @pytest.mark.parametrize("binary", [True, False, None])
 def test_w2v(stem_data, tmpdir, method, binary):
@@ -95,15 +114,15 @@ def test_d2v(stem_data, tmpdir):
 
 
 @pytest.mark.parametrize("method", ["bow", "tfidf"])
-def test_d2v_bow_tfidf(stem_data, tmpdir, method):
+def test_d2v_bow_tfidf(stem_data_general, tmpdir, method):
     filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
     filepath = train_vector(
-        stem_data,
+        stem_data_general,
         filepath_prefix,
         method=method
     )
     d2v = D2V(filepath, method=method)
-    d2v(stem_data[0])
+    d2v(stem_data_general[0])
     assert d2v.vector_size > 0
 
 
@@ -113,7 +132,7 @@ def test_exception(stem_data, tmpdir):
         train_vector(
             stem_data,
             filepath_prefix,
-            10,
+            embedding_dim=10,
             method="error",
             train_params=dict(min_count=0)
         )
