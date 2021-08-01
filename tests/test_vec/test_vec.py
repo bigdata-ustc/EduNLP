@@ -72,8 +72,8 @@ def test_rnn(stem_data, tmpdir):
         assert tokens.shape == (1, len(stem_data[0]), 20 * (2 if rnn.rnn.bidirectional else 1))
         assert item.shape == (1, rnn.vector_size)
 
-        i2v = T2V(rnn_type, w2v, 20)
-        assert len(i2v(stem_data[:1])[0]) == i2v.vector_size
+        t2v = T2V(rnn_type, w2v, 20)
+        assert len(t2v(stem_data[:1])[0]) == t2v.vector_size
 
 
 def test_d2v(stem_data, tmpdir):
@@ -90,8 +90,8 @@ def test_d2v(stem_data, tmpdir):
     assert len(d2v(stem_data[0])) == 10
     assert d2v.vector_size == 10
 
-    i2v = T2V("d2v", filepath)
-    assert len(i2v(stem_data[:1])[0]) == i2v.vector_size
+    t2v = T2V("d2v", filepath)
+    assert len(t2v(stem_data[:1])[0]) == t2v.vector_size
 
 
 @pytest.mark.parametrize("method", ["bow", "tfidf"])
