@@ -4,4 +4,4 @@
 from .gensim_vec import W2V, D2V
 from .const import *
 from .rnn import RNNModel
-from .i2v import I2V
+from .t2v import T2V

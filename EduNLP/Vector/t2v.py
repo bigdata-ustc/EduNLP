@@ -15,7 +15,7 @@ MODELS = {
 }
 
 
-class I2V(object):
+class T2V(object):
     def __init__(self, model: str, *args, **kwargs):
         model = model.lower()
         self.model_type = model

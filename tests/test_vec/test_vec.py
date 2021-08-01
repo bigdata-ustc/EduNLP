@@ -4,7 +4,7 @@
 import numpy as np
 import pytest
 from EduNLP.Pretrain import train_vector, GensimWordTokenizer
-from EduNLP.Vector import W2V, D2V, RNNModel, I2V
+from EduNLP.Vector import W2V, D2V, RNNModel, T2V
 
 
 @pytest.fixture(scope="module")
@@ -45,7 +45,7 @@ def test_w2v(stem_data, tmpdir, method, binary):
     assert w2v.key_to_index("[UNK]") == 0
     assert w2v.key_to_index("OOV") == 0
 
-    i2v = I2V("w2v", filepath=filepath, method=method, binary=binary)
+    i2v = T2V("w2v", filepath=filepath, method=method, binary=binary)
     assert len(i2v(stem_data[:1])[0]) == i2v.vector_size
 
 
@@ -72,7 +72,7 @@ def test_rnn(stem_data, tmpdir):
         assert tokens.shape == (1, len(stem_data[0]), 20 * (2 if rnn.rnn.bidirectional else 1))
         assert item.shape == (1, rnn.vector_size)
 
-        i2v = I2V(rnn_type, w2v, 20)
+        i2v = T2V(rnn_type, w2v, 20)
         assert len(i2v(stem_data[:1])[0]) == i2v.vector_size
 
 
@@ -90,7 +90,7 @@ def test_d2v(stem_data, tmpdir):
     assert len(d2v(stem_data[0])) == 10
     assert d2v.vector_size == 10
 
-    i2v = I2V("d2v", filepath)
+    i2v = T2V("d2v", filepath)
     assert len(i2v(stem_data[:1])[0]) == i2v.vector_size
 
 
