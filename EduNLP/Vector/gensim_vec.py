@@ -11,7 +11,7 @@ from .meta import Vector
 
 
 class W2V(Vector):
-    def __init__(self, filepath, method, binary=None):
+    def __init__(self, filepath, method=None, binary=None):
         """
 
         Parameters
@@ -69,6 +69,24 @@ class W2V(Vector):
         return [list(self(*item)) for item in items]
 
 
+class BowLoader(object):
+    def __init__(self, filepath):
+        self.dictionary = corpora.Dictionary.load(filepath)
+
+    def infer_vector(self, item, return_vec=False):
+        item = self.dictionary.doc2bow(item)
+        if not return_vec:
+            return item  # return dic as default
+        vec = [0 for i in range(len(self.dictionary.keys()))]
+        for i, v in item:
+            vec[i] = v
+        return vec
+
+    @property
+    def vector_size(self):
+        return len(self.dictionary.keys())
+
+
 class TfidfLoader(object):
     def __init__(self, filepath):
         self.tfidf_model = TfidfModel.load(filepath)
@@ -76,9 +94,16 @@ class TfidfLoader(object):
         dictionary_path = re.sub(r"(.*)tfidf", r"\1bow", filepath)
         self.dictionary = corpora.Dictionary.load(dictionary_path)
 
-    def infer_vector(self, item):
-        item = self.dictionary.doc2bow(item)
-        return self.tfidf_model[item]
+    def infer_vector(self, item, return_vec=False):
+        dic_item = self.dictionary.doc2bow(item)
+        tfidf_item = self.tfidf_model[dic_item]
+        # return dic as default
+        if not return_vec:
+            return tfidf_item  # pragma: no cover
+        vec = [0 for i in range(len(self.dictionary.keys()))]
+        for i, v in tfidf_item:
+            vec[i] = v
+        return vec
 
     @property
     def vector_size(self):
@@ -92,24 +117,26 @@ class D2V(Vector):
         if self._method == "d2v":
             self.d2v = Doc2Vec.load(filepath)
         elif self._method == "bow":
-            self.d2v = corpora.Dictionary.load(filepath)
+            self.d2v = BowLoader(filepath)
         elif self._method == "tfidf":
             self.d2v = TfidfLoader(filepath)
         else:
             raise ValueError("Unknown method: %s" % method)
 
     def __call__(self, item):
-        if self._method == "bow":
-            return self.d2v.doc2bow(item)
-        else:
+        if self._method == "d2v":
             return self.d2v.infer_vector(item)
+        else:
+            return self.d2v.infer_vector(item, return_vec=True)
 
     @property
     def vector_size(self):
-        if self._method in {"d2v", "tfidf"}:
+        if self._method == "d2v":
             return self.d2v.vector_size
         elif self._method == "bow":
-            return len(self.d2v.token2id)
+            return self.d2v.vector_size
+        elif self._method == "tfidf":
+            return self.d2v.vector_size
 
     def infer_vector(self, items, *args, **kwargs) -> list:
         return [self(item) for item in items]

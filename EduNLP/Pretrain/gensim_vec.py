@@ -7,7 +7,7 @@ from gensim.models import word2vec
 from gensim.models.doc2vec import TaggedDocument
 from gensim.models.callbacks import CallbackAny2Vec
 from EduNLP.SIF.sif import sif4sci
-from EduNLP.Vector import D2V
+from EduNLP.Vector import D2V, BowLoader
 from copy import deepcopy
 import itertools as it
 
@@ -15,7 +15,7 @@ __all__ = ["GensimWordTokenizer", "train_vector", "GensimSegTokenizer"]
 
 
 class GensimWordTokenizer(object):
-    def __init__(self, symbol="gm"):
+    def __init__(self, symbol="gm", general=False):
         """
 
         Parameters
@@ -23,15 +23,44 @@ class GensimWordTokenizer(object):
         symbol:
             gm
             fgm
+            gmas
+            fgmas
+        general:
+            True when item isn't in standard format, and want to tokenize formulas(except formulas in figure) linearly.
+            False when use 'ast' mothed to tokenize formulas instead of 'linear'.
+
+        Returns
+        ----------
+
+        Examples
+        ----------
+        >>> tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
+        >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+        ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+        >>> print(token_item.tokens[:10])
+        ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
+        >>> tokenizer = GensimWordTokenizer(symbol="fgmas", general=False)
+        >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+        ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+        >>> print(token_item.tokens[:10])
+        ['公式', '[FORMULA]', '如图', '[FIGURE]', '[FORMULA]', '约束条件', '公式', '[FORMULA]', '[SEP]', '[FORMULA]']
         """
         self.symbol = symbol
-        self.tokenization_params = {
-            "formula_params": {
-                "method": "ast",
-                "return_type": "list",
-                "ord2token": True
+        if general is True:
+            self.tokenization_params = {
+                "formula_params": {
+                    "method": "linear",
+                    "symbolize_figure_formula": True
+                }
             }
-        }
+        else:
+            self.tokenization_params = {
+                "formula_params": {
+                    "method": "ast",
+                    "return_type": "list",
+                    "ord2token": True
+                }
+            }
 
     def batch_process(self, *items):
         pass
@@ -135,8 +164,8 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
         binary = binary if binary is not None else True
     elif method == "tfidf":
         dictionary_path = train_vector(items, w2v_prefix, method="bow")
-        dictionary = D2V(dictionary_path, method="bow")
-        corpus = [dictionary(item) for item in items]
+        dictionary = BowLoader(dictionary_path)
+        corpus = [dictionary.infer_vector(item) for item in items]
         model = gensim.models.TfidfModel(corpus)
         binary = binary if binary is not None else True
     else:
@@ -144,7 +173,7 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
 
     filepath = w2v_prefix + method
     if embedding_dim is not None:
-        filepath = w2v_prefix + "_" + str(embedding_dim)
+        filepath = filepath + "_" + str(embedding_dim)
 
     if binary is True:
         filepath += ".bin"
