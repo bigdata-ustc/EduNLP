@@ -1,13 +1,15 @@
 # coding: utf-8
 # 2021/7/12 @ tongshiwei
 
+from typing import List
 import torch
 from .gensim_vec import W2V
 from .const import PAD
+from EduNLP.ModelZoo import pad_sequence, set_device
 
 
 class Embedding(object):
-    def __init__(self, w2v: (W2V, tuple, list, dict, None), freeze=True, **kwargs):
+    def __init__(self, w2v: (W2V, tuple, list, dict, None), freeze=True, device=None, **kwargs):
         if w2v is None:
             self.w2v = None
         elif isinstance(w2v, (tuple, list)):
@@ -34,11 +36,40 @@ class Embedding(object):
             self.pad_val = self.w2v.constants[PAD]
         self.key_to_index = self.w2v.key_to_index if w2v is not None else lambda x: x
 
-    def __call__(self, *args, **kwargs):  # todo
-        raise NotImplementedError
+        if device is not None:
+            self.set_device(device)
 
-    def infer_vector(self):  # todo
-        raise NotImplementedError
+    def __call__(self, items: List[List[str]], indexing=True, padding=True, vectorization=True, *args,
+                 **kwargs) -> tuple:
 
-    def infer_tokens(self):  # todo
-        raise NotImplementedError
+        items, item_len = self.indexing(items, padding=padding, indexing=indexing)
+        items = self.infer_token_vector(items, indexing=False)[0] if vectorization else items
+        return items, item_len
+
+    def infer_token_vector(self, items: List[List[str]], indexing=True) -> tuple:
+        items, item_len = self.indexing(items, padding=True, indexing=indexing)
+        item_embedding = self.embedding(torch.LongTensor(items))
+        return item_embedding, item_len
+
+    def indexing(self, items: List[List[str]], padding=False, indexing=True) -> tuple:
+        """
+
+        Parameters
+        ----------
+        items: list of list of str(word/token)
+        padding: bool
+            whether padding the returned list with default pad_val to make all item in items have the same length
+        indexing: bool
+
+        Returns
+        -------
+        word_id: list of list of int
+        """
+        items_idx = [[self.key_to_index(word) for word in item] for item in items] if indexing else items
+        item_len = [len(_idx) for _idx in items_idx]
+        padded_items_idx = pad_sequence(items_idx, pad_val=self.pad_val) if padding is True else items_idx
+        return padded_items_idx, item_len
+
+    def set_device(self, device):
+        self.embedding = set_device(self.embedding, device)
+        return self
