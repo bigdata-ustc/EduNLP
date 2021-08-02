@@ -34,7 +34,8 @@ setup(
         'numpy>=1.17.0',
         'jieba',
         'js2py',
-        'torch'
+        'torch',
+        'EduData'
     ],  # And any other dependencies foo needs
     entry_points={
     },
