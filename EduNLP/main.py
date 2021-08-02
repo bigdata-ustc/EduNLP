@@ -10,5 +10,5 @@ def list_i2v():
     print("\n".join(MODELS.keys()))
 
 
-def cli():
+def cli():  # pragma: no cover
     fire.Fire({"i2v": list_i2v})
