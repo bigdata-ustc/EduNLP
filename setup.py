@@ -38,5 +38,8 @@ setup(
         'EduData'
     ],  # And any other dependencies foo needs
     entry_points={
+        "console_scripts": [
+            "edunlp = EduNLP.main:cli",
+        ],
     },
 )
