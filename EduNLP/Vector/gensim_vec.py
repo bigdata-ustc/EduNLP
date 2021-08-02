@@ -12,6 +12,15 @@ from .meta import Vector
 
 class W2V(Vector):
     def __init__(self, filepath, method, binary=None):
+        """
+
+        Parameters
+        ----------
+        filepath:
+            path to the pretrained model file
+        method
+        binary
+        """
         fp = PurePath(filepath)
         self.binary = binary if binary is not None else (True if fp.suffix == ".bin" else False)
         if self.binary is True:
