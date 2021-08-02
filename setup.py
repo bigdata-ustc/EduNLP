@@ -21,7 +21,7 @@ dev_deps = [
 
 setup(
     name='EduNLP',
-    version='0.0.2',
+    version='0.0.3',
     extras_require={
         'test': test_deps,
         'tutor': tutor_deps,
@@ -34,7 +34,12 @@ setup(
         'numpy>=1.17.0',
         'jieba',
         'js2py',
+        'torch',
+        'EduData>=0.0.16'
     ],  # And any other dependencies foo needs
     entry_points={
+        "console_scripts": [
+            "edunlp = EduNLP.main:cli",
+        ],
     },
 )
