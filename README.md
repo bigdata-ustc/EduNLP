@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="300" src="docs/EduNLP.png">
+</p>
+
 # EduNLP
 
 [![PyPI](https://img.shields.io/pypi/v/EduNLP.svg)](https://pypi.python.org/pypi/EduNLP)
