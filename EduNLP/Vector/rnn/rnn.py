@@ -5,7 +5,7 @@ import torch
 from ..gensim_vec import W2V
 from ..embedding import Embedding
 from ..meta import Vector
-from EduNLP.ModelZoo import rnn, pad_sequence
+from EduNLP.ModelZoo import rnn, set_device
 
 
 class RNNModel(Vector):
@@ -38,7 +38,8 @@ class RNNModel(Vector):
     torch.Size([2, 3, 2])
     """
 
-    def __init__(self, rnn_type, w2v: (W2V, tuple, list, dict, None), hidden_size, freeze_pretrained=True, **kwargs):
+    def __init__(self, rnn_type, w2v: (W2V, tuple, list, dict, None), hidden_size, freeze_pretrained=True, device=None,
+                 **kwargs):
         self.embedding = Embedding(w2v, freeze_pretrained, **kwargs)
         for key in ["vocab_size", "embedding_dim"]:
             if key in kwargs:
@@ -51,14 +52,16 @@ class RNNModel(Vector):
             embedding=self.embedding.embedding,
             **kwargs
         )
+        self.bidirectional = self.rnn.rnn.bidirectional
+        self.hidden_size = self.rnn.hidden_size
         self.freeze_pretrained = freeze_pretrained
+        if device is not None:
+            self.set_device(device)
 
     def __call__(self, items, indexing=True, padding=True, **kwargs):
-        seq_idx = [[self.embedding.key_to_index(w) for w in s] for s in items] if indexing is True else items
-        seq_len = [len(_idx) for _idx in seq_idx]
-        pad_seq_idx = pad_sequence(seq_idx, pad_val=self.embedding.pad_val) if padding is True else seq_idx
+        seq_idx, seq_len = self.embedding(items, indexing=indexing, padding=padding, vectorization=False)
 
-        tokens, item = self.rnn(torch.LongTensor(pad_seq_idx), torch.LongTensor(seq_len))
+        tokens, item = self.rnn(torch.LongTensor(seq_idx), torch.LongTensor(seq_len))
 
         return tokens, item
 
@@ -79,4 +82,7 @@ class RNNModel(Vector):
 
     @property
     def vector_size(self) -> int:
-        return self.rnn.hidden_size * (1 if self.rnn.bidirectional is False else 2)
+        return self.hidden_size * (1 if self.bidirectional is False else 2)
+
+    def set_device(self, device):
+        self.rnn = set_device(self.rnn, device)
