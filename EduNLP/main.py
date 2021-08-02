@@ -10,5 +10,5 @@ def list_i2v():
     print("\n".join(MODELS.keys()))
 
 
-if __name__ == '__main__':
+def cli():
     fire.Fire({"i2v": list_i2v})
