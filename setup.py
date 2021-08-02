@@ -35,7 +35,7 @@ setup(
         'jieba',
         'js2py',
         'torch',
-        'EduData'
+        'EduData>=0.0.16'
     ],  # And any other dependencies foo needs
     entry_points={
         "console_scripts": [
