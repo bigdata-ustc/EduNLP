@@ -14,9 +14,9 @@ def test_pretrained_i2v(tmp_path):
     d = tmp_path / "model"
     d.mkdir()
 
-    get_pretrained_i2v("test", tmp_path)
+    get_pretrained_i2v("test", d)
 
     with pytest.raises(KeyError):
         get_pretrained_i2v("error")
 
-    get_pretrained_i2v("test", tmp_path)
+    get_pretrained_i2v("test", d)
