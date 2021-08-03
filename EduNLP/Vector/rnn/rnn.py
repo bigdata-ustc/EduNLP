@@ -6,6 +6,7 @@ from ..gensim_vec import W2V
 from ..embedding import Embedding
 from ..meta import Vector
 from EduNLP.ModelZoo import rnn, set_device
+from longling.ML.PytorchHelper import save_params
 
 
 class RNNModel(Vector):
@@ -38,7 +39,8 @@ class RNNModel(Vector):
     torch.Size([2, 3, 2])
     """
 
-    def __init__(self, rnn_type, w2v: (W2V, tuple, list, dict, None), hidden_size, freeze_pretrained=True, device=None,
+    def __init__(self, rnn_type, w2v: (W2V, tuple, list, dict, None), hidden_size,
+                 freeze_pretrained=True, model_params=None, device=None,
                  **kwargs):
         self.embedding = Embedding(w2v, freeze_pretrained, **kwargs)
         for key in ["vocab_size", "embedding_dim"]:
@@ -50,6 +52,7 @@ class RNNModel(Vector):
             self.embedding.embedding_dim,
             hidden_size=hidden_size,
             embedding=self.embedding.embedding,
+            model_params=model_params,
             **kwargs
         )
         self.bidirectional = self.rnn.rnn.bidirectional
@@ -86,3 +89,22 @@ class RNNModel(Vector):
 
     def set_device(self, device):
         self.rnn = set_device(self.rnn, device)
+
+    def save(self, filepath, save_embedding=False):
+        save_params(filepath, self.rnn, select=None if save_embedding is True else '^(?!.*embedding)')
+        return filepath
+
+    def freeze(self, *args, **kwargs):
+        return self.eval()
+
+    @property
+    def is_frozen(self):
+        return not self.rnn.training
+
+    def eval(self):
+        self.rnn.eval()
+        return self
+
+    def train(self, mode=True):
+        self.rnn.train(mode)
+        return self
