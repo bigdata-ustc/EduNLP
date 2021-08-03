@@ -19,7 +19,7 @@ class Embedding(object):
         elif isinstance(w2v, W2V):
             self.w2v = w2v
         else:
-            raise TypeError("w2v argument must be one of W2V, tuple, list, dict or None")
+            raise TypeError("w2v argument must be one of W2V, tuple, list, dict or None, now is %s" % type(w2v))
 
         if self.w2v is not None:
             self.vocab_size = len(self.w2v)
