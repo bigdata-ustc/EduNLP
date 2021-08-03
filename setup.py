@@ -21,7 +21,7 @@ dev_deps = [
 
 setup(
     name='EduNLP',
-    version='0.0.3',
+    version='0.0.4',
     extras_require={
         'test': test_deps,
         'tutor': tutor_deps,
