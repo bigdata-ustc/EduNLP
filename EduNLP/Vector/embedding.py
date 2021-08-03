@@ -63,7 +63,10 @@ class Embedding(object):
 
         Returns
         -------
-        word_id: list of list of int
+        token_idx: list of list of int
+            the list of the tokens of each item
+        token_len: list of int
+            the list of the length of tokens of each item
         """
         items_idx = [[self.key_to_index(word) for word in item] for item in items] if indexing else items
         item_len = [len(_idx) for _idx in items_idx]
