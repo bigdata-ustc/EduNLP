@@ -36,7 +36,7 @@ setup(
         'js2py',
         'torch',
         'EduData>=0.0.16',
-        'longling>=1.3.27'
+        'longling>=1.3.26'
     ],  # And any other dependencies foo needs
     entry_points={
         "console_scripts": [
