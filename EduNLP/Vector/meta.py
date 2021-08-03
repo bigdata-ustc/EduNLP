@@ -11,3 +11,10 @@ class Vector(object):
     @property
     def vector_size(self):
         raise NotImplementedError
+
+    @property
+    def is_frozen(self):  # pragma: no cover
+        return True
+
+    def freeze(self, *args, **kwargs):  # pragma: no cover
+        pass
