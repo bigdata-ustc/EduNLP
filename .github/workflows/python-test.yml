@@ -18,8 +18,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          - pip install -e .[test]
-          - pip install codecov
+          pip install -e .[test]
+          pip install codecov
       - name: Test with pytest
         run: |
           pytest
