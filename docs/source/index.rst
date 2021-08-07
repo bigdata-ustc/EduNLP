@@ -14,9 +14,15 @@ Welcome to EduNLP's Tutorials and Documentation
 .. Badges
 .. image:: https://img.shields.io/pypi/v/EduNLP.svg
    :target: https://pypi.python.org/pypi/EduNLP
+   :alt: PyPI
 
 .. image:: https://github.com/bigdata-ustc/EduNLP/actions/workflows/python-test.yml/badge.svg?branch=master
    :target: https://github.com/bigdata-ustc/EduNLP/actions/workflows/python-test.yml
+   :alt: test
+
+.. image:: https://readthedocs.org/projects/edunlp/badge/?version=latest
+   :target: https://edunlp.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 .. todo: add all badges in EduNLP/REAMD.md
 

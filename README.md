@@ -7,6 +7,7 @@
 [![PyPI](https://img.shields.io/pypi/v/EduNLP.svg)](https://pypi.python.org/pypi/EduNLP)
 [![test](https://github.com/bigdata-ustc/EduNLP/actions/workflows/python-test.yml/badge.svg?branch=master)](https://github.com/bigdata-ustc/EduNLP/actions/workflows/python-test.yml)
 [![codecov](https://codecov.io/gh/bigdata-ustc/EduNLP/branch/master/graph/badge.svg?token=B7gscOGQLD)](https://codecov.io/gh/bigdata-ustc/EduNLP)
+[![Documentation Status](https://readthedocs.org/projects/edunlp/badge/?version=latest)](https://edunlp.readthedocs.io/en/latest/?badge=latest)
 [![Download](https://img.shields.io/pypi/dm/EduNLP.svg?style=flat)](https://pypi.python.org/pypi/EduNLP)
 [![License](https://img.shields.io/github/license/bigdata-ustc/EduNLP)](LICENSE)
 [![DOI](https://zenodo.org/badge/332661206.svg)](https://zenodo.org/badge/latestdoi/332661206)
