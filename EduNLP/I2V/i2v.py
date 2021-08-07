@@ -11,23 +11,24 @@ __all__ = ["I2V", "D2V", "get_pretrained_i2v"]
 
 
 class I2V(object):
-    def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
-        """
+    """
 
-        Parameters
-        ----------
-        tokenizer: str
-            the tokenizer name
-        t2v: str
-            the name of token2vector model
-        args:
-            the parameters passed to t2v
-        tokenizer_kwargs: dict
-            the parameters passed to tokenizer
-        pretrained_t2v: bool
-        kwargs:
-            the parameters passed to t2v
-        """
+    Parameters
+    ----------
+    tokenizer: str
+        the tokenizer name
+    t2v: str
+        the name of token2vector model
+    args:
+        the parameters passed to t2v
+    tokenizer_kwargs: dict
+        the parameters passed to tokenizer
+    pretrained_t2v: bool
+    kwargs:
+        the parameters passed to t2v
+    """
+    def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
+
         self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
@@ -101,6 +102,18 @@ MODELS = {
 
 
 def get_pretrained_i2v(name, model_dir=MODEL_DIR):
+    """
+
+    Parameters
+    ----------
+    name
+    model_dir
+
+    Returns
+    -------
+    i2v model: I2V
+
+    """
     if name not in MODELS:
         raise KeyError(
             "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(MODELS.keys()))
