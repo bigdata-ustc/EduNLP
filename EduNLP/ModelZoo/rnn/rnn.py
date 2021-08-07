@@ -4,7 +4,7 @@
 import torch
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
-from longling.ML.PytorchHelper import load_net
+from baize.torch import load_net
 
 
 class LM(nn.Module):

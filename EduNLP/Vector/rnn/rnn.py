@@ -6,7 +6,7 @@ from ..gensim_vec import W2V
 from ..embedding import Embedding
 from ..meta import Vector
 from EduNLP.ModelZoo import rnn, set_device
-from longling.ML.PytorchHelper import save_params
+from baize.torch import save_params
 
 
 class RNNModel(Vector):
