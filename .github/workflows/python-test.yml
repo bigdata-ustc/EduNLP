@@ -1,4 +1,5 @@
-name: Python package
+
+name: test
 
 on: [push, pull_request]
 
