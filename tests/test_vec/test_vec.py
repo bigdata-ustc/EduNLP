@@ -1,6 +1,7 @@
 # coding: utf-8
 # 2021/5/30 @ tongshiwei
 
+import torch
 import numpy as np
 import pytest
 from EduNLP.Pretrain import train_vector, GensimWordTokenizer
@@ -111,9 +112,21 @@ def test_rnn(stem_tokens, tmpdir):
         item = rnn.infer_vector(stem_tokens[:1])
         assert tokens.shape == (1, len(stem_tokens[0]), 20 * (2 if rnn.bidirectional else 1))
         assert item.shape == (1, rnn.vector_size)
+        item_vec = rnn.infer_vector(stem_tokens[:1])
+        assert torch.equal(item, item_vec)
 
         t2v = T2V(rnn_type, w2v, 20)
         assert len(t2v(stem_tokens[:1])[0]) == t2v.vector_size
+
+        saved_params = rnn.save(str((tmpdir / method).join("stem_tf_rnn.params")), save_embedding=True)
+
+        rnn = RNNModel(rnn_type, w2v, 20, device="cpu", model_params=saved_params)
+        rnn.train()
+        assert rnn.is_frozen is False
+        rnn.freeze()
+        assert rnn.is_frozen is True
+        item_vec1 = rnn.infer_vector(stem_tokens[:1])
+        assert torch.equal(item, item_vec1)
 
 
 def test_d2v(stem_tokens, tmpdir, stem_data):

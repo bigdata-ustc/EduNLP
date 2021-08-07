@@ -4,6 +4,7 @@
 import torch
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
+from baize.torch import load_net
 
 
 class LM(nn.Module):
@@ -28,7 +29,7 @@ class LM(nn.Module):
     """
 
     def __init__(self, rnn_type: str, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers=1,
-                 bidirectional=False, embedding=None, **kwargs):
+                 bidirectional=False, embedding=None, model_params=None, **kwargs):
         super(LM, self).__init__()
         rnn_type = rnn_type.upper()
         self.embedding = torch.nn.Embedding(vocab_size, embedding_dim) if embedding is None else embedding
@@ -61,12 +62,15 @@ class LM(nn.Module):
             self.num_layers *= 2
         self.hidden_size = hidden_size
 
+        if model_params:
+            load_net(model_params, self, allow_missing=True)
+
     def forward(self, seq_idx, seq_len):
         seq = self.embedding(seq_idx)
         pack = pack_padded_sequence(seq, seq_len, batch_first=True)
-        h0 = torch.randn(self.num_layers, seq.shape[0], self.hidden_size)
+        h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
         if self.c is True:
-            c0 = torch.randn(self.num_layers, seq.shape[0], self.hidden_size)
+            c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
             output, (hn, _) = self.rnn(pack, (h0, c0))
         else:
             output, hn = self.rnn(pack, h0)
