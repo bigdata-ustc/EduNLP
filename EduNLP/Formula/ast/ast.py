@@ -41,15 +41,18 @@ def ast(formula: (str, List[Dict]), index=0, forest_begin=0, father_tree=None, i
 
     Notes
     ----------
-    Some functions are not supportd in katex
-    eg :
+    Some functions are not supportd in ``katex``
+    e.g.,
+
     1. tag
-    '\\begin{equation} \\tag{tagName} F=ma \\end{equation}'
-    '\\begin{align} \\tag{1} y=x+z \\end{align}'
-    '\\tag*{hi} x+y^{2x}'
+        - ``\\begin{equation} \\tag{tagName} F=ma \\end{equation}``
+        - ``\\begin{align} \\tag{1} y=x+z \\end{align}``
+        - ``\\tag*{hi} x+y^{2x}``
     2. dddot
-    '\\frac{ \\dddot y }{ x }'
-    3. see other: https://github.com/KaTeX/KaTeX/blob/master/docs/support_table.md
+        - ``\\frac{ \\dddot y }{ x }``
+
+    For more information, refer to
+    `katex support table <https://github.com/KaTeX/KaTeX/blob/master/docs/support_table.md>`_
     """
     tree = []
     index += forest_begin
