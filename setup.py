@@ -14,16 +14,22 @@ test_deps = [
     "pillow",
     "gensim"
 ]
+docs_deps = [
+    'sphinx',
+    'sphinx_rtd_theme',
+    'sphinx_toggleprompt'
+]
 
 dev_deps = [
     "requests"
-]
+] + docs_deps
 
 setup(
     name='EduNLP',
     version='0.0.4',
     extras_require={
         'test': test_deps,
+        'doc': docs_deps,
         'tutor': tutor_deps,
         'pretrain': pretrain_deps,
         "dev": dev_deps
