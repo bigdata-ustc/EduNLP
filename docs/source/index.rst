@@ -49,7 +49,7 @@ But you can also install from source:
 
 Getting Started
 ------------------
-For absolute beginners, start with the `Tutorial to EduNLP <tutorial/en/index>`_ `(中文版) <tutorial/zh/index>`_.
+For absolute beginners, start with the :doc:`Tutorial to EduNLP <tutorial/en/index>` :doc:`(中文版) <tutorial/zh/index>`.
 It covers the basic concepts of EduNLP and
 a step-by-step on training, loading and using the language models.
 
