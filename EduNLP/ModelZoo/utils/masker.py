@@ -29,9 +29,22 @@ class Masker(object):
     [['a', '[MASK]', 'c'], ['d', '[PAD]', '[PAD]'], ['hello', '[MASK]', '[PAD]']]
     >>> mask_label
     [[0, 1, 0], [0, 0, 0], [0, 1, 0]]
+    >>> items = [[1, 2, 3], [1, 1, 0], [2, 0, 0]]
+    >>> masker = Masker(per=0.2, seed=10)
+    >>> masked_seq, mask_label = masker(items, [3, 2, 1])
+    >>> masked_seq
+    [[1, 2, 3], [1, 1, 0], [2, 0, 0]]
+    >>> mask_label
+    [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    >>> masker = Masker(per=0.2, seed=10, min_mask=1)
+    >>> masked_seq, mask_label = masker(items, [3, 2, 1])
+    >>> masked_seq
+    [[1, 0, 3], [1, 0, 0], [0, 0, 0]]
+    >>> mask_label
+    [[0, 1, 0], [0, 1, 0], [1, 0, 0]]
     """
 
-    def __init__(self, mask: (int, str, ...) = 0, per=0.2, seed=None):
+    def __init__(self, mask: (int, str, ...) = 0, per=0.2, min_mask=0, seed=None):
         """
 
         Parameters
@@ -43,6 +56,7 @@ class Masker(object):
         self.seed = np.random.default_rng(seed)
         self.per = per
         self.mask = mask
+        self.min_mask = min_mask
 
     def __call__(self, seqs, length=None, *args, **kwargs) -> tuple:
         seqs = deepcopy(seqs)
@@ -50,7 +64,7 @@ class Masker(object):
         if length is None:
             length = [len(seq) for seq in seqs]
         for seq, _length in zip(seqs, length):
-            masked = self.seed.choice(len(seq) - 1, size=int(_length * self.per), replace=False)
+            masked = self.seed.choice(len(seq) - 1, size=max(int(_length * self.per), self.min_mask), replace=False)
             _masked_list = [0] * len(seq)
             for _masked in masked:
                 seq[_masked] = self.mask
