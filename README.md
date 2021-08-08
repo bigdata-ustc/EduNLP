@@ -17,7 +17,7 @@ EduNLP is a library for advanced Natural Language Processing in Python and is on
 
 EduNLP now comes with pretrained pipelines and currently supports segment, tokenization and vertorization. It supports varies of preprocessing for NLP in educational scenario, such as formula parsing, multi-modal segment.
 
-EduNLP is commercial open-source software, released under the Apache-2.0 license.
+EduNLP is commercial open-source software, released under the [Apache-2.0 license](LICENSE).
 
 ## Quickstart
 
