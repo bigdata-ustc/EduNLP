@@ -4,6 +4,7 @@
 
 # EduNLP
 
+[![VERSION](https://img.shields.io/pypi/pyversions/longling)](https://pypi.python.org/pypi/longling)
 [![PyPI](https://img.shields.io/pypi/v/EduNLP.svg)](https://pypi.python.org/pypi/EduNLP)
 [![test](https://github.com/bigdata-ustc/EduNLP/actions/workflows/python-test.yml/badge.svg?branch=master)](https://github.com/bigdata-ustc/EduNLP/actions/workflows/python-test.yml)
 [![codecov](https://codecov.io/gh/bigdata-ustc/EduNLP/branch/master/graph/badge.svg?token=B7gscOGQLD)](https://codecov.io/gh/bigdata-ustc/EduNLP)
