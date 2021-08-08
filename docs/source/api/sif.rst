@@ -31,6 +31,12 @@ tokenize
    :members:
    :imported-members:
 
+text
+^^^^^^
+.. automodule:: EduNLP.SIF.tokenization.text
+   :members:
+   :imported-members:
+
 
 formula
 ^^^^^^^^^
