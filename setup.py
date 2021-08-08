@@ -13,7 +13,8 @@ test_deps = [
 docs_deps = [
     'sphinx',
     'sphinx_rtd_theme',
-    'sphinx_toggleprompt'
+    'sphinx_toggleprompt',
+    'sphinx-gallery>=0.6'
 ]
 
 dev_deps = ["requests"] + docs_deps + test_deps
