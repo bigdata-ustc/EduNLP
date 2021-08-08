@@ -1,1 +1,1 @@
-recursive-include meta_data *
+recursive-include meta_data *.txt
