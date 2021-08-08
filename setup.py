@@ -3,7 +3,8 @@ from setuptools import setup, find_packages
 
 tutor_deps = [
     "pillow",
-    "tqdm"
+    "tqdm",
+    "ipython"
 ]
 test_deps = [
     'pytest>=4',
