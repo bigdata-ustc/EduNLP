@@ -24,12 +24,20 @@ EduNLP is commercial open-source software, released under the Apache-2.0 license
 ### Installation
 
 Git and install by pip
-```
-pip install -e .
+``` sh
+# basic installation
+pip install .
+
+# full installation
+pip install .[full]
 ```
 or install from pypi:
 ```
+# basic installation
 pip install EduNLP
+
+# full installation
+pip install EduNLP[full]
 ```
 
 ### Resource
