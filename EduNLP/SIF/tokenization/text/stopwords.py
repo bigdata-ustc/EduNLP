@@ -5,7 +5,7 @@ import os
 from EduNLP.utils import abs_current_dir, path_append
 
 DEFAULT_FILEPATH = os.path.abspath(
-    path_append(abs_current_dir(__file__), "..", "..", "..", "..", "meta_data", "sif_stopwords.txt")
+    path_append(abs_current_dir(__file__), "..", "..", "..", "meta_data", "sif_stopwords.txt")
 )
 
 

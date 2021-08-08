@@ -1,32 +1,51 @@
+import logging
 from setuptools import setup, find_packages
 
-pretrain_deps = [
-    "gensim"
-]
 tutor_deps = [
     "pillow",
-    "tqdm"
+    "tqdm",
+    "ipython"
 ]
 test_deps = [
     'pytest>=4',
     'pytest-cov>=2.6.0',
     'pytest-flake8',
-    "pillow",
-    "gensim"
+]
+docs_deps = [
+    'sphinx',
+    'sphinx_rtd_theme',
+    'sphinx_toggleprompt',
+    'sphinx-gallery>=0.6',
+    'nbsphinx'
 ]
 
-dev_deps = [
-    "requests"
-]
+dev_deps = ["requests"] + docs_deps + test_deps
+
+try:
+    import torch
+
+    ml_pytorch_deps = []
+except ModuleNotFoundError:
+    import sys
+
+    if 5 <= sys.version_info[1]:
+        ml_pytorch_deps = ["torch"]
+    else:
+        ml_pytorch_deps = []
+        logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
+
+vec_deps = ['gensim'] + ml_pytorch_deps
 
 setup(
     name='EduNLP',
     version='0.0.4',
     extras_require={
         'test': test_deps,
+        'doc': docs_deps,
         'tutor': tutor_deps,
-        'pretrain': pretrain_deps,
-        "dev": dev_deps
+        'dev': dev_deps,
+        'vec': vec_deps,
+        'full': vec_deps + tutor_deps
     },
     packages=find_packages(),
     install_requires=[
@@ -34,9 +53,8 @@ setup(
         'numpy>=1.17.0',
         'jieba',
         'js2py',
-        'torch',
         'EduData>=0.0.16',
-        'PyBaize[torch]>=0.0.3'
+        'PyBaize>=0.0.3'
     ],  # And any other dependencies foo needs
     entry_points={
         "console_scripts": [

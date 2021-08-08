@@ -7,6 +7,8 @@ from .segment import seg
 from .tokenization import tokenize, link_formulas
 from .parser import Parser
 
+__all__ = ["is_sif", "to_sif", "sif4sci"]
+
 
 def is_sif(item):
     r"""
