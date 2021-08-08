@@ -16,9 +16,7 @@ docs_deps = [
     'sphinx_toggleprompt'
 ]
 
-dev_deps = [
-               "requests"
-           ] + docs_deps
+dev_deps = ["requests"] + docs_deps
 
 try:
     import torch
