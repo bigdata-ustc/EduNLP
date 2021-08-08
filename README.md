@@ -45,11 +45,11 @@ pip install EduNLP[full]
 For more details, please refer to the full documentation ([latest](https://edunlp.readthedocs.io/en/latest) | [stable](https://edunlp.readthedocs.io/en/stable)).
 
 ### Resource
-We will continously publish new datasets in [Standard Item Format (SIF)](https://github.com/bigdata-ustc/EduNLP/blob/master/docs/SIF4TI_CH.md) to encourage the relavant research works. The data resourses can be accessed via another EduX project [EduData](https://github.com/bigdata-ustc/EduData)
+We will continuously publish new datasets in [Standard Item Format (SIF)](https://github.com/bigdata-ustc/EduNLP/blob/master/docs/SIF4TI_CH.md) to encourage the relevant research works. The data resources can be accessed via another EduX project [EduData](https://github.com/bigdata-ustc/EduData)
 
 ## Contribute
 
-EduNLP is still under development. More algorithms and features are going to be added and we always welcome contributions to help make EduNLP better. If you would like to contribute, please follow this [guideline](CONTRIBUTE.md).
+EduNLP is still under development. More algorithms and features are going to be added and we always welcome contributions to help make EduNLP better. If you would like to contribute, please follow this [guideline](CONTRIBUTE.md)([开发指南](CONTRIBUTE_CH.md)).
 
 ## Citation
 
