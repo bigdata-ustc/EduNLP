@@ -43,7 +43,7 @@ setup(
         'doc': docs_deps,
         'tutor': tutor_deps,
         'dev': dev_deps,
-        'vector': vec_deps,
+        'vec': vec_deps,
         'full': vec_deps + tutor_deps
     },
     packages=find_packages(),
@@ -52,7 +52,6 @@ setup(
         'numpy>=1.17.0',
         'jieba',
         'js2py',
-        'gensim',
         'EduData>=0.0.16',
         'PyBaize>=0.0.3'
     ],  # And any other dependencies foo needs
