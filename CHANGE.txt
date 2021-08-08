@@ -1,3 +1,6 @@
+v0.0.4:
+    1. fix the project errors
+
 v0.0.3:
     1. update formula ast: supporting more symbols and functions defined in katex
     2. add tokens to vector tools, including word2vec and doc2vec using gensim
