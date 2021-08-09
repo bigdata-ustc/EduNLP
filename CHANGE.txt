@@ -1,3 +1,6 @@
+v0.0.5:
+    1. fix the missing stopwords.txt when use pip install
+
 v0.0.4:
     1. fix the project errors
 

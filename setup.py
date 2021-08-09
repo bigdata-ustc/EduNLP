@@ -38,7 +38,7 @@ vec_deps = ['gensim'] + ml_pytorch_deps
 
 setup(
     name='EduNLP',
-    version='0.0.4',
+    version='0.0.5',
     extras_require={
         'test': test_deps,
         'doc': docs_deps,
@@ -48,6 +48,7 @@ setup(
         'full': vec_deps + tutor_deps
     },
     packages=find_packages(),
+    include_package_data=True,
     install_requires=[
         'networkx',
         'numpy>=1.17.0',
