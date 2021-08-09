@@ -69,7 +69,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         "Environment :: Other Environment",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: Apache License 2.0 (Apache 2.0)",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
