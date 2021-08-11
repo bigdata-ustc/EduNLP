@@ -19,6 +19,10 @@ def test_segment(figure0, figure1, figure0_base64, figure1_base64):
         r"如图所示，则$\FormFigureBase64{%s}$的面积是$\SIFBlank$。$\FigureBase64{%s}$" % (figure0_base64, figure1_base64),
         figures=True
     )
-
     with pytest.raises(TypeError):
         s.append("123")
+    seg_test_textf = seg(
+        r"如图所示，有$\textf{3,b}$个人",
+        figures=True
+    )
+    assert seg_test_textf.textf_segments == [r'\textf{3,b}']

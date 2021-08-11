@@ -33,4 +33,4 @@ def test_parser():
     text = r"支持公式如$\frac{y}{x}$，$\SIFBlank$，$\FigureID{1}$，不支持公式如$\frac{ \dddot y}{x}$"
     text_parser = Parser(text)
     text_parser.description_list()
-    assert text_parser.fomula_illegal_flag == 1
+    assert text_parser.formula_illegal_flag == 1

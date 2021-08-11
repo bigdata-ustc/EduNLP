@@ -75,6 +75,10 @@ class SepSegment(str):
     pass
 
 
+class TextFSegment(str):
+    pass
+
+
 class SegmentList(object):
     def __init__(self, item, figures: dict = None):
         self._segments = []
@@ -84,6 +88,7 @@ class SegmentList(object):
         self._ques_mark_segments = []
         self._tag_segments = []
         self._sep_segments = []
+        self._textf_segments = []
         segments = re.split(r"(\$.+?\$)", item)
         for segment in segments:
             if not segment:
@@ -104,6 +109,8 @@ class SegmentList(object):
                 self.append(TagSegment(segment[1:-1]))
             elif re.match(r"\$\\SIFSep\$", segment):
                 self.append(SepSegment(segment[1:-1]))
+            elif re.match(r"\$\\textf\{[^,]+?,b?d?i?t?u?w?}\$", segment):
+                self.append(TextFSegment(segment[1:-1]))
             else:
                 self.append(LatexFormulaSegment(segment[1:-1]))
         self._seg_idx = None
@@ -127,6 +134,8 @@ class SegmentList(object):
             self._tag_segments.append(len(self))
         elif isinstance(segment, SepSegment):
             self._sep_segments.append(len(self))
+        elif isinstance(segment, TextFSegment):
+            self._textf_segments.append(len(self))
         else:
             raise TypeError("Unknown Segment Type: %s" % type(segment))
         self._segments.append(segment)
@@ -157,6 +166,10 @@ class SegmentList(object):
     @property
     def tag_segments(self):
         return [self._segments[i] for i in self._tag_segments]
+
+    @property
+    def textf_segments(self):
+        return [self._segments[i] for i in self._textf_segments]
 
     def to_symbol(self, idx, symbol):
         self._segments[idx] = symbol

@@ -7,12 +7,12 @@ class Parser:
         self.head = 0
         self.text = data
         self.error_message = ''
-        self.error_postion = 0
+        self.error_position = 0
         self.error_flag = 0
         self.modify_flag = 0
-        self.warnning = 0
-        self.fomula_illegal_flag = 0
-        self.fomula_illegal_message = ''
+        self.warning = 0
+        self.formula_illegal_flag = 0
+        self.formula_illegal_message = ''
 
         # 定义特殊变量
         self.len_bracket = len('$\\SIFChoice$')
@@ -76,7 +76,7 @@ class Parser:
 
         """
         legal_tags = ['FormFigureID', 'FormFigureBase64', 'FigureID', 'FigureBase64',
-                      'SIFBlank', 'SIFChoice', 'SIFTag', 'SIFSep', 'SIFUnderline']
+                      'SIFBlank', 'SIFChoice', 'SIFTag', 'SIFSep', 'SIFUnderline', 'textf']
         for tag in legal_tags:
             if tag in formula_str:
                 return True
@@ -84,8 +84,8 @@ class Parser:
             katex_parse(formula_str)
         except Exception as e:
             assert 'ParseError' in str(e)
-            self.fomula_illegal_message = "[FormulaError] " + str(e)
-            self.fomula_illegal_flag = 1
+            self.formula_illegal_message = "[FormulaError] " + str(e)
+            self.formula_illegal_flag = 1
             return False
         return True
 
@@ -93,7 +93,7 @@ class Parser:
         """语法解析函数"""
         # print('ERROR::position is >>> ',self.head)
         # print('ERROR::match is >>>', self.text[self.head])
-        self.error_postion = self.head
+        self.error_position = self.head
         self.error_message = self.text[:self.head + 1]
         self.error_flag = 1
 
@@ -224,7 +224,7 @@ class Parser:
                 if flag and self.is_chinese(ch_informula):
                     # latex 中出现中文字符，打印且只打印一次 warning
                     print("Warning: there is some chinese characters in formula!")
-                    self.warnning = 1
+                    self.warning = 1
                     flag = 0
                 self.head += 1
             if self.head >= len(self.text):
@@ -322,7 +322,7 @@ class Parser:
         >>> text = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
         >>> text_parser = Parser(text)
         >>> text_parser.description_list()
-        >>> text_parser.fomula_illegal_flag
+        >>> text_parser.formula_illegal_flag
         1
         """
         # print('call description_list')

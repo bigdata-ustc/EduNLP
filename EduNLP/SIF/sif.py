@@ -35,8 +35,8 @@ def is_sif(item):
     """
     item_parser = Parser(item)
     item_parser.description_list()
-    if item_parser.fomula_illegal_flag:
-        raise ValueError(item_parser.fomula_illegal_message)
+    if item_parser.formula_illegal_flag:
+        raise ValueError(item_parser.formula_illegal_message)
     if item_parser.error_flag == 0 and item_parser.modify_flag == 0:
         return True
     return False
