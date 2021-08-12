@@ -2,4 +2,4 @@
 # 2021/5/18 @ tongshiwei
 
 from .segment import (SegmentList, TextSegment, FigureFormulaSegment, LatexFormulaSegment, FigureSegment,
-                      QuesMarkSegment, Figure, TagSegment, SepSegment, seg, TextFSegment)
+                      QuesMarkSegment, Figure, TagSegment, SepSegment, seg)
