@@ -30,7 +30,7 @@
 >>> text_parser.description_list()
 >>> text_parser.text
 >>> '生产某种零件的$A$工厂$25$名工人的日加工零件数$\\SIFBlank$'
-::
+
 
 公式语法结构解析
 --------------------
@@ -43,4 +43,4 @@
 >>> text_parser.description_list()
 >>> text_parser.fomula_illegal_flag
 >>> 1
-::
+
