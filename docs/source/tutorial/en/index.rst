@@ -1,2 +1,1 @@
-Get Started
-===========
+.. mdinclude:: ../../../Get Started.md
