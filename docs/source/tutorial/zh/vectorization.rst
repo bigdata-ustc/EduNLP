@@ -38,9 +38,9 @@
 
 Example
 ::
-  model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
-  i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-  i2v(item)
+  >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+  >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
+  >>> i2v(item)
 
 使用预训练模型：直接调用get_pretrained_i2v
 ---------
@@ -58,13 +58,13 @@ Example
 
 Example
 ::
-  i2v = get_pretrained_i2v("d2v_sci_256")
-  i2v(item)
+  >>> i2v = get_pretrained_i2v("d2v_sci_256")
+  >>> i2v(item)
 
 模型选择与使用
 ---------
 
-根据题目所属学科选择预训练模型：
+根据题目所属学科选择预训练模型：(表格问题待解决)
 
 
 
