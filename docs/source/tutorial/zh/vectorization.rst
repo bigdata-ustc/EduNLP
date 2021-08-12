@@ -36,8 +36,13 @@
 
 2.调用T2V模块，根据需要选择是否使用预训练的t2v模型
 
+Example
+::
+  model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+  i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
+  i2v(item)
 
-使用预训练模型：直接调用
+使用预训练模型：直接调用get_pretrained_i2v
 ---------
 
 使用 EduNLP 项目组给定的预训练模型将给定的题目文本转成向量。
@@ -51,6 +56,10 @@
 
 * 调用此函数即可获得相应的预训练模型，目前提供以下的预训练模型：d2v_all_256、d2v_sci_256、d2v_eng_256、d2v_lit_256
 
+Example
+::
+  i2v = get_pretrained_i2v("d2v_sci_256")
+  i2v(item)
 
 模型选择与使用
 ---------
