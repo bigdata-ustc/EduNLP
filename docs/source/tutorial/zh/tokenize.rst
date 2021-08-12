@@ -44,3 +44,7 @@
 通过查看"./EduNLP/Tokenizer/tokenizer.py"可以查看更多令牌化器，下面是一个完整的令牌化器列表
 
 * TextTokenizer
+
+* GensimSegTokenizer
+
+* GensimWordTokenizer
