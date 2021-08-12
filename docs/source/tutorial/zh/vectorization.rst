@@ -56,11 +56,6 @@ Example
 
 * 调用此函数即可获得相应的预训练模型，目前提供以下的预训练模型：d2v_all_256、d2v_sci_256、d2v_eng_256、d2v_lit_256
 
-Example
-::
-  >>> i2v = get_pretrained_i2v("d2v_sci_256")
-  >>> i2v(item)
-
 模型选择与使用
 #########
 
@@ -87,3 +82,9 @@ Example
 
 
 2.将所得到的模型传入D2V，使用D2V进行处理
+
+Example
+::
+  >>> i2v = get_pretrained_i2v("d2v_sci_256")
+  >>> i2v(item)
+
