@@ -1,1 +1,0 @@
-.. mdinclude:: ../../../SIF4TI_CH.md
