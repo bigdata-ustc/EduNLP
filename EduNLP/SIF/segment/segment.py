@@ -75,10 +75,6 @@ class SepSegment(str):
     pass
 
 
-class TextFSegment(str):
-    pass
-
-
 class SegmentList(object):
     def __init__(self, item, figures: dict = None):
         self._segments = []
@@ -110,7 +106,7 @@ class SegmentList(object):
                 self.append(SepSegment(segment[1:-1]))
             elif re.match(r"\$\\textf\{[^,]+?,b?d?i?t?u?w?}\$", segment):
                 seg_capture = re.match(r"\$\\textf\{([^,]+?),b?d?i?t?u?w?}\$", segment)
-                self.append(TextFSegment(seg_capture.group(1)))
+                self.append(TextSegment(seg_capture.group(1)))
             else:
                 self.append(LatexFormulaSegment(segment[1:-1]))
         self._seg_idx = None
@@ -122,7 +118,7 @@ class SegmentList(object):
         return len(self._segments)
 
     def append(self, segment) -> None:
-        if isinstance(segment, TextSegment) or isinstance(segment, TextFSegment):
+        if isinstance(segment, TextSegment):
             if len(self._text_segments) != 0 and self._text_segments[-1] == len(self) - 1:
                 self._segments[-1] = self._segments[-1] + segment
             else:
@@ -140,7 +136,7 @@ class SegmentList(object):
             self._sep_segments.append(len(self))
         else:
             raise TypeError("Unknown Segment Type: %s" % type(segment))
-        if isinstance(segment, TextFSegment) or isinstance(segment, TextSegment):
+        if isinstance(segment, TextSegment):
             pass
         else:
             self._segments.append(segment)
