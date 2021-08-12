@@ -44,7 +44,6 @@ Welcome to EduNLP's Tutorials and Documentation
    :target: https://github.com/bigdata-ustc/EduNLP/blob/master/LICENSE
    :alt: License
 
-.. todo: add all badges in EduNLP/REAMD.md
 
 `EduNLP <https://github.com/bigdata-ustc/EduNLP>`_ is a library for advanced Natural Language Processing in Python and is one of the projects of `EduX <https://github.com/bigdata-ustc/EduX>`_ plan of BDAA.
 It's built on the very latest research, and was designed from day one to be used in real educational products.
