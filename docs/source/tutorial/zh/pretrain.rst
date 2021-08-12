@@ -13,6 +13,8 @@
 ---------
 
 基本步骤：
+#########
+
 1.确定模型的类型，选择适合的Tokenizer（GensimWordTokenizer、 GensimSegTokenizer），使之令牌化；
 
 2.调用train_vector函数，即可得到所需的预训练模型。
@@ -42,6 +44,7 @@ Examples
 ------------
 
 模型训练数据说明：
+#########
 
 * 当前【词向量w2v】【句向量d2v】模型所用的数据均为 【高中学段】 的题目
 * 测试数据：[`OpenLUNA.json<http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_]
