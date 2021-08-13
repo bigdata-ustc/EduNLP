@@ -16,7 +16,8 @@ docs_deps = [
     'sphinx_rtd_theme',
     'sphinx_toggleprompt',
     'sphinx-gallery>=0.6',
-    'nbsphinx'
+    'nbsphinx',
+    'm2r2'
 ]
 
 dev_deps = ["requests"] + docs_deps + test_deps
