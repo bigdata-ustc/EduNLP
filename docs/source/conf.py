@@ -46,7 +46,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx_toggleprompt',
     'nbsphinx',
-    'sphinx_gallery.load_style'
+    'sphinx_gallery.load_style',
+    'm2r2'
 ]
 
 # extension variables setting
