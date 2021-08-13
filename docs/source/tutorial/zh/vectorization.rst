@@ -36,7 +36,7 @@
 
 2.调用T2V模块，根据需要选择是否使用预训练的t2v模型
 
-Example
+Examples：
 ::
   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
   >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
@@ -83,7 +83,7 @@ Example
 
 2.将所得到的模型传入D2V，使用D2V进行处理
 
-Example
+Examples：
 ::
   >>> i2v = get_pretrained_i2v("d2v_sci_256")
   >>> i2v(item)
