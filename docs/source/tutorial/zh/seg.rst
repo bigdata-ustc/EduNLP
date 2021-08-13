@@ -10,9 +10,40 @@
 语义成分分解
 ------------
 
+特别的，由于选择题是以字典的形式给出，故需要进行特殊处理，这里可以调用./Utils/data中的dict2str4sif函数，将选择题形式的item转换为字符格式，并将题干和选项、各选项之间分割开来。
+
+Examples：
+::
+
+ >>> item = {
+
+  ...   "stem": r"若复数$z=1+2 i+i^{3}$，则$|z|=$",
+
+  ...   "options": ['0', '1', r'$\sqrt{2}$', '2'],
+
+  ... }
+
+ >>> item
+
+  {'stem': '若复数$z=1+2 i+i^{3}$，则$|z|=$', 'options': ['0', '1', '$\\sqrt{2}$', '2']}
+
+ >>> dict2str4sif(item, key_as_tag=False)
+
+  '若复数$z=1+2 i+i^{3}$，则$|z|=$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2'
+
+
 结构成分分解
 ------------
 
+对切片后的item中的各个元素进行分词，提供深度选项，可以按照需求选择所有地方切分或者在部分标签处切分（比如\SIFSep、\SIFTag处）；对标签添加的位置也可以进行选择，可以在头尾处添加或仅在头或尾处添加。
 
+具有两种模式，一种是linear模式，用于对文本进行处理（使用jieba库进行分词）；一种是ast模式，用于对公式进行解析。
 
+Examples：
+::
 
+>>> test_item = r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$"
+>>> seg(test_item)
+>>> ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
+>>> seg(test_item, symbol="fgm")
+>>> ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
