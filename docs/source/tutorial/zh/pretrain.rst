@@ -43,6 +43,38 @@ Examples：
 公开模型一览
 ------------
 
+版本说明
+#########
+
+一级版本
+
+* 全量版本（luna_private ）: 高考 + 考试中心 + 题库中国 + 学库宝
+* 公开版本1（luna_pub1）：高考
+* 公开版本2（luna_pub2）：高考 + 题库中国
+* 当前luna标准库（luna_v0）: 当前为高考 + 题库中国 + 考试中心
+
+二级版本：
+
+* 小科（Chinese,Math,English,History,Geography,Politics,Biology,Physics,Chemistry）
+* 大科（理科science、文科literal、全科all）
+
+三级版本：【待完成】
+
+* 不使用第三方初始化词表
+* 使用第三方初始化词表 
+
+
+
+模型命名规则：一级版本 + 二级版本 + gensim_luna_stem +  分词规则 + 模型方法 + 维度
+
+例子：
+
+::
+
+     全量版本-全学科的D2V模型路径：
+     `/share/qlh/d2v_model/luna_private/luna_private_all_gensim_luna_stem_general_d2v_256.bin`
+     （备注：一个D2V模型含4个bin后缀的文件）
+
 模型训练数据说明：
 #########
 
