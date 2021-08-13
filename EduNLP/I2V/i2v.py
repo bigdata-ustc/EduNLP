@@ -27,6 +27,7 @@ class I2V(object):
     kwargs:
         the parameters passed to t2v
     """
+
     def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
 
         self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs if tokenizer_kwargs is not None else {})
@@ -47,10 +48,11 @@ class I2V(object):
     def __call__(self, items, *args, **kwargs):
         return self.infer_vector(items, *args, **kwargs)
 
-    def tokenize(self, items, indexing=True, padding=False, *args, **kwargs) -> list:
-        return self.tokenizer(items, *args, **kwargs)
+    def tokenize(self, items, indexing=True, padding=False, key=lambda x: x, *args, **kwargs) -> list:
+        return self.tokenizer(items, key=key, *args, **kwargs)
 
-    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, *args, **kwargs) -> tuple:
+    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
+                     **kwargs) -> tuple:
         raise NotImplementedError
 
     def infer_item_vector(self, tokens, *args, **kwargs) -> ...:
@@ -84,8 +86,9 @@ class I2V(object):
 
 
 class D2V(I2V):
-    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, *args, **kwargs) -> tuple:
-        tokens = self.tokenize(items, return_token=True) if tokenize is True else items
+    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
+                     **kwargs) -> tuple:
+        tokens = self.tokenize(items, return_token=True, key=key) if tokenize is True else items
         return self.t2v(tokens, *args, **kwargs), None
 
     @classmethod
