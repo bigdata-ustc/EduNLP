@@ -13,7 +13,7 @@
 ---------
 
 基本步骤：
-#########
+##################
 
 1.确定模型的类型，选择适合的Tokenizer（GensimWordTokenizer、 GensimSegTokenizer），使之令牌化；
 
@@ -44,7 +44,7 @@ Examples：
 ------------
 
 版本说明
-#########
+##################
 
 一级版本
 
@@ -76,7 +76,7 @@ Examples：
      （备注：一个D2V模型含4个bin后缀的文件）
 
 模型训练数据说明：
-#########
+##################
 
 * 当前【词向量w2v】【句向量d2v】模型所用的数据均为 【高中学段】 的题目
 * 测试数据：[`OpenLUNA.json<http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_]
