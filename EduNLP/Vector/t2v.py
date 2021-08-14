@@ -29,16 +29,14 @@ class T2V(object):
             self.i2v: Vector = MODELS[model](*args, **kwargs)
 
     def __call__(self, items, *args, **kwargs):
-        # print_tokens =  [item for item in items]
-        # print("tokens in T2V: ", print_tokens)
         return self.i2v.infer_vector(items, *args, **kwargs)
 
-    def infer_vector(self, items, *args, **kwargs):
+    def infer_vector(self, items, *args, **kwargs):  # pragma: no cover
         return self.i2v.infer_vector(items, *args, **kwargs)
 
-    def infer_tokens(self, items, *args, **kwargs):
+    def infer_tokens(self, items, *args, **kwargs):  # pragma: no cover
         return self.i2v.infer_tokens(items, *args, **kwargs)
-    
+
     @property
     def vector_size(self) -> int:
         return self.i2v.vector_size
@@ -62,7 +60,7 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
         )
     url, model_name, *args = PRETRAINED_MODELS[name]
     model_path = get_data(url, model_dir)
-    if model_name in ["d2v","w2v"]:
+    if model_name in ["d2v", "w2v"]:
         postfix = ".bin" if model_name == "d2v" else ".kv"
         model_path = path_append(model_path, os.path.basename(model_path) + postfix, to_str=True)
     return T2V(model_name, model_path, *args)

@@ -45,8 +45,6 @@ class I2V(object):
         }
 
     def __call__(self, items, *args, **kwargs):
-        # print_tokens =  [item for item in items]
-        # print("tokens in I2V: ", print_tokens)
         return self.infer_vector(items, *args, **kwargs)
 
     def tokenize(self, items, indexing=True, padding=False, *args, **kwargs) -> list:
@@ -88,7 +86,7 @@ class I2V(object):
 class D2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, *args, **kwargs) -> tuple:
         tokens = self.tokenize(items, return_token=True) if tokenize is True else items
-        tokens =  [token for token in tokens]
+        tokens = [token for token in tokens]
         return self.t2v(tokens, *args, **kwargs), None
 
     @classmethod
@@ -99,7 +97,7 @@ class D2V(I2V):
 class W2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, *args, **kwargs) -> tuple:
         tokens = self.tokenize(items, return_token=True) if tokenize is True else items
-        tokens =  [token for token in tokens]
+        tokens = [token for token in tokens]
         return self.t2v(tokens, *args, **kwargs), self.t2v.infer_tokens(tokens, *args, **kwargs)
 
     @classmethod
