@@ -56,7 +56,6 @@
 .. toctree::
    :maxdepth: 1
    :caption: 公式解析例子
-   :reversed:
 
    tree <../../build/blitz/formula/tree.ipynb>
    formula <../../build/blitz/formula/formula.ipynb>
