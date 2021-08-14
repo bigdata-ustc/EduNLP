@@ -63,9 +63,13 @@ class W2V(Vector):
 
     def infer_vector(self, items, agg="mean", *args, **kwargs) -> np.ndarray:
         tokens = self.infer_tokens(items, *args, **kwargs)
+        # print(" test infer_vector in W2V: ", np.array(tokens).shape)
+        # print("test token : " , tokens)
         return eval("np.%s" % agg)(tokens, axis=1)
 
     def infer_tokens(self, items, *args, **kwargs) -> list:
+        # print_tokens =  [item for item in items]
+        # print(" test infer_tokens in W2V: ", print_tokens)
         return [list(self(*item)) for item in items]
 
 
