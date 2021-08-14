@@ -79,7 +79,7 @@ Examples：
 ##################
 
 * 当前【词向量w2v】【句向量d2v】模型所用的数据均为 【高中学段】 的题目
-* 测试数据：[`OpenLUNA.json<http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_]
+* 测试数据：[ `OpenLUNA.json<http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_]
 
 当前提供以下模型，更多分学科、分题型模型正在训练中，敬请期待
     "d2v_all_256"(全科)，"d2v_sci_256"(理科)，"d2v_eng_256"（文科），"d2v_lit_256"(英语)
