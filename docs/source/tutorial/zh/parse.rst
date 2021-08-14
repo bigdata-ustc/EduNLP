@@ -30,7 +30,6 @@
 
 将文本中的字母、数字等进行提取，将其转换为标准格式。
 
-Examples：
 ::
 
  >>> text = '生产某种零件的A工厂25名工人的日加工零件数_   _'
@@ -45,7 +44,6 @@ Examples：
 
 可以检查公式是否合法。
 
-Examples：
 ::
 
  >>> text = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
@@ -53,3 +51,12 @@ Examples：
  >>> text_parser.description_list()
  >>> text_parser.fomula_illegal_flag
  >>> 1
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 公式解析例子
+   :reversed:
+
+   tree <../../build/blitz/formula/tree.ipynb>
+   formula <../../build/blitz/formula/formula.ipynb>
