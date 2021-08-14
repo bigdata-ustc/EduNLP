@@ -25,6 +25,15 @@ class TextTokenizer(Tokenizer):
     ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']
+    >>> items = [{
+    ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+    ... "options": ["1", "2"]
+    ... }]
+    >>> tokens = tokenizer(items, key=lambda x: x["stem"])
+    >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
+    ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
+    '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
+    '\\quad', 'A', '\\cap', 'B', '=']
     """
 
     def __init__(self, *args, **kwargs):
@@ -34,9 +43,9 @@ class TextTokenizer(Tokenizer):
             }
         }
 
-    def __call__(self, items: Iterable, *args, **kwargs):
+    def __call__(self, items: Iterable, key=lambda x: x, *args, **kwargs):
         for item in items:
-            yield tokenize(seg(item, symbol="gmas"), **self.tokenization_params).tokens
+            yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
 
 
 class GeneralTokenizer(Tokenizer):
@@ -60,9 +69,9 @@ class GeneralTokenizer(Tokenizer):
             }
         }
 
-    def __call__(self, items: Iterable, *args, **kwargs):
+    def __call__(self, items: Iterable, key=lambda x: x, *args, **kwargs):
         for item in items:
-            yield tokenize(seg(item, symbol="gmas"), **self.tokenization_params).tokens
+            yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
 
 
 TOKENIZER = {
