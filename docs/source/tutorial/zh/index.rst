@@ -19,5 +19,5 @@
     :name: gallery
     :glob:
     :reversed:
-
-    ../../build/blitz/sif/sif
+    
+    Code for beginner to learn how to use SIF4Sci  <../../build/blitz/sif/sif>
