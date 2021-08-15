@@ -3,6 +3,7 @@
 
 import traceback
 import warnings
+import re
 from .segment import seg
 from .tokenization import tokenize, link_formulas
 from .parser import Parser
@@ -59,7 +60,11 @@ def to_sif(item):
     >>> siftext
     '某校一个课外学习小组为研究某作物的发芽率$y$和温度$x$（单位...'
     """
-    item_parser = Parser(item)
+    item_detextf = ''
+    textf_segs = re.split(r"\$\\textf\{([^,]+?),b?d?i?t?u?w?}\$", item)
+    for textf_seg in textf_segs:
+        item_detextf = item_detextf + textf_seg
+    item_parser = Parser(item_detextf)
     item_parser.description_list()
     item = item_parser.text
     return item
