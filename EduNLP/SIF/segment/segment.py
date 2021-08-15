@@ -120,7 +120,7 @@ class SegmentList(object):
     def append(self, segment) -> None:
         if isinstance(segment, TextSegment):
             if len(self._text_segments) != 0 and self._text_segments[-1] == len(self) - 1:
-                self._segments[-1] = self._segments[-1] + segment
+                self._segments[-1] = TextSegment(self._segments[-1] + segment)
             else:
                 self._text_segments.append(len(self))
                 self._segments.append(segment)
@@ -304,6 +304,10 @@ def seg(item, figures=None, symbol=None):
     >>> s2 = seg(test_item_1_str_2, symbol="fgm")
     >>> s2.tag_segments
     ['\\SIFTag{stem}', '\\SIFTag{options}']
+    >>> test_item_2 = r"已知$y=x$，则以下说法中$\textf{正确,b}$的是"
+    >>> s2 = seg(test_item_2)
+    >>> s2.text_segments
+    ['已知', 'y=x', '，则以下说法中正确的是']
     """
     segments = SegmentList(item, figures)
     if symbol is not None:
