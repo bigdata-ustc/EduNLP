@@ -1,11 +1,11 @@
 from EduNLP.Formula.ast import str2ast, katex_parse
+import re
 
 
 class Parser:
     def __init__(self, data):
         self.lookahead = 0
         self.head = 0
-        self.text = data
         self.error_message = ''
         self.error_postion = 0
         self.error_flag = 0
@@ -39,6 +39,13 @@ class Parser:
                           '；', '‘', '’', '“', '”', '（', '）', ' ', '、', '《', '》',
                           '$', ',', '.', '?', '!', ':', ';', '\'', '\"', '(', ')', ' ', '_', '/', '|', '<', '>', '-',
                           '[', ']', '—']
+
+        # 去除 data 中的文本标注格式
+        data_detextf = ''
+        textf_segs = re.split(r"\$\\textf\{([^,]+?),b?d?i?t?u?w?}\$", data)
+        for textf_seg in textf_segs:
+            data_detextf = data_detextf + textf_seg
+        self.text = data_detextf
 
     def is_number(self, uchar):
         """判断一个unicode是否是数字"""
