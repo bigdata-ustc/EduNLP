@@ -53,3 +53,11 @@ Examples：
  >>> text_parser.description_list()
  >>> text_parser.fomula_illegal_flag
  >>> 1
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 公式解析例子
+
+   tree <../../build/blitz/formula/tree.ipynb>
+   formula <../../build/blitz/formula/formula.ipynb>
