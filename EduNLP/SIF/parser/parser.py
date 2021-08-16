@@ -226,7 +226,16 @@ class Parser:
                     print("Warning: there is some chinese characters in formula!")
                     self.warnning = 1
                     flag = 0
-                self.head += 1
+                    self.head += 1
+                elif flag and ch_informula == '\n':
+                    # latex 中出现换行符，打印一次 warning且删除
+                    print("Warning: there is '\\n' in formula!")
+                    self.warnning = 1
+                    flag = 0
+                    self.text = self.text[:self.head] + self.text[self.head + 1:]
+                    self.modify_flag = 1
+                else:
+                    self.head += 1
             if self.head >= len(self.text):
                 self.call_error()
                 return self.error
