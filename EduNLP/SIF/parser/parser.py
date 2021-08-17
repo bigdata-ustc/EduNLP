@@ -1,5 +1,4 @@
 from EduNLP.Formula.ast import str2ast, katex_parse
-import re
 
 
 class Parser:
@@ -40,7 +39,6 @@ class Parser:
                           '；', '‘', '’', '“', '”', '（', '）', ' ', '、', '《', '》',
                           '$', ',', '.', '?', '!', ':', ';', '\'', '\"', '(', ')', ' ', '_', '/', '|', '<', '>', '-',
                           '[', ']', '—']
-        
 
     def is_number(self, uchar):
         """判断一个unicode是否是数字"""
