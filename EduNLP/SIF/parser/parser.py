@@ -6,7 +6,7 @@ class Parser:
     def __init__(self, data):
         self.lookahead = 0
         self.head = 0
-        self.data = data
+        self.text = data
         self.error_message = ''
         self.error_postion = 0
         self.error_flag = 0
