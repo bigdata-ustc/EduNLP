@@ -58,9 +58,9 @@ extensions = [
 nbsphinx_thumbnails = {
     'build/blitz/sif/sif': '_static/item_figure.png',
     'build/blitz/utils/data.ipynb': '_static/data.png',
-    'build/blitz/sif/sif': '_static/formula.png',
+    'build/blitz/formula/formula.ipynb': '_static/formula.png',
     'build/blitz/sif/sif_addition.ipynb': '_static/sif_addition.png',
-    'build/blitz/tokenizer/tokenizer': '_static/item_figure.png',
+    'build/blitz/tokenizer/tokenizer': '_static/tokenizer.png',
     'build/blitz/sif/sif': '_static/item_figure.png',
     'build/blitz/sif/sif': '_static/item_figure.png',
 }
