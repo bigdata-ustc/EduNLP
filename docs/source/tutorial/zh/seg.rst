@@ -30,6 +30,12 @@ Examples：
  >>> dict2str4sif(item, key_as_tag=False)
 
   '若复数$z=1+2 i+i^{3}$，则$|z|=$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2'
+  
+  .. toctree::
+     :maxdepth: 1
+     :titlesonly:
+
+   dict2str4sif  <../../build/blitz/utils/data.ipynb>
 
 
 结构成分分解
