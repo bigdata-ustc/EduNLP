@@ -20,7 +20,7 @@ sif
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: gallery
+    :name: sif_gallery
     :glob:
     
     Code for beginner to learn how to use dict2str4sif  <../../build/blitz/utils/data.ipynb>
@@ -33,7 +33,7 @@ tokenizer
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: gallery
+    :name: tokenizer_gallery
     :glob:
     
     Code for beginner to learn how to use Tokenizer  <../../build/blitz/tokenizer/tokenizer.ipynb>
@@ -44,7 +44,7 @@ formula
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: gallery
+    :name: formula_gallery
     :glob:
     
     Code for beginner to learn how to use Formula  <../../build/blitz/formula/formula.ipynb>
@@ -58,7 +58,7 @@ pretrain
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: rst-gallery
+    :name: rst1-gallery
     :glob:
 
     prepare_dataset  <../../build/blitz/pretrain/prepare_dataset.ipynb>
@@ -68,7 +68,7 @@ gensim模型d2v例子
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: rst-gallery
+    :name: rst2-gallery
     :glob:
 
     d2v_bow_tfidf  <../../build/blitz/pretrain/gensim/d2v_bow_tfidf.ipynb>
@@ -81,7 +81,7 @@ gensim模型w2v例子
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: rst-gallery
+    :name: rst3-gallery
     :glob:
 
     w2v_stem_text  <../../build/blitz/pretrain/gensim/w2v_stem_text.ipynb>
@@ -93,7 +93,7 @@ seg_token例子
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: rst-gallery
+    :name: rst4-gallery
     :glob:
 
     d2v.ipynb  <../../build/blitz/pretrain/seg_token/d2v.ipynb>
