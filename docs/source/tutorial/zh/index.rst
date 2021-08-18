@@ -25,6 +25,7 @@ sif
     
     Code for beginner to learn how to use dict2str4sif  <../../build/blitz/utils/data.ipynb>
     Code for beginner to learn how to use SIF4Sci  <../../build/blitz/sif/sif>
+    Code for beginner to learn how to use sif_additon  <../../build/blitz/sif/sif_addition>
     
 tokenizer
 ^^^^^^^^^^^
@@ -43,5 +44,6 @@ formula
     :caption: This is a thumbnail gallery:
     :name: gallery
     :glob:
+    
     Code for beginner to learn how to use Formula  <../../build/blitz/formula/formula.ipynb>
     
