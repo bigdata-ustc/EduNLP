@@ -31,10 +31,10 @@ class T2V(object):
     def __call__(self, items, *args, **kwargs):
         return self.i2v.infer_vector(items, *args, **kwargs)
 
-    def infer_vector(self, items, *args, **kwargs):  # pragma: no cover
+    def infer_vector(self, items, *args, **kwargs):
         return self.i2v.infer_vector(items, *args, **kwargs)
 
-    def infer_tokens(self, items, *args, **kwargs):  # pragma: no cover
+    def infer_tokens(self, items, *args, **kwargs):
         return self.i2v.infer_tokens(items, *args, **kwargs)
 
     @property
@@ -47,8 +47,8 @@ PRETRAINED_MODELS = {
     "d2v_sci_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_science_256.zip", "d2v"],
     "d2v_eng_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_english_256.zip", "d2v"],
     "d2v_lit_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_literal_256.zip", "d2v"],
-    "w2v_eng_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_english_300.zip", "w2v"],
-    "w2v_lit_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_literal_300.zip", "w2v"],
+    "w2v_eng_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_english_300.zip", "w2v"],
+    "w2v_lit_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_literal_300.zip", "w2v"],
 }
 
 

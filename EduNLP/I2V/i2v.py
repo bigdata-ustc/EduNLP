@@ -97,7 +97,7 @@ class D2V(I2V):
         return cls("text", name, pretrained_t2v=True, model_dir=model_dir)
 
 
-class W2V(I2V):  # pragma: no cover
+class W2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         tokens = self.tokenize(items, return_token=True) if tokenize is True else items
@@ -114,8 +114,8 @@ MODELS = {
     "d2v_sci_256": [D2V, "d2v_sci_256"],
     "d2v_eng_256": [D2V, "d2v_eng_256"],
     "d2v_lit_256": [D2V, "d2v_lit_256"],
-    "w2v_sci_256": [W2V, "w2v_sci_256"],
-    "w2v_lit_256": [W2V, "w2v_lit_256"],
+    "w2v_sci_300": [W2V, "w2v_sci_300"],
+    "w2v_lit_300": [W2V, "w2v_lit_300"],
 }
 
 
