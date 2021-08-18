@@ -94,7 +94,7 @@ class D2V(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        return cls("text", name, pretrained_t2v=True, model_dir=model_dir)
+        return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
 
 
 class W2V(I2V):
@@ -106,7 +106,7 @@ class W2V(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        return cls("text", name, pretrained_t2v=True, model_dir=model_dir)
+        return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
 
 
 MODELS = {

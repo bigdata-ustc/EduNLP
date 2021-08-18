@@ -35,7 +35,7 @@ def stem_tokens(stem_data):
 @pytest.fixture(scope="module")
 def stem_text_tokens(stem_data):
     _data = []
-    tokenizer = get_tokenizer("text")
+    tokenizer = get_tokenizer("pure_text")
     tokens = tokenizer(stem_data)
     _data = [d for d in tokens]
     assert _data
@@ -109,7 +109,7 @@ def test_w2v_i2v(stem_text_tokens, tmpdir, stem_data):
         train_params=dict(min_count=0)
     )
 
-    i2v = I_W2V("text", "w2v", filepath)
+    i2v = I_W2V("pure_text", "w2v", filepath)
     i_vec, t_vec = i2v(stem_data[:1])
     assert len(i_vec[0]) == i2v.vector_size
     assert len(t_vec[0][0]) == i2v.vector_size
@@ -186,7 +186,7 @@ def test_d2v(stem_text_tokens, tmpdir, stem_data):
     t2v = T2V("d2v", filepath)
     assert len(t2v(stem_text_tokens[:1])[0]) == t2v.vector_size
 
-    i2v = I_D2V("text", "d2v", filepath)
+    i2v = I_D2V("pure_text", "d2v", filepath)
     i_vec, t_vec = i2v(stem_data[:1])
     assert len(i_vec[0]) == i2v.vector_size
     assert t_vec is None
