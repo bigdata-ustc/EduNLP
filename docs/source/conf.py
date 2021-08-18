@@ -57,6 +57,12 @@ extensions = [
 
 nbsphinx_thumbnails = {
     'build/blitz/sif/sif': '_static/item_figure.png',
+    'build/blitz/sif/sif': '_static/item_figure.png',
+    'build/blitz/sif/sif': '_static/item_figure.png',
+    'build/blitz/sif/sif': '_static/item_figure.png',
+    'build/blitz/sif/sif': '_static/item_figure.png',
+    'build/blitz/sif/sif': '_static/item_figure.png',
+    'build/blitz/sif/sif': '_static/item_figure.png',
 }
 
 # Add any paths that contain templates here, relative to this directory.
