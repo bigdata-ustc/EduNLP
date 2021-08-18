@@ -75,6 +75,7 @@ gensim模型d2v例子
     d2v_general  <../../build/blitz/pretrain/gensim/d2v_general.ipynb>
     d2v_stem_tf  <../../build/blitz/pretrain/gensim/d2v_stem_tf.ipynb>
 
+
 gensim模型w2v例子
 ####################
 
@@ -85,6 +86,7 @@ gensim模型w2v例子
 
     w2v_stem_text  <../../build/blitz/pretrain/gensim/w2v_stem_text.ipynb>
     w2v_stem_tf  <../../build/blitz/pretrain/gensim/w2v_stem_tf.ipynb>
+
 
 seg_token例子
 ####################
