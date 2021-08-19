@@ -24,8 +24,8 @@
     
     Code for beginner to learn how to use SIF4Sci  <../../build/blitz/sif/sif>
     Code for beginner to learn how to use sif_additon  <../../build/blitz/sif/sif_addition>
-    
-    
+
+
 成分分解
 ^^^^^^^^^^^
 
@@ -38,8 +38,8 @@
     :glob:
     
     Code for beginner to learn how to use dict2str4sif  <../../build/blitz/utils/data.ipynb>
-    
-    
+
+
 结构成分分解
 ####################
 
@@ -74,8 +74,8 @@
     :glob:
     
     Code for beginner to learn how to use Formula  <../../build/blitz/formula/formula.ipynb>
-    
-    
+
+
 令牌化
 ^^^^^^^^^^^
 
@@ -85,8 +85,8 @@
     :glob:
     
     Code for beginner to learn how to use Tokenizer  <../../build/blitz/tokenizer/tokenizer.ipynb>
-    
-    
+
+
 向量化
 ^^^^^^^^^^^
 
@@ -110,6 +110,7 @@
     :glob:
 
     prepare_dataset  <../../build/blitz/pretrain/prepare_dataset.ipynb>
+
 
 gensim模型d2v例子
 ####################
