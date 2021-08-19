@@ -25,6 +25,7 @@
     Code for beginner to learn how to use SIF4Sci  <../../build/blitz/sif/sif>
     Code for beginner to learn how to use sif_additon  <../../build/blitz/sif/sif_addition>
     
+    
 成分分解
 ^^^^^^^^^^^
 
@@ -38,6 +39,7 @@
     
     Code for beginner to learn how to use dict2str4sif  <../../build/blitz/utils/data.ipynb>
     
+    
 结构成分分解
 ####################
 
@@ -47,6 +49,7 @@
     :glob:
     
     Code for beginner to learn how to use seg  <../../build/blitz/seg/seg.ipynb>
+
 
 语法解析
 ^^^^^^^^^^^
@@ -59,7 +62,8 @@
     :name: parse_gallery
     :glob:
     
-    Code for beginner to learn how to use Formula  <../../build/blitz/parse/parse.ipynb>
+    Code for beginner to learn how to use parse  <../../build/blitz/parse/parse.ipynb>
+
 
 公式语法结构解析
 ####################
@@ -71,6 +75,7 @@
     
     Code for beginner to learn how to use Formula  <../../build/blitz/formula/formula.ipynb>
     
+    
 令牌化
 ^^^^^^^^^^^
 
@@ -80,6 +85,7 @@
     :glob:
     
     Code for beginner to learn how to use Tokenizer  <../../build/blitz/tokenizer/tokenizer.ipynb>
+    
     
 向量化
 ^^^^^^^^^^^
@@ -91,7 +97,8 @@
     
     Code for beginner to learn how to use i2v  <../../build/blitz/vectorization/vectorization.ipynb>
 
-pretrain
+
+预训练
 ^^^^^^^^^^^
 
 获得数据集
