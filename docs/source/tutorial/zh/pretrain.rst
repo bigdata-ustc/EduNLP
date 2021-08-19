@@ -12,7 +12,7 @@
 训练模型
 ---------
 
-基本步骤：
+基本步骤
 ##################
 
 1.确定模型的类型，选择适合的Tokenizer（GensimWordTokenizer、 GensimSegTokenizer），使之令牌化；
