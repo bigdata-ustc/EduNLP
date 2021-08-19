@@ -95,7 +95,7 @@
     :name: vectorization_gallery
     :glob:
     
-    Code for beginner to learn how to use i2v  <../../build/blitz/vectorization/vectorization.ipynb>
+    Code for beginner to learn how to use i2v  <../../build/blitz/vectorization/i2v.ipynb>
 
 
 预训练
