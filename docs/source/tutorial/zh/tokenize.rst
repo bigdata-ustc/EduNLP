@@ -28,8 +28,8 @@
 我们提供了多种已经封装好的令牌化器供用户便捷调用，下面是一个示例:
 
 
-    Examples：
-    --------
+    Examples
+    ------------
     >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
     >>> tokenizer = TextTokenizer()
     >>> tokens = tokenizer(items)
