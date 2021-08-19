@@ -48,8 +48,14 @@ Examples：
 Examples：
 ::
 
->>> test_item = r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$"
->>> seg(test_item)
->>> ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
->>> seg(test_item, symbol="fgm")
->>> ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
+ >>> test_item = r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$"
+ >>> seg(test_item)
+ >>> ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
+ >>> seg(test_item, symbol="fgm")
+ >>> ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   seg  <../../build/blitz/seg/seg.ipynb>
