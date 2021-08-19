@@ -55,10 +55,9 @@ Examples：
  >>> 1
 
 
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: vectorization_gallery
-    :glob:
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
 
    tree <../../build/blitz/formula/tree.ipynb>
    formula <../../build/blitz/formula/formula.ipynb>
