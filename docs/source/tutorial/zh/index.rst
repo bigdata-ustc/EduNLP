@@ -11,11 +11,10 @@
   tokenize
   vectorization
 
-
 示例
 --------
 
-sif
+标准项目格式
 ^^^^^^^^
 
 .. nbgallery::
@@ -23,12 +22,56 @@ sif
     :name: sif_gallery
     :glob:
     
-    Code for beginner to learn how to use dict2str4sif  <../../build/blitz/utils/data.ipynb>
     Code for beginner to learn how to use SIF4Sci  <../../build/blitz/sif/sif>
     Code for beginner to learn how to use sif_additon  <../../build/blitz/sif/sif_addition>
     
+成分分解
+^^^^^^^^^^^
 
-tokenizer
+语义成分分解
+####################
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: formula_gallery
+    :glob:
+    
+    Code for beginner to learn how to use dict2str4sif  <../../build/blitz/utils/data.ipynb>
+    
+结构成分分解
+####################
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: seg_gallery
+    :glob:
+    
+    Code for beginner to learn how to use seg  <../../build/blitz/seg/seg.ipynb>
+
+语法解析
+^^^^^^^^^^^
+
+文本语法结构解析
+####################
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: parse_gallery
+    :glob:
+    
+    Code for beginner to learn how to use Formula  <../../build/blitz/parse/parse.ipynb>
+
+公式语法结构解析
+####################
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: formula_gallery
+    :glob:
+    
+    Code for beginner to learn how to use Formula  <../../build/blitz/formula/formula.ipynb>
+    
+令牌化
 ^^^^^^^^^^^
 
 .. nbgallery::
@@ -38,17 +81,15 @@ tokenizer
     
     Code for beginner to learn how to use Tokenizer  <../../build/blitz/tokenizer/tokenizer.ipynb>
     
-
-formula
+向量化
 ^^^^^^^^^^^
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: formula_gallery
+    :name: vectorization_gallery
     :glob:
     
-    Code for beginner to learn how to use Formula  <../../build/blitz/formula/formula.ipynb>
-    
+    Code for beginner to learn how to use i2v  <../../build/blitz/vectorization/vectorization.ipynb>
 
 pretrain
 ^^^^^^^^^^^
