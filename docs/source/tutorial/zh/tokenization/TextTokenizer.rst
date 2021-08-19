@@ -4,6 +4,7 @@ Examples
 --------
 
 ::
+
     >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
     >>> tokenizer = TextTokenizer()
     >>> tokens = tokenizer(items)
