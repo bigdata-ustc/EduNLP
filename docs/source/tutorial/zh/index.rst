@@ -34,7 +34,7 @@
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: formula_gallery
+    :name: dict2str4sif_gallery
     :glob:
     
     Code for beginner to learn how to use dict2str4sif  <../../build/blitz/utils/data.ipynb>
