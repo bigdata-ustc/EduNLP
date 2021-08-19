@@ -19,7 +19,7 @@
 
 2.调用train_vector函数，即可得到所需的预训练模型。
 
-Examples
+Examples：
 
 ::
 
@@ -36,7 +36,7 @@ Examples
 --------
 将所得到的模型传入I2V模块即可装载模型
  
-Examples
+Examples：
 
 ::
 
@@ -71,7 +71,7 @@ Examples
 
 模型命名规则：一级版本 + 二级版本 + gensim_luna_stem +  分词规则 + 模型方法 + 维度
 
-Examples
+Examples：
 
 ::
 
