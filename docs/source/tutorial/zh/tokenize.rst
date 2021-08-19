@@ -35,7 +35,7 @@
     本项目默认使用的停用词表：`[stopwords] <https://github.com/bigdata-ustc/EduNLP/blob/master/EduNLP/meta_data/sif_stopwords.txt>`_  
     你也可以使用自己的停用词表，具体使用方法见下面的示例。
 
-Examples
+Examples：
 
 ::
     
