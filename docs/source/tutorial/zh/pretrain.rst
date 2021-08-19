@@ -19,7 +19,7 @@
 
 2.调用train_vector函数，即可得到所需的预训练模型。
 
-Examples：
+Examples
 
 ::
 
@@ -36,7 +36,7 @@ Examples：
 --------
 将所得到的模型传入I2V模块即可装载模型
  
-Examples：
+Examples
 
 ::
 
@@ -71,7 +71,7 @@ Examples：
 
 模型命名规则：一级版本 + 二级版本 + gensim_luna_stem +  分词规则 + 模型方法 + 维度
 
-Examples：
+Examples
 
 ::
 
@@ -79,7 +79,7 @@ Examples：
      `/share/qlh/d2v_model/luna_private/luna_private_all_gensim_luna_stem_general_d2v_256.bin`
      （备注：一个D2V模型含4个bin后缀的文件）
 
-模型训练数据说明：
+模型训练数据说明
 ##################
 
 * 当前【词向量w2v】【句向量d2v】模型所用的数据均为 【高中学段】 的题目
