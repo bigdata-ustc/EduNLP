@@ -51,6 +51,8 @@ Examples：
  >>> fg.elements
  [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}, {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
 
+详细示范
++++++++++++++++
 
 .. toctree::
    :maxdepth: 1
