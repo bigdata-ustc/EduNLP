@@ -48,7 +48,6 @@
 
 
 .. toctree::
-   :maxdepth: 1
    :titlesonly:
 
-   dict2str4sif  <../../build/blitz/utils/data.ipynb>
+   dict2str4sif  <../../../build/blitz/utils/data.ipynb>
