@@ -1,1 +1,20 @@
-1
+文本语法结构解析
+--------------------
+
+
+将文本中的字母、数字等进行提取，将其转换为标准格式。
+
+Examples：
+::
+
+ >>> text = '生产某种零件的A工厂25名工人的日加工零件数_   _'
+ >>> text_parser = Parser(text)
+ >>> text_parser.description_list()
+ >>> text_parser.text
+ >>> '生产某种零件的$A$工厂$25$名工人的日加工零件数$\\SIFBlank$'
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+   
+   文本语法结构解析的案例 <../../build/blitz/parse/parse.ipynb>
