@@ -39,6 +39,12 @@ Examples：
  >>> text_parser.text
  >>> '生产某种零件的$A$工厂$25$名工人的日加工零件数$\\SIFBlank$'
 
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+   
+   parse <../../build/blitz/parse/parse.ipynb>
+
 
 公式语法结构解析
 --------------------
