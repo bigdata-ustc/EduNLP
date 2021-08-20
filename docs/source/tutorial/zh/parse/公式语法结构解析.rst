@@ -55,7 +55,6 @@ Examples：
 +++++++++++++++
 
 .. toctree::
-   :maxdepth: 1
    :titlesonly:
 
    树型处理效果 <../../build/blitz/formula/tree.ipynb>
