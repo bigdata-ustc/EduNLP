@@ -76,7 +76,7 @@ class Parser:
 
         """
         legal_tags = ['FormFigureID', 'FormFigureBase64', 'FigureID', 'FigureBase64',
-                      'SIFBlank', 'SIFChoice', 'SIFTag', 'SIFSep', 'SIFUnderline']
+                      'SIFBlank', 'SIFChoice', 'SIFTag', 'SIFSep', 'SIFUnderline', 'textf']
         for tag in legal_tags:
             if tag in formula_str:
                 return True
