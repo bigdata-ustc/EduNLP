@@ -48,7 +48,6 @@
 +++++++++++
 
 .. toctree::
-   :maxdepth: 1
    :titlesonly:
 
    seg  <../../build/blitz/seg/seg.ipynb>
