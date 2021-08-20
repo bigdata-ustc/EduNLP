@@ -1,9 +1,18 @@
 公式语法结构解析
 --------------------
 
-可以检查公式是否合法。
+本功能主要由EduNLP模块实现，具有检查传入的公式是否合法，并将合法的公式转换为art树的形式。
+
+主要内容介绍
++++++++++++++++
+
+1.Formula:
+
+2.FormulaGroup:
+
 
 Examples：
+
 ::
 
  >>> text = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
@@ -11,6 +20,39 @@ Examples：
  >>> text_parser.description_list()
  >>> text_parser.fomula_illegal_flag
  >>> 1
+
+::
+
+    >>> f = Formula("x")
+    >>> f
+    <Formula: x>
+    >>> f.ast
+    [{'val': {'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, \
+'structure': {'bro': [None, None], 'child': None, 'father': None, 'forest': None}}]
+    >>> f.elements
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}]
+    >>> f.variable_standardization(inplace=True)
+    <Formula: x>
+    >>> f.elements
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
+
+::
+
+    >>> fg = FormulaGroup(["x + y", "y + x", "z + x"])
+    >>> fg
+    <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
+    >>> fg = FormulaGroup(["x + y", Formula("y + x"), "z + x"])
+    >>> fg
+    <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
+    >>> fg = FormulaGroup(["x", Formula("y"), "x"])
+    >>> fg.elements
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None},\
+ {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None}]
+    >>> fg = FormulaGroup(["x", Formula("y"), "x"], variable_standardization=True)
+    >>> fg.elements
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, \
+{'id': 1, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}, \
+{'id': 2, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
 
 
 .. toctree::
