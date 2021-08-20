@@ -23,34 +23,34 @@ Examples：
 
 ::
 
-    >>> f = Formula("x")
-    >>> f
-    <Formula: x>
-    >>> f.ast
-    [{'val': {'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, \
+ >>> f = Formula("x")
+ >>> f
+ <Formula: x>
+ >>> f.ast
+ [{'val': {'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, \
 'structure': {'bro': [None, None], 'child': None, 'father': None, 'forest': None}}]
-    >>> f.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}]
-    >>> f.variable_standardization(inplace=True)
-    <Formula: x>
-    >>> f.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
+ >>> f.elements
+ [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}]
+ >>> f.variable_standardization(inplace=True)
+ <Formula: x>
+ >>> f.elements
+ [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
 
 ::
 
-    >>> fg = FormulaGroup(["x + y", "y + x", "z + x"])
-    >>> fg
-    <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
-    >>> fg = FormulaGroup(["x + y", Formula("y + x"), "z + x"])
-    >>> fg
-    <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
-    >>> fg = FormulaGroup(["x", Formula("y"), "x"])
-    >>> fg.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None},\
+ >>> fg = FormulaGroup(["x + y", "y + x", "z + x"])
+ >>> fg
+ <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
+ >>> fg = FormulaGroup(["x + y", Formula("y + x"), "z + x"])
+ >>> fg
+ <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
+ >>> fg = FormulaGroup(["x", Formula("y"), "x"])
+ >>> fg.elements
+ [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None},\
  {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None}]
-    >>> fg = FormulaGroup(["x", Formula("y"), "x"], variable_standardization=True)
-    >>> fg.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, \
+ >>> fg = FormulaGroup(["x", Formula("y"), "x"], variable_standardization=True)
+ >>> fg.elements
+ [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, \
 {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}, \
 {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
 
