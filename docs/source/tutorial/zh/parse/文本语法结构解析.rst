@@ -36,4 +36,4 @@ Examples：
 .. toctree::
    :titlesonly:
    
-   文本语法结构解析的案例 <../../build/blitz/parse/parse.ipynb>
+   文本语法结构解析的案例 <../../../build/blitz/parse/parse.ipynb>
