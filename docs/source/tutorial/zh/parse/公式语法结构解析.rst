@@ -57,5 +57,5 @@ Examples：
 .. toctree::
    :titlesonly:
 
-   树型处理效果 <../../build/blitz/formula/tree.ipynb>
-   公式解析效果案例 <../../build/blitz/formula/formula.ipynb>
+   树型处理效果 <../../../build/blitz/formula/tree.ipynb>
+   公式解析效果案例 <../../../build/blitz/formula/formula.ipynb>
