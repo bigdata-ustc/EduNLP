@@ -34,7 +34,6 @@ Examples：
 +++++++++++++++
 
 .. toctree::
-   :maxdepth: 1
    :titlesonly:
    
    文本语法结构解析的案例 <../../build/blitz/parse/parse.ipynb>
