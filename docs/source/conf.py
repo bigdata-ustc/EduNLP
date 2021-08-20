@@ -59,7 +59,7 @@ nbsphinx_thumbnails = {
     'build/blitz/sif/sif': '_static/item_figure.png',
     'build/blitz/sif/sif_addition': '_static/sif_addition.png',
     'build/blitz/utils/data': '_static/data.png',
-    'build/blitz/formula/formula': '_static/item_formula.png',
+    'build/blitz/formula/formula': '_static/formula.png',
     'build/blitz/seg/seg': '_static/seg.png',
     'build/blitz/parse/parse': '_static/parse.png',
     'build/blitz/formula/formula': '_static/formula.png',
