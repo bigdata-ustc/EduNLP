@@ -84,13 +84,8 @@ class SegmentList(object):
         self._ques_mark_segments = []
         self._tag_segments = []
         self._sep_segments = []
-        remove_textf_item = ''
-        remove_textf_segments = re.split(r"\$\\textf\{([^,]+?),b?d?i?t?u?w?}\$", item)
-        # 按照$\textf{}$切割，$\textf{}$段仅捕获文本内容
-        for remove_textf_segment in remove_textf_segments:
-            remove_textf_item = remove_textf_item + remove_textf_segment
-        # 连接处理后的字符串
-        segments = re.split(r"(\$.+?\$)", remove_textf_item)
+        item_no_textf = "".join(re.split(r"\$\\textf\{([^,]+?),b?d?i?t?u?w?}\$", item))  # remove $\textf{*} from the item$
+        segments = re.split(r"(\$.+?\$)", item_no_textf)
         for segment in segments:
             if not segment:
                 continue
