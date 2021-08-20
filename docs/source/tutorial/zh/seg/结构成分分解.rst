@@ -50,4 +50,4 @@
 .. toctree::
    :titlesonly:
 
-   seg  <../../build/blitz/seg/seg.ipynb>
+   seg  <../../../build/blitz/seg/seg.ipynb>
