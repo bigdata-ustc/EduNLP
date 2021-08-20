@@ -1,1 +1,21 @@
-1
+公式语法结构解析
+--------------------
+
+可以检查公式是否合法。
+
+Examples：
+::
+
+ >>> text = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
+ >>> text_parser = Parser(text)
+ >>> text_parser.description_list()
+ >>> text_parser.fomula_illegal_flag
+ >>> 1
+
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   树型处理效果 <../../build/blitz/formula/tree.ipynb>
+   公式解析效果案例 <../../build/blitz/formula/formula.ipynb>
