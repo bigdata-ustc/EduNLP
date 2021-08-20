@@ -30,6 +30,8 @@ Examples：
  >>> text_parser.text
  >>> '生产某种零件的$A$工厂$25$名工人的日加工零件数$\\SIFBlank$'
 
+详细示范
++++++++++++++++
 
 .. toctree::
    :maxdepth: 1
