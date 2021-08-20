@@ -84,7 +84,10 @@ class SegmentList(object):
         self._ques_mark_segments = []
         self._tag_segments = []
         self._sep_segments = []
-        item_no_textf = "".join(re.split(r"\$\\textf\{([^,]+?),b?d?i?t?u?w?}\$", item))  # remove $\textf{*} from the item$
+        
+        # remove $\textf{*} from the item$
+        item_no_textf = "".join(re.split(r"\$\\textf\{([^,]+?),b?d?i?t?u?w?}\$", item))
+        
         segments = re.split(r"(\$.+?\$)", item_no_textf)
         for segment in segments:
             if not segment:
