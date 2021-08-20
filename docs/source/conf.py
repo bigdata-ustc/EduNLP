@@ -57,6 +57,12 @@ extensions = [
 
 nbsphinx_thumbnails = {
     'build/blitz/sif/sif': '_static/item_figure.png',
+    'build/blitz/utils/data.ipynb': '_static/data.png',
+    'build/blitz/formula/formula.ipynb': '_static/item_formula.png',
+    'build/blitz/sif/sif_addition.ipynb': '_static/sif_addition.png',
+    'build/blitz/tokenizer/tokenizer': '_static/tokenizer.png',
+    'build/blitz/pretrain/prepare_dataset.ipynb': '_static/item_figure.png',
+    'build/blitz/pretrain/d2v.ipynb': '_static/item_figure.png',
 }
 
 # Add any paths that contain templates here, relative to this directory.

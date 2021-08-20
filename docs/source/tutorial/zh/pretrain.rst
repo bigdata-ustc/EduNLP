@@ -12,7 +12,7 @@
 训练模型
 ---------
 
-基本步骤：
+基本步骤
 ##################
 
 1.确定模型的类型，选择适合的Tokenizer（GensimWordTokenizer、 GensimSegTokenizer），使之令牌化；
@@ -79,7 +79,7 @@ Examples：
      `/share/qlh/d2v_model/luna_private/luna_private_all_gensim_luna_stem_general_d2v_256.bin`
      （备注：一个D2V模型含4个bin后缀的文件）
 
-模型训练数据说明：
+模型训练数据说明
 ##################
 
 * 当前【词向量w2v】【句向量d2v】模型所用的数据均为 【高中学段】 的题目

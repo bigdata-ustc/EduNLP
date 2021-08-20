@@ -13,7 +13,7 @@
 
 2、判断当前item是否合法，并报出错误类型。
 
-具体处理内容包括：
+具体处理内容
 --------------------
 
 1.匹配公式之外的英文字母、数字，只对两个汉字之间的字母、数字做修正，其余匹配到的情况视为不合 latex 语法录入的公式
@@ -57,7 +57,7 @@ Examples：
 
 .. toctree::
    :maxdepth: 1
-   :caption: 公式解析例子
+   :titlesonly:
 
    tree <../../build/blitz/formula/tree.ipynb>
    formula <../../build/blitz/formula/formula.ipynb>

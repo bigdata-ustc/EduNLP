@@ -30,6 +30,12 @@ Examples：
  >>> dict2str4sif(item, key_as_tag=False)
 
   '若复数$z=1+2 i+i^{3}$，则$|z|=$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2'
+  
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   dict2str4sif  <../../build/blitz/utils/data.ipynb>
 
 
 结构成分分解
@@ -42,8 +48,14 @@ Examples：
 Examples：
 ::
 
->>> test_item = r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$"
->>> seg(test_item)
->>> ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
->>> seg(test_item, symbol="fgm")
->>> ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
+ >>> test_item = r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$"
+ >>> seg(test_item)
+ >>> ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
+ >>> seg(test_item, symbol="fgm")
+ >>> ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   seg  <../../build/blitz/seg/seg.ipynb>
