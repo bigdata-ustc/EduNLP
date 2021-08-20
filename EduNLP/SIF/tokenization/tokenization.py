@@ -15,6 +15,11 @@ __all__ = ["TokenList", "tokenize", "link_formulas"]
 
 
 class TokenList(object):
+    """
+    Attributes
+    -------------
+
+    """
     def __init__(self, segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
         self._tokens = []
         self._text_tokens = []
