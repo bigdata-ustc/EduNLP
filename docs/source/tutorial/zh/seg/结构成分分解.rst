@@ -50,4 +50,4 @@
 .. toctree::
    :titlesonly:
 
-   seg  <../../../build/blitz/seg/seg.ipynb>
+   结构成分分解的案例  <../../../build/blitz/seg/seg.ipynb>
