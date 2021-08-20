@@ -50,4 +50,4 @@
 .. toctree::
    :titlesonly:
 
-   dict2str4sif  <../../../build/blitz/utils/data.ipynb>
+   语义成分分解的案例  <../../../build/blitz/utils/data.ipynb>
