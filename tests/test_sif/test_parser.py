@@ -34,3 +34,7 @@ def test_parser():
     text_parser = Parser(text)
     text_parser.description_list()
     assert text_parser.fomula_illegal_flag == 1
+
+    text = '方程$x+y=2\n$'
+    text_parser = Parser(text)
+    text_parser.description_list()
