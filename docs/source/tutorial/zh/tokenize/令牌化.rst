@@ -23,6 +23,6 @@ Examples
   :maxdepth: 1
   :titlesonly:
 
-  tokenization/TextTokenizer
-  tokenization/GensimSegTokenizer
-  tokenization/GensimWordTokenizer
+  ../tokenization/TextTokenizer
+  ../tokenization/GensimSegTokenizer
+  ../tokenization/GensimWordTokenizer
