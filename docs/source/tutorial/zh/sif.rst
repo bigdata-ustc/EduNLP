@@ -44,7 +44,7 @@ version: 0.2
   
   10. DIGITAL -> [0-9]+
   
-  11. QUES_MARK -> $\\SIFBlank$ | $\\SIFChoice$
+  11. QUES_MARK -> $\SIFBlank$ | $\SIFChoice$
 
 
 注意事项
