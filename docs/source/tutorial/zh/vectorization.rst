@@ -21,6 +21,6 @@
    :maxdepth: 1
    :titlesonly:
 
-   不使用预训练模型.rst <vectorization/不使用预训练模型.rst>
-   使用预训练模型.rst <vectorization/使用预训练模型.rst>
+   不使用预训练模型 <vectorization/不使用预训练模型.rst>
+   使用预训练模型 <vectorization/使用预训练模型.rst>
 
