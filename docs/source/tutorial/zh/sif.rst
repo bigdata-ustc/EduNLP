@@ -10,11 +10,11 @@ version: 0.2
 
 1. 题目文本中只允许出现中文字符、中英文标点和换行符。
 
-2. 使用 \$\SIFBlank\$ 替换横线，对于选择题中的括号使用 \$\SIFChoice\$ 替换。
+2. 使用 \$\SIFBlank\$ 替换横线，对于选择题中的括号使用 \$\\SIFChoice\$ 替换。
 
-3. 图片 ID 以公式的形式嵌入文本中：`$\FigureID{ uuid }$` 或用 base64 编码表示，特别的，内容为公式的图片用`$\FormFigureID{ uuid }$`表示。
+3. 图片 ID 以公式的形式嵌入文本中：`$\\FigureID{ uuid }$` 或用 base64 编码表示，特别的，内容为公式的图片用`$\\FormFigureID{ uuid }$`表示。
 
-4. 文本标注格式：统一用 `$\textf{item,CHAR_EN}$` 表示，目前定义的有：b-加粗，i-斜体，u-下划线，w-下划波浪线，d-加点，t-标题。标注可以混用，按字母顺序排序，例如：$\textf{EduNLP, bi}$ 表示 <u>***EduNLP***</u>
+4. 文本标注格式：统一用 `$\\textf{item,CHAR_EN}$` 表示，目前定义的有：b-加粗，i-斜体，u-下划线，w-下划波浪线，d-加点，t-标题。标注可以混用，按字母顺序排序，例如：$\\textf{EduNLP, bi}$ 表示 <u>***EduNLP***</u>
 
 5. 其余诸如，英文字母、罗马字符、数字等数学符号一律需要使用 latex 格式表示，即嵌在 `$$` 之中。
 
@@ -44,7 +44,7 @@ version: 0.2
   
   10. DIGITAL -> [0-9]+
   
-  11. QUES_MARK -> $\SIFBlank$ | $\SIFChoice$
+  11. QUES_MARK -> $\\SIFBlank$ | $\\SIFChoice$
 
 
 注意事项
@@ -58,7 +58,7 @@ version: 0.2
 
 4. 对于单个的数字或字符也需要添加 `$$`（目前能实现自动校验）
 
-5. latex 公式中尽量不出现中文：（`\text{这里出现中文}`）
+5. latex 公式中尽量不出现中文：（`\\text{这里出现中文}`）
 
 6. MySql 数据库导入数据时会自动忽略一个 `\`，所以录入的公式需要进一步处理为 `\\`
 
