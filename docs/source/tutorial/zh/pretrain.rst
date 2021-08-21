@@ -75,7 +75,7 @@ Examples：
 ::
 
      全量版本-全学科的D2V模型路径：
-     `/share/qlh/d2v_model/luna_private/luna_private_all_gensim_luna_stem_general_d2v_256.bin`
+     `/share/qlh/d2v_model/luna_pub/luna_pub_all_gensim_luna_stem_general_d2v_256.bin`
      （备注：一个D2V模型含4个bin后缀的文件）
 
 模型训练数据说明
