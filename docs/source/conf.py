@@ -64,7 +64,7 @@ nbsphinx_thumbnails = {
     'build/blitz/parse/parse': '_static/parse.png',
     'build/blitz/formula/formula': '_static/formula.png',
     'build/blitz/tokenizer/tokenizer': '_static/tokenizer.png',
-    'build/blitz/pretrain/prepare_dataset': '_static/item_figure.png',
+    'build/blitz/pretrain/prepare_dataset': '_static/prepare_dataset.png',
     'build/blitz/pretrain/d2v': '_static/item_figure.png',
 }
 
