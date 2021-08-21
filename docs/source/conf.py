@@ -56,7 +56,7 @@ extensions = [
 # npsphinx
 
 nbsphinx_thumbnails = {
-    'build/blitz/sif/sif': '_static/sif.png',
+    'build/blitz/sif/sif': '_static/item_figure.png',
     'build/blitz/sif/sif_addition': '_static/sif_addition.png',
     'build/blitz/utils/data': '_static/data.png',
     'build/blitz/formula/formula': '_static/formula.png',
@@ -64,8 +64,16 @@ nbsphinx_thumbnails = {
     'build/blitz/parse/parse': '_static/parse.png',
     'build/blitz/formula/formula': '_static/formula.png',
     'build/blitz/tokenizer/tokenizer': '_static/tokenizer.png',
-    'build/blitz/pretrain/prepare_dataset': '_static/prepare_dataset.jpg',
     'build/blitz/vectorization/i2v': '_static/i2v.png',
+    'build/blitz/pretrain/prepare_dataset': '_static/prepare_dataset.jpg',
+    'build/blitz/pretrain/gensim/d2v_bow_tfidf': '_static/d2v_bow_tfidf.png',
+    'build/blitz/pretrain/gensim/d2v_general': '_static/d2v_general.png',
+    'build/blitz/pretrain/gensim/d2v_stem_tf': '_static/d2v_stem_tf.png',
+    'build/blitz/pretrain/gensim/w2v_stem_text': '_static/w2v_stem_text.png',
+    'build/blitz/pretrain/gensim/w2v_stem_tf': '_static/w2v_stem_tf.png',
+    'build/blitz/pretrain/seg_token/d2v': '_static/d2v.png',
+    'build/blitz/pretrain/seg_token/d2v_d1': '_static/d2v_d1.png',
+    'build/blitz/pretrain/seg_token/d2v_d2': '_static/d2v_d2.png',
 }
 
 # Add any paths that contain templates here, relative to this directory.
