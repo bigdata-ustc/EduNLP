@@ -57,9 +57,11 @@ version: 0.2
 
 标准形式:
 
-  1. ``若$x,y$满足约束条件$\\left\\{\\begin{array}{c}2 x+y-2 \\leq 0 \\\\ x-y-1 \\geq 0 \\\\ y+1 \\geq 0\\end{array}\\right.$，则$z=x+7 y$的最大值$\\SIFUnderline$'``
-  
-  2. ``已知函数$f(x)=|3 x+1|-2|x|$画出$y=f(x)$的图像求不等式$f(x)>f(x+1)$的解集$\\PictureID{3bf2ddf4-8af1-11eb-b750-b46bfc50aa29}$$\\PictureID{59b8bd14-8af1-11eb-93a5-b46bfc50aa29}$$\\PictureID{63118b3a-8b75-11eb-a5c0-b46bfc50aa29}$$\\PictureID{6a006179-8b76-11eb-b386-b46bfc50aa29}$$\\PictureID{088f15eb-8b7c-11eb-a86f-b46bfc50aa29}$``
+::
+
+ 1. 若$x,y$满足约束条件$\\left\\{\\begin{array}{c}2 x+y-2 \\leq 0 \\\\ x-y-1 \\geq 0 \\\\ y+1 \\geq 0\\end{array}\\right.$，则$z=x+7 y$的最大值$\\SIFUnderline$'
+ 
+ 2. 已知函数$f(x)=|3 x+1|-2|x|$画出$y=f(x)$的图像求不等式$f(x)>f(x+1)$的解集$\\PictureID{3bf2ddf4-8af1-11eb-b750-b46bfc50aa29}$$\\PictureID{59b8bd14-8af1-11eb-93a5-b46bfc50aa29}$$\\PictureID{63118b3a-8b75-11eb-a5c0-b46bfc50aa29}$$\\PictureID{6a006179-8b76-11eb-b386-b46bfc50aa29}$$\\PictureID{088f15eb-8b7c-11eb-a86f-b46bfc50aa29}$
 
 非标准形式：
 
@@ -68,7 +70,9 @@ version: 0.2
     例如：
     
     ``完成下面的2x2列联表，``
+    
     ``（单位：m3）``
+    
     ``则输出的n=``
     
 2. 特殊的数学符号没有用 latex 公式表示：
@@ -76,6 +80,7 @@ version: 0.2
     例如：
     
     ``命题中真命题的序号是 ①``
+    
     ``AB是⊙O的直径，AC是⊙O的切线，BC交⊙O于点E．若D为AC的中点``
     
 3. 出现以 unicode 编码写成的字符
