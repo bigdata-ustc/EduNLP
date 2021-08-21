@@ -18,22 +18,32 @@ version: 0.2
 
 5. 其余诸如，英文字母、罗马字符、数字等数学符号一律需要使用 latex 格式表示，即嵌在 `$$` 之中。
 
-6. 分子式的录入标准暂且参考 [INCHI](https://zh.wikipedia.org/wiki/%E5%9B%BD%E9%99%85%E5%8C%96%E5%90%88%E7%89%A9%E6%A0%87%E8%AF%86)
+6. 分子式的录入标准暂且参考 `INCHI <https://zh.wikipedia.org/wiki/%E5%9B%BD%E9%99%85%E5%8C%96%E5%90%88%E7%89%A9%E6%A0%87%E8%AF%86>`_
 
 7. 目前对 latex 内部语法没有要求。
 
 ::
 
   1. Item -> CHARACTER|EN_PUN_LIST|CH_PUN_LIST|FORMULA|QUES_MARK
+  
   2. EN_PUN_LIST -> [',', '.', '?', '!', ':', ';', '\'', '\"', '(', ')', ' ','_','/','|','\\','<','>','[',']','-']
+  
   3. CH_PUN_LIST -> ['，', '。', '！', '？', '：','；', '‘', '’', '“', '”', '（', '）', ' ', '、','《','》','—','．']
+  
   4. FORMULA -> $latex formula$ | $\FormFigureID{UUID}$ | $\FormFigureBase64{BASE64}$
+  
   5. FIGURE -> $\FigureID{UUID}$ | $\FigureBase64{BASE64}$
+  
   6. UUID -> [a-zA-Z\-0-9]+
+  
   7. CHARACTER -> CHAR_EN | CHAR_CH
+  
   8. CHAR_EN -> [a-zA-Z]+
+  
   9. CHAR_CH -> [\u4e00-\u9fa5]+
+  
   10. DIGITAL -> [0-9]+
+  
   11. QUES_MARK -> $\SIFBlank$ | $\SIFChoice$
 
 
