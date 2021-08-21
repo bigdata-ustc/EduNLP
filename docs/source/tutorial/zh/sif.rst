@@ -14,7 +14,7 @@ version: 0.2
 
 3. 图片 ID 以公式的形式嵌入文本中：`$\FigureID{ uuid }$` 或用 base64 编码表示，特别的，内容为公式的图片用`$\FormFigureID{ uuid }$`表示。
 
-4. 文本标注格式：统一用 `$\textf{item,CHAR_EN}$` 表示，目前定义的有：b-加粗，i-斜体，u-下划线，w-下划波浪线，d-加点，t-标题。标注可以混用，按字母顺序排序，例如：$\textf{EduNLP, biu}$ 表示 <u>***EduNLP***</u>
+4. 文本标注格式：统一用 `$\textf{item,CHAR_EN}$` 表示，目前定义的有：b-加粗，i-斜体，u-下划线，w-下划波浪线，d-加点，t-标题。标注可以混用，按字母顺序排序，例如：$\textf{EduNLP, bi}$ 表示 <u>***EduNLP***</u>
 
 5. 其余诸如，英文字母、罗马字符、数字等数学符号一律需要使用 latex 格式表示，即嵌在 `$$` 之中。
 
@@ -74,18 +74,26 @@ version: 0.2
 非标准形式：
 
 1. 字母、数字和数学符号连续混合出现：
+
    例如：
+   
    `完成下面的2x2列联表，`
+   
    `（单位：m3）`
+   
    `则输出的n=`
 
 2. 特殊的数学符号没有用 latex 公式表示：
+
    例如：
+   
    `命题中真命题的序号是 ①`
+   
    `AB是⊙O的直径，AC是⊙O的切线，BC交⊙O于点E．若D为AC的中点`
 
 3. 出现以 unicode 编码写成的字符
-   例如：`则$a$的取值范围是（\u3000\u3000）`
+
+   例如：`则$a$的取值范围是（\\u3000\\u3000）`
 
 
 Change Log
@@ -95,13 +103,15 @@ Change Log
 
 修改：
 
-1. 原用 \$\SIFUnderline\$ 和 \$\SIFBracket\$ 来替换填空题中的横线和选择题中的括号，现分别用 \$\SIFBlank\$ 和 \$\SIFChoice\$ 替换。 
-2. 原统一用`$\PictureID{ uuid }$`表示图片，现使用`$\FigureID{ uuid }$`，其中对于数据公式，用`$\FormFigureID{ uuid }$`来表示。
+1. 原用 \$\\SIFUnderline\$ 和 \$\\SIFBracket\$ 来替换填空题中的横线和选择题中的括号，现分别用 \$\\SIFBlank\$ 和 \$\\SIFChoice\$ 替换。 
+
+2. 原统一用`$\\PictureID{ uuid }$`表示图片，现使用`$\\FigureID{ uuid }$`，其中对于数据公式，用`$\\FormFigureID{ uuid }$`来表示。
 
 2021-06-28 
 
 添加： 
 
 1. 注明 `$$` 之中不能出现换行符。 
+
 2. 添加文本标注格式说明。 
 
