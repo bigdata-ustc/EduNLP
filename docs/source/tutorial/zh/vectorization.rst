@@ -21,6 +21,6 @@
    :maxdepth: 1
    :titlesonly:
 
-   文本语法结构解析 <parse/文本语法结构解析>
-   公式语法结构解析 <parse/公式语法结构解析>
+   不使用预训练模型.rst <vectorization/不使用预训练模型.rst>
+   使用预训练模型.rst <vectorization/使用预训练模型.rst>
 
