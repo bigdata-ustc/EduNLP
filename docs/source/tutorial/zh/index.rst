@@ -146,5 +146,3 @@ seg_token例子
     :glob:
 
     d2v.ipynb  <../../build/blitz/pretrain/seg_token/d2v.ipynb>
-    d2v_d1  <../../build/blitz/pretrain/seg_token/d2v_d1.ipynb>
-    d2v_d2  <../../build/blitz/pretrain/seg_token/d2v_d2.ipynb>
