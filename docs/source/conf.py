@@ -65,7 +65,7 @@ nbsphinx_thumbnails = {
     'build/blitz/formula/formula': '_static/formula.png',
     'build/blitz/tokenizer/tokenizer': '_static/tokenizer.png',
     'build/blitz/pretrain/prepare_dataset': '_static/prepare_dataset.jpg',
-    'build/blitz/pretrain/i2v': '_static/i2v.png',
+    'build/blitz/vectorization/i2v': '_static/i2v.png',
 }
 
 # Add any paths that contain templates here, relative to this directory.
