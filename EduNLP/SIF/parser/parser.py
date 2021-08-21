@@ -336,7 +336,7 @@ class Parser:
         >>> text = '方程$x+y=2\n$'
         >>> text_parser = Parser(text)
         >>> text_parser.description_list()
-        Warning: there is '\n' in formula!
+        Warning: there is a '\n' in formula!
         """
         # print('call description_list')
         self.description()
