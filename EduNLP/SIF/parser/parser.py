@@ -226,7 +226,16 @@ class Parser:
                     print("Warning: there is some chinese characters in formula!")
                     self.warnning = 1
                     flag = 0
-                self.head += 1
+                    self.head += 1
+                elif flag and ch_informula == '\n':
+                    # latex 中出现换行符，删除且打印一次 warning
+                    print("Warning: there is a '\\n' in formula!")
+                    self.warnning = 1
+                    flag = 0
+                    self.text = self.text[:self.head] + self.text[self.head + 1:]
+                    self.modify_flag = 1
+                else:
+                    self.head += 1
             if self.head >= len(self.text):
                 self.call_error()
                 return self.error
@@ -324,6 +333,10 @@ class Parser:
         >>> text_parser.description_list()
         >>> text_parser.fomula_illegal_flag
         1
+        >>> text = '方程$x+y=2\n$'
+        >>> text_parser = Parser(text)
+        >>> text_parser.description_list()
+        Warning: there is a '\n' in formula!
         """
         # print('call description_list')
         self.description()
