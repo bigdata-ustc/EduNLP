@@ -1,15 +1,17 @@
 入门
 =====
 
-.. toctree::
-  :maxdepth: 1
-  :titlesonly:
+*  `标准项目格式 <sif.rst>`_ 
 
-  sif
-  seg
-  parse
-  tokenize
-  vectorization
+*  `语法解析 <seg.rst>`_ 
+
+*  `成分分解 <parse.rst>`_ 
+
+*  `令牌化 <tokenize.rst>`_ 
+
+*  `向量化 <vectorization.rst>`_ 
+
+*  `预训练 <pretrain.rst>`_ 
 
 示例
 --------

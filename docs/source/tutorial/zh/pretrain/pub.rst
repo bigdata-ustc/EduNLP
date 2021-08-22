@@ -19,18 +19,6 @@
 * 不使用第三方初始化词表
 * 使用第三方初始化词表 
 
-
-
-模型命名规则：一级版本 + 二级版本 + gensim_luna_stem +  分词规则 + 模型方法 + 维度
-
-Examples：
-
-::
-
-     全量版本-全学科的D2V模型路径：
-     `/share/qlh/d2v_model/luna_pub/luna_pub_all_gensim_luna_stem_general_d2v_256.bin`
-     （备注：一个D2V模型含4个bin后缀的文件）
-
 模型训练数据说明
 ##################
 
@@ -38,7 +26,7 @@ Examples：
 * 测试数据：`[OpenLUNA.json] <http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_
 
 当前提供以下模型，更多分学科、分题型模型正在训练中，敬请期待
-    "d2v_all_256"(全科)，"d2v_sci_256"(理科)，"d2v_eng_256"（文科），"d2v_lit_256"(英语)
+    "d2v_all_256"(全科)，"d2v_sci_256"(理科)，"d2v_eng_256"（英语），"d2v_lit_256"(文科)
 
 模型训练案例
 ------------
