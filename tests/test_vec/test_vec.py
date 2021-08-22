@@ -1,11 +1,13 @@
 # coding: utf-8
 # 2021/5/30 @ tongshiwei
 
+import torch
 import numpy as np
 import pytest
 from EduNLP.Pretrain import train_vector, GensimWordTokenizer
 from EduNLP.Vector import W2V, D2V, RNNModel, T2V, Embedding
-from EduNLP.I2V import D2V as I_D2V
+from EduNLP.I2V import D2V as I_D2V, W2V as I_W2V
+from EduNLP.Tokenizer import get_tokenizer
 
 
 @pytest.fixture(scope="module")
@@ -26,6 +28,16 @@ def stem_tokens(stem_data):
         d = tokenizer(e)
         if d is not None:
             _data.append(d.tokens)
+    assert _data
+    return _data
+
+
+@pytest.fixture(scope="module")
+def stem_text_tokens(stem_data):
+    _data = []
+    tokenizer = get_tokenizer("pure_text")
+    tokens = tokenizer(stem_data)
+    _data = [d for d in tokens]
     assert _data
     return _data
 
@@ -77,11 +89,40 @@ def test_w2v(stem_tokens, tmpdir, method, binary):
 
     t2v = T2V("w2v", filepath=filepath, method=method, binary=binary)
     assert len(t2v(stem_tokens[:1])[0]) == t2v.vector_size
+    assert len(t2v.infer_vector(stem_tokens[:1])[0]) == t2v.vector_size
+    assert len(t2v.infer_tokens(stem_tokens[:1])[0][0]) == t2v.vector_size
 
     for _w2v in [[filepath, method, binary], dict(filepath=filepath, method=method, binary=binary)]:
         embedding = Embedding(_w2v, device="cpu")
         items, item_len = embedding(stem_tokens[:5])
         assert items.shape == (5, max(item_len), embedding.embedding_dim)
+
+
+def test_w2v_i2v(stem_text_tokens, tmpdir, stem_data):
+    method = "sg"
+    filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
+    filepath = train_vector(
+        stem_text_tokens,
+        filepath_prefix,
+        10,
+        method=method,
+        train_params=dict(min_count=0)
+    )
+
+    i2v = I_W2V("pure_text", "w2v", filepath)
+    i_vec, t_vec = i2v(stem_data[:1])
+    assert len(i_vec[0]) == i2v.vector_size
+    assert len(t_vec[0][0]) == i2v.vector_size
+
+    cfg_path = str(tmpdir / method / "i2v_config.json")
+    i2v.save(config_path=cfg_path)
+    i2v = I_W2V.load(cfg_path)
+
+    i_vec = i2v.infer_item_vector(stem_data[:1])
+    assert len(i_vec[0]) == i2v.vector_size
+
+    t_vec = i2v.infer_token_vector(stem_data[:1])
+    assert len(t_vec[0][0]) == i2v.vector_size
 
 
 def test_embedding():
@@ -111,29 +152,41 @@ def test_rnn(stem_tokens, tmpdir):
         item = rnn.infer_vector(stem_tokens[:1])
         assert tokens.shape == (1, len(stem_tokens[0]), 20 * (2 if rnn.bidirectional else 1))
         assert item.shape == (1, rnn.vector_size)
+        item_vec = rnn.infer_vector(stem_tokens[:1])
+        assert torch.equal(item, item_vec)
 
         t2v = T2V(rnn_type, w2v, 20)
         assert len(t2v(stem_tokens[:1])[0]) == t2v.vector_size
 
+        saved_params = rnn.save(str((tmpdir / method).join("stem_tf_rnn.params")), save_embedding=True)
 
-def test_d2v(stem_tokens, tmpdir, stem_data):
+        rnn = RNNModel(rnn_type, w2v, 20, device="cpu", model_params=saved_params)
+        rnn.train()
+        assert rnn.is_frozen is False
+        rnn.freeze()
+        assert rnn.is_frozen is True
+        item_vec1 = rnn.infer_vector(stem_tokens[:1])
+        assert torch.equal(item, item_vec1)
+
+
+def test_d2v(stem_text_tokens, tmpdir, stem_data):
     method = "d2v"
     filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
     filepath = train_vector(
-        stem_tokens,
+        stem_text_tokens,
         filepath_prefix,
         10,
         method=method,
         train_params=dict(min_count=0)
     )
     d2v = D2V(filepath)
-    assert len(d2v(stem_tokens[0])) == 10
+    assert len(d2v(stem_text_tokens[0])) == 10
     assert d2v.vector_size == 10
 
     t2v = T2V("d2v", filepath)
-    assert len(t2v(stem_tokens[:1])[0]) == t2v.vector_size
+    assert len(t2v(stem_text_tokens[:1])[0]) == t2v.vector_size
 
-    i2v = I_D2V("text", "d2v", filepath)
+    i2v = I_D2V("pure_text", "d2v", filepath)
     i_vec, t_vec = i2v(stem_data[:1])
     assert len(i_vec[0]) == i2v.vector_size
     assert t_vec is None

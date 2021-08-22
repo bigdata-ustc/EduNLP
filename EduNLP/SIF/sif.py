@@ -7,6 +7,8 @@ from .segment import seg
 from .tokenization import tokenize, link_formulas
 from .parser import Parser
 
+__all__ = ["is_sif", "to_sif", "sif4sci"]
+
 
 def is_sif(item):
     r"""
@@ -180,6 +182,11 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     []
     >>> tl3.ques_mark_segments
     [['\\SIFChoice']]
+    >>> test_item_3 = r"已知$y=x$，则以下说法中$\textf{正确,b}$的是"
+    >>> tl4 = sif4sci(test_item_3)
+    Warning: there is some chinese characters in formula!
+    >>> tl4.text_segments
+    [['已知'], ['说法', '中', '正确']]
     """
     try:
         if safe is True and is_sif(item) is not True:
