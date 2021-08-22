@@ -120,8 +120,8 @@ gensim模型d2v例子
     :name: rst2-gallery
     :glob:
 
-    d2v_bow_tfidf  <../../build/blitz/pretrain/gensim/d2v_bow_tfidf.ipynb>
     d2v_general  <../../build/blitz/pretrain/gensim/d2v_general.ipynb>
+    d2v_bow_tfidf  <../../build/blitz/pretrain/gensim/d2v_bow_tfidf.ipynb>
     d2v_stem_tf  <../../build/blitz/pretrain/gensim/d2v_stem_tf.ipynb>
 
 
@@ -146,5 +146,3 @@ seg_token例子
     :glob:
 
     d2v.ipynb  <../../build/blitz/pretrain/seg_token/d2v.ipynb>
-    d2v_d1  <../../build/blitz/pretrain/seg_token/d2v_d1.ipynb>
-    d2v_d2  <../../build/blitz/pretrain/seg_token/d2v_d2.ipynb>

@@ -18,6 +18,7 @@
 --------------------
 
 .. toctree::
+   :maxdepth: 1
    :titlesonly:
 
    语义成分分解 <seg/语义成分分解>

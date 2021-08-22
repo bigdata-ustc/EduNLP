@@ -28,6 +28,7 @@
 --------------------
 
 .. toctree::
+   :maxdepth: 1
    :titlesonly:
    
    文本语法结构解析 <parse/文本语法结构解析>
