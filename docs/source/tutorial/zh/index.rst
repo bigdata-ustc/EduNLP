@@ -1,15 +1,17 @@
 入门
 =====
 
-.. toctree::
-  :maxdepth: 1
-  :titlesonly:
+*  `sif <sif.rst>`_ 
 
-  sif
-  seg
-  parse
-  tokenize
-  vectorization
+*  `seg <seg.rst>`_ 
+
+*  `parse <parse.rst>`_ 
+
+*  `tokenize <tokenize.rst>`_ 
+
+*  `vectorization <vectorization.rst>`_ 
+
+*  `pretrain <pretrain.rst>`_ 
 
 示例
 --------
