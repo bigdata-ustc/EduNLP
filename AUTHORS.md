@@ -12,8 +12,8 @@
 
 [Longhu Qin](https://github.com/KenelmQLH)
 
-[Meikai Bao](https://github.com/BAOOOOOM)
-
 [Pingzhi Li](https://github.com/pingzhiLi)
+
+[Meikai Bao](https://github.com/BAOOOOOM)
 
 The stared contributors are the corresponding authors. 
