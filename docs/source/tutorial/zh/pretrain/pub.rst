@@ -26,7 +26,7 @@
 * 测试数据：`[OpenLUNA.json] <http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_
 
 当前提供以下模型，更多分学科、分题型模型正在训练中，敬请期待
-    "d2v_all_256"(全科)，"d2v_sci_256"(理科)，"d2v_eng_256"（英语），"d2v_lit_256"(文学)
+    "d2v_all_256"(全科)，"d2v_sci_256"(理科)，"d2v_eng_256"（英语），"d2v_lit_256"(文科)
 
 模型训练案例
 ------------
