@@ -29,7 +29,7 @@ def test_is_sif():
 def test_to_sif():
     text = '某校一个课外学习小组为研究某作物的发芽率y和温度x（单位...'
     sif_text = to_sif(text)
-    assert sif_text == '某校一个课外学习小组为研究某作物的发芽率y和温度x（单位...'
+    assert sif_text == '某校一个课外学习小组为研究某作物的发芽率$y$和温度$x$（单位...'
 
 
 def test_sci4sif(figure0, figure1, figure0_base64, figure1_base64):
