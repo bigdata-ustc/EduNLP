@@ -84,7 +84,11 @@ class SegmentList(object):
         self._ques_mark_segments = []
         self._tag_segments = []
         self._sep_segments = []
-        segments = re.split(r"(\$.+?\$)", item)
+
+        # remove $\textf{*} from the item$
+        item_no_textf = "".join(re.split(r"\$\\textf\{([^,]+?),b?d?i?t?u?w?}\$", item))
+
+        segments = re.split(r"(\$.+?\$)", item_no_textf)
         for segment in segments:
             if not segment:
                 continue
@@ -294,6 +298,10 @@ def seg(item, figures=None, symbol=None):
     >>> s2 = seg(test_item_1_str_2, symbol="fgm")
     >>> s2.tag_segments
     ['\\SIFTag{stem}', '\\SIFTag{options}']
+    >>> test_item_2 = r"已知$y=x$，则以下说法中$\textf{正确,b}$的是"
+    >>> s2 = seg(test_item_2)
+    >>> s2.text_segments
+    ['已知', '，则以下说法中正确的是']
     """
     segments = SegmentList(item, figures)
     if symbol is not None:
