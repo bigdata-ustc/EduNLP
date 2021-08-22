@@ -11,7 +11,7 @@ class Parser:
         self.error_postion = 0
         self.error_flag = 0
         self.modify_flag = 0
-        self.warnning = 0
+        self.warning = 0
         self.fomula_illegal_flag = 0
         self.fomula_illegal_message = ''
 
@@ -230,7 +230,7 @@ class Parser:
                 if flag and self.is_chinese(ch_informula):
                     # latex 中出现非法中文字符，打印且只打印一次 warning
                     print("Warning: there is some chinese characters in formula!")
-                    self.warnning = 1
+                    self.warning = 1
                     flag = 0
                 self.head += 1
             if self.head >= len(self.text):
