@@ -84,6 +84,16 @@ But you can also install from source:
 
 Getting Started
 ------------------
+
+One basic usage of EduNLP is to convert an item into a vector, i.e.,
+
+.. code-block:: python
+
+   from EduNLP import get_pretrained_i2v
+   i2v = get_pretrained_i2v("d2v_all_256", "./model")
+   item_vector, token_vector = i2v(["the content of item 1", "the content of item 2"])
+
+
 For absolute beginners, start with the :doc:`Tutorial to EduNLP <tutorial/en/index>` :doc:`(中文版) <tutorial/zh/index>`.
 It covers the basic concepts of EduNLP and
 a step-by-step on training, loading and using the language models.

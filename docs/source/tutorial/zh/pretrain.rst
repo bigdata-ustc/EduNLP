@@ -8,12 +8,13 @@
 * 如何加载预训练模型
 * 公开的预训练模型
 
+学习路线图
+------------------
 
-训练模型
----------
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
 
-装载模型
---------
-
-公开模型一览
-------------
+   训练模型 <pretrain/start.rst>
+   装载模型 <pretrain/loading.rst>
+   公开模型一览 <pretrain/pub.rst>

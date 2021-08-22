@@ -1,0 +1,36 @@
+分词
+-------
+
+词解析（text-tokenization）：一个句子（不含公式）是由若干“词”按顺序构成的，将一个句子切分为若干词的过程称为“词解析”。根据词的粒度大小，又可细分为“词组解析”和"单字解析"。
+
+::
+
+    - 词组解析 (word-tokenization)：每一个词组为一个“令牌”（token）。
+    
+    - 单字解析 (char-tokenization)：单个字符即为一个“令牌”（token）。
+    
+
+词解析分为两个主要步骤：
+
+1. 分词：  
+
+    - 词组解析：使用分词工具切分并提取题目文本中的词。本项目目前支持的分词工具有：`jieba`
+
+    - 单字解析：按字符划分。
+
+2. 筛选：过滤指定的停用词。   
+
+    本项目默认使用的停用词表：`[stopwords] <https://github.com/bigdata-ustc/EduNLP/blob/master/EduNLP/meta_data/sif_stopwords.txt>`_  
+    你也可以使用自己的停用词表，具体使用方法见下面的示例。
+
+Examples：
+
+::
+    
+    >>> text = "三角函数是基本初等函数之一"
+    >>> tokenize(text, granularity="word")
+    ['三角函数', '初等', '函数']
+    
+    >>> tokenize(text, granularity="char")
+    ['三', '角', '函', '数', '基', '初', '函', '数']
+    
