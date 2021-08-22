@@ -1,17 +1,17 @@
 入门
 =====
 
-*  `sif <sif.rst>`_ 
+*  `标准项目格式 <sif.rst>`_ 
 
-*  `seg <seg.rst>`_ 
+*  `语法解析 <seg.rst>`_ 
 
-*  `parse <parse.rst>`_ 
+*  `成分分解 <parse.rst>`_ 
 
-*  `tokenize <tokenize.rst>`_ 
+*  `令牌化 <tokenize.rst>`_ 
 
-*  `vectorization <vectorization.rst>`_ 
+*  `向量化 <vectorization.rst>`_ 
 
-*  `pretrain <pretrain.rst>`_ 
+*  `预训练 <pretrain.rst>`_ 
 
 示例
 --------
