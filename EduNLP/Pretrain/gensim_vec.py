@@ -43,7 +43,7 @@ class GensimWordTokenizer(object):
         ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
         >>> print(token_item.tokens[:10])
         ['公式', '[FORMULA]', '如图', '[FIGURE]', '[FORMULA]', '约束条件', '公式', '[FORMULA]', '[SEP]', '[FORMULA]']
-        """
+    """
     def __init__(self, symbol="gm", general=False):
         self.symbol = symbol
         if general is True:
