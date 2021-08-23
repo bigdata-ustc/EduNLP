@@ -27,7 +27,7 @@ def path_append(path, *addition, to_str=False):
     --------
     .. code-block:: python
 
-        path_append("../", "../data", "../dataset1/", "train", to_str=True)
+    path_append("../", "../data", "../dataset1/", "train", to_str=True)
     '../../data/../dataset1/train'
 
     Parameters
