@@ -171,4 +171,6 @@ If this repository is helpful for you, please cite our work
    api/formula
    api/pretrain
    api/ModelZoo
+   api/vector
+   api/utils
    
