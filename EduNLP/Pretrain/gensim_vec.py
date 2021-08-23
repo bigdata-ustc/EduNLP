@@ -79,7 +79,7 @@ class GensimSegTokenizer(object):  # pragma: no cover
         symbol:
             gms
             fgm
-        """
+    """
     def __init__(self, symbol="gms", depth=None, flatten=False, **kwargs):
         self.symbol = symbol
         self.tokenization_params = {
