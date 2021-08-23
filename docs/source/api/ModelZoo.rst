@@ -1,4 +1,4 @@
-ModelZoo
+EduNLP.ModelZoo
 ==============
 
 rnn
