@@ -167,4 +167,10 @@ If this repository is helpful for you, please cite our work
    api/index
    api/i2v
    api/sif
+   api/tokenizer
    api/formula
+   api/pretrain
+   api/ModelZoo
+   api/vector
+   api/utils
+   
