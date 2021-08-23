@@ -11,7 +11,7 @@ class Parser:
         self.error_postion = 0
         self.error_flag = 0
         self.modify_flag = 0
-        self.warning = 0
+        self.warnning = 0
         self.fomula_illegal_flag = 0
         self.fomula_illegal_message = ''
 
@@ -222,15 +222,10 @@ class Parser:
             formula_start = self.head
             while self.head < len(self.text) and self.text[self.head] != '$':
                 ch_informula = self.text[self.head]
-                if re.match(
-                        r"\\textf\{.+\}", self.text[self.head:]) is not None:
-                # 公式中的文本应该使用 \\textf{文本} 标记（遵循 latex 语法）
-                    self.head += re.match(
-                        r"\\textf\{.+\}", self.text[self.head:]).span()[1]-1
                 if flag and self.is_chinese(ch_informula):
                     # latex 中出现非法中文字符，打印且只打印一次 warning
                     print("Warning: there is some chinese characters in formula!")
-                    self.warning = 1
+                    self.warnning = 1
                     flag = 0
                 self.head += 1
             if self.head >= len(self.text):

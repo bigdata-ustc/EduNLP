@@ -34,13 +34,3 @@ def test_parser():
     text_parser = Parser(text)
     text_parser.description_list()
     assert text_parser.fomula_illegal_flag == 1
-
-    text = r"支持公式中添加文本，但要符合语法，如$\textf{这是文本}ABCD$是允许的"
-    text_parser = Parser(text)
-    text_parser.description_list()
-    assert text_parser.warning == 0
-
-    text = r"支持公式中添加文本，但要符合语法，如若出现：$这是文本ABCD$，会有warning"
-    text_parser = Parser(text)
-    text_parser.description_list()
-    assert text_parser.warning == 1
