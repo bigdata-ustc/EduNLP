@@ -24,5 +24,6 @@ Examples
   :titlesonly:
 
   ../tokenization/TextTokenizer
+  ../tokenization/PureTextTokenizer
   ../tokenization/GensimSegTokenizer
   ../tokenization/GensimWordTokenizer
