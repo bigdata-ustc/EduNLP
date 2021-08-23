@@ -40,6 +40,9 @@ def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_t
 
     Returns
     -------
+    
+    Examples
+    ----------
     >>> item = {
     ...     "stem": r"若复数$z=1+2 i+i^{3}$，则$|z|=$",
     ...     "options": ['0', '1', r'$\sqrt{2}$', '2'],
