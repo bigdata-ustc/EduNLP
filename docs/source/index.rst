@@ -168,3 +168,4 @@ If this repository is helpful for you, please cite our work
    api/i2v
    api/sif
    api/formula
+   api/pretrain
