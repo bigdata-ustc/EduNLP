@@ -24,7 +24,7 @@ EduNLP.I2V
 EduNLP.Pretrain
 -------------------
 
-.. automodule:: EduNLP.Pretrain.gensim_vec
+.. automodule:: EduNLP.Pretrain
    :members:
    :imported-members:
 
