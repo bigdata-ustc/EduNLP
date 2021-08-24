@@ -15,7 +15,8 @@ __all__ = ["GensimWordTokenizer", "train_vector", "GensimSegTokenizer"]
 
 
 class GensimWordTokenizer(object):
-    """
+    def __init__(self, symbol="gm", general=False):
+        """
 
         Parameters
         ----------
@@ -43,8 +44,7 @@ class GensimWordTokenizer(object):
         ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
         >>> print(token_item.tokens[:10])
         ['公式', '[FORMULA]', '如图', '[FIGURE]', '[FORMULA]', '约束条件', '公式', '[FORMULA]', '[SEP]', '[FORMULA]']
-    """
-    def __init__(self, symbol="gm", general=False):
+        """
         self.symbol = symbol
         if general is True:
             self.tokenization_params = {
@@ -72,15 +72,15 @@ class GensimWordTokenizer(object):
 
 
 class GensimSegTokenizer(object):  # pragma: no cover
-    """
+    def __init__(self, symbol="gms", depth=None, flatten=False, **kwargs):
+        """
 
         Parameters
         ----------
         symbol:
             gms
             fgm
-    """
-    def __init__(self, symbol="gms", depth=None, flatten=False, **kwargs):
+        """
         self.symbol = symbol
         self.tokenization_params = {
             "formula_params": {
