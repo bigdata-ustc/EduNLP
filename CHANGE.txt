@@ -1,3 +1,9 @@
+v0.0.6:
+    1. dev: add half-pretrained rnn model
+    2. important!!!: rename TextTokenizer to PureTextTokenizer, and add a new tokenizer named TextTokenizer (the two have similar but not the same behaviours).
+    3. sif: add $\textf{}$ syntax
+    4. add two pretrained w2v model: w2v_sci_300 and w2v_lit_300
+
 v0.0.5:
     1. fix the missing stopwords.txt when use pip install
 

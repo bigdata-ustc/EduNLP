@@ -3,3 +3,4 @@ sphinx_rtd_theme
 sphinx_toggleprompt
 sphinx-gallery>=0.6
 nbsphinx
+m2r2
