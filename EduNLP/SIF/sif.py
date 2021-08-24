@@ -184,7 +184,6 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     [['\\SIFChoice']]
     >>> test_item_3 = r"已知$y=x$，则以下说法中$\textf{正确,b}$的是"
     >>> tl4 = sif4sci(test_item_3)
-    Warning: there is some chinese characters in formula!
     >>> tl4.text_segments
     [['已知'], ['说法', '中', '正确']]
     """
