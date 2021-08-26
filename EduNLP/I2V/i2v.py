@@ -19,11 +19,14 @@ class I2V(object):
         the tokenizer name
     t2v: str
         the name of token2vector model
+        or the typename of token2vector model
     args:
         the parameters passed to t2v
     tokenizer_kwargs: dict
         the parameters passed to tokenizer
     pretrained_t2v: bool
+        True if use pretrained models from the remote server
+        False if use local models
     kwargs:
         the parameters passed to t2v
     """
@@ -80,6 +83,10 @@ class I2V(object):
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
         raise NotImplementedError
 
+    @classmethod
+    def from_local(cls, model_type, model_path, *args, **kwargs):
+        raise NotImplementedError
+
     @property
     def vector_size(self):
         return self.t2v.vector_size
@@ -96,6 +103,10 @@ class D2V(I2V):
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
         return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
 
+    @classmethod
+    def from_local(cls, model_type, model_path):
+        return cls("pure_text", model_type, model_path, pretrained_t2v=False)
+
 
 class W2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
@@ -108,6 +119,10 @@ class W2V(I2V):
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
         return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
 
+    @classmethod
+    def from_local(cls, model_type, model_path):
+        return cls("pure_text", model_type, model_path, pretrained_t2v=False)
+
 
 MODELS = {
     "d2v_all_256": [D2V, "d2v_all_256"],
@@ -115,23 +130,51 @@ MODELS = {
     "d2v_eng_256": [D2V, "d2v_eng_256"],
     "d2v_lit_256": [D2V, "d2v_lit_256"],
     "w2v_sci_300": [W2V, "w2v_sci_300"],
-    "w2v_lit_300": [W2V, "w2v_lit_300"],
+    "w2v_lit_300": [W2V, "w2v_lit_300"]
+}
+
+MODEL_TYPES = {
+    "d2v": D2V,
+    "w2v": W2V
 }
 
 
-def get_pretrained_i2v(name, model_dir=MODEL_DIR):
+def get_pretrained_i2v(name=None, model_dir=MODEL_DIR, from_local=False,
+                       local_type=None, local_path=None, tokenizer="pure_text"):
     """
 
     Parameters
     ----------
-    name
-    model_dir
+    name: str
+        models provided from the remote server
+    model_dir: str
+        dir to save the remote models
+    from_local: bool
+        False to use models from the remote server
+        True to use models from local
+    local_type: str
+        "w2v" | "d2v" | ...
+    local_path: str
+        path to the local models
+    tokenizer: str
+        "pure_text" | "text" | ...
 
     Returns
     -------
     i2v model: I2V
 
     """
+    if from_local is True:
+        if local_type is None and local_path is None:
+            raise ValueError(
+                "When use from_local=True, local_type and local_path must be assigned"
+            )
+        if local_type not in MODEL_TYPES:
+            raise KeyError(
+                "Unknown model type %s, use one of the provided model types: %s" % (name, ", ".join(MODEL_TYPES.keys()))
+            )
+        return MODEL_TYPES[local_type].from_local(local_type, local_path)
+
     if name not in MODELS:
         raise KeyError(
             "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(MODELS.keys()))
