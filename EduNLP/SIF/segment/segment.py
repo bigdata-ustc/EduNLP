@@ -16,16 +16,19 @@ class LatexFormulaSegment(str):
 
 
 class Figure(object):
+    """decode figure which has been encode by base64"""
     def __init__(self, is_base64=False):
         self.base64 = is_base64
         self.figure = None
 
     @classmethod
     def base64_to_numpy(cls, figure: str):
+        """Creat a arrary in a designated buffer"""
         return np.frombuffer(base64.b64decode(figure), dtype=np.uint8)
 
 
 class FigureFormulaSegment(Figure):
+    """Duel with figureformula, especially coding in base64"""
     def __init__(self, src, is_base64=False, figure_instance: (dict, bool) = None):
         super(FigureFormulaSegment, self).__init__(is_base64)
         self.src = src
@@ -45,6 +48,7 @@ class FigureFormulaSegment(Figure):
 
 
 class FigureSegment(Figure):
+    """Duel with figure, especially coding in base64"""
     def __init__(self, src, is_base64=False, figure_instance: (dict, bool) = None):
         super(FigureSegment, self).__init__(is_base64)
         self.src = src
@@ -77,6 +81,23 @@ class SepSegment(str):
 
 class SegmentList(object):
     def __init__(self, item, figures: dict = None):
+        """
+
+        Parameters
+        ----------
+        item
+        figures:dict
+
+        Returns
+        ----------
+        list:tokenizated item
+
+        Examples
+        --------
+        >>> test_item = r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$"
+        >>> se=SegmentList(test_item)
+        ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
+        """
         self._segments = []
         self._text_segments = []
         self._formula_segments = []
@@ -201,6 +222,14 @@ class SegmentList(object):
 
     @contextmanager
     def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
+        """
+        Parameters
+        ----------
+        drop: set or str
+            The alphabet should be included in "tfgmas", which means drop selected segments out of return value.
+        keep: set or str
+            The alphabet should be included in "tfgmas", which means only keep selected segments in return value.
+        """
         _drop = {c for c in drop} if isinstance(drop, str) else drop
         if keep == "*":
             _keep = {c for c in "tfgmas" if c not in _drop}
@@ -223,6 +252,7 @@ class SegmentList(object):
         self._seg_idx = None
 
     def describe(self):
+        """show the length of different segments"""
         return {
             "t": len(self._text_segments),
             "f": len(self._formula_segments),
@@ -242,6 +272,7 @@ def seg(item, figures=None, symbol=None):
 
     Returns
     -------
+    list:segmented item
 
     Examples
     --------

@@ -21,6 +21,17 @@ class TokenList(object):
 
     """
     def __init__(self, segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
+        """
+        
+        Parameters
+        ----------
+        segment_list:list
+            segmented item
+        text_params
+        formula_params
+        figure_params
+
+        """
         self._tokens = []
         self._text_tokens = []
         self._formula_tokens = []
@@ -53,6 +64,7 @@ class TokenList(object):
         self._token_idx = None
 
     def _variable_standardization(self):
+        """It makes same parmeters have the same number."""
         if self.formula_tokenize_method == "ast":
             ast_formulas = [self._tokens[i] for i in self._formula_tokens if isinstance(self._tokens[i], Formula)]
             if ast_formulas:
@@ -60,6 +72,18 @@ class TokenList(object):
 
     @contextmanager
     def add_seg_type(self, seg_type, tar: list, add_seg_type=True, mode="delimiter"):
+        """
+        add seg tag in different position
+
+        Parameters
+        ----------
+        seg_type:str
+            "t" or "f" means text or formula
+        tar:list
+        add_seg_type
+        mode:str
+            "delimiter", "head" or "tail"
+        """
         if add_seg_type is True and mode in {"delimiter", "head"}:
             if seg_type == "t":
                 tar.append(TEXT_BEGIN)
@@ -268,6 +292,7 @@ class TokenList(object):
         return [self._tokens[i] for i in self._text_tokens]
 
     def __add_token(self, token, tokens):
+        """classify token to tokens"""
         if isinstance(token, Formula):
             if self.formula_params.get("return_type") == "list":
                 tokens.extend(formula.traversal_formula(token.ast_graph, **self.formula_params))
@@ -310,6 +335,14 @@ class TokenList(object):
 
     @contextmanager
     def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
+        """
+        Parameters
+        ----------
+        drop: set or str
+            The alphabet should be included in "tfgmas", which means drop selected segments out of return value.
+        keep: set or str
+            The alphabet should be included in "tfgmas", which means only keep selected segments in return value.
+        """
         _drop = {c for c in drop} if isinstance(drop, str) else drop
         if keep == "*":
             _keep = {c for c in "tfgmas" if c not in _drop}
@@ -332,6 +365,7 @@ class TokenList(object):
         self._token_idx = None
 
     def describe(self):
+        """show the length of different segments"""
         return {
             "t": len(self._text_tokens),
             "f": len(self._formula_tokens),
@@ -341,10 +375,42 @@ class TokenList(object):
 
 
 def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
+    """
+    an actual api to tokenize item
+
+    Parameters
+    ----------
+    segment_list:list
+        segmented item
+    text_params:dict
+        the method to duel with text
+    formula_params:dict
+        the method to duel with formula
+    figure_params:dict
+        the method to duel with figure
+
+    Returns
+    ----------
+    tokenized item
+
+    Examples
+    --------
+    >>> formula = "\\frac{\\pi}{x + y} + 1 = x"
+    >>> tokenize(formula, method="linear")
+    ['\\frac', '{', '\\pi', '}', '{', 'x', '+', 'y', '}', '+', '1', '=', 'x']
+    >>> tokenize(formula, method="ast", return_type="list", ord2token=False)
+    ['\\pi', '{ }', 'x', '+', 'y', '{ }', '\\frac', '+', '1', '=', 'x']
+    >>> tokenize(formula, method="ast", return_type="list", ord2token=True)
+    ['mathord','{ }','mathord','+','mathord','{ }','\\frac','+','textord','=','mathord']
+    >>> tokenize(formula, method="ast", return_type="list", ord2token=True, var_numbering=True)
+    ['mathord_con','{ }','mathord_0','+','mathord_1','{ }','\\frac','+','textord','=','mathord_0']
+
+    """
     return TokenList(segment_list, text_params, formula_params, figure_params)
 
 
 def link_formulas(*token_list: TokenList, link_vars=True):
+    """link formulas"""
     ast_formulas = []
     for tl in token_list:
         if tl.formula_tokenize_method == "ast":

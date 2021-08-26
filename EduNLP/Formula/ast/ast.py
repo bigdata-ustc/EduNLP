@@ -8,10 +8,12 @@ __all__ = ["str2ast", "get_edges", "ast", "link_variable", "katex_parse"]
 
 
 def katex_parse(formula):
+    """将公式传入katex进行语法解析"""
     return katex.katex.__parse(formula,{'displayMode':True,'trust': True}).to_list()
 
 
 def str2ast(formula: str, *args, **kwargs):
+    """给字符串的接口"""
     return ast(formula, is_str=True, *args, **kwargs)
 
 

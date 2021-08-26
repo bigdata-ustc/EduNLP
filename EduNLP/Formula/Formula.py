@@ -29,6 +29,10 @@ class Formula(object):
     <Formula: x>
     >>> f.elements
     [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
+
+    Returns
+    --------
+    the parsed abstracted syntax tree
     """
 
     def __init__(self, formula: (str, List[Dict]), variable_standardization=False, const_mathord=None,
@@ -55,6 +59,15 @@ class Formula(object):
             )
 
     def variable_standardization(self, inplace=False, const_mathord=None, variable_connect_dict=None):
+        """
+        It makes same parmeters have the same number.
+        
+        Parameters
+        ----------
+        inplace
+        const_mathord
+        variable_connect_dict
+        """
         const_mathord = const_mathord if const_mathord is not None else CONST_MATHORD
         ast_tree = self._ast if inplace else deepcopy(self._ast)
         var_code = variable_connect_dict["var_code"] if variable_connect_dict is not None else {}
@@ -135,6 +148,10 @@ class FormulaGroup(object):
     [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, \
 {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}, \
 {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
+
+    Returns
+    --------
+    the parsed abstracted syntax forest
     """
 
     def __init__(self,
@@ -143,6 +160,17 @@ class FormulaGroup(object):
                  const_mathord=None,
                  detach=True
                  ):
+        """
+
+        Parameters
+        ----------
+        formula: str or List[Dict] or List[Formula]
+            latex formula string or the parsed abstracted syntax tree or a group of parsed abstracted syntax tree
+        variable_standardization
+        const_mathord
+        detach
+
+        """
         forest = []
         self._formulas = []
         for formula in formula_list:
@@ -186,6 +214,15 @@ class FormulaGroup(object):
         return item in self._formulas
 
     def variable_standardization(self, inplace=False, const_mathord=None, variable_connect_dict=None):
+        """
+        It makes same parmeters have the same number.
+
+        Parameters
+        ----------
+        inplace
+        const_mathord
+        variable_connect_dict
+        """
         ret = []
         for formula in self._formulas:
             ret.append(formula.variable_standardization(inplace=inplace, const_mathord=const_mathord,
@@ -220,6 +257,14 @@ class FormulaGroup(object):
 
 
 def link_formulas(*formula: Formula, link_vars=True, **kwargs):
+    """
+
+    Parameters
+    ----------
+    formula:the parsed abstracted syntax tree
+    link_vars
+    kwargs
+    """
     forest = []
     for form in formula:
         forest += form.reset_ast(

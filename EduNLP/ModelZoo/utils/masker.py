@@ -45,6 +45,19 @@ class Masker(object):
         self.mask = mask
 
     def __call__(self, seqs, length=None, *args, **kwargs) -> tuple:
+        """
+
+        Parameters
+        ----------
+        seqs
+        length
+        args
+        kwargs
+
+        Returns
+        ----------
+        list:list of masked_seq and list of masked_list
+        """
         seqs = deepcopy(seqs)
         masked_list = []
         if length is None:
