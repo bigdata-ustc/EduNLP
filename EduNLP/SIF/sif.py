@@ -192,7 +192,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     """
     try:
         if safe is True:
-            flag, sif_item = is_sif(item)
+            flag, sif_item = is_sif(item, check_formula)
             item = sif_item if flag is not True else item
 
         ret = seg(item, figures, symbol)
