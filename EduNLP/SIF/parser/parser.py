@@ -2,7 +2,7 @@ from EduNLP.Formula.ast import str2ast, katex_parse
 
 
 class Parser:
-    def __init__(self, data):
+    def __init__(self, data, check_formula=True):
         self.lookahead = 0
         self.head = 0
         self.text = data
@@ -13,6 +13,7 @@ class Parser:
         self.warnning = 0
         self.fomula_illegal_flag = 0
         self.fomula_illegal_message = ''
+        self.check_formula = check_formula
 
         # 定义特殊变量
         self.len_bracket = len('$\\SIFChoice$')
@@ -231,7 +232,7 @@ class Parser:
                 self.call_error()
                 return self.error
             # 检查latex公式的完整性和可解析性
-            if not self._is_formula_legal(self.text[formula_start:self.head]):
+            if self.check_formula and not self._is_formula_legal(self.text[formula_start:self.head]):
                 self.call_error()
                 return self.error
             self.head += 1

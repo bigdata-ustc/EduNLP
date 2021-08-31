@@ -10,39 +10,43 @@ from .parser import Parser
 __all__ = ["is_sif", "to_sif", "sif4sci"]
 
 
-def is_sif(item):
+def is_sif(item, check_formula=True):
     r"""
     Parameters
     ----------
     item
+    check_formula: bool
+        True if check the validity of formulas in items
+        False if not check the validity of formulas in items, which is faster
 
     Returns
     -------
     when item can not be parsed correctly, raise Error;
-    when item doesn't need to be modified, return Ture;
-    when item needs to be modified, return False;
+    when item doesn't need to be modified, return Ture and original item ;
+    when item needs to be modified, return False and modified item;
 
     Examples
     --------
     >>> text = '若$x,y$满足约束条件' \
     ...        '$\\left\\{\\begin{array}{c}2 x+y-2 \\leq 0 \\\\ x-y-1 \\geq 0 \\\\ y+1 \\geq 0\\end{array}\\right.$，' \
     ...        '则$z=x+7 y$的最大值$\\SIFUnderline$'
-    >>> is_sif(text)
+    >>> flag, _ = is_sif(text)
+    >>> print(flag)
     True
     >>> text = '某校一个课外学习小组为研究某作物的发芽率y和温度x（单位...'
     >>> is_sif(text)
-    False
+    (False, '某校一个课外学习小组为研究某作物的发芽率$y$和温度$x$（单位...')
     """
-    item_parser = Parser(item)
+    item_parser = Parser(item, check_formula)
     item_parser.description_list()
     if item_parser.fomula_illegal_flag:
         raise ValueError(item_parser.fomula_illegal_message)
     if item_parser.error_flag == 0 and item_parser.modify_flag == 0:
-        return True
-    return False
+        return True, item
+    return False, item_parser.text
 
 
-def to_sif(item):
+def to_sif(item, check_formula=True):
     r"""
     Parameters
     ----------
@@ -59,14 +63,12 @@ def to_sif(item):
     >>> siftext
     '某校一个课外学习小组为研究某作物的发芽率$y$和温度$x$（单位...'
     """
-    item_parser = Parser(item)
-    item_parser.description_list()
-    item = item_parser.text
-    return item
+    _, sif_item = is_sif(item, check_formula)
+    return sif_item
 
 
 def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = None, tokenization=True,
-            tokenization_params=None, errors="raise"):
+            tokenization_params=None, errors="raise", check_formula=True):
     r"""
 
     Default to use linear Tokenizer, change the tokenizer by specifying tokenization_params
@@ -189,8 +191,9 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     [['已知'], ['说法', '中', '正确']]
     """
     try:
-        if safe is True and is_sif(item) is not True:
-            item = to_sif(item)
+        if safe is True:
+            flag, sif_item = is_sif(item)
+            item = sif_item if flag is not True else item
 
         ret = seg(item, figures, symbol)
 
