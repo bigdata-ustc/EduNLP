@@ -20,6 +20,16 @@ MODELS = {
 
 
 class T2V(object):
+    """
+    Examples
+    --------
+    >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
+    ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
+    >>> path = "examples/test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+    >>> t2v = T2V('d2v',filepath=path)
+    >>> print(t2v(item)) # doctest: +ELLIPSIS
+    [array([...dtype=float32)]
+    """
     def __init__(self, model: str, *args, **kwargs):
         model = model.lower()
         self.model_type = model
@@ -49,10 +59,37 @@ PRETRAINED_MODELS = {
     "d2v_lit_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_literal_256.zip", "d2v"],
     "w2v_eng_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_english_300.zip", "w2v"],
     "w2v_lit_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_literal_300.zip", "w2v"],
+    "test_w2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"],
+    "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"]
 }
 
 
 def get_pretrained_t2v(name, model_dir=MODEL_DIR):
+    """
+
+    Parameters
+    ----------
+    name:str
+        d2v_all_256
+        d2v_sci_256
+        d2v_eng_256
+        d2v_lit_256
+        w2v_eng_300
+        w2v_lit_300
+    model_dif
+
+    Returns
+    -------
+    t2v model: T2V
+
+    Examples
+    --------
+    >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
+    ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
+    >>> i2v = get_pretrained_t2v("test_d2v", "examples/test_model/data/d2v") # doctest: +ELLIPSIS
+    >>> print(i2v(item)) # doctest: +ELLIPSIS
+    [array([...dtype=float32)]
+    """
     if name not in PRETRAINED_MODELS:
         raise KeyError(
             "Unknown pretrained model %s, use one of the provided pretrained models: %s" % (

@@ -1,16 +1,16 @@
 EduNLP.Vector
 ==========================
 
-Vector
----------------
+EduNLP.Vector.rnn
+--------------------
 
-.. automodule:: EduNLP.Vector
+.. automodule:: EduNLP.Vector.rnn
    :members:
    :imported-members:
 
-rnn
------------
+EduNLP.Vector
+-------------------------
 
-.. automodule:: EduNLP.Vector.rnn
+.. automodule:: EduNLP.Vector
    :members:
    :imported-members:
