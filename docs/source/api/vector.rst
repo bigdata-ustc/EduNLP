@@ -8,23 +8,9 @@ EduNLP.Vector.rnn
    :members:
    :imported-members:
 
-EduNLP.Vector.embedding
+EduNLP.Vector
 -------------------------
 
-.. automodule:: EduNLP.Vector.embedding
-   :members:
-   :imported-members:
-
-EduNLP.Vector.gensim_vec
-------------------------------
-
-.. automodule:: EduNLP.Vector.gensim_vec
-   :members:
-   :imported-members:
-
-EduNLP.Vector.t2v
---------------------
-
-.. automodule:: EduNLP.Vector.t2v
+.. automodule:: EduNLP.Vector
    :members:
    :imported-members:
