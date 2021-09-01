@@ -59,6 +59,7 @@ def pad_sequence(sequence: list, max_length=None, pad_val=0, clip=True):
 
     Returns
     -------
+    Modified list:padding the sequence in the same size.
 
     Examples
     --------

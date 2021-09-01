@@ -3,6 +3,7 @@ from EduNLP.Formula.ast import str2ast, katex_parse
 
 class Parser:
     def __init__(self, data):
+        """initial data and special variable"""
         self.lookahead = 0
         self.head = 0
         self.text = data
@@ -98,6 +99,17 @@ class Parser:
         self.error_flag = 1
 
     def get_token(self):
+        r"""
+        Get different elements in the item.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        elements:chinese,alphabet,number,ch_pun_list,en_pun_list,latex formula
+
+        """
         if self.head >= len(self.text):
             return self.empty
         ch = self.text[self.head]

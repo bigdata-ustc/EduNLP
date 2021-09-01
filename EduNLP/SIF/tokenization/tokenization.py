@@ -21,6 +21,17 @@ class TokenList(object):
 
     """
     def __init__(self, segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
+        """
+
+        Parameters
+        ----------
+        segment_list:list
+            segmented item
+        text_params:dict
+        formula_params:dict
+        figure_params:dict
+
+        """
         self._tokens = []
         self._text_tokens = []
         self._formula_tokens = []
@@ -60,6 +71,22 @@ class TokenList(object):
 
     @contextmanager
     def add_seg_type(self, seg_type, tar: list, add_seg_type=True, mode="delimiter"):
+        """
+        add seg tag in different position
+
+        Parameters
+        ----------
+        seg_type:str
+            t: text
+            f:formula
+        tar:list
+        add_seg_type
+            if the value==False, the function will not be executed.
+        mode:str
+            delimiter: both in the head and at the tail
+            head: only in the head
+            tail: only at the tail
+        """
         if add_seg_type is True and mode in {"delimiter", "head"}:
             if seg_type == "t":
                 tar.append(TEXT_BEGIN)
@@ -226,6 +253,15 @@ class TokenList(object):
         self._segments.append((start, end, seg_type))
 
     def append(self, segment, lazy=False):
+        """
+
+        Parameters
+        ----------
+        segment
+        lazy
+            True:Doesn't distinguish parmeters.
+            False:It makes same parmeters have the same number.
+        """
         if isinstance(segment, TextSegment):
             self.append_text(segment)
         elif isinstance(segment, (LatexFormulaSegment, FigureFormulaSegment)):
@@ -268,6 +304,7 @@ class TokenList(object):
         return [self._tokens[i] for i in self._text_tokens]
 
     def __add_token(self, token, tokens):
+        """classify token to tokens"""
         if isinstance(token, Formula):
             if self.formula_params.get("return_type") == "list":
                 tokens.extend(formula.traversal_formula(token.ast_graph, **self.formula_params))
@@ -310,6 +347,19 @@ class TokenList(object):
 
     @contextmanager
     def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
+        """
+
+        Parameters
+        ----------
+        drop: set or str
+            The alphabet should be included in "tfgmas", which means drop selected segments out of return value.
+        keep: set or str
+            The alphabet should be included in "tfgmas", which means only keep selected segments in return value.
+
+        Returns
+        --------
+        filted list
+        """
         _drop = {c for c in drop} if isinstance(drop, str) else drop
         if keep == "*":
             _keep = {c for c in "tfgmas" if c not in _drop}
@@ -341,6 +391,32 @@ class TokenList(object):
 
 
 def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
+    """
+    an actual api to tokenize item
+
+    Parameters
+    ----------
+    segment_list:list
+        segmented item
+    text_params:dict
+        the method to duel with text
+    formula_params:dict
+        the method to duel with formula
+    figure_params:dict
+        the method to duel with figure
+
+    Returns
+    ----------
+    tokenized item
+
+    Examples
+    --------
+    >>> items = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
+    >>> tokenize(SegmentList(items))
+    ['如图所示', '三角形', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]
+    >>> tokenize(SegmentList(items),formula_params={"method": "ast"})
+    ['如图所示', '三角形', <Formula: ABC>, '面积', '\\\\SIFBlank', \\FigureID{1}]
+    """
     return TokenList(segment_list, text_params, formula_params, figure_params)
 
 
