@@ -10,14 +10,14 @@ SIF
 
 Segment
 ----------
-.. automodule:: EduNLP.SIF.segment
+.. automodule:: EduNLP.SIF.segment.segment
    :members:
    :imported-members:
 
 
 Parser
 --------
-.. automodule:: EduNLP.SIF.parser
+.. automodule:: EduNLP.SIF.parser.parser
    :members:
    :imported-members:
 
@@ -40,6 +40,14 @@ text
 
 formula
 ^^^^^^^^^
-.. automodule:: EduNLP.SIF.tokenization.formula
+.. automodule:: EduNLP.SIF.tokenization.formula.formula
+   :members:
+   :imported-members:
+
+.. automodule:: EduNLP.SIF.tokenization.formula.ast_token
+   :members:
+   :imported-members:
+
+.. automodule:: EduNLP.SIF.tokenization.formula.linear_token
    :members:
    :imported-members:
