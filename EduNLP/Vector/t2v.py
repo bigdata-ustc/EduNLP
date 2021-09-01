@@ -86,7 +86,7 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     --------
     >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
     ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
-    >>> i2v = get_pretrained_t2v("test_d2v") # doctest: +ELLIPSIS
+    >>> i2v = get_pretrained_t2v("test_d2v", "examples/test_model/data/d2v") # doctest: +ELLIPSIS
     >>> print(i2v(item)) # doctest: +ELLIPSIS
     [array([...dtype=float32)]
     """
