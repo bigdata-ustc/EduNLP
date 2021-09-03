@@ -67,26 +67,48 @@ def to_sif(item, check_formula=True):
     return sif_item
 
 
-def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = None, tokenization=True,
-            tokenization_params=None, errors="raise", check_formula=True):
+def sif4sci(item: str, figures: (dict, bool) = None, safe_mode: int = 2, symbol: str = None, tokenization=True,
+            tokenization_params=None, errors="raise"):
     r"""
 
     Default to use linear Tokenizer, change the tokenizer by specifying tokenization_params
 
     Parameters
     ----------
-    item
-    figures
-    safe
-    symbol
-    tokenization
-    tokenization_params:
-        method: which tokenizer to be used, "linear" or "ast"
-        The parameters only useful for "linear":
-
-        The parameters only useful for "ast":
-            ord2token: whether to transfer the variables (mathord) and constants (textord) to special tokens.
-            var_numbering: whether to use number suffix to denote different variables
+    item: str
+    figures:
+        when it is a dict, it means the id-to-instance information for figures in 'FormFigureID{...}' format,
+        when it is a bool, it means whether to instantiate figures in 'FormFigureBase64{...}' format
+    safe_mode: int
+        when safe = 2, use is_sif and check formula in item
+        when safe = 1, use is_sif but don't check formula in item
+        when safe = 0, don't use is_sif and don't check anything in item
+    symbol: str
+        The combination of "t","f","g","m","a","s", which determine what types of segments to be symbolize.
+        "t": text,
+        "f": formula,
+        "g": figuew,
+        "m": mask,
+        "a": tab,
+        "s": sep
+    tokenization: bool
+        whether to tokenize item after segmentation
+    tokenization_params: dict
+        the dict of text_params, formula_params and figure_params in tokenization
+        For formula_params:
+            method: which tokenizer to be used, "linear" or "ast"
+            The parameters only useful for "linear":
+                skip_figure_formula: whether to skip the formula in figure format
+                symbolize_figure_formula: whether to symbolize the formula in figure format
+            The parameters only useful for "ast":
+                ord2token: whether to transfer the variables (mathord) and constants (textord) to special tokens.
+                var_numbering: whether to use number suffix to denote different variables
+                return_type: 'list' or 'ast'
+            More parameters can be found in the definition in SIF.tokenization.formula
+        For figure_params:
+            figure_instance：whether to return instance of figures in tokens
+        For text_params:
+            See definition in SIF.tokenization.text
     errors:
         warn
         raise
@@ -191,9 +213,16 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     [['已知'], ['说法', '中', '正确']]
     """
     try:
-        if safe is True:
-            flag, sif_item = is_sif(item, check_formula)
-            item = sif_item if flag is not True else item
+        if safe_mode == 2:
+            _, item = is_sif(item, check_formula=True)
+        elif safe_mode == 1:
+            _, item = is_sif(item, check_formula=False)
+        elif safe_mode == 0:
+            pass  # do nothing
+        else:
+            raise KeyError(
+                "Unknown safe_mode %s, use only 0 or 1 or 2." % safe_mode
+            )
 
         ret = seg(item, figures, symbol)
 

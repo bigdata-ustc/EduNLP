@@ -57,3 +57,17 @@ def test_sci4sif(figure0, figure1, figure0_base64, figure1_base64):
             "figure_params": {"figure_instance": True}
         }
     ))
+    repr(sif4sci(
+        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", safe_mode=0
+    ))
+    repr(sif4sci(
+        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", safe_mode=1
+    ))
+    repr(sif4sci(
+        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", safe_mode=2
+    ))
+
+    with pytest.raises(KeyError):
+        repr(sif4sci(
+            r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", safe_mode=3
+        ))
