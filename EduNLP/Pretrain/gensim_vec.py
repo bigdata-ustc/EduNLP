@@ -15,36 +15,37 @@ __all__ = ["GensimWordTokenizer", "train_vector", "GensimSegTokenizer"]
 
 
 class GensimWordTokenizer(object):
+    """
+
+    Parameters
+    ----------
+    symbol:
+        gm
+        fgm
+        gmas
+        fgmas
+    general:
+        True when item isn't in standard format, and want to tokenize formulas(except formulas in figure) linearly.
+        False when use 'ast' mothed to tokenize formulas instead of 'linear'.
+
+    Returns
+    ----------
+    tokenizer: Tokenizer
+
+    Examples
+    ----------
+    >>> tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
+    >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+    >>> print(token_item.tokens[:10])
+    ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
+    >>> tokenizer = GensimWordTokenizer(symbol="fgmas", general=False)
+    >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+    >>> print(token_item.tokens[:10])
+    ['公式', '[FORMULA]', '如图', '[FIGURE]', '[FORMULA]', '约束条件', '公式', '[FORMULA]', '[SEP]', '[FORMULA]']
+    """
     def __init__(self, symbol="gm", general=False):
-        """
-
-        Parameters
-        ----------
-        symbol:
-            gm
-            fgm
-            gmas
-            fgmas
-        general:
-            True when item isn't in standard format, and want to tokenize formulas(except formulas in figure) linearly.
-            False when use 'ast' mothed to tokenize formulas instead of 'linear'.
-
-        Returns
-        ----------
-
-        Examples
-        ----------
-        >>> tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
-        >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-        ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
-        >>> print(token_item.tokens[:10])
-        ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
-        >>> tokenizer = GensimWordTokenizer(symbol="fgmas", general=False)
-        >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-        ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
-        >>> print(token_item.tokens[:10])
-        ['公式', '[FORMULA]', '如图', '[FIGURE]', '[FORMULA]', '约束条件', '公式', '[FORMULA]', '[SEP]', '[FORMULA]']
-        """
         self.symbol = symbol
         if general is True:
             self.tokenization_params = {
@@ -72,15 +73,37 @@ class GensimWordTokenizer(object):
 
 
 class GensimSegTokenizer(object):  # pragma: no cover
-    def __init__(self, symbol="gms", depth=None, flatten=False, **kwargs):
-        """
+    """
 
-        Parameters
-        ----------
-        symbol:
-            gms
-            fgm
-        """
+    Parameters
+    ----------
+    symbol:
+        gms
+        fgm
+    depth: int or None
+        0: only separate at \\SIFSep
+        1: only separate at \\SIFTag
+        2: separate at \\SIFTag and \\SIFSep
+        otherwise, separate all segments
+
+    Returns
+    ----------
+    tokenizer: Tokenizer
+
+    Examples
+    ----------
+    >>> tokenizer = GensimSegTokenizer(symbol="gms", depth=None)
+    >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+    >>> print(token_item[:10]) # doctest: +ELLIPSIS
+    [['公式'], [\\FormFigureID{wrong1?}], ['如图'], ['[FIGURE]'],...['最大值'], ['[MARK]']]
+    >>> tokenizer = GensimSegTokenizer(symbol="fgm", depth=None)
+    >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+    >>> print(token_item[:10])
+    [['公式'], ['[FORMULA]'], ['如图'], ['[FIGURE]'], ['[FORMULA]'],...['[FORMULA]'], ['最大值'], ['[MARK]']]
+    """
+    def __init__(self, symbol="gms", depth=None, flatten=False, **kwargs):
         self.symbol = symbol
         self.tokenization_params = {
             "formula_params": {
@@ -117,6 +140,7 @@ class GensimSegTokenizer(object):  # pragma: no cover
 
 
 class MonitorCallback(CallbackAny2Vec):
+    """record the loss in each epoch"""
     def __init__(self, test_words):
         self.epoch = 0
         self._test_words = test_words
@@ -127,6 +151,43 @@ class MonitorCallback(CallbackAny2Vec):
 
 
 def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None, train_params=None):
+    """
+
+    Parameters
+    ----------
+    items：str
+    w2v_prefix
+    embedding_dim:int
+        vector_size
+    method:str
+        sg
+        cbow
+        fasttext
+        d2v
+        bow
+        tfidf
+    binary:model format
+        True:bin
+        False:kv
+    train_params
+
+    Returns
+    ----------
+    tokenizer: Tokenizer
+
+    Examples
+    ----------
+    >>> tokenizer = GensimSegTokenizer(symbol="gms", depth=None)
+    >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+    >>> print(token_item[:10]) # doctest: +ELLIPSIS
+    [['公式'], [\\FormFigureID{wrong1?}], ['如图'], ['[FIGURE]'],...['最大值'], ['[MARK]']]
+    >>> tokenizer = GensimSegTokenizer(symbol="fgm", depth=None)
+    >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
+    >>> print(token_item[:10]) # doctest: +ELLIPSIS
+    [['公式'], ['[FORMULA]'], ['如图'], ['[FIGURE]'], ['[FORMULA]'],...['最大值'], ['[MARK]']]
+    """
     monitor = MonitorCallback(["word", "I", "less"])
     _train_params = dict(
         min_count=0,

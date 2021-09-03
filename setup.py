@@ -16,7 +16,8 @@ docs_deps = [
     'sphinx_rtd_theme',
     'sphinx_toggleprompt',
     'sphinx-gallery>=0.6',
-    'nbsphinx'
+    'nbsphinx',
+    'm2r2'
 ]
 
 dev_deps = ["requests"] + docs_deps + test_deps
@@ -38,7 +39,7 @@ vec_deps = ['gensim'] + ml_pytorch_deps
 
 setup(
     name='EduNLP',
-    version='0.0.5',
+    version='0.0.6',
     extras_require={
         'test': test_deps,
         'doc': docs_deps,
