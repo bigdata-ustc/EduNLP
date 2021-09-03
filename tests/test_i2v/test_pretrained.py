@@ -20,13 +20,13 @@ def test_pretrained_i2v(tmp_path):
         get_pretrained_i2v(name="error")
 
     model_path = os.path.join(d, "test_256/test_256.bin")
-    get_pretrained_i2v(local_type="d2v", local_path=model_path, from_local=True)
+    get_pretrained_i2v(local_type="d2v", local_path=model_path, source="local")
 
     with pytest.raises(KeyError):
-        get_pretrained_i2v(local_type="error", local_path=model_path, from_local=True)
+        get_pretrained_i2v(local_type="error", local_path=model_path, source="local")
 
     with pytest.raises(ValueError):
-        get_pretrained_i2v(from_local=True)
+        get_pretrained_i2v(source="local")
 
     PRETRAINED_MODELS["test_w2v"] = ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"]
     MODELS["test_w2v"] = [W2V, "test_w2v"]
@@ -36,10 +36,10 @@ def test_pretrained_i2v(tmp_path):
         get_pretrained_i2v(name="error")
 
     model_path = os.path.join(d, "test_w2v_256/test_w2v_256.kv")
-    get_pretrained_i2v(local_type="w2v", local_path=model_path, from_local=True)
+    get_pretrained_i2v(local_type="w2v", local_path=model_path, source="local")
 
     with pytest.raises(KeyError):
-        get_pretrained_i2v(local_type="error", local_path=model_path, from_local=True)
+        get_pretrained_i2v(local_type="error", local_path=model_path, source="local")
 
     with pytest.raises(ValueError):
-        get_pretrained_i2v(from_local=True)
+        get_pretrained_i2v(source="local")
