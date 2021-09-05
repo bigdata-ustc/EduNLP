@@ -25,7 +25,7 @@ class PureTextTokenizer(Tokenizer):
     ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z']
     >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
     >>> tokens = tokenizer(items)
-    >>> next(tokens)
+    >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
     ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']
@@ -34,7 +34,7 @@ class PureTextTokenizer(Tokenizer):
     ... "options": ["1", "2"]
     ... }]
     >>> tokens = tokenizer(items, key=lambda x: x["stem"])
-    >>> next(tokens)
+    >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
     ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']
@@ -135,7 +135,7 @@ def get_tokenizer(name, *args, **kwargs):
     >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
     >>> tokenizer = get_tokenizer("text")
     >>> tokens = tokenizer(items)
-    >>> next(tokens)
+    >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
     ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']

@@ -198,7 +198,7 @@ class SegmentList(object):
             "g": figure
             "m": question mark
             "a": tag
-            "s": sep 
+            "s": sep
 
         Returns
         -------
