@@ -14,7 +14,8 @@ def is_sif(item):
     r"""
     Parameters
     ----------
-    item
+    item(str):
+        the text of question
 
     Returns
     -------
@@ -46,11 +47,13 @@ def to_sif(item):
     r"""
     Parameters
     ----------
-    item
+    item(str):
+        the text of question
 
     Returns
     -------
-    item
+    item(str):
+        the question's text after sif correction
 
     Examples
     --------
@@ -73,11 +76,24 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
 
     Parameters
     ----------
-    item
-    figures
-    safe
-    symbol
-    tokenization
+    item(str):
+        the text of question
+    figures(dict):
+        {"FigureID": Base64 encoding of the figure}
+
+    safe(bool):
+        default is True
+
+    symbol(str):
+        set the parameter to_symbolize:
+            "t": text
+            "f": formula
+            "g": figure
+            "m": question mark
+
+    tokenization(bool):
+        True: tokenize the item
+
     tokenization_params:
         method: which tokenizer to be used, "linear" or "ast"
         The parameters only useful for "linear":
