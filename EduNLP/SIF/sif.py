@@ -14,7 +14,7 @@ def is_sif(item):
     r"""
     Parameters
     ----------
-    item(str):
+    item:str
         the text of question
 
     Returns
@@ -47,12 +47,12 @@ def to_sif(item):
     r"""
     Parameters
     ----------
-    item(str):
+    items:str
         the text of question
 
     Returns
     -------
-    item(str):
+    item:str
         the question's text after sif correction
 
     Examples
@@ -76,36 +76,39 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
 
     Parameters
     ----------
-    item(str):
+    item:str
         the text of question
-    figures(dict):
+    figures:dict
         {"FigureID": Base64 encoding of the figure}
 
-    safe(bool):
-        default is True
+    safe:bool
+        Check whether the text conforms to the sif format
 
-    symbol(str):
-        set the parameter to_symbolize:
+    symbol:str
+        select the methods to symbolize:
             "t": text
             "f": formula
             "g": figure
             "m": question mark
+            "a": tag
+            "s": sep
 
-    tokenization(bool):
+    tokenization:bool
         True: tokenize the item
 
     tokenization_params:
         method: which tokenizer to be used, "linear" or "ast"
-        The parameters only useful for "linear":
+
+        The parameters only useful for "linear": None
 
         The parameters only useful for "ast":
             ord2token: whether to transfer the variables (mathord) and constants (textord) to special tokens.
             var_numbering: whether to use number suffix to denote different variables
     errors:
-        warn
-        raise
-        coerce
-        strict
+        warn,
+        raise,
+        coerce,
+        strict,
         ignore
 
     Returns

@@ -21,6 +21,12 @@ MODELS = {
 
 class T2V(object):
     """
+    Parameters
+    ----------
+    model: str
+        select the model type
+        e.g.: d2v, rnn, lstm, gru, elmo, etc.
+
     Examples
     --------
     >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
@@ -70,13 +76,16 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     Parameters
     ----------
     name:str
-        d2v_all_256
-        d2v_sci_256
-        d2v_eng_256
-        d2v_lit_256
-        w2v_eng_300
-        w2v_lit_300
-    model_dif
+        select the pretrained model
+        e.g.:
+        d2v_all_256,
+        d2v_sci_256,
+        d2v_eng_256,
+        d2v_lit_256,
+        w2v_eng_300,
+        w2v_lit_300.
+    model_dir:str
+        the path of model, default: MODEL_DIR = '~/.EduNLP/model'
 
     Returns
     -------
