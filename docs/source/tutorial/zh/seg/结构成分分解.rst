@@ -26,6 +26,16 @@
 
 2.filter：可以选择性的筛除某种或几种类型的元素
 
+此接口可传入keep参数来选择需要保留的元素类型，也可直接传入特殊字符来筛除特定元素类型
+
+各字母所代表的元素类型：
+   "t": text
+   "f": formula
+   "g": figure
+   "m": question mark
+   "a": tag
+   "s": sep tag
+
 ::
 
  >>> with s.filter("f"):
@@ -37,17 +47,15 @@
 
 3.symbol:选择性的将部分类型的数据转换为特殊符号遮掩起来
 
+symbol所代表的元素类型：
+   "t": text
+   "f": formula
+   "g": figure
+   "m": question mark
+
 ::
 
  >>> seg(test_item, symbol="fgm")
  ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
  >>> seg(test_item, symbol="tfgm")
  ['[TEXT]', '[FORMULA]', '[TEXT]', '[MARK]', '[TEXT]', '[FIGURE]']
-
-详细示范
-+++++++++++
-
-.. toctree::
-   :titlesonly:
-
-   结构成分分解的案例  <../../../build/blitz/seg/seg.ipynb>

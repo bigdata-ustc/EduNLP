@@ -16,18 +16,6 @@
 示例
 --------
 
-标准项目格式
-^^^^^^^^
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: sif_gallery
-    :glob:
-    
-    Code for beginner to learn how to use SIF4Sci  <../../build/blitz/sif/sif>
-    Code for beginner to learn how to use sif_additon  <../../build/blitz/sif/sif_addition>
-
-
 成分分解
 ^^^^^^^^^^^
 
