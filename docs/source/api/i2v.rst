@@ -18,7 +18,7 @@ EduNLP.I2V.W2V
    :imported-members:
 
 EduNLP.I2V.get_pretrained_i2v
--------------------
+---------------------------------------
 .. automodule:: EduNLP.I2V.i2v.get_pretrained_i2v
    :members:
    :imported-members:
