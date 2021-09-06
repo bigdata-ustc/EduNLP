@@ -39,7 +39,7 @@ class I2V(object):
     >>> model_path = "examples/test_model/test_gensim_luna_stem_tf_d2v_256.bin" # doctest: +ELLIPSIS
     >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False) # doctest: +ELLIPSIS
     >>> i2v(item) # doctest: +ELLIPSIS
-    [array([...], dtype=float32)]
+    ([array([...], dtype=float32)], None)
 
     Returns
     -------
@@ -210,7 +210,7 @@ class W2V(I2V):
     >>> i2v = get_pretrained_i2v("test_w2v", "examples/test_model/data/w2v")
     >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
     >>> item_vector # doctest: +ELLIPSIS
-    array([[...]], dtype=float32)
+    [array([...], dtype=float32)]
 
     Returns
     -------
