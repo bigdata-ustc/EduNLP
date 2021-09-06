@@ -1,4 +1,5 @@
 from EduNLP.Formula.ast import str2ast, katex_parse
+import re
 
 
 class Parser:
@@ -234,7 +235,7 @@ class Parser:
             while self.head < len(self.text) and self.text[self.head] != '$':
                 ch_informula = self.text[self.head]
                 if flag and self.is_chinese(ch_informula):
-                    # latex 中出现中文字符，打印且只打印一次 warning
+                    # latex 中出现非法中文字符，打印且只打印一次 warning
                     print("Warning: there is some chinese characters in formula!")
                     self.warnning = 1
                     flag = 0
@@ -242,7 +243,7 @@ class Parser:
             if self.head >= len(self.text):
                 self.call_error()
                 return self.error
-            # 检查latex公式的完整性和可解析性
+            # 检查 latex 公式的完整性和可解析性
             if not self._is_formula_legal(self.text[formula_start:self.head]):
                 self.call_error()
                 return self.error

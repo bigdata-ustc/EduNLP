@@ -197,6 +197,8 @@ class SegmentList(object):
             "f": formula
             "g": figure
             "m": question mark
+            "a": tag
+            "s": sep
 
         Returns
         -------
@@ -315,18 +317,18 @@ def seg(item, figures=None, symbol=None):
     ... }
     >>> from EduNLP.utils import dict2str4sif
     >>> test_item_1_str = dict2str4sif(test_item_1)
-    >>> test_item_1_str  # doctest: +ELLIPSIS
+    >>> test_item_1_str
     '$\\SIFTag{stem_begin}$...$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$$\\SIFTag{list_0}$0...$\\SIFTag{options_end}$'
     >>> s1 = seg(test_item_1_str, symbol="tfgm")
-    >>> s1  # doctest: +ELLIPSIS
+    >>> s1
     ['\\SIFTag{stem_begin}'...'\\SIFTag{stem_end}', '\\SIFTag{options_begin}', '\\SIFTag{list_0}', ...]
     >>> with s1.filter(keep="a"):
-    ...     s1  # doctest: +ELLIPSIS
+    ...     s1
     [...'\\SIFTag{list_0}', '\\SIFTag{list_1}', '\\SIFTag{list_2}', '\\SIFTag{list_3}', '\\SIFTag{options_end}']
-    >>> s1.tag_segments  # doctest: +ELLIPSIS
+    >>> s1.tag_segments
     ['\\SIFTag{stem_begin}', '\\SIFTag{stem_end}', '\\SIFTag{options_begin}', ... '\\SIFTag{options_end}']
     >>> test_item_1_str_2 = dict2str4sif(test_item_1, tag_mode="head", add_list_no_tag=False)
-    >>> seg(test_item_1_str_2, symbol="tfgmas")  # doctest: +ELLIPSIS
+    >>> seg(test_item_1_str_2, symbol="tfgmas")
     ['[TAG]', ... '[TAG]', '[TEXT]', '[SEP]', '[TEXT]', '[SEP]', '[FORMULA]', '[SEP]', '[TEXT]']
     >>> s2 = seg(test_item_1_str_2, symbol="fgm")
     >>> s2.tag_segments

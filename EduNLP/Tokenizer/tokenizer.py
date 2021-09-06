@@ -15,7 +15,6 @@ class Tokenizer(object):
 
 class PureTextTokenizer(Tokenizer):
     r"""
-
     Examples
     --------
     >>> tokenizer = PureTextTokenizer()
@@ -121,8 +120,11 @@ def get_tokenizer(name, *args, **kwargs):
     Parameters
     ----------
     name: str
-    args
-    kwargs
+        the name of tokenizer, e.g. text, pure_text.
+    args:
+        the parameters passed to tokenizer
+    kwargs:
+        the parameters passed to tokenizer
 
     Returns
     -------
