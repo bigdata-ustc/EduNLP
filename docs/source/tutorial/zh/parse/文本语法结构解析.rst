@@ -2,7 +2,9 @@
 --------------------
 
 本部分主要由EduNLP.SIF.Parse模块实现，主要功能为将文本中的字母、数字等进行提取，将其转换为标准格式。
- 
+
+此模块主要作为 *中间模块* 来对输入的生文本进行解析处理，用户一般不直接调用此模块。
+
 主要流程介绍
 +++++++++++++++
 
@@ -20,20 +22,51 @@
  
 * 使用_is_formula_legal函数，检查latex公式的完整性和可解析性，对于不合法公式报错
 
-Examples：
+输入
+>>>>>>>
+
+类型：str  
+
+内容：题目文本 （text）
 
 ::
 
- >>> text = '生产某种零件的A工厂25名工人的日加工零件数_   _'
- >>> text_parser = Parser(text)
- >>> text_parser.description_list()
- >>> text_parser.text
- >>> '生产某种零件的$A$工厂$25$名工人的日加工零件数$\\SIFBlank$'
+   >>> text1 = '生产某种零件的A工厂25名工人的日加工零件数_   _'
+   >>> text2 = 'X的分布列为(   )'
+   >>> text3 = '① AB是⊙O的直径，AC是⊙O的切线，BC交⊙O于点E．AC的中点为D'
+   >>> text4 = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
 
-详细示范
-+++++++++++++++
+进行解析
+>>>>>>>>>>>>>>>>>>>>
 
-.. toctree::
-   :titlesonly:
-   
-   文本语法结构解析的案例 <../../../build/blitz/parse/parse.ipynb>
+::
+
+   >>> text_parser1 = Parser(text1)
+   >>> text_parser2 = Parser(text2)
+   >>> text_parser3 = Parser(text3)
+   >>> text_parser4 = Parser(text4)
+
+相关描述参数
+>>>>>>>>>>>>
+
+- 尝试转换为标准形式
+
+::
+
+   >>> text_parser1.description_list()
+   >>> print('text_parser1.text:',text_parser1.text)
+   text_parser1.text: 生产某种零件的$A$工厂$25$名工人的日加工零件数$\SIFBlank$
+   >>> text_parser2.description_list()
+   >>> print('text_parser2.text:',text_parser2.text)
+   text_parser2.text: $X$的分布列为$\SIFChoice$
+
+- 判断是否有语法问题
+
+::
+
+   >>> text_parser3.description_list()
+   >>> print('text_parser3.error_flag: ',text_parser3.error_flag)
+   text_parser3.error_flag:  1
+   >>> text_parser4.description_list()
+   >>> print('text_parser4.fomula_illegal_flag: ',text_parser4.fomula_illegal_flag)
+   text_parser4.fomula_illegal_flag:  1

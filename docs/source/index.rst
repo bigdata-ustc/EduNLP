@@ -151,11 +151,11 @@ If this repository is helpful for you, please cite our work
 
    tutorial/zh/index
    tutorial/zh/sif
-   tutorial/zh/seg
    tutorial/zh/parse
+   tutorial/zh/seg
    tutorial/zh/tokenize
-   tutorial/zh/vectorization
    tutorial/zh/pretrain
+   tutorial/zh/vectorization
 
 
 .. toctree::

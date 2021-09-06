@@ -74,6 +74,9 @@ nbsphinx_thumbnails = {
     'build/blitz/pretrain/seg_token/d2v': '_static/d2v.png',
     'build/blitz/pretrain/seg_token/d2v_d1': '_static/d2v_d1.png',
     'build/blitz/pretrain/seg_token/d2v_d2': '_static/d2v_d2.png',
+    'build/blitz/tokenizer/tokenizier': '_static/tokenizer.png',
+    'build/blitz/sif/sif4sci': '_static/tokenizer.png',
+    'build/blitz/vectorization/get_pretrained_i2v': '_static/i2v.png',
 }
 
 # Add any paths that contain templates here, relative to this directory.
