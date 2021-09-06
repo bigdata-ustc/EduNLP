@@ -44,7 +44,8 @@
 Examples：
 
 ::
-    
+
+   from EduNLP.SIF.tokenization.text import tokenize 
    >>> text = "三角函数是基本初等函数之一"
    >>> tokenize(text, granularity="word")
    ['三角函数', '初等', '函数']
@@ -65,7 +66,7 @@ Examples：
 
     
 ::
-
+   from EduNLP.Tokenizer import get_tokenizer
    >>> items = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
    >>> tokenize(SegmentList(items))
    ['如图所示', '三角形', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]

@@ -43,6 +43,15 @@ Formula 首先在分词功能中对原始文本的公式做切分处理，另外
 
 本模块另提供公式变量标准化的功能，如判断几个子公式内的‘x’为同一变量。
 
+调用库
++++++++++
+
+::
+
+   import matplotlib.pyplot as plt
+   from EduNLP.Formula import Formula
+   from EduNLP.Formula.viz import ForestPlotter
+
 初始化
 +++++++++
 
@@ -110,7 +119,9 @@ item为str 或 List[Dict]类型，具体内容为latex 公式 或 公式经解�
    >>> ForestPlotter().export(f.ast_graph, root_list=[node["val"]["id"] for node in f.ast if node["structure"]["father"] is None],)
    >>> plt.show()
 
+
 .. figure:: ../../../_static/formula.png
+
 
 变量标准化
 +++++++++++
@@ -139,6 +150,10 @@ FormulaGroup
 
 ::
 
+   import matplotlib.pyplot as plt
+   from EduNLP.Formula import Formula
+   from EduNLP.Formula import FormulaGroup
+   from EduNLP.Formula.viz import ForestPlotter
    >>> fs = FormulaGroup(["x^2 = y", "x^3 = y^2", "x + y = \pi"])
    >>> fs
    <FormulaGroup: <Formula: x^2 = y>;<Formula: x^3 = y^2>;<Formula: x + y = \pi>>
@@ -193,6 +208,7 @@ FormulaGroup
 
 .. figure:: ../../../_static/formulagroup.png
 
+
 文本语法结构解析
 --------------------
 
@@ -216,6 +232,13 @@ FormulaGroup
 * latex 中出现中文字符，打印且只打印一次 warning
  
 * 使用_is_formula_legal函数，检查latex公式的完整性和可解析性，对于不合法公式报错
+
+调用库
+>>>>>>>>>>>>
+
+::
+
+   from EduNLP.SIF.Parser import Parser
 
 输入
 >>>>>>>
