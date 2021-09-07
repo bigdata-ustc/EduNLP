@@ -125,6 +125,7 @@ class I2V(object):
 
 class D2V(I2V):
     """
+
     Parameters
     ----------
     tokenizer: str
@@ -189,6 +190,7 @@ class D2V(I2V):
 
 class W2V(I2V):
     """
+
     Parameters
     ----------
     tokenizer: str
