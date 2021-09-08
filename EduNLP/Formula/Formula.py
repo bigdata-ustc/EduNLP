@@ -261,7 +261,8 @@ def link_formulas(*formula: Formula, link_vars=True, **kwargs):
 
     Parameters
     ----------
-    formula:the parsed abstracted syntax tree
+    formula
+        the parsed abstracted syntax tree
     link_vars
     kwargs
     """

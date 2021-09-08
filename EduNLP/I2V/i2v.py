@@ -12,7 +12,7 @@ __all__ = ["I2V", "D2V", "W2V", "get_pretrained_i2v"]
 
 class I2V(object):
     """
-    It just a api, so you shouldn't use it directly. \
+    It just a api, so you shouldn't use it directly. 
     If you want to get vector from item, you can use other model like D2V and W2V.
 
     Parameters
