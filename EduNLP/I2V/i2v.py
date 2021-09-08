@@ -26,8 +26,11 @@ class I2V(object):
     tokenizer_kwargs: dict
         the parameters passed to tokenizer
     pretrained_t2v: bool
+
         True: use pretrained t2v model
+
         False: use your own t2v model
+
     kwargs:
         the parameters passed to t2v
 
@@ -126,6 +129,8 @@ class I2V(object):
 class D2V(I2V):
     """
 
+    Bases: I2V
+
     Parameters
     -----------
     tokenizer: str
@@ -190,6 +195,8 @@ class D2V(I2V):
 
 class W2V(I2V):
     """
+
+    Bases: I2V
 
     Parameters
     -----------
