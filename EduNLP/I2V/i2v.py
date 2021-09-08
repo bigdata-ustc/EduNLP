@@ -12,11 +12,11 @@ __all__ = ["I2V", "D2V", "W2V", "get_pretrained_i2v"]
 
 class I2V(object):
     """
-    It just a api, so you shouldn't use it directly. 
+    It just a api, so you shouldn't use it directly. \
     If you want to get vector from item, you can use other model like D2V and W2V.
 
     Parameters
-    ----------
+    -----------
     tokenizer: str
         the tokenizer name
     t2v: str
@@ -50,7 +50,7 @@ class I2V(object):
         """
 
         Parameters
-        ----------
+        -----------
         tokenizer: str
             the tokenizer name
         t2v: str
@@ -127,7 +127,7 @@ class D2V(I2V):
     """
 
     Parameters
-    ----------
+    -----------
     tokenizer: str
         the tokenizer name
     t2v: str
@@ -143,7 +143,7 @@ class D2V(I2V):
         the parameters passed to t2v
 
     Examples
-    --------
+    ---------
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
@@ -161,7 +161,7 @@ class D2V(I2V):
         '''
 
         Parameters
-        ----------
+        -----------
         items:str
             the text of question
         tokenize:bool
@@ -176,7 +176,7 @@ class D2V(I2V):
             the parameters passed to t2v
 
         Returns
-        -------
+        --------
         vector:list
         '''
         tokens = self.tokenize(items, return_token=True, key=key) if tokenize is True else items
@@ -192,7 +192,7 @@ class W2V(I2V):
     """
 
     Parameters
-    ----------
+    -----------
     tokenizer: str
         the tokenizer name
     t2v: str
@@ -208,14 +208,14 @@ class W2V(I2V):
         the parameters passed to t2v
 
     Examples
-    --------
+    ---------
     >>> i2v = get_pretrained_i2v("test_w2v", "examples/test_model/data/w2v")
     >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
     >>> item_vector # doctest: +ELLIPSIS
     [array([...], dtype=float32)]
 
     Returns
-    -------
+    --------
     i2v model: W2V
 
     """
@@ -246,18 +246,18 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
     """
 
     Parameters
-    ----------
+    -----------
     name: str
         the name of item2vector model
     model_dir:str
         the path of model, default: MODEL_DIR = '~/.EduNLP/model'
 
     Returns
-    -------
+    --------
     i2v model: I2V
 
     Examples
-    --------
+    ---------
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
