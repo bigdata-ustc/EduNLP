@@ -14,33 +14,34 @@ class Tokenizer(object):
 
 
 class PureTextTokenizer(Tokenizer):
-    r"""
-    Examples
-    --------
-    >>> tokenizer = PureTextTokenizer()
-    >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
-    >>> tokens = tokenizer(items)
-    >>> next(tokens)[:10]
-    ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z']
-    >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
-    >>> tokens = tokenizer(items)
-    >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-    ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-    '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-    '\\quad', 'A', '\\cap', 'B', '=']
-    >>> items = [{
-    ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
-    ... "options": ["1", "2"]
-    ... }]
-    >>> tokens = tokenizer(items, key=lambda x: x["stem"])
-    >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-    ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-    '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-    '\\quad', 'A', '\\cap', 'B', '=']
-    """
 
     def __init__(self, *args, **kwargs):
+        r"""
+
+        Examples
+        --------
+        >>> tokenizer = PureTextTokenizer()
+        >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+        ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
+        >>> tokens = tokenizer(items)
+        >>> next(tokens)[:10]
+        ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z']
+        >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
+        >>> tokens = tokenizer(items)
+        >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
+        ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
+        '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
+        '\\quad', 'A', '\\cap', 'B', '=']
+        >>> items = [{
+        ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+        ... "options": ["1", "2"]
+        ... }]
+        >>> tokens = tokenizer(items, key=lambda x: x["stem"])
+        >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
+        ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
+        '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
+        '\\quad', 'A', '\\cap', 'B', '=']
+        """
         self.tokenization_params = {
             "formula_params": {
                 "method": "linear",
@@ -69,19 +70,18 @@ class PureTextTokenizer(Tokenizer):
 
 
 class TextTokenizer(Tokenizer):
-    r"""
-
-    Examples
-    ----------
-    >>> tokenizer = TextTokenizer()
-    >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
-    >>> tokens = tokenizer(items)
-    >>> next(tokens)[:10]
-    ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
-    """
-
     def __init__(self, *args, **kwargs):
+        r"""
+
+        Examples
+        ----------
+        >>> tokenizer = TextTokenizer()
+        >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+        ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
+        >>> tokens = tokenizer(items)
+        >>> next(tokens)[:10]
+        ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
+        """
         self.tokenization_params = {
             "formula_params": {
                 "method": "linear",

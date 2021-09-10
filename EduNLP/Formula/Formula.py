@@ -14,27 +14,6 @@ __all__ = ["Formula", "FormulaGroup", "CONST_MATHORD", "link_formulas"]
 
 
 class Formula(object):
-    """
-    Examples
-    --------
-    >>> f = Formula("x")
-    >>> f
-    <Formula: x>
-    >>> f.ast
-    [{'val': {'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, \
-'structure': {'bro': [None, None], 'child': None, 'father': None, 'forest': None}}]
-    >>> f.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}]
-    >>> f.variable_standardization(inplace=True)
-    <Formula: x>
-    >>> f.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
-
-    Returns
-    --------
-    the parsed abstracted syntax tree
-    """
-
     def __init__(self, formula: (str, List[Dict]), variable_standardization=False, const_mathord=None,
                  init=True, *args, **kwargs):
         """
@@ -48,6 +27,25 @@ class Formula(object):
         init
         args
         kwargs
+
+        Examples
+        --------
+        >>> f = Formula("x")
+        >>> f
+        <Formula: x>
+        >>> f.ast
+        [{'val': {'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, \
+    'structure': {'bro': [None, None], 'child': None, 'father': None, 'forest': None}}]
+        >>> f.elements
+        [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}]
+        >>> f.variable_standardization(inplace=True)
+        <Formula: x>
+        >>> f.elements
+        [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
+
+        Returns
+        --------
+        the parsed abstracted syntax tree
         """
         self._formula = formula
         self._ast = None
@@ -130,30 +128,6 @@ class Formula(object):
 
 
 class FormulaGroup(object):
-    """
-    Examples
-    ---------
-    >>> fg = FormulaGroup(["x + y", "y + x", "z + x"])
-    >>> fg
-    <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
-    >>> fg = FormulaGroup(["x + y", Formula("y + x"), "z + x"])
-    >>> fg
-    <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
-    >>> fg = FormulaGroup(["x", Formula("y"), "x"])
-    >>> fg.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None},\
- {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None}]
-    >>> fg = FormulaGroup(["x", Formula("y"), "x"], variable_standardization=True)
-    >>> fg.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, \
-{'id': 1, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}, \
-{'id': 2, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
-
-    Returns
-    --------
-    the parsed abstracted syntax forest
-    """
-
     def __init__(self,
                  formula_list: (list, List[str], List[Formula]),
                  variable_standardization=False,
@@ -170,6 +144,27 @@ class FormulaGroup(object):
         const_mathord
         detach
 
+        Examples
+        ---------
+        >>> fg = FormulaGroup(["x + y", "y + x", "z + x"])
+        >>> fg
+        <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
+        >>> fg = FormulaGroup(["x + y", Formula("y + x"), "z + x"])
+        >>> fg
+        <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
+        >>> fg = FormulaGroup(["x", Formula("y"), "x"])
+        >>> fg.elements
+        [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None},\
+    {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None}]
+        >>> fg = FormulaGroup(["x", Formula("y"), "x"], variable_standardization=True)
+        >>> fg.elements
+        [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, \
+    {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}, \
+    {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
+
+        Returns
+        --------
+        the parsed abstracted syntax forest
         """
         forest = []
         self._formulas = []
