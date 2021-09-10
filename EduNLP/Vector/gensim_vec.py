@@ -11,16 +11,18 @@ from .meta import Vector
 
 
 class W2V(Vector):
-    def __init__(self, filepath, method=None, binary=None):
-        """
+    """
 
-        Parameters
-        ----------
-        filepath:
-            path to the pretrained model file
-        method
-        binary
-        """
+    Parameters
+    ----------
+    filepath:
+        path to the pretrained model file
+    method: str
+        fasttext
+        other(Word2Vec)
+    binary
+    """
+    def __init__(self, filepath, method=None, binary=None):
         fp = PurePath(filepath)
         self.binary = binary if binary is not None else (True if fp.suffix == ".bin" else False)
         if self.binary is True:
@@ -70,6 +72,22 @@ class W2V(Vector):
 
 
 class BowLoader(object):
+    """
+    Using doc2bow model, which has a lot of effects.
+
+    Convert document (a list of words) into the bag-of-words format = list of \
+    (token_id, token_count) 2-tuples. Each word is assumed to be a \
+    tokenized and normalized string (either unicode or utf8-encoded). \
+    No further preprocessing is done on the words in document;\
+     apply tokenization, stemming etc. before calling this method.
+
+    If allow_update is set, then also update dictionary in the process: \
+    create ids for new words. At the same time, update document frequencies – \
+    for each word appearing in this document, increase its document frequency (self.dfs) by one.
+
+    If allow_update is not set, this function is const, \
+    aka read-only.
+    """
     def __init__(self, filepath):
         self.dictionary = corpora.Dictionary.load(filepath)
 
@@ -88,6 +106,11 @@ class BowLoader(object):
 
 
 class TfidfLoader(object):
+    """
+    This module implements functionality related to the Term Frequency - \
+    Inverse Document Frequency <https://en.wikipedia.org/wiki/Tf%E2%80%93idf> \
+    vector space bag-of-words models.
+    """
     def __init__(self, filepath):
         self.tfidf_model = TfidfModel.load(filepath)
         # 'tfidf' model shold be used based on 'bow' model
@@ -111,6 +134,22 @@ class TfidfLoader(object):
 
 
 class D2V(Vector):
+    """
+    It is a collection which include d2v, bow, tfidf method.
+
+    Parameters
+    -----------
+    filepath
+    method: str
+        d2v
+        bow
+        tfidf
+    item
+
+    Returns
+    ---------
+    D2V
+    """
     def __init__(self, filepath, method="d2v"):
         self._method = method
         self._filepath = filepath
