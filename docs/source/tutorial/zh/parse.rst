@@ -120,7 +120,7 @@ item为str 或 List[Dict]类型，具体内容为latex 公式 或 公式经解�
    >>> plt.show()
 
 
-.. figure:: ../../../_static/formula.png
+.. figure:: ../../_static/formula.png
 
 
 变量标准化
@@ -206,7 +206,7 @@ FormulaGroup
    [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base', 'var': 0}, {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'}, {'id': 3, 'type': 'rel', 'text': '=', 'role': None}, {'id': 4, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}]
    >>> ForestPlotter().export(fs.ast_graph, root_list=[node["val"]["id"] for node in fs.ast if node["structure"]["father"] is None],)
 
-.. figure:: ../../../_static/formulagroup.png
+.. figure:: ../../_static/formulagroup.png
 
 
 文本语法结构解析
