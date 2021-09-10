@@ -16,8 +16,7 @@
 主要流程
 ----------
 
-.. figure:: ../../_static/流程图.svg
-    :width: 1200px
+.. figure:: ../../_static/流程图放大版.png
 
 示例
 --------
