@@ -148,8 +148,9 @@ class FormulaGroup(object):
     <FormulaGroup: <Formula: x + y>;<Formula: y + x>;<Formula: z + x>>
     >>> fg = FormulaGroup(["x", Formula("y"), "x"])
     >>> fg.elements
-    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None},\
-{'id': 2, 'type': 'mathord', 'text': 'x', 'role': None}]
+    [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None}, \
+    {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None}, \
+    {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None}]
     >>> fg = FormulaGroup(["x", Formula("y"), "x"], variable_standardization=True)
     >>> fg.elements
     [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}, \

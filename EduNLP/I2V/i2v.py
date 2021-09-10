@@ -42,7 +42,7 @@ class I2V(object):
     >>> model_path = "examples/test_model/test_gensim_luna_stem_tf_d2v_256.bin" # doctest: +ELLIPSIS
     >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False) # doctest: +ELLIPSIS
     >>> i2v(item) # doctest: +ELLIPSIS
-    ([array([...], dtype=float32)], None)
+    ([array([...dtype=float32)], None)
 
     Returns
     -------
