@@ -208,6 +208,27 @@ class W2V(I2V):
     """
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
+        '''
+
+        Parameters
+        -----------
+        items:str
+            the text of question
+        tokenize:bool
+            True: tokenize the item
+        indexing:bool
+        padding:bool
+        key: lambda function
+            the parameter passed to tokenizer, select the text to be processed
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        '''
         tokens = self.tokenize(items, return_token=True) if tokenize is True else items
         tokens = [token for token in tokens]
         return self.t2v(tokens, *args, **kwargs), self.t2v.infer_tokens(tokens, *args, **kwargs)

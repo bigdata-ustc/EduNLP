@@ -64,8 +64,8 @@ class W2V(Vector):
         return self.wv[item] if item not in self.constants else np.zeros((self.vector_size,))
 
     def infer_vector(self, items, agg="mean", *args, **kwargs) -> np.ndarray:
-        tokens = self.infer_tokens(items, *args, **kwargs)
-        return eval("np.%s" % agg)(tokens, axis=1)
+        token_vectors = self.infer_tokens(items, *args, **kwargs)
+        return [eval("np.%s" % agg)(item, axis=0) for item in token_vectors]
 
     def infer_tokens(self, items, *args, **kwargs) -> list:
         return [list(self(*item)) for item in items]
