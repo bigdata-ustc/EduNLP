@@ -5,36 +5,30 @@ __all__ = ["PadSequence", "pad_sequence"]
 
 
 class PadSequence(object):
+    """
+    Pad the sequence.
+
+    Pad the sequence to the given `length` by inserting `pad_val`. If `clip` is set,
+    sequence that has length larger than `length` will be clipped.
+
+    Parameters
+    ----------
+    length : int
+        The maximum length to pad/clip the sequence
+    pad_val : number
+        The pad value. Default 0
+    clip : bool
+
+    Returns
+    -------
+    ret : list of number
+    """
     def __init__(self, length, pad_val=0, clip=True):
-        """
-        Pad the sequence.
-
-        Pad the sequence to the given `length` by inserting `pad_val`. If `clip` is set,
-        sequence that has length larger than `length` will be clipped.
-
-        Parameters
-        ----------
-        length : int
-            The maximum length to pad/clip the sequence
-        pad_val : number
-            The pad value. Default 0
-        clip : bool
-        """
         self._length = length
         self._pad_val = pad_val
         self._clip = clip
 
     def __call__(self, sample: list):
-        """
-
-        Parameters
-        ----------
-        sample : list of number
-
-        Returns
-        -------
-        ret : list of number
-        """
         sample_length = len(sample)
         if sample_length >= self._length:
             if self._clip and sample_length > self._length:
