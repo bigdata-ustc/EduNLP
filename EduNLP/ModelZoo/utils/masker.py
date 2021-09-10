@@ -6,31 +6,6 @@ import numpy as np
 
 
 class Masker(object):
-    """
-    Examples
-    -------
-    >>> masker = Masker(per=0.5, seed=10)
-    >>> items = [[1, 1, 3, 4, 6], [2], [5, 9, 1, 4]]
-    >>> masked_seq, mask_label = masker(items)
-    >>> masked_seq
-    [[1, 1, 0, 0, 6], [2], [0, 9, 0, 4]]
-    >>> mask_label
-    [[0, 0, 1, 1, 0], [0], [1, 0, 1, 0]]
-    >>> items = [[1, 2, 3], [1, 1, 0], [2, 0, 0]]
-    >>> masked_seq, mask_label = masker(items, [3, 2, 1])
-    >>> masked_seq
-    [[1, 0, 3], [0, 1, 0], [2, 0, 0]]
-    >>> mask_label
-    [[0, 1, 0], [1, 0, 0], [0, 0, 0]]
-    >>> masker = Masker(mask="[MASK]", per=0.5, seed=10)
-    >>> items = [["a", "b", "c"], ["d", "[PAD]", "[PAD]"], ["hello", "world", "[PAD]"]]
-    >>> masked_seq, mask_label = masker(items, length=[3, 1, 2])
-    >>> masked_seq
-    [['a', '[MASK]', 'c'], ['d', '[PAD]', '[PAD]'], ['hello', '[MASK]', '[PAD]']]
-    >>> mask_label
-    [[0, 1, 0], [0, 0, 0], [0, 1, 0]]
-    """
-
     def __init__(self, mask: (int, str, ...) = 0, per=0.2, seed=None):
         """
 
@@ -39,6 +14,29 @@ class Masker(object):
         mask: int, str
         per
         seed
+
+        Examples
+        -------
+        >>> masker = Masker(per=0.5, seed=10)
+        >>> items = [[1, 1, 3, 4, 6], [2], [5, 9, 1, 4]]
+        >>> masked_seq, mask_label = masker(items)
+        >>> masked_seq
+        [[1, 1, 0, 0, 6], [2], [0, 9, 0, 4]]
+        >>> mask_label
+        [[0, 0, 1, 1, 0], [0], [1, 0, 1, 0]]
+        >>> items = [[1, 2, 3], [1, 1, 0], [2, 0, 0]]
+        >>> masked_seq, mask_label = masker(items, [3, 2, 1])
+        >>> masked_seq
+        [[1, 0, 3], [0, 1, 0], [2, 0, 0]]
+        >>> mask_label
+        [[0, 1, 0], [1, 0, 0], [0, 0, 0]]
+        >>> masker = Masker(mask="[MASK]", per=0.5, seed=10)
+        >>> items = [["a", "b", "c"], ["d", "[PAD]", "[PAD]"], ["hello", "world", "[PAD]"]]
+        >>> masked_seq, mask_label = masker(items, length=[3, 1, 2])
+        >>> masked_seq
+        [['a', '[MASK]', 'c'], ['d', '[PAD]', '[PAD]'], ['hello', '[MASK]', '[PAD]']]
+        >>> mask_label
+        [[0, 1, 0], [0, 0, 0], [0, 1, 0]]
         """
         self.seed = np.random.default_rng(seed)
         self.per = per
