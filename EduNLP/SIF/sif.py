@@ -19,9 +19,10 @@ def is_sif(item):
 
     Returns
     -------
-    when item can not be parsed correctly, raise Error;
-    when item doesn't need to be modified, return Ture;
-    when item needs to be modified, return False;
+    bool
+        when item can not be parsed correctly, raise Error;
+        when item doesn't need to be modified, return Ture;
+        when item needs to be modified, return False;
 
     Examples
     --------
@@ -113,8 +114,9 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
 
     Returns
     -------
-    When tokenization is False, return SegmentList;
-    When tokenization is True, return TokenList
+    list
+        When tokenization is False, return SegmentList;
+        When tokenization is True, return TokenList
 
     Examples
     --------
