@@ -16,19 +16,6 @@
    from EduNLP.I2V import get_pretrained_i2v
    from EduNLP.Vector import get_pretrained_t2v
 
-
-装载模型
---------
-
-将所得到的模型传入I2V模块即可装载模型
- 
-Examples：
-
-::
-
-   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
-   >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-
 训练模型
 ------------
 
@@ -54,6 +41,18 @@ Examples：
    # 10 dimension with fasstext method
    train_vector(sif_items, "../../../data/w2v/gensim_luna_stem_tf_", 10, method="d2v")
 
+
+装载模型
+--------
+
+将所得到的模型传入I2V模块即可装载模型
+ 
+Examples：
+
+::
+
+   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+   >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
 
 公开模型一览
 ------------
