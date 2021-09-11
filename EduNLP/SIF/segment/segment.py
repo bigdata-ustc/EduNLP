@@ -89,7 +89,8 @@ class SegmentList(object):
 
     Returns
     ----------
-    list:tokenizated item
+    list
+        tokenizated item
 
     Examples
     --------
@@ -276,7 +277,8 @@ def seg(item, figures=None, symbol=None):
 
     Returns
     -------
-    list:segmented item
+    list
+        segmented item
 
     Examples
     --------

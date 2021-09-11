@@ -358,7 +358,8 @@ class TokenList(object):
 
         Returns
         --------
-        filted list
+        list
+            filted list
         """
         _drop = {c for c in drop} if isinstance(drop, str) else drop
         if keep == "*":
@@ -407,7 +408,8 @@ def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, f
 
     Returns
     ----------
-    tokenized item
+    list
+        tokenized item
 
     Examples
     --------

@@ -39,7 +39,8 @@ class Masker(object):
 
     Returns
     ----------
-    list:list of masked_seq and list of masked_list
+    list
+        list of masked_seq and list of masked_list
     """
     def __init__(self, mask: (int, str, ...) = 0, per=0.2, seed=None):
         self.seed = np.random.default_rng(seed)

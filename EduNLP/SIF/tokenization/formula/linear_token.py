@@ -24,6 +24,7 @@ def cut(formula, preserve_braces=True, with_dollar=False,
     Returns
     --------
     list
+        return a preliminary list which cut fully
 
     Examples
     ----------
