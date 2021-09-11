@@ -65,6 +65,12 @@ class TextTokenizer(Tokenizer):
     >>> tokens = tokenizer(items)
     >>> next(tokens)[:10]
     ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
+    >>> items = ["$\\SIFTag{stem_begin}$若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem_end}$\
+    ... $\\SIFTag{options_begin}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1$\\SIFTag{list_2}$$\\sqrt{2}$\
+    ... $\\SIFTag{list_3}$2$\\SIFTag{options_end}$"]
+    >>> tokens = tokenizer(items)
+    >>> next(tokens)[:10]
+    ['[TAG]', '复数', 'z', '=', '1', '+', '2', 'i', '+', 'i']
     """
 
     def __init__(self, *args, **kwargs):
