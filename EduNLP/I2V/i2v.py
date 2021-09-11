@@ -16,7 +16,7 @@ class I2V(object):
     If you want to get vector from item, you can use other model like D2V and W2V.
 
     Parameters
-    ----------
+    -----------
     tokenizer: str
         the tokenizer name
     t2v: str
@@ -26,8 +26,11 @@ class I2V(object):
     tokenizer_kwargs: dict
         the parameters passed to tokenizer
     pretrained_t2v: bool
+
         True: use pretrained t2v model
+
         False: use your own t2v model
+
     kwargs:
         the parameters passed to t2v
 
@@ -39,33 +42,13 @@ class I2V(object):
     >>> model_path = "examples/test_model/test_gensim_luna_stem_tf_d2v_256.bin" # doctest: +ELLIPSIS
     >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False) # doctest: +ELLIPSIS
     >>> i2v(item) # doctest: +ELLIPSIS
-    ([array([ ...dtype=float32)], None)
+    ([array([...dtype=float32)], None)
 
     Returns
     -------
     i2v model: I2V
     """
-
     def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
-        """
-
-        Parameters
-        ----------
-        tokenizer: str
-            the tokenizer name
-        t2v: str
-            the name of token2vector model
-        args:
-            the parameters passed to t2v
-        tokenizer_kwargs: dict
-            the parameters passed to tokenizer
-        pretrained_t2v: bool
-            True: use pretrained t2v model
-            False: use your own t2v model
-        kwargs:
-            the parameters passed to t2v
-
-        """
         self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
@@ -125,8 +108,11 @@ class I2V(object):
 
 class D2V(I2V):
     """
+
+    Bases: I2V
+
     Parameters
-    ----------
+    -----------
     tokenizer: str
         the tokenizer name
     t2v: str
@@ -142,7 +128,7 @@ class D2V(I2V):
         the parameters passed to t2v
 
     Examples
-    --------
+    ---------
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
@@ -160,7 +146,7 @@ class D2V(I2V):
         '''
 
         Parameters
-        ----------
+        -----------
         items:str
             the text of question
         tokenize:bool
@@ -175,7 +161,7 @@ class D2V(I2V):
             the parameters passed to t2v
 
         Returns
-        -------
+        --------
         vector:list
         '''
         tokens = self.tokenize(items, return_token=True, key=key) if tokenize is True else items
@@ -189,8 +175,11 @@ class D2V(I2V):
 
 class W2V(I2V):
     """
+
+    Bases: I2V
+
     Parameters
-    ----------
+    -----------
     tokenizer: str
         the tokenizer name
     t2v: str
@@ -206,19 +195,40 @@ class W2V(I2V):
         the parameters passed to t2v
 
     Examples
-    --------
+    ---------
     >>> i2v = get_pretrained_i2v("test_w2v", "examples/test_model/data/w2v")
     >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
-    >>> item_vector
-    array([[...]], dtype=float32)
+    >>> item_vector # doctest: +ELLIPSIS
+    [array([...], dtype=float32)]
 
     Returns
-    -------
+    --------
     i2v model: W2V
 
     """
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
+        '''
+
+        Parameters
+        -----------
+        items:str
+            the text of question
+        tokenize:bool
+            True: tokenize the item
+        indexing:bool
+        padding:bool
+        key: lambda function
+            the parameter passed to tokenizer, select the text to be processed
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        '''
         tokens = self.tokenize(items, return_token=True) if tokenize is True else items
         tokens = [token for token in tokens]
         return self.t2v(tokens, *args, **kwargs), self.t2v.infer_tokens(tokens, *args, **kwargs)
@@ -244,18 +254,18 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
     """
 
     Parameters
-    ----------
+    -----------
     name: str
         the name of item2vector model
     model_dir:str
         the path of model, default: MODEL_DIR = '~/.EduNLP/model'
 
     Returns
-    -------
+    --------
     i2v model: I2V
 
     Examples
-    --------
+    ---------
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}

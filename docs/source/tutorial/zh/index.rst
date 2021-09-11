@@ -13,6 +13,10 @@
 
 *  `向量化 <vectorization.rst>`_ 
 
+主要流程
+----------
+
+.. figure:: ../../_static/流程图.jpg
 
 示例
 --------

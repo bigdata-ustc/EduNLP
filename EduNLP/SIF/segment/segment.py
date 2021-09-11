@@ -80,24 +80,24 @@ class SepSegment(str):
 
 
 class SegmentList(object):
+    """
+
+    Parameters
+    ----------
+    item
+    figures:dict
+
+    Returns
+    ----------
+    list:tokenizated item
+
+    Examples
+    --------
+    >>> test_item = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
+    >>> SegmentList(test_item)
+    ['如图所示，则三角形', 'ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
+    """
     def __init__(self, item, figures: dict = None):
-        """
-
-        Parameters
-        ----------
-        item
-        figures:dict
-
-        Returns
-        ----------
-        list:tokenizated item
-
-        Examples
-        --------
-        >>> test_item = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
-        >>> SegmentList(test_item)
-        ['如图所示，则三角形', 'ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
-        """
         self._segments = []
         self._text_segments = []
         self._formula_segments = []

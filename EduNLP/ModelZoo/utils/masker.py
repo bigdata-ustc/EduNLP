@@ -7,6 +7,13 @@ import numpy as np
 
 class Masker(object):
     """
+
+    Parameters
+    ----------
+    mask: int, str
+    per
+    seed
+
     Examples
     -------
     >>> masker = Masker(per=0.5, seed=10)
@@ -29,35 +36,17 @@ class Masker(object):
     [['a', '[MASK]', 'c'], ['d', '[PAD]', '[PAD]'], ['hello', '[MASK]', '[PAD]']]
     >>> mask_label
     [[0, 1, 0], [0, 0, 0], [0, 1, 0]]
+
+    Returns
+    ----------
+    list:list of masked_seq and list of masked_list
     """
-
     def __init__(self, mask: (int, str, ...) = 0, per=0.2, seed=None):
-        """
-
-        Parameters
-        ----------
-        mask: int, str
-        per
-        seed
-        """
         self.seed = np.random.default_rng(seed)
         self.per = per
         self.mask = mask
 
     def __call__(self, seqs, length=None, *args, **kwargs) -> tuple:
-        """
-
-        Parameters
-        ----------
-        seqs:list
-        length
-        args
-        kwargs
-
-        Returns
-        ----------
-        list:list of masked_seq and list of masked_list
-        """
         seqs = deepcopy(seqs)
         masked_list = []
         if length is None:

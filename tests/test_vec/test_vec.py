@@ -110,7 +110,7 @@ def test_w2v_i2v(stem_text_tokens, tmpdir, stem_data):
     )
 
     i2v = I_W2V("pure_text", "w2v", filepath)
-    i_vec, t_vec = i2v(stem_data[:1])
+    i_vec, t_vec = i2v(stem_data[:2])
     assert len(i_vec[0]) == i2v.vector_size
     assert len(t_vec[0][0]) == i2v.vector_size
 
@@ -187,7 +187,7 @@ def test_d2v(stem_text_tokens, tmpdir, stem_data):
     assert len(t2v(stem_text_tokens[:1])[0]) == t2v.vector_size
 
     i2v = I_D2V("pure_text", "d2v", filepath)
-    i_vec, t_vec = i2v(stem_data[:1])
+    i_vec, t_vec = i2v(stem_data[:2])
     assert len(i_vec[0]) == i2v.vector_size
     assert t_vec is None
 

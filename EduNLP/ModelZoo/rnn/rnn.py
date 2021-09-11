@@ -9,6 +9,20 @@ from baize.torch import load_net
 
 class LM(nn.Module):
     """
+
+    Parameters
+    ----------
+    rnn_type：str
+        Legal types including RNN, LSTM, GRU,ELMO
+    vocab_size: int
+    embedding_dim: int
+    hidden_size: int
+    num_layers
+    bidirectional
+    embedding
+    model_params
+    kwargs
+
     Examples
     --------
     >>> import torch
@@ -30,22 +44,6 @@ class LM(nn.Module):
 
     def __init__(self, rnn_type: str, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers=1,
                  bidirectional=False, embedding=None, model_params=None, **kwargs):
-        """
-
-        Parameters
-        ----------
-        rnn_type：str
-            Legal types including RNN, LSTM, GRU,ELMO
-        vocab_size: int
-        embedding_dim: int
-        hidden_size: int
-        num_layers
-        bidirectional
-        embedding
-        model_params
-        kwargs
-
-        """
         super(LM, self).__init__()
         rnn_type = rnn_type.upper()
         self.embedding = torch.nn.Embedding(vocab_size, embedding_dim) if embedding is None else embedding

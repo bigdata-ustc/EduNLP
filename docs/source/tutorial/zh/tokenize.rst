@@ -62,10 +62,10 @@ Examples：
 -------
 即综合解析，将带公式的句子切分为若干标记的过程。每个标记为一个“令牌”（token）。
 
-此功能对应的实现函数为tokenize，将已经经过结构成分分解后的item传入其中即可得到所需结果
+此功能对应的实现函数为tokenize，将已经经过结构成分分解后的item传入其中即可得到所需结果。
 
-    
 ::
+
    from EduNLP.Tokenizer import get_tokenizer
    >>> items = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
    >>> tokenize(SegmentList(items))
@@ -75,7 +75,7 @@ Examples：
 
 
 
-我们提供了多种已经封装好的令牌化器供用户便捷调用，通过查看 ``./EduNLP/Tokenizer/tokenizer.py`` 及 ``./EduNLP/Pretrain/gensim_vec.py`` 可以查看更多令牌化器，下面是一个完整的令牌化器列表
+我们提供了多种已经封装好的令牌化器供用户便捷调用，通过查看 ``./EduNLP/Tokenizer/tokenizer.py`` 及 ``./EduNLP/Pretrain/gensim_vec.py`` 可以查看更多令牌化器，下面是一个完整的令牌化器列表:
 
 - TextTokenizer
 
