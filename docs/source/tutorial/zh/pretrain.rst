@@ -21,18 +21,6 @@
 
 如需训练模型则可直接train_vector函数接口，来使使训练模型更加方便。模块调用gensim库中的相关训练模型，目前提供了"sg"、 "cbow"、 "fastext"、 "d2v"、 "bow"、 "tfidf"的训练方法，并提供了embedding_dim参数，使之可以按照需求确定向量的维度。
 
-装载模型
---------
-
-将所得到的模型传入I2V模块即可装载模型
- 
-Examples：
-
-::
-
-   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
-   >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-
 基本步骤
 ##################
 
@@ -53,6 +41,18 @@ Examples：
    # 10 dimension with fasstext method
    train_vector(sif_items, "../../../data/w2v/gensim_luna_stem_tf_", 10, method="d2v")
 
+
+装载模型
+--------
+
+将所得到的模型传入I2V模块即可装载模型
+ 
+Examples：
+
+::
+
+   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+   >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
 
 公开模型一览
 ------------
