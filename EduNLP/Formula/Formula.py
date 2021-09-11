@@ -15,6 +15,7 @@ __all__ = ["Formula", "FormulaGroup", "CONST_MATHORD", "link_formulas"]
 
 class Formula(object):
     """
+    The part transform a formula to the parsed abstracted syntax tree.
 
     Parameters
     ----------
@@ -41,9 +42,6 @@ class Formula(object):
     >>> f.elements
     [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
 
-    Returns
-    --------
-    the parsed abstracted syntax tree
     """
     def __init__(self, formula: (str, List[Dict]), variable_standardization=False, const_mathord=None,
                  init=True, *args, **kwargs):
@@ -129,6 +127,7 @@ class Formula(object):
 
 class FormulaGroup(object):
     """
+    The part transform a group of formula to the parsed abstracted syntax forest.
 
     Parameters
     ----------
@@ -157,9 +156,6 @@ class FormulaGroup(object):
 {'id': 1, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}, \
 {'id': 2, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
 
-    Returns
-    --------
-    the parsed abstracted syntax forest
     """
     def __init__(self,
                  formula_list: (list, List[str], List[Formula]),

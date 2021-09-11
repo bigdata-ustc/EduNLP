@@ -15,7 +15,7 @@ class Masker(object):
     seed
 
     Examples
-    -------
+    ---------
     >>> masker = Masker(per=0.5, seed=10)
     >>> items = [[1, 1, 3, 4, 6], [2], [5, 9, 1, 4]]
     >>> masked_seq, mask_label = masker(items)
