@@ -21,7 +21,7 @@ class PadSequence(object):
 
     Returns
     -------
-    ret 
+    ret
         list of number
     """
     def __init__(self, length, pad_val=0, clip=True):
