@@ -164,7 +164,6 @@ If this repository is helpful for you, please cite our work
    :hidden:
    :glob:
 
-   api/index
    api/i2v
    api/sif
    api/tokenizer
