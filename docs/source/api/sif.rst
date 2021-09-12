@@ -8,16 +8,16 @@ SIF
    :imported-members:
 
 
-Segment
-----------
-.. automodule:: EduNLP.SIF.segment.segment
+Parser
+--------
+.. automodule:: EduNLP.SIF.parser.parser.Parser
    :members:
    :imported-members:
 
 
-Parser
---------
-.. automodule:: EduNLP.SIF.parser.parser.Parser
+Segment
+----------
+.. automodule:: EduNLP.SIF.segment.segment
    :members:
    :imported-members:
 
