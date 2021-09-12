@@ -36,7 +36,7 @@ from EduNLP.Formula import Formula
 
 def traversal_formula(ast, ord2token=False, var_numbering=False, strategy="post", *args, **kwargs):
     """
-    The part will run only when the return type is list. And it provides two strategy: post and linear. 
+    The part will run only when the return type is list. And it provides two strategy: post and linear.
     Besides, tokens list will append node follow its type.
     """
     tokens = []

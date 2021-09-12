@@ -197,7 +197,8 @@ class SegmentList(object):
 
     def symbolize(self, to_symbolize="fgm"):
         """
-        Switch designated elements to symbol. It is a good way to protect or preserve the elements which we don't want to tokenize.
+        Switch designated elements to symbol. \
+        It is a good way to protect or preserve the elements which we don't want to tokenize.
 
         Parameters
         ----------
