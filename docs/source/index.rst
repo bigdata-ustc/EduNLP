@@ -164,12 +164,12 @@ If this repository is helpful for you, please cite our work
    :hidden:
    :glob:
 
-   api/i2v
    api/sif
-   api/tokenizer
+   api/utils
    api/formula
+   api/tokenizer
    api/pretrain
    api/ModelZoo
+   api/i2v
    api/vector
-   api/utils
    

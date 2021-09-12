@@ -15,7 +15,7 @@ def is_sif(item):
     Parameters
     ----------
     item:str
-        the text of question
+        a raw item which respects stem
 
     Returns
     -------
@@ -49,12 +49,12 @@ def to_sif(item):
     Parameters
     ----------
     items:str
-        the text of question
+        a raw item which respects stem
 
     Returns
     -------
     item:str
-        the question's text after sif correction
+        the item which accords with sif format
 
     Examples
     --------
@@ -78,7 +78,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     Parameters
     ----------
     item:str
-        the text of question
+        a raw item which respects stem
     figures:dict
         {"FigureID": Base64 encoding of the figure}
 
