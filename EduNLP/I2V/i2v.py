@@ -108,8 +108,11 @@ class I2V(object):
 
 class D2V(I2V):
     """
+    The model aims to transfer item to vector directly.
 
-    Bases: I2V
+    Bases
+    -------
+    I2V
 
     Parameters
     -----------
@@ -144,6 +147,7 @@ class D2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
+        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
         Parameters
         -----------
@@ -175,8 +179,11 @@ class D2V(I2V):
 
 class W2V(I2V):
     """
+    The model aims to transfer tokens to vector.
 
-    Bases: I2V
+    Bases
+    --------
+    I2V
 
     Parameters
     -----------
@@ -209,6 +216,7 @@ class W2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
+        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
         Parameters
         -----------

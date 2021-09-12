@@ -160,6 +160,7 @@ class SegmentList(object):
 
     @property
     def segments(self):
+        """return segments"""
         if self._seg_idx is None:
             return self._segments
         else:
@@ -167,29 +168,36 @@ class SegmentList(object):
 
     @property
     def text_segments(self):
+        """return text segments"""
         return [self._segments[i] for i in self._text_segments]
 
     @property
     def formula_segments(self):
+        """return formula segments"""
         return [self._segments[i] for i in self._formula_segments]
 
     @property
     def figure_segments(self):
+        """return figure segments"""
         return [self._segments[i] for i in self._figure_segments]
 
     @property
     def ques_mark_segments(self):
+        """return question mark segments"""
         return [self._segments[i] for i in self._ques_mark_segments]
 
     @property
     def tag_segments(self):
+        """return tag segments"""
         return [self._segments[i] for i in self._tag_segments]
 
     def to_symbol(self, idx, symbol):
+        """switch element to its symbol"""
         self._segments[idx] = symbol
 
     def symbolize(self, to_symbolize="fgm"):
         """
+        Switch designated elements to symbol. It is a good way to protect or preserve the elements which we don't want to tokenize.
 
         Parameters
         ----------
@@ -227,6 +235,7 @@ class SegmentList(object):
     @contextmanager
     def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
         """
+        Output special element list selective.Drop means not show.Keep means show.
 
         Parameters
         ----------
@@ -268,6 +277,7 @@ class SegmentList(object):
 
 def seg(item, figures=None, symbol=None):
     r"""
+    It is a interface for SegmentList. And show it in an appropriate way.
 
     Parameters
     ----------

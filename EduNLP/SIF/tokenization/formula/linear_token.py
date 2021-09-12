@@ -7,6 +7,7 @@ import re
 def cut(formula, preserve_braces=True, with_dollar=False,
         preserve_dollar=False, number_as_tag=False, preserve_src=True):  # pragma: no cover
     """
+    cut formula thoroughly
 
     Parameters
     ----------
@@ -233,6 +234,8 @@ def latex_parse(formula, preserve_braces=True, with_dollar=True,
 
 def linear_tokenize(formula, preserve_braces=True, number_as_tag=False, *args, **kwargs):
     """
+    linear tokenize formula.
+    It includes three processes:cut, reduce and connect_char.
 
     Parameters
     ----------
