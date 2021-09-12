@@ -194,8 +194,8 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
     >>> print(token_item[:10])
     [['公式'], [\\FormFigureID{wrong1?}], ['如图'], ['[FIGURE]'],...['最大值'], ['[MARK]']]
-    >>> train_vector(token_item[:10], "../../data/w2v/gensim_luna_stem_t_", 100) #doctest: +ELLIPSIS
-    '../../data/w2v/gensim_luna_stem_t_sg_100.kv'
+    >>> train_vector(token_item[:10], "data/w2v/gensim_luna_stem_t_", 100) #doctest: +ELLIPSIS
+    'data/w2v/gensim_luna_stem_t_sg_100.kv'
     """
     monitor = MonitorCallback(["word", "I", "less"])
     _train_params = dict(
