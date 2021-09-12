@@ -12,6 +12,8 @@ __all__ = ["is_sif", "to_sif", "sif4sci"]
 
 def is_sif(item):
     r"""
+    the part aims to check whether the input is sif format
+
     Parameters
     ----------
     item:str
@@ -46,6 +48,8 @@ def is_sif(item):
 
 def to_sif(item):
     r"""
+    the part aims to switch item to sif formate
+
     Parameters
     ----------
     items:str
