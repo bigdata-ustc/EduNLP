@@ -148,7 +148,7 @@ class D2V(Vector):
 
     Returns
     ---------
-    D2V
+    d2v model:D2V
     """
     def __init__(self, filepath, method="d2v"):
         self._method = method

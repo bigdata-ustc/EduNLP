@@ -21,7 +21,8 @@ class PadSequence(object):
 
     Returns
     -------
-    ret : list of number
+    ret
+        list of number
     """
     def __init__(self, length, pad_val=0, clip=True):
         self._length = length
@@ -53,7 +54,8 @@ def pad_sequence(sequence: list, max_length=None, pad_val=0, clip=True):
 
     Returns
     -------
-    Modified list:padding the sequence in the same size.
+    Modified list:list
+        padding the sequence in the same size.
 
     Examples
     --------

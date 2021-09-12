@@ -91,7 +91,8 @@ class LM(nn.Module):
 
         Returns
         --------
-        a PackedSequence object
+        sequence
+            a PackedSequence object
         """
         seq = self.embedding(seq_idx)
         pack = pack_padded_sequence(seq, seq_len, batch_first=True)

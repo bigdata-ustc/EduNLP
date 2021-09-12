@@ -12,16 +12,19 @@ __all__ = ["is_sif", "to_sif", "sif4sci"]
 
 def is_sif(item):
     r"""
+    the part aims to check whether the input is sif format
+
     Parameters
     ----------
     item:str
-        the text of question
+        a raw item which respects stem
 
     Returns
     -------
-    when item can not be parsed correctly, raise Error;
-    when item doesn't need to be modified, return Ture;
-    when item needs to be modified, return False;
+    bool
+        when item can not be parsed correctly, raise Error;
+        when item doesn't need to be modified, return Ture;
+        when item needs to be modified, return False;
 
     Examples
     --------
@@ -45,15 +48,17 @@ def is_sif(item):
 
 def to_sif(item):
     r"""
+    the part aims to switch item to sif formate
+
     Parameters
     ----------
     items:str
-        the text of question
+        a raw item which respects stem
 
     Returns
     -------
     item:str
-        the question's text after sif correction
+        the item which accords with sif format
 
     Examples
     --------
@@ -77,7 +82,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     Parameters
     ----------
     item:str
-        the text of question
+        a raw item which respects stem
     figures:dict
         {"FigureID": Base64 encoding of the figure}
 
@@ -113,8 +118,9 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
 
     Returns
     -------
-    When tokenization is False, return SegmentList;
-    When tokenization is True, return TokenList
+    list
+        When tokenization is False, return SegmentList;
+        When tokenization is True, return TokenList
 
     Examples
     --------

@@ -15,7 +15,7 @@ class Masker(object):
     seed
 
     Examples
-    -------
+    ---------
     >>> masker = Masker(per=0.5, seed=10)
     >>> items = [[1, 1, 3, 4, 6], [2], [5, 9, 1, 4]]
     >>> masked_seq, mask_label = masker(items)
@@ -39,7 +39,8 @@ class Masker(object):
 
     Returns
     ----------
-    list:list of masked_seq and list of masked_list
+    list
+        list of masked_seq and list of masked_list
     """
     def __init__(self, mask: (int, str, ...) = 0, per=0.2, seed=None):
         self.seed = np.random.default_rng(seed)

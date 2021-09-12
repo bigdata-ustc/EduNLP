@@ -3,8 +3,8 @@ import re
 
 
 class Parser:
+    """initial data and special variable"""
     def __init__(self, data):
-        """initial data and special variable"""
         self.lookahead = 0
         self.head = 0
         self.text = data
