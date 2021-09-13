@@ -15,6 +15,19 @@ class Tokenizer(object):
 
 class PureTextTokenizer(Tokenizer):
     r"""
+    Duel with text and plain text formula.
+    And filting special formula like $\\FormFigureID{…}$ and $\\FormFigureBase64{…}.
+
+    Parameters
+    ----------
+    items: str
+    key
+    args
+    kwargs
+
+    Returns
+    -------
+    token
 
     Examples
     --------
@@ -49,27 +62,24 @@ class PureTextTokenizer(Tokenizer):
         }
 
     def __call__(self, items: Iterable, key=lambda x: x, *args, **kwargs):
-        """
-        Duel with text and plain text formula.
-        And filting special formula like $\\FormFigureID{…}$ and $\\FormFigureBase64{…}.
-
-        Parameters
-        ----------
-        items: str
-        key
-        args
-        kwargs
-
-        Returns
-        -------
-        token
-        """
         for item in items:
             yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
 
 
 class TextTokenizer(Tokenizer):
     r"""
+    Duel with text and formula including special formula.
+
+    Parameters
+    ----------
+    items: str
+    key
+    args
+    kwargs
+
+    Returns
+    -------
+    token
 
     Examples
     ----------
@@ -95,20 +105,6 @@ class TextTokenizer(Tokenizer):
         }
 
     def __call__(self, items: Iterable, key=lambda x: x, *args, **kwargs):
-        """
-        Duel with text and formula including special formula.
-
-        Parameters
-        ----------
-        items: str
-        key
-        args
-        kwargs
-
-        Returns
-        -------
-        token
-        """
         for item in items:
             yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
 
