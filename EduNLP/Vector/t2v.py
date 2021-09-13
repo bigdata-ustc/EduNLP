@@ -21,6 +21,8 @@ MODELS = {
 
 class T2V(object):
     """
+    The function aims to transfer token list to vector. If you have a certain model, you can use T2V directly. \
+    Otherwise, calling get_pretrained_t2v function is a better way to get vector which can switch it without your model.
 
     Parameters
     ----------
@@ -73,6 +75,7 @@ PRETRAINED_MODELS = {
 
 def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     """
+    It is a good idea if you want to switch token list to vector earily.
 
     Parameters
     ----------
