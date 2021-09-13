@@ -121,6 +121,7 @@ TOKENIZER = {
 
 def get_tokenizer(name, *args, **kwargs):
     r"""
+    It is a total interface to use difference tokenizer.
 
     Parameters
     ----------
