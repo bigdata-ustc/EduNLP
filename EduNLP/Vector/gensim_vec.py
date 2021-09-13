@@ -12,6 +12,7 @@ from .meta import Vector
 
 class W2V(Vector):
     """
+    The part uses gensim library providing FastText, Word2Vec and KeyedVectors method to transfer word to vector.
 
     Parameters
     ----------
