@@ -14,7 +14,6 @@ class Parser:
         show txt list
     description_list
         use Parser to process and describe the txt
-    
     """
     def __init__(self, data):
         self.lookahead = 0
