@@ -82,6 +82,23 @@ class SepSegment(str):
 class SegmentList(object):
     """
 
+    Attributes
+    ----------
+    segments
+        show all segments
+    text_segments
+        show text segments
+    formula_segments
+        show formula segments
+    figure_segments
+        show figure sements
+    ques_mark_segments
+        show question mark segments
+    tag_segments
+        show tag segments
+    describe
+        show number of each elements
+
     Parameters
     ----------
     item

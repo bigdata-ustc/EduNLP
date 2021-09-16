@@ -17,6 +17,18 @@ class Formula(object):
     """
     The part transform a formula to the parsed abstracted syntax tree.
 
+    Attributes
+    ------------
+    ast
+        show all ast details
+    elements
+        just show elements' id, type, text and role
+    ast_graph
+        draw a ast graph
+    to_str
+    resetable
+        return bool
+
     Parameters
     ----------
     formula: str or List[Dict]
@@ -128,6 +140,16 @@ class Formula(object):
 class FormulaGroup(object):
     """
     The part transform a group of formula to the parsed abstracted syntax forest.
+
+    Attributes
+    ------------
+    to_str
+    ast
+        show all ast details
+    elements
+        just show elements' id, type, text and role
+    ast_graph
+        draw a ast graph
 
     Parameters
     ----------
