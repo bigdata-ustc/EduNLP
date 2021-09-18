@@ -35,6 +35,8 @@
 
 为使您快速了解此项目的功能，此部分仅展示常用的函数接口使用方法（如得到令牌化序列、试题对应的向量等），对于其中间函数模块（如parse、formula、segment等）以及更细分的接口方法不做展示，如需深入学习，请查看相关部分的文档。
 
+令牌化
+>>>>>>>>>>>>
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
@@ -43,6 +45,9 @@
     
     令牌化  <../../build/blitz/tokenizer/total_tokenize.ipynb>
 
+
+向量化
+>>>>>>>>>>>>
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
