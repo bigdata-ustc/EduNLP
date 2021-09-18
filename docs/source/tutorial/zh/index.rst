@@ -43,7 +43,7 @@
     :name: tokenize_gallery
     :glob:
     
-    令牌化  <../../build/blitz/tokenizer/t_tokenize.ipynb>
+    令牌化  <../../build/blitz/tokenizer/t_tokenize2.ipynb>
 
 
 向量化
