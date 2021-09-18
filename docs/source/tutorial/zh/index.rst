@@ -55,4 +55,4 @@
     :glob:
     
     向量化  <../../build/blitz/vectorization/total_vector.ipynb>
-    令牌化  <../../build/blitz/tokenizer/tokenizer.ipynb>
+    令牌化  <../../build/blitz/tokenizer/new_tokenize.ipynb>
