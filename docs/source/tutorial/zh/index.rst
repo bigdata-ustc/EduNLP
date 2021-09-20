@@ -38,10 +38,11 @@
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: tokenizer_gallery
+    :name: tokenize_gallery
     :glob:
     
-    令牌化  <../../build/blitz/tokenizer/total_tokenize.ipynb>
+    令牌化  <../../build/blitz/tokenizer/tokenizer.ipynb>
+
 
 
 .. nbgallery::
