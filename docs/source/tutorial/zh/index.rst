@@ -3,9 +3,9 @@
 
 *  `标准项目格式 <sif.rst>`_ 
 
-*  `语法解析 <seg.rst>`_ 
+*  `语法解析 <parse.rst>`_ 
 
-*  `成分分解 <parse.rst>`_ 
+*  `成分分解 <seg.rst>`_ 
 
 *  `令牌化 <tokenize.rst>`_ 
 
