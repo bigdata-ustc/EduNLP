@@ -31,7 +31,7 @@ def test_to_sif():
     siftext = to_sif(text)
     print(siftext)
 
-    ret = is_sif(text, cache=True)
+    ret = is_sif(text, return_parser=True)
     assert ret[0] == 0
     if ret[0] is not True:
         siftext = to_sif(text, cache_parser=ret[1])
@@ -64,16 +64,16 @@ def test_sci4sif(figure0, figure1, figure0_base64, figure1_base64):
         }
     ))
     repr(sif4sci(
-        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", safe_mode=0
+        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", mode=0
     ))
     repr(sif4sci(
-        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", safe_mode=1
+        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", mode=1
     ))
     repr(sif4sci(
-        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", safe_mode=2
+        r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", mode=2
     ))
 
     with pytest.raises(KeyError):
         repr(sif4sci(
-            r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", safe_mode=3
+            r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$", mode=3
         ))

@@ -10,7 +10,7 @@ from .parser import Parser
 __all__ = ["is_sif", "to_sif", "sif4sci"]
 
 
-def is_sif(item, check_formula=True, cache=False):
+def is_sif(item, check_formula=True, return_parser=False):
     r"""
     Parameters
     ----------
@@ -20,8 +20,8 @@ def is_sif(item, check_formula=True, cache=False):
 
         True if check the validity of formulas in item
         False if not check the validity of formulas in item, which is faster
-    cache: bool
-        whether to put the parsed item  in return.
+    return_parser: bool
+        whether to put the parsed item in return.
 
         when True, the format of return is (bool, Parser)
         when False, the format of return is bool
@@ -40,7 +40,7 @@ def is_sif(item, check_formula=True, cache=False):
     >>> is_sif(text)
     True
     >>> text = '某校一个课外学习小组为研究某作物的发芽率y和温度x（单位...'
-    >>> ret = is_sif(text, cache=True)
+    >>> ret = is_sif(text, return_parser=True)
     >>> ret # doctest: +ELLIPSIS
     (False, <EduNLP.SIF.parser.parser.Parser object...>)
     """
@@ -49,7 +49,7 @@ def is_sif(item, check_formula=True, cache=False):
     if item_parser.fomula_illegal_flag:
         raise ValueError(item_parser.fomula_illegal_message)
     ret = True if item_parser.error_flag == 0 and item_parser.modify_flag == 0 else False
-    if cache is True:
+    if return_parser is True:
         return ret, item_parser
     else:
         return ret
@@ -76,7 +76,7 @@ def to_sif(item, check_formula=True, cache_parser: Parser = None):
     >>> siftext = to_sif(text)
     >>> siftext
     '某校一个课外学习小组为研究某作物的发芽率$y$和温度$x$（单位...'
-    >>> ret = is_sif(text, cache=True)
+    >>> ret = is_sif(text, return_parser=True)
     >>> ret # doctest: +ELLIPSIS
     (False, <EduNLP.SIF.parser.parser.Parser object...>)
     >>> to_sif(text, cache_parser=ret[1])
@@ -86,10 +86,10 @@ def to_sif(item, check_formula=True, cache_parser: Parser = None):
     if cache_parser is not None:
         return cache_parser.text
     else:
-        return is_sif(item, check_formula, cache=True)[1].text
+        return is_sif(item, check_formula, return_parser=True)[1].text
 
 
-def sif4sci(item: str, figures: (dict, bool) = None, safe_mode: int = 2, symbol: str = None, tokenization=True,
+def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str = None, tokenization=True,
             tokenization_params=None, errors="raise"):
     r"""
 
@@ -101,7 +101,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe_mode: int = 2, symbol:
     figures:
         when it is a dict, it means the id-to-instance information for figures in 'FormFigureID{...}' format,
         when it is a bool, it means whether to instantiate figures in 'FormFigureBase64{...}' format
-    safe_mode: int
+    mode: int
         when safe = 2, use is_sif and check formula in item
         when safe = 1, use is_sif but don't check formula in item
         when safe = 0, don't use is_sif and don't check anything in item
@@ -235,14 +235,14 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe_mode: int = 2, symbol:
     [['已知'], ['说法', '中', '正确']]
     """
     try:
-        if safe_mode in [1, 2]:
-            check_formula = True if safe_mode == 1 else False
-            sif, item_parser = is_sif(item, check_formula=check_formula, cache=True)
+        if mode in [1, 2]:
+            check_formula = True if mode == 1 else False
+            sif, item_parser = is_sif(item, check_formula=check_formula, return_parser=True)
             if sif is not True:
                 item = to_sif(item, cache_parser=item_parser)
-        elif safe_mode != 0:
+        elif mode != 0:
             raise KeyError(
-                "Unknown safe_mode %s, use only 0 or 1 or 2." % safe_mode
+                "Unknown mode %s, use only 0 or 1 or 2." % mode
             )
 
         ret = seg(item, figures, symbol)
