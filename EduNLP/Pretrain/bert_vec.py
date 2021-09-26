@@ -3,11 +3,13 @@ import multiprocessing
 import transformers
 from EduNLP.Tokenizer import PureTextTokenizer
 from copy import deepcopy
+from typing import Optional, Union
 import itertools as it
 from EduNLP.SIF.sif import sif4sci
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer, TrainingArguments
+from transformers.file_utils import TensorType
 from torch.utils.data import Dataset
 from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
 
@@ -46,10 +48,10 @@ class BertTokenizer(object):
         if customize_tokens:
             self.tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
 
-    def __call__(self, item):
+    def __call__(self, item, return_tensors: Optional[Union[str, TensorType]] = None):
         self.pure_text_tokenizer = PureTextTokenizer()
         item = ''.join(next(self.pure_text_tokenizer([item])))
-        return self.tokenizer(item, truncation=True, padding=True)
+        return self.tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
 
     def tokenize(self, item):
         self.pure_text_tokenizer = PureTextTokenizer()

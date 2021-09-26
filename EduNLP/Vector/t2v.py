@@ -6,6 +6,7 @@ from longling import path_append
 from EduData import get_data
 from .rnn import RNNModel
 from .gensim_vec import W2V, D2V
+from .bert_vec import BertModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
 
@@ -15,7 +16,8 @@ MODELS = {
     "rnn": RNNModel,
     "lstm": RNNModel,
     "gru": RNNModel,
-    "elmo": RNNModel
+    "elmo": RNNModel,
+    'bert': BertModel
 }
 
 
