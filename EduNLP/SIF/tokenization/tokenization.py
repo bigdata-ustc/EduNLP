@@ -2,6 +2,7 @@
 # 2021/5/18 @ tongshiwei
 
 from contextlib import contextmanager
+from copy import deepcopy
 from EduNLP.Formula import link_formulas as _link_formulas, Formula
 from ..constants import (
     Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL,
@@ -38,16 +39,17 @@ class TokenList(object):
             "s": []
         }
         self.text_params = text_params if text_params is not None else {}
+
+        self.formula_params = deepcopy(formula_params) if formula_params is not None else {"method": "linear"}
+
         self.symbolize_figure_formula = False
         self.skip_figure_formula = False
-        if formula_params is not None:
-            if "symbolize_figure_formula" in formula_params:
-                self.symbolize_figure_formula = formula_params.pop("symbolize_figure_formula")
-            if "skip_figure_formula" in formula_params:
-                self.skip_figure_formula = formula_params.pop("skip_figure_formula")
-
-        self.formula_params = formula_params if formula_params is not None else {"method": "linear"}
+        if "symbolize_figure_formula" in self.formula_params:
+            self.symbolize_figure_formula = self.formula_params.pop("symbolize_figure_formula")
+        if "skip_figure_formula" in self.formula_params:
+            self.skip_figure_formula = self.formula_params.pop("skip_figure_formula")
         self.formula_tokenize_method = self.formula_params.get("method")
+
         self.figure_params = figure_params if figure_params is not None else {}
         self.extend(segment_list.segments)
         self._token_idx = None
