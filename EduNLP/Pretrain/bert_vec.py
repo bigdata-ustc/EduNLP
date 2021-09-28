@@ -38,6 +38,12 @@ class BertTokenizer(object):
     [101, 1062, 2466, 1963, 1745, 21129, 166, 117, 167, 5276]
     >>> print(tokenizer.tokenize(item)[:10])
     ['公', '式', '如', '图', '[FIGURE]', 'x', ',', 'y', '约', '束']
+    >>> items = [item, item]
+    >>> token_items = tokenizer(items, return_tensors='pt')
+    >>> print(token_items.input_ids.shape)
+    torch.Size([2, 27])
+    >>> print(len(tokenizer.tokenize(items)))
+    2
     """
     def __init__(self, pretrain_model="bert-base-chinese"):
         self.tokenizer = AutoTokenizer.from_pretrained(pretrain_model)
@@ -47,16 +53,25 @@ class BertTokenizer(object):
                 customize_tokens.append(Symbol(i))
         if customize_tokens:
             self.tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
-
-    def __call__(self, item, return_tensors: Optional[Union[str, TensorType]] = None):
         self.pure_text_tokenizer = PureTextTokenizer()
-        item = ''.join(next(self.pure_text_tokenizer([item])))
+
+    def __call__(self, item: (list, str), return_tensors: Optional[Union[str, TensorType]] = None):
+        if isinstance(item, str):
+            item = ''.join(next(self.pure_text_tokenizer([item])))
+        else:
+            token_generation = self.pure_text_tokenizer(item)
+            item = [''.join(next(token_generation)) for i in range(len(item))]
         return self.tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
 
-    def tokenize(self, item):
-        self.pure_text_tokenizer = PureTextTokenizer()
-        item = ''.join(next(self.pure_text_tokenizer([item])))
-        return self.tokenizer.tokenize(item)
+    def tokenize(self, item: (list, str)):
+        if isinstance(item, str):
+            item = ''.join(next(self.pure_text_tokenizer([item])))
+            return self.tokenizer.tokenize(item)
+        else:
+            token_generation = self.pure_text_tokenizer(item)
+            item = [''.join(next(token_generation)) for i in range(len(item))]
+            item = [self.tokenizer.tokenize(i) for i in item]
+            return item
 
 
 class FinetuneDataset(Dataset):
