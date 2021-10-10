@@ -28,7 +28,7 @@ def is_sif(item, check_formula=True, return_parser=False):
 
     Returns
     -------
-    when item can not be parsed correctly, raise Error;
+    when item can not be parsed correctly, raise ValueError;
     when item is in stardarded format originally, return Ture (and the Parser of item);
     when item isn't in stardarded format originally, return False (and the Parser of item);
 
