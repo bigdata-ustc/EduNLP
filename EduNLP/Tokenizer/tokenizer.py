@@ -15,6 +15,19 @@ class Tokenizer(object):
 
 class PureTextTokenizer(Tokenizer):
     r"""
+    Duel with text and plain text formula.
+    And filting special formula like $\\FormFigureID{…}$ and $\\FormFigureBase64{…}.
+
+    Parameters
+    ----------
+    items: str
+    key
+    args
+    kwargs
+
+    Returns
+    -------
+    token
 
     Examples
     --------
@@ -40,7 +53,6 @@ class PureTextTokenizer(Tokenizer):
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']
     """
-
     def __init__(self, *args, **kwargs):
         self.tokenization_params = {
             "formula_params": {
@@ -56,6 +68,18 @@ class PureTextTokenizer(Tokenizer):
 
 class TextTokenizer(Tokenizer):
     r"""
+    Duel with text and formula including special formula.
+
+    Parameters
+    ----------
+    items: str
+    key
+    args
+    kwargs
+
+    Returns
+    -------
+    token
 
     Examples
     ----------
@@ -72,7 +96,6 @@ class TextTokenizer(Tokenizer):
     >>> next(tokens)[:10]
     ['[TAG]', '复数', 'z', '=', '1', '+', '2', 'i', '+', 'i']
     """
-
     def __init__(self, *args, **kwargs):
         self.tokenization_params = {
             "formula_params": {
@@ -94,12 +117,16 @@ TOKENIZER = {
 
 def get_tokenizer(name, *args, **kwargs):
     r"""
+    It is a total interface to use difference tokenizer.
 
     Parameters
     ----------
     name: str
-    args
-    kwargs
+        the name of tokenizer, e.g. text, pure_text.
+    args:
+        the parameters passed to tokenizer
+    kwargs:
+        the parameters passed to tokenizer
 
     Returns
     -------

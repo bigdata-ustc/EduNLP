@@ -3,148 +3,51 @@
 
 *  `标准项目格式 <sif.rst>`_ 
 
-*  `语法解析 <seg.rst>`_ 
+*  `语法解析 <parse.rst>`_ 
 
-*  `成分分解 <parse.rst>`_ 
+*  `成分分解 <seg.rst>`_ 
 
 *  `令牌化 <tokenize.rst>`_ 
 
+*  `预训练 <pretrain.rst>`_ 
+
 *  `向量化 <vectorization.rst>`_ 
 
-*  `预训练 <pretrain.rst>`_ 
+主要流程
+----------
+
+.. figure:: ../../_static/新流程图.png
+
+* `语法解析 <parse.rst>`_ ：其作用是将传入的item转换为标准sif格式（即把字母、数字用 ``$...$`` 包裹起来，把选择填空的括号、下划线转换为特殊符号等）。
+
+* `成分分解 <seg.rst>`_ ：其作用是将传入的符合sif标准的item根据元素种类进行分割开来，从而服务于后面的令牌化环节（即可以将不同类型元素使用各自的方法令牌化）。
+
+* `令牌化 <tokenize.rst>`_：其作用是将传入的经过分词后的item元素列表进行令牌化分解，从而服务于后面的向量化模块。
+  其中通常情况下直接使用文本形式的令牌化方法即可，对于公式而言还可使用ast方法进行解析(调用formula模块)；
+
+* `向量化 <vectorization.rst>`_：此部分主要调用的是I2V类及其子类，其作用是将传入的令牌化后的item元素列表进行向量化操作，最终即可得到相应的静态向量。
+  对于向量化模块来说，可以调用自己训练好的模型，也可直接调用提供的预训练模型（调用get_pretrained_i2v模块即可）。
+
+* **下游模型**：将得到的向量进一步处理，从而得到所需的结果。
 
 示例
 --------
 
-标准项目格式
-^^^^^^^^
+为使您快速了解此项目的功能，此部分仅展示常用的函数接口使用方法（如得到令牌化序列、试题对应的向量等），对于其中间函数模块（如parse、formula、segment等）以及更细分的接口方法不做展示，如需深入学习，请查看相关部分的文档。
+
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: sif_gallery
+    :name: tokenize_gallery
     :glob:
     
-    Code for beginner to learn how to use SIF4Sci  <../../build/blitz/sif/sif>
-    Code for beginner to learn how to use sif_additon  <../../build/blitz/sif/sif_addition>
+    令牌化  <../../build/blitz/tokenizer/tokenizer.ipynb>
 
 
-成分分解
-^^^^^^^^^^^
-
-语义成分分解
-####################
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: dict2str4sif_gallery
-    :glob:
-    
-    Code for beginner to learn how to use dict2str4sif  <../../build/blitz/utils/data.ipynb>
-
-
-结构成分分解
-####################
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: seg_gallery
-    :glob:
-    
-    Code for beginner to learn how to use seg  <../../build/blitz/seg/seg.ipynb>
-
-
-语法解析
-^^^^^^^^^^^
-
-文本语法结构解析
-####################
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: parse_gallery
-    :glob:
-    
-    Code for beginner to learn how to use parse  <../../build/blitz/parse/parse.ipynb>
-
-
-公式语法结构解析
-####################
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: formula_gallery
-    :glob:
-    
-    Code for beginner to learn how to use Formula  <../../build/blitz/formula/formula.ipynb>
-
-
-令牌化
-^^^^^^^^^^^
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: tokenizer_gallery
-    :glob:
-    
-    Code for beginner to learn how to use Tokenizer  <../../build/blitz/tokenizer/tokenizer.ipynb>
-
-
-向量化
-^^^^^^^^^^^
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
     :name: vectorization_gallery
     :glob:
     
-    Code for beginner to learn how to use i2v  <../../build/blitz/vectorization/i2v.ipynb>
-
-
-预训练
-^^^^^^^^^^^
-
-获得数据集
-####################
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: rst1-gallery
-    :glob:
-
-    prepare_dataset  <../../build/blitz/pretrain/prepare_dataset.ipynb>
-
-
-gensim模型d2v例子
-####################
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: rst2-gallery
-    :glob:
-
-    d2v_general  <../../build/blitz/pretrain/gensim/d2v_general.ipynb>
-    d2v_bow_tfidf  <../../build/blitz/pretrain/gensim/d2v_bow_tfidf.ipynb>
-    d2v_stem_tf  <../../build/blitz/pretrain/gensim/d2v_stem_tf.ipynb>
-
-
-gensim模型w2v例子
-####################
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: rst3-gallery
-    :glob:
-
-    w2v_stem_text  <../../build/blitz/pretrain/gensim/w2v_stem_text.ipynb>
-    w2v_stem_tf  <../../build/blitz/pretrain/gensim/w2v_stem_tf.ipynb>
-
-
-seg_token例子
-####################
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: rst4-gallery
-    :glob:
-
-    d2v.ipynb  <../../build/blitz/pretrain/seg_token/d2v.ipynb>
+    向量化  <../../build/blitz/vectorization/total_vector.ipynb>

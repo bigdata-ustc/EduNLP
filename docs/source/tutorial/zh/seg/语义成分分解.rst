@@ -45,11 +45,3 @@
 
  >>> dict2str4sif(item, key_as_tag=False)
  '若复数$z=1+2 i+i^{3}$，则$|z|=$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2'
-
-详细示范
-++++++++++++++++++++++
-
-.. toctree::
-   :titlesonly:
-
-   语义成分分解的案例  <../../../build/blitz/utils/data.ipynb>

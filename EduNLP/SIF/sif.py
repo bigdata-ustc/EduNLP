@@ -12,9 +12,12 @@ __all__ = ["is_sif", "to_sif", "sif4sci"]
 
 def is_sif(item, check_formula=True, return_parser=False):
     r"""
+    the part aims to check whether the input is sif format
+
     Parameters
     ----------
-    item: str
+    item:str
+        a raw item which respects stem
     check_formula: bool
         whether to check the formulas when parsing item.
 
@@ -28,9 +31,10 @@ def is_sif(item, check_formula=True, return_parser=False):
 
     Returns
     -------
-    when item can not be parsed correctly, raise Error;
-    when item is in stardarded format originally, return Ture (and the Parser of item);
-    when item isn't in stardarded format originally, return False (and the Parser of item);
+    bool
+        when item can not be parsed correctly, raise ValueError;
+        when item is in stardarded format originally, return Ture (and the Parser of item);
+        when item isn't in stardarded format originally, return False (and the Parser of item);
 
     Examples
     --------
@@ -57,9 +61,12 @@ def is_sif(item, check_formula=True, return_parser=False):
 
 def to_sif(item, check_formula=True, parser: Parser = None):
     r"""
+    the part aims to switch item to sif formate
+
     Parameters
     ----------
-    item: str
+    items:str
+        a raw item which respects stem
     check_formula: bool
         whether to check the formulas when parsing item (only work when parser=None).
     parser: Parser
@@ -67,8 +74,8 @@ def to_sif(item, check_formula=True, parser: Parser = None):
 
     Returns
     -------
-    str
-        the parsed item
+    item:str
+        the item which accords with sif format
 
     Examples
     --------
@@ -97,25 +104,30 @@ def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str 
 
     Parameters
     ----------
-    item: str
-    figures:
-        when it is a dict, it means the id-to-instance information for figures in 'FormFigureID{...}' format,
+    item:str
+        a raw item which respects stem
+    figures:dict
+        when it is a dict, it means the id-to-instance for figures in 'FormFigureID{...}' format,
         when it is a bool, it means whether to instantiate figures in 'FormFigureBase64{...}' format
+
     mode: int
         when safe = 2, use is_sif and check formula in item
         when safe = 1, use is_sif but don't check formula in item
         when safe = 0, don't use is_sif and don't check anything in item
+
     symbol: str
-        The combination of "t","f","g","m","a","s", which determine what types of segments to be symbolize.
-        "t": text,
-        "f": formula,
-        "g": figure,
-        "m": mask,
-        "a": tag,
-        "s": sep
+        select the methods to symbolize:
+            "t": text
+            "f": formula
+            "g": figure
+            "m": question mark
+            "a": tag
+            "s": sep
+
     tokenization: bool
         whether to tokenize item after segmentation
-    tokenization_params: dict
+
+    tokenization_params:
         the dict of text_params, formula_params and figure_params in tokenization
         For formula_params:
             method: which tokenizer to be used, "linear" or "ast"
@@ -131,17 +143,19 @@ def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str 
             figure_instance：whether to return instance of figures in tokens
         For text_params:
             See definition in SIF.tokenization.text
+
     errors:
-        warn
-        raise
-        coerce
-        strict
+        warn,
+        raise,
+        coerce,
+        strict,
         ignore
 
     Returns
     -------
-    When tokenization is False, return SegmentList;
-    When tokenization is True, return TokenList
+    list
+        When tokenization is False, return SegmentList;
+        When tokenization is True, return TokenList
 
     Examples
     --------
