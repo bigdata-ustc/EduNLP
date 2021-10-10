@@ -12,15 +12,19 @@ __all__ = ["is_sif", "to_sif", "sif4sci"]
 
 def is_sif(item):
     r"""
+    the part aims to check whether the input is sif format
+
     Parameters
     ----------
-    item
+    item:str
+        a raw item which respects stem
 
     Returns
     -------
-    when item can not be parsed correctly, raise Error;
-    when item doesn't need to be modified, return Ture;
-    when item needs to be modified, return False;
+    bool
+        when item can not be parsed correctly, raise Error;
+        when item doesn't need to be modified, return Ture;
+        when item needs to be modified, return False;
 
     Examples
     --------
@@ -44,13 +48,17 @@ def is_sif(item):
 
 def to_sif(item):
     r"""
+    the part aims to switch item to sif formate
+
     Parameters
     ----------
-    item
+    items:str
+        a raw item which respects stem
 
     Returns
     -------
-    item
+    item:str
+        the item which accords with sif format
 
     Examples
     --------
@@ -73,29 +81,46 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
 
     Parameters
     ----------
-    item
-    figures
-    safe
-    symbol
-    tokenization
+    item:str
+        a raw item which respects stem
+    figures:dict
+        {"FigureID": Base64 encoding of the figure}
+
+    safe:bool
+        Check whether the text conforms to the sif format
+
+    symbol:str
+        select the methods to symbolize:
+            "t": text
+            "f": formula
+            "g": figure
+            "m": question mark
+            "a": tag
+            "s": sep
+
+    tokenization:bool
+        True: tokenize the item
+
     tokenization_params:
         method: which tokenizer to be used, "linear" or "ast"
-        The parameters only useful for "linear":
+
+        The parameters only useful for "linear": None
 
         The parameters only useful for "ast":
             ord2token: whether to transfer the variables (mathord) and constants (textord) to special tokens.
             var_numbering: whether to use number suffix to denote different variables
     errors:
-        warn
-        raise
-        coerce
-        strict
+        warn,
+        raise,
+        coerce,
+        strict,
         ignore
 
     Returns
     -------
-    When tokenization is False, return SegmentList;
-    When tokenization is True, return TokenList
+    list
+        When tokenization is False, return SegmentList;
+        When tokenization is True, return TokenList
 
     Examples
     --------
