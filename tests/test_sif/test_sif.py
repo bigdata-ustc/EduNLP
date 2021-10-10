@@ -34,7 +34,7 @@ def test_to_sif():
     ret = is_sif(text, return_parser=True)
     assert ret[0] == 0
     if ret[0] is not True:
-        siftext = to_sif(text, cache_parser=ret[1])
+        siftext = to_sif(text, parser=ret[1])
     print(siftext)
 
 

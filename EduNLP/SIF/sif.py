@@ -55,15 +55,15 @@ def is_sif(item, check_formula=True, return_parser=False):
         return ret
 
 
-def to_sif(item, check_formula=True, cache_parser: Parser = None):
+def to_sif(item, check_formula=True, parser: Parser = None):
     r"""
     Parameters
     ----------
     item: str
     check_formula: bool
-        whether to check the formulas when parsing item (only work when cache_parser=None).
-    cache_parser: Parser
-        the saved parser of item from is_sif.
+        whether to check the formulas when parsing item (only work when parser=None).
+    parser: Parser
+        the parser of item returned from is_sif.
 
     Returns
     -------
@@ -79,12 +79,12 @@ def to_sif(item, check_formula=True, cache_parser: Parser = None):
     >>> ret = is_sif(text, return_parser=True)
     >>> ret # doctest: +ELLIPSIS
     (False, <EduNLP.SIF.parser.parser.Parser object...>)
-    >>> to_sif(text, cache_parser=ret[1])
+    >>> to_sif(text, parser=ret[1])
     '某校一个课外学习小组为研究某作物的发芽率$y$和温度$x$（单位...
 
     """
-    if cache_parser is not None:
-        return cache_parser.text
+    if parser is not None:
+        return parser.text
     else:
         return is_sif(item, check_formula, return_parser=True)[1].text
 
@@ -239,7 +239,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str 
             check_formula = True if mode == 1 else False
             sif, item_parser = is_sif(item, check_formula=check_formula, return_parser=True)
             if sif is not True:
-                item = to_sif(item, cache_parser=item_parser)
+                item = to_sif(item, parser=item_parser)
         elif mode != 0:
             raise KeyError(
                 "Unknown mode %s, use only 0 or 1 or 2." % mode
