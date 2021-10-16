@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 from EduNLP.Pretrain import BertTokenizer, finetune_bert
 from EduNLP.Vector import BertModel, T2V
+from EduNLP.I2V import Bert, get_pretrained_i2v
 
 
 @pytest.fixture(scope="module")
@@ -44,7 +45,7 @@ def test_bert_without_param(stem_data_bert, tmpdir):
     assert t2v.infer_tokens(inputs).shape[-1] == t2v.vector_size
 
 
-def test_bert(stem_data_bert, tmpdir):
+def test_bert_i2v(stem_data_bert, tmpdir):
     output_dir = str(tmpdir.mkdir('finetuneBert'))
     train_params = {
         'epochs': 1,
@@ -57,3 +58,22 @@ def test_bert(stem_data_bert, tmpdir):
         output_dir,
         train_params=train_params
     )
+    i2v = Bert("bert", "bert", output_dir)
+    item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
+            若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
+    i_vec, t_vec = i2v([item['stem'], item['stem']])
+    assert len(i_vec[0]) == i2v.vector_size
+    assert len(t_vec[0][0]) == i2v.vector_size
+
+    i_vec = i2v.infer_item_vector([item['stem'], item['stem']])
+    assert len(i_vec[0]) == i2v.vector_size
+
+    t_vec = i2v.infer_token_vector([item['stem'], item['stem']])
+    assert len(t_vec[0][0]) == i2v.vector_size
+
+    tokenizer_kwargs = {"pretrain_model": output_dir}
+    i2v = Bert('bert', 'bert', output_dir, tokenizer_kwargs=tokenizer_kwargs)
+    # i2v = get_pretrained_i2v('luna_bert', output_dir)
+    i_vec, t_vec = i2v([item['stem'], item['stem']])
+    assert len(i_vec[0]) == i2v.vector_size
+    assert len(t_vec[0][0]) == i2v.vector_size

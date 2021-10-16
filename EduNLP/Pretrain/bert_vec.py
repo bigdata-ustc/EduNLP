@@ -5,7 +5,6 @@ from EduNLP.Tokenizer import PureTextTokenizer
 from copy import deepcopy
 from typing import Optional, Union
 import itertools as it
-from EduNLP.SIF.sif import sif4sci
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer, TrainingArguments
@@ -55,7 +54,7 @@ class BertTokenizer(object):
             self.tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
         self.pure_text_tokenizer = PureTextTokenizer()
 
-    def __call__(self, item: (list, str), return_tensors: Optional[Union[str, TensorType]] = None):
+    def __call__(self, item: (list, str), return_tensors: Optional[Union[str, TensorType]] = None, *args, **kwargs):
         if isinstance(item, str):
             item = ''.join(next(self.pure_text_tokenizer([item])))
         else:
@@ -63,7 +62,7 @@ class BertTokenizer(object):
             item = [''.join(next(token_generation)) for i in range(len(item))]
         return self.tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
 
-    def tokenize(self, item: (list, str)):
+    def tokenize(self, item: (list, str), *args, **kwargs):
         if isinstance(item, str):
             item = ''.join(next(self.pure_text_tokenizer([item])))
             return self.tokenizer.tokenize(item)

@@ -1,7 +1,6 @@
 import numpy as np
 from pathlib import PurePath
 from transformers import AutoModel
-from EduNLP.Pretrain import BertTokenizer
 from .const import UNK, PAD
 from .meta import Vector
 import torch
@@ -11,6 +10,7 @@ class BertModel(Vector):
     """
     Examples
     --------
+    >>> from EduNLP.Pretrain import BertTokenizer
     >>> tokenizer = BertTokenizer("bert-base-chinese")
     >>> model = BertModel("bert-base-chinese", tokenizer=tokenizer)
     >>> item = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$，若$x,y$满足约束",

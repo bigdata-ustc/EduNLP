@@ -10,6 +10,7 @@ from .bert_vec import BertModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
 
+
 MODELS = {
     "w2v": W2V,
     "d2v": D2V,
@@ -51,6 +52,7 @@ PRETRAINED_MODELS = {
     "d2v_lit_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_literal_256.zip", "d2v"],
     "w2v_eng_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_english_300.zip", "w2v"],
     "w2v_lit_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_literal_300.zip", "w2v"],
+    "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"]
 }
 
 
