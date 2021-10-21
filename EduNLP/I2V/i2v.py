@@ -255,7 +255,54 @@ class W2V(I2V):
 
 
 class Bert(I2V):
+    """
+    The model aims to transfer item and tokens to vector with Bert.
+
+    Bases
+    -------
+    I2V
+
+    Parameters
+    -----------
+    tokenizer: str
+        the tokenizer name
+    t2v: str
+        the name of token2vector model
+    args:
+        the parameters passed to t2v
+    tokenizer_kwargs: dict
+        the parameters passed to tokenizer
+    pretrained_t2v: bool
+        True: use pretrained t2v model
+        False: use your own t2v model
+    kwargs:
+        the parameters passed to t2v
+
+    Returns
+    -------
+    i2v model: Bert
+    """
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
+        '''
+        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+
+        Parameters
+        -----------
+        items: str or list
+            the text of question
+        tokenize:bool
+            True: tokenize the item
+        return_tensors: str
+            tensor type used in tokenizer
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        '''
         inputs = self.tokenize(items, return_tensors=return_tensors) if tokenize is True else items
         return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 

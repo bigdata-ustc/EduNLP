@@ -86,6 +86,31 @@ class FinetuneDataset(Dataset):
 
 
 def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_params=None):
+    """
+
+    Parameters
+    ----------
+    items：dict
+        the tokenization results of questions
+    output_dir: str
+        the path to save the model
+    pretrain_model: str
+        the name or path of pre-trained model
+        vector_size
+    train_params: dict
+        the training parameters passed to Trainer
+
+    Examples
+    ----------
+    >>> tokenizer = BertTokenizer()
+    >>> stems = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$",
+    ... "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$"]
+    >>> token_item = [tokenizer(i) for i in stems]
+    >>> print(token_item[0].keys())
+    dict_keys(['input_ids', 'token_type_ids', 'attention_mask'])
+    >>> finetune_bert(token_item, "examples/test_model/data/bert") #doctest: +ELLIPSIS
+    {'train_runtime': ..., ..., 'epoch': 1.0}
+    """
     model = AutoModelForMaskedLM.from_pretrained(pretrain_model)
     tokenizer = BertTokenizer(pretrain_model)
     # resize embedding for additional sepecial tokens
