@@ -4,10 +4,13 @@
 import json
 from EduNLP.constant import MODEL_DIR
 from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
+from ..Vector import PRETRAINED_MODELS
+from longling import path_append
 from ..Tokenizer import Tokenizer, get_tokenizer
+from EduNLP.Pretrain import BertTokenizer
 from EduNLP import logger
 
-__all__ = ["I2V", "D2V", "W2V", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v"]
 
 
 class I2V(object):
@@ -34,6 +37,7 @@ class I2V(object):
     kwargs:
         the parameters passed to t2v
 
+    def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
     Examples
     --------
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
@@ -49,12 +53,16 @@ class I2V(object):
     i2v model: I2V
     """
     def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
-        self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
             self.t2v = get_t2v_pretrained_model(t2v, kwargs.get("model_dir", MODEL_DIR))
         else:
             self.t2v = T2V(t2v, *args, **kwargs)
+        if tokenizer == 'bert':
+            self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        else:
+            self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
+                                                      if tokenizer_kwargs is not None else {})
         self.params = {
             "tokenizer": tokenizer,
             "tokenizer_kwargs": tokenizer_kwargs,
@@ -246,6 +254,69 @@ class W2V(I2V):
         return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
 
 
+class Bert(I2V):
+    """
+    The model aims to transfer item and tokens to vector with Bert.
+
+    Bases
+    -------
+    I2V
+
+    Parameters
+    -----------
+    tokenizer: str
+        the tokenizer name
+    t2v: str
+        the name of token2vector model
+    args:
+        the parameters passed to t2v
+    tokenizer_kwargs: dict
+        the parameters passed to tokenizer
+    pretrained_t2v: bool
+        True: use pretrained t2v model
+        False: use your own t2v model
+    kwargs:
+        the parameters passed to t2v
+
+    Returns
+    -------
+    i2v model: Bert
+    """
+    def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
+        '''
+        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+
+        Parameters
+        -----------
+        items: str or list
+            the text of question
+        tokenize:bool
+            True: tokenize the item
+        return_tensors: str
+            tensor type used in tokenizer
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        '''
+        inputs = self.tokenize(items, return_tensors=return_tensors) if tokenize is True else items
+        return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_path: %s" % model_path)
+        tokenizer_kwargs = {"pretrain_model": model_path}
+        return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
+                   tokenizer_kwargs=tokenizer_kwargs)
+
+
 MODELS = {
     "d2v_all_256": [D2V, "d2v_all_256"],
     "d2v_sci_256": [D2V, "d2v_sci_256"],
@@ -255,6 +326,7 @@ MODELS = {
     "w2v_lit_300": [W2V, "w2v_lit_300"],
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
+    'luna_bert': [Bert, 'luna_bert'],
 }
 
 

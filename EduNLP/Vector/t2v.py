@@ -6,8 +6,10 @@ from longling import path_append
 from EduData import get_data
 from .rnn import RNNModel
 from .gensim_vec import W2V, D2V
+from .bert_vec import BertModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
+
 
 MODELS = {
     "w2v": W2V,
@@ -15,7 +17,8 @@ MODELS = {
     "rnn": RNNModel,
     "lstm": RNNModel,
     "gru": RNNModel,
-    "elmo": RNNModel
+    "elmo": RNNModel,
+    'bert': BertModel
 }
 
 
@@ -69,7 +72,8 @@ PRETRAINED_MODELS = {
     "w2v_eng_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_english_300.zip", "w2v"],
     "w2v_lit_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_literal_300.zip", "w2v"],
     "test_w2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"],
-    "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"]
+    "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"],
+    "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"]
 }
 
 
