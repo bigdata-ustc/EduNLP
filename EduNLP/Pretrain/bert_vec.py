@@ -96,7 +96,6 @@ def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_p
         the path to save the model
     pretrain_model: str
         the name or path of pre-trained model
-        vector_size
     train_params: dict
         the training parameters passed to Trainer
 
