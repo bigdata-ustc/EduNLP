@@ -3,6 +3,9 @@ import re
 
 
 class Parser:
+    """
+    Parse the item to standard format.
+    """
     def __init__(self, data, check_formula=True):
         self.lookahead = 0
         self.head = 0
