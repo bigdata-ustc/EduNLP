@@ -12,7 +12,7 @@ Parser
 --------
 .. automodule:: EduNLP.SIF.parser.parser.Parser
    :members:
-
+   :imported-members:
 
 Segment
 ----------
