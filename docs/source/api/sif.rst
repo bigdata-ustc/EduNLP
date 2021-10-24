@@ -10,9 +10,8 @@ SIF
 
 Parser
 --------
-.. automodule:: EduNLP.SIF.parser.parser.Parser
+.. automodule:: EduNLP.SIF.parser.parser
    :members:
-   :imported-members:
 
 
 Segment

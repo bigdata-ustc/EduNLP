@@ -37,10 +37,6 @@ class TokenList(object):
         show figure tokens
     ques_mark_tokens
         show question mark tokens
-    tag_tokens
-        show tag tokens
-    describe
-        show number of each elements
     """
     def __init__(self, segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
         self._tokens = []
