@@ -10,7 +10,7 @@ SIF
 
 Parser
 --------
-.. automodule:: EduNLP.SIF.parser.parser.Parser
+.. automodule:: EduNLP.SIF.parser
    :members:
    :imported-members:
 
