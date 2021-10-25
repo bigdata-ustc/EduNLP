@@ -1,12 +1,12 @@
 Text syntax structure parsing
---------------------
+--------------------------------
 
 This section is mainly realized by EduNLP.SIF.Parse module. Its main function is to extract letters and numbers in the text and convert them into standard format.
 
-This module is mainly used as an *middle module* to parse the input text. Users generally do not call this module directly.
+This module is mainly used as an *middle module* to parse the input text. In general, users do not call this module directly.
 
 Introduction of Main Content
-+++++++++++++++
++++++++++++++++++++++++++++++++++++++
 
 1. Judge the type of the incoming text in the following order
 
@@ -47,7 +47,7 @@ Parsing
    >>> text_parser4 = Parser(text4)
 
 Related parameters description(?)
->>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 - Try to convert text to standard format
 

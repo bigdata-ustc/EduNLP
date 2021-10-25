@@ -1,10 +1,10 @@
 Formula syntax structure parsing
---------------------
+----------------------------------
 
-This section is mainly realized by EduNLP.Formula modules, which can determine if the text has syntax errors and convert the syntax formula into the form of ast tree. In practice, this module is often used as part of an intermediate process, and the relevant parameters of this module can be automatically chosen by calling the corresponding model, so it generally does not need special attention.
+This section is mainly realized by EduNLP. Formula modules, which can determine if the text has syntax errors and convert the syntax formula into the form of ast tree. In practice, this module is often used as part of an intermediate process, and the relevant parameters of this module can be automatically chosen by calling the corresponding model, so it generally does not need special attention.
 
 Introduction of Main Content
-+++++++++++++++
++++++++++++++++++++++++++++++++++++++
 
 1.Formula: determine whether the single formula passed in is in str form. If so, use the ast method for processing, otherwise an error will be reported. In addition, parameter variable_standardization is given. If this parameter is true, the variable standardization method will be used to make sure the same variable has the same variable number.
 
@@ -15,10 +15,10 @@ Formula
 
 Formula: firstly, in the word segmentation function, the formula of the original text is segmented. In addition, ``Formula parse tree`` function is provided, which can represent the abstract syntax analysis tree of mathematical formula in the form of text or picture.
 
-This module also provides the function of formula variable standardization, such as determining that 'x' in several sub formulas is the same variable.
+This module also provides the function of formula variable standardization, such as determining  whether 'x' in several sub formulas is the same variable.
 
 Initialization
-+++++++++
+++++++++++++++++++++
 
 Incoming parameters: item
 
@@ -31,7 +31,7 @@ Item is the latex formula or the abstract syntax parse tree generated after the 
    <Formula: x^2 + x+1 = y>
 
 View the specific content after formula segmentation
-++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - View node elements after formula segmentation
 
@@ -87,7 +87,7 @@ View the specific content after formula segmentation
 .. figure:: ../../../_static/formula.png
 
 Variable Standardization
-+++++++++++
++++++++++++++++++++++++++++++++++
 
 This parameter makes the same variable have the same variable number.
 

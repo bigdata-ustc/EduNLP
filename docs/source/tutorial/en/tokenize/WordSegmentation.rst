@@ -1,5 +1,5 @@
 Word segmentation
--------
+---------------------
 
 Text-tokenization: A sentence (without formulas) consists of several "words" in order. The process of dividing a sentence into several words is called "Text-tokenization". According to the granularity of "words", it can be subdivided into "Word-tokenization" and "Char-tokenization".
 

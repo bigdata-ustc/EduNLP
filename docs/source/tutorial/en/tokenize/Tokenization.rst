@@ -1,5 +1,5 @@
 Tokenization
--------
+--------------
 Tokenization is comprehensive analysis. In this process, sentences with formulas are segmented into several markers. Each marker is a "token".
 We provide some encapsulated tokenizers for users to call them conveniently. The following is a complete list of tokenizers.
 

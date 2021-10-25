@@ -1,5 +1,5 @@
 Vectorization
-=========
+==================
 
 This section provides a simple interface to convert the incoming items into vectors directly. Currently, the option of whether to use the pre training model is provided. You can choose according to your needs. If you don't want to use the pre-trained model, you can call D2V directly, or call get_pretrained_i2v function if you want to use the pre-trained model.
 
@@ -20,14 +20,14 @@ Overview Flow
 
 
 Don't use the pre-trained model: call existing models directly
-------------------------------------
+--------------------------------------------------------------------------
 
 You can use any pre-trained model provided by yourself (just give the storage path of the model) to convert the given question text into vectors.
 
 * Advantages: it is flexible to use your own model and its parameters can be adjusted freely.
 
 Import modules
-++++++++++
++++++++++++++++++++++++
 
 ::
 
@@ -105,7 +105,7 @@ Contents: the combination of each question segmentation sequences in one questio
    0.05325712, -0.02097339, -0.01613594,  0.02904145,  0.0185046 ,...
 
 Specific process of processing
-++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++
 
 1.Call get_tokenizer function to get the result after word segmentation;
 
@@ -124,7 +124,7 @@ Use the pre-training model provided by EduNLP to convert the given question text
 * Call this function to obtain the corresponding pre-training model. At present, the following pre training models are provided: d2v_all_256, d2v_sci_256, d2v_eng_256 and d2v_lit_256.
 
 Selection and Use of Models
-##################
+####################################
 
 Select the pre-training model according to the subject:
 
@@ -142,7 +142,7 @@ Select the pre-training model according to the subject:
 
 
 The concrete process of processing
-##################
+####################################
 
 1.Download the corresponding preprocessing model
 

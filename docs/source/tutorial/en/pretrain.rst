@@ -1,5 +1,5 @@
 Pre-training
-=======
+==============
 
 In the field of NLP, Pre-trained Language Models has become a very important basic technology.
 In this chapter, we will introduce the pre training tools in EduNLP:
@@ -9,7 +9,7 @@ In this chapter, we will introduce the pre training tools in EduNLP:
 * Public pre-trained models
 
 Import modules
-----------
+---------------
 
 ::
 
@@ -17,7 +17,7 @@ Import modules
    from EduNLP.Vector import get_pretrained_t2v
 
 Train the Model
-------------
+------------------
 
 Call train_Vector function interface directly to make the training model easier. This section calls the relevant training models in the gensim library. At present, the training methods of "sg"、 "cbow"、 "fastext"、 "d2v"、 "bow"、 "tfidf" are provided. Parameter embedding_dim is also provided for users to determine vector dimension according to their needs.
 
@@ -43,7 +43,7 @@ Examples：
 
 
 Load models
---------
+----------------
 
 Transfer the obtained model to the I2V module to load the model.
  
@@ -55,10 +55,10 @@ Examples：
    >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
 
 The overview of our public model
-------------
+------------------------------------
 
 Version description
-##################
+#######################
 
 First level version:
 
@@ -76,7 +76,7 @@ Third level version【to be finished】:
 * Use third-party initializers
 
 Description of train data in models
-##################
+##############################################
 
 * Currently, the data used in w2v and d2v models are the subjects of senior high school.
 * test data:`[OpenLUNA.json] <http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_
@@ -86,7 +86,7 @@ At present, the following models are provided. More models of different subjects
 
 
 Examples of Model Training
-------------
+------------------------------------
 
 Get the dataset
 ####################
@@ -98,7 +98,7 @@ Get the dataset
    prepare_dataset  <../../build/blitz/pretrain/prepare_dataset.ipynb>
 
 An example of d2v in gensim model
-####################
+##################################
 
 .. toctree::
    :maxdepth: 1
@@ -109,7 +109,7 @@ An example of d2v in gensim model
    d2v_stem_tf  <../../build/blitz/pretrain/gensim/d2v_stem_tf.ipynb>
 
 An example of w2v in gensim model
-####################
+##################################
 
 .. toctree::
    :maxdepth: 1
@@ -119,7 +119,7 @@ An example of w2v in gensim model
    w2v_stem_tf  <../../build/blitz/pretrain/gensim/w2v_stem_tf.ipynb>
 
 An example of seg_token
-####################
+#############################
 
 .. toctree::
    :maxdepth: 1

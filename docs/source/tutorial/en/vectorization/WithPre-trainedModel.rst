@@ -1,5 +1,5 @@
 Use the pre-training model: call get_pretrained_i2v directly
----------------------------------------------
+--------------------------------------------------------------------
 
 Use the pre-training model provided by EduNLP to convert the given question text into vectors.
 
@@ -10,7 +10,7 @@ Use the pre-training model provided by EduNLP to convert the given question text
 * Call this function to obtain the corresponding pre-training model. At present, the following pre training models are provided: d2v_all_256, d2v_sci_256, d2v_eng_256 and d2v_lit_256.
 
 Selection and use of models
-##################
+####################################
 
 Select the pre-training model according to the subject:
 
@@ -27,7 +27,7 @@ Select the pre-training model according to the subject:
 +--------------------+------------------------+
 
 The concrete process of processing
-##################
+####################################
 
 1.Download the corresponding preprocessing model
 

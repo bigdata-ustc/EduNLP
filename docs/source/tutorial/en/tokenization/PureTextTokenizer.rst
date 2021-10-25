@@ -1,5 +1,5 @@
 PureTextTokenizer
-================
+===================
 
 By default, the pictures, labels, separators, blanks in the question text and other parts of the incoming item are converted into special characters for data security. At the same time, special formulas such as $\\FormFigureID{...}$ and $\\FormFigureBase64{...}$ are screened out to facilitate the tokenization of text and plain text formulas. Also, the tokenizer uses linear analysis method for text and formulas, and the ``key`` parameter provided is used to preprocess the incoming item, which will be improved based on users' requirements in the future.
 

@@ -1,9 +1,9 @@
 The overview of our public model
-------------
+------------------------------------
 
 
 Version Description
-##################
+#########################
 
 First level version:
 
@@ -21,7 +21,7 @@ Third level version【to be finished】:
 * Use third-party initializers
 
 Description of train data in models
-##################
+#######################################
 
 * Currently, the data used in w2v and d2v models are the subjects of senior high school.
 * test data:`[OpenLUNA.json] <http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_
@@ -30,7 +30,7 @@ At present, the following models are provided. More models of different subjects
     "d2v_all_256" (all subject), "d2v_sci_256" (Science), "d2v_eng_256" (English)，"d2v_lit_256" (Arts)
 
 Examples of model training
-------------
+----------------------------
 
 Get the dataset
 ####################
@@ -42,7 +42,7 @@ Get the dataset
    prepare_dataset  <../../../build/blitz/pretrain/prepare_dataset.ipynb>
 
 An example of d2v in gensim model
-####################
+####################################
 
 .. toctree::
    :maxdepth: 1
@@ -53,7 +53,7 @@ An example of d2v in gensim model
    d2v_stem_tf  <../../../build/blitz/pretrain/gensim/d2v_stem_tf.ipynb>
 
 An example of w2v in gensim model
-####################
+####################################
 
 .. toctree::
    :maxdepth: 1
@@ -63,7 +63,7 @@ An example of w2v in gensim model
    w2v_stem_tf  <../../../build/blitz/pretrain/gensim/w2v_stem_tf.ipynb>
 
 An example of seg_token
-####################
+############################
 
 .. toctree::
    :maxdepth: 1

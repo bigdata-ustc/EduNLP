@@ -1,7 +1,8 @@
 Syntax Parsing
-=========
+=================
 
 In educational resources, texts and formulas have internal implicit or explicit syntax structures. It is of great benefit for further processing to extract these structures.
+
 * Text syntax structure parsing
 
 * Formula syntax structure parsing
@@ -13,23 +14,23 @@ The purpose is as follows:
 2. Determine whether the current item is legal and report the error type.
 
 Specific processing content
---------------------
+--------------------------------
 
 1.Its function is to match alphabets and numbers other than formulas. Only the alphabets and numbers between two Chinese characters will be corrected, and the rest of the cases are regarded as formulas that do not conform to latex syntax.
 
 2.Match brackets like "( )" (both English format and Chinese format), that is, brackets with no content or spaces, which should be replaced with ``$\\SIFChoice$``
 
-3.Match continuous underscores or underscores with spaces to replace them with ``$\\SIFBlank$``.
+3.Match continuous underscores or underscores with spaces and replace them with ``$\\SIFBlank$``.
 
 4.Match latex formulas，check the completeness and analyzability of latex formulas, and report an error for illegal formula.
 
 Formula syntax structure parsing
---------------------
+-------------------------------------
 
-This section is mainly realized by EduNLP.Formula modules, which can determine if the text has syntax errors and convert the syntax formula into the form of ast tree. In practice, this module is often used as part of an intermediate process, and the relevant parameters of this module can be automatically chosen by calling the corresponding model, so it generally does not need special attention.
+This section is mainly realized by EduNLP. Formula modules, which can determine if the text has syntax errors and convert the syntax formula into the form of ast tree. In practice, this module is often used as part of an intermediate process, and the relevant parameters of this module can be automatically chosen by calling the corresponding model, so it generally does not need special attention.
 
 Introduction of Main Introduction
-+++++++++++++++
++++++++++++++++++++++++++++++++++++++++
 
 1.Formula: determine whether the single formula passed in is in str form. If so, use the ast method for processing, otherwise an error will be reported. In addition, parameter variable_standardization is given. If this parameter is true, the variable standardization method will be used to make sure the same variable has the same variable number.
 
@@ -40,10 +41,10 @@ Formula
 
 Formula: firstly, in the word segmentation function, the formula of the original text is segmented. In addition, ``Formula parse tree`` function is provided, which can represent the abstract syntax analysis tree of mathematical formula in the form of text or picture.
 
-This module also provides the function of formula variable standardization, such as determining that 'x' in several sub formulas is the same variable.
+This module also provides the function of formula variable standardization, such as determining whether 'x' in several sub formulas is the same variable.
 
 Call the library
-+++++++++
++++++++++++++++++++++
 
 ::
 
@@ -52,7 +53,7 @@ Call the library
    from EduNLP.Formula.viz import ForestPlotter
 
 Initialization
-+++++++++
++++++++++++++++
 
 Incoming parameters: item
 
@@ -65,7 +66,7 @@ Item is the latex formula or the abstract syntax parse tree generated after the 
    <Formula: x^2 + x+1 = y>
 
 View the specific content after formula segmentation
-++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - View node elements after formula segmentation
 
@@ -123,7 +124,7 @@ View the specific content after formula segmentation
 
 
 Variable standardization
-+++++++++++
++++++++++++++++++++++++++++++
 
 This parameter makes the same variable have the same variable number.
 
@@ -209,14 +210,14 @@ Call ``FormulaGroup`` class to parse the equations. The related attributes and f
 
 
 Text syntax structure parsing
---------------------
+------------------------------------
 
 This section is mainly realized by EduNLP.SIF.Parse module. Its main function is to extract letters and numbers in the text and convert them into standard format.
 
-This module is mainly used as an *middle module* to parse the input text. Users generally do not call this module directly.
+This module is mainly used as an *middle module* to parse the input text. In general, users do not call this module directly.
 
 Introduction of main content
-+++++++++++++++
++++++++++++++++++++++++++++++++++++
 
 1. Judge the type of the incoming text in the following order
 
@@ -233,7 +234,7 @@ Introduction of main content
 * Use _is_formula_legal function, check the completeness and analyzability of latex formula, and report an error for formulas that do not conform to latex syntax.
 
 Call the library
->>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>
 
 ::
 
@@ -263,7 +264,7 @@ Parsing
    >>> text_parser3 = Parser(text3)
    >>> text_parser4 = Parser(text4)
 
-Related parameters description(?)
+Related parameters description
 >>>>>>>>>>>>
 
 - Try to convert text to standard format

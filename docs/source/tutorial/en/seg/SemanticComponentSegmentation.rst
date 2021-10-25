@@ -1,5 +1,5 @@
 Semantic Component Segmentation
-------------
+------------------------------------
 
 Because multiple-choice questions are given in the form of dict, it is necessary to convert them into text format while retaining their data relationship. This function can be realized by dict2str4sif function which can convert multiple-choice question items into character format and identify question stem and options。
 
@@ -17,7 +17,7 @@ Basic Usage
  '$\\SIFTag{stem_begin}$若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1$\\SIFTag{list_2}$$\\sqrt{2}$$\\SIFTag{list_3}$2$\\SIFTag{options_end}$'
 
 Optional additional parameters / interfaces
-++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++
 
 1.add_list_no_tag: if this parameter is true, it means that you need to count the labels in the options section.
 

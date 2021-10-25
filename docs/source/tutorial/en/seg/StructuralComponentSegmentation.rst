@@ -1,5 +1,5 @@
 Structural Component Segmentation
-------------
+------------------------------------
 
 This step is to segment sliced items. In this step, there is a depth option. You can select all positions or some labels for segmentation according to your needs, such as \SIFSep and \SIFTag. You can also select where to add labels, either at the head and tail or only at the head or tail.
 
@@ -20,7 +20,7 @@ Basic Usage
  >>> ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
 
 Optional additional parameters/interfaces
-++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++
 
 1.describe: count the number of elements of different types
 

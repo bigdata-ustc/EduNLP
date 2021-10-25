@@ -1,12 +1,12 @@
 Standard Item Format
-===============
+=======================
 
 version: 0.2
 
 For the convenience of follow-up research and use, we need a unified test question grammar standard.
 
 Grammar Rules
------------
+----------------
 
 1. Only Chinese characters, Chinese and English punctuation and line breaks are allowed in the question text.
 
@@ -16,7 +16,7 @@ Grammar Rules
 
 4. Text format description: we represent text in different styles with ``$\textf{item,CHAR_EN}$``. Currently, we have defined some styles: b-bold, i-italic, u-underline, w-wave, d-dotted, t-title. CHAR_EN Labels can be mixed and sorted alphabetically. An example: $\textf{EduNLP, b}$ looks **EduNLP**
 
-5. Other mathematical symbols like English letters, Roman characters and numbers need to be expressed in latex format, that is, embedded in `$$`.
+5. Other mathematical symbols like English letters, Roman characters and numbers need to be expressed in latex format, that is, embedded in ``$$`` .
 
 6. For the entry standard of molecular formula, please refer to `INCHI <https://zh.wikipedia.org/wiki/%E5%9B%BD%E9%99%85%E5%8C%96%E5%90%88%E7%89%A9%E6%A0%87%E8%AF%86>`_ for the time being.
 
@@ -46,11 +46,11 @@ Tips
 
 3. Choices and blanks.
 
-4. A single number or letter is also required to be between `$$` (automatic verification could already realize it).
+4. A single number or letter is also required to be between ``$$`` (automatic verification could already realize it).
 
 5. Try to make sure Chinese is not included in the latex formula such as ``\text{CHAR_CH}``.
 
-6. When importing data using MySQL database, an ``\`` is automatically ignored which needs to be further processed as``\\``.
+6. When importing data using MySQL database, an ``\`` is automatically ignored which needs to be further processed as ``\\``.
 
 Examples
 -----------------
@@ -89,7 +89,7 @@ Non-standard Format:
     ``则$a$的取值范围是（\u3000\u3000）``
 
 Functions for judging whether text is in SIF format and converting to SIF format
---------------------------------------------
+--------------------------------------------------------------------------------------------------
 
 Call the Library
 ++++++++

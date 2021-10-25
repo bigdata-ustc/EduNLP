@@ -1,5 +1,5 @@
 Tokenization
-=======
+==============
 
 Tokenization, known as word segmentation and sentence segmentation, is a basic but very important step in the field of NLP.
 In EduNLP, we divided Tokenization into different levels according to different granularity. To avoid ambiguity, we define as follows:
@@ -15,7 +15,7 @@ This module provides tokenization function of question text, converting question
 There are two modes: one is linear mode, which is used for text processing (word segmentation using jieba library). The other one is ast mode, which is used to parse the formula.
 
 Word Segmentation
--------
+---------------------
 
 Text-tokenization: A sentence (without formulas) consists of several "words" in order. The process of dividing a sentence into several words is called "Text-tokenization". According to the granularity of "words", it can be subdivided into "Word-tokenization" and "Char-tokenization".
 
@@ -52,12 +52,13 @@ Examples:
    ['三', '角', '函', '数', '基', '初', '函', '数']
     
 Sentence Segmentation
--------
+----------------------------
 
 During the process of sentence segmentation, a long document is divided into several sentences. Each sentence is a "token" (to be realized).
 
 Tokenization
--------
+--------------
+
 Tokenization is comprehensive analysis. In this process, sentences with formulas are segmented into several markers. Each marker is a "token".
 
 The implementation of this function is tokenize function. The required results can be obtained by passing in items after Structural Component Segmentation.

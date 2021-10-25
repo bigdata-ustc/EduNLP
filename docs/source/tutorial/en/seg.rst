@@ -1,26 +1,26 @@
 Component Segmentation
-=========
+=========================
 
-Educational resource is a kind of multimodal data, including data such as text, picture, formula and so on.
+Educational resource is a kind of multimodal data, including data such as text, pictures, formulas and so on.
 At the same time, it may also contain different components semantically, such as question stems, options, etc. Therefore, we first need to identify and segment the different components of educational resources:
 
 * Semantic Component Segmentation
 * Structural Component Segmentation
 
 Main Processing Contents
---------------------
+---------------------------
 
 1. Convert multiple-choice questions in the form of dict to qualified item by `Syntax parsing <parse.rst>`_;
 
 2. The input items are segmented and grouped according to the element type.
 
 Semantic Component Segmentation
-------------
+---------------------------------
 
 Because multiple-choice questions are given in the form of dict, it is necessary to convert them into text format while retaining their data relationship. This function can be realized by dict2str4sif function which can convert multiple-choice question items into character format and identify question stem and options。
 
 Import Modules
-+++++++++
++++++++++++++++++++++++
 
 ::
 
@@ -39,7 +39,7 @@ Basic Usage
  '$\\SIFTag{stem_begin}$若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1$\\SIFTag{list_2}$$\\sqrt{2}$$\\SIFTag{list_3}$2$\\SIFTag{options_end}$'
 
 Optional additional parameters / interfaces
-++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++
 
 1.add_list_no_tag: if this parameter is true, it means that you need to count the labels in the options section.
 
@@ -69,7 +69,7 @@ Optional additional parameters / interfaces
  '若复数$z=1+2 i+i^{3}$，则$|z|=$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2'
 
 Structural Component Segmentation
-------------
+------------------------------------------
 
 This step is to segment sliced items. In this step, there is a depth option. You can select all positions or some labels for segmentation according to your needs, such as \SIFSep and \SIFTag. You can also select where to add labels, either at the head and tail or only at the head or tail.
 
