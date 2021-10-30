@@ -9,6 +9,20 @@ from baize.torch import load_net
 
 class LM(nn.Module):
     """
+
+    Parameters
+    ----------
+    rnn_type：str
+        Legal types including RNN, LSTM, GRU,ELMO
+    vocab_size: int
+    embedding_dim: int
+    hidden_size: int
+    num_layers
+    bidirectional
+    embedding
+    model_params
+    kwargs
+
     Examples
     --------
     >>> import torch
@@ -66,6 +80,20 @@ class LM(nn.Module):
             load_net(model_params, self, allow_missing=True)
 
     def forward(self, seq_idx, seq_len):
+        """
+
+        Parameters
+        ----------
+        seq_idx:Tensor
+            a list of indices
+        seq_len:Tensor
+            length
+
+        Returns
+        --------
+        sequence
+            a PackedSequence object
+        """
         seq = self.embedding(seq_idx)
         pack = pack_padded_sequence(seq, seq_len, batch_first=True)
         h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)

@@ -1,0 +1,22 @@
+不使用预训练模型:直接调用D2V
+------------------------------------
+
+使用自己提供的任一预训练模型（给出模型存放路径即可）将给定的题目文本转成向量。
+
+* 优点：可以使用自己的模型，另可调整训练参数，灵活性强。
+
+
+处理的具体流程
+++++++++++++++++++++
+
+1.调用get_tokenizer函数，得到经过分词后的结果；
+
+2.调用D2V或W2V等模块，根据需要选择是否使用预训练的t2v模型
+
+Examples：
+
+::
+
+  >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+  >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
+  >>> i2v(item)

@@ -1,0 +1,47 @@
+语义成分分解
+------------
+
+由于选择题是以字典的形式给出，故需要将其在保留数据类型关系的情况下转换为文本格式。dict2str4sif函数就是实现此功能的一个模块，该模块可以将选择题形式的item转换为字符格式，并将题干和选项、各选项之间分割开来。
+
+
+基础使用方法
+++++++++++++++++++
+
+::
+
+ >>> item = {
+ ...     "stem": r"若复数$z=1+2 i+i^{3}$，则$|z|=$",
+ ...     "options": ['0', '1', r'$\sqrt{2}$', '2'],
+ ... }
+ >>> dict2str4sif(item) # doctest: +ELLIPSIS
+ '$\\SIFTag{stem_begin}$若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1$\\SIFTag{list_2}$$\\sqrt{2}$$\\SIFTag{list_3}$2$\\SIFTag{options_end}$'
+
+可选的的额外参数/接口
+++++++++++++++++++++++
+
+1.add_list_no_tag：当此参数为True较False时区别在于是否需要将选项部分的标签计数
+
+::
+
+ >>> dict2str4sif(item, add_list_no_tag=True) # doctest: +ELLIPSIS
+ '$\\SIFTag{stem_begin}$若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1$\\SIFTag{list_2}$$\\sqrt{2}$$\\SIFTag{list_3}$2$\\SIFTag{options_end}$'
+ 
+ >>> dict2str4sif(item, add_list_no_tag=False) # doctest: +ELLIPSIS
+ '$\\SIFTag{stem_begin}$若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2$\\SIFTag{options_end}$'
+
+2.tag_mode:此参数为选择标签所在位置，delimiter为头尾都加标签，head为仅头部加标签，tail为仅尾部加标签
+
+::
+
+ >>> dict2str4sif(item, tag_mode="head") # doctest: +ELLIPSIS
+ '$\\SIFTag{stem}$若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{options}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1$\\SIFTag{list_2}$$\\sqrt{2}$$\\SIFTag{list_3}$2'
+ 
+ >>> dict2str4sif(item, tag_mode="tail") # doctest: +ELLIPSIS
+ '若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1$\\SIFTag{list_2}$$\\sqrt{2}$$\\SIFTag{list_3}$2$\\SIFTag{options}$'
+
+3.key_as_tag:当其为False时则不区分切分标签的类型，而是仅在选项之间加入$\SIFSep$
+
+::
+
+ >>> dict2str4sif(item, key_as_tag=False)
+ '若复数$z=1+2 i+i^{3}$，则$|z|=$0$\\SIFSep$1$\\SIFSep$$\\sqrt{2}$$\\SIFSep$2'

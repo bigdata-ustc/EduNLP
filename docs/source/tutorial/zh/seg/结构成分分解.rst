@@ -1,0 +1,61 @@
+结构成分分解
+------------
+
+对切片后的item中的各个元素进行分词，提供深度选项，可以按照需求选择所有地方切分或者在部分标签处切分（比如\SIFSep、\SIFTag处）；对标签添加的位置也可以进行选择，可以在头尾处添加或仅在头或尾处添加。
+
+具有两种模式，一种是linear模式，用于对文本进行处理（使用jieba库进行分词）；一种是ast模式，用于对公式进行解析。
+
+基础使用方法
+++++++++++++++++++
+
+::
+
+ >>> test_item = r"如图所示，则$\bigtriangleup ABC$的面积是$\SIFBlank$。$\FigureID{1}$"
+ >>> seg(test_item)
+ >>> ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
+
+可选的的额外参数/接口
+++++++++++++++++++++++
+
+1.describe：可以统计出各种类型元素的数量
+
+::
+
+ >>> s.describe()
+ {'t': 3, 'f': 1, 'g': 1, 'm': 1}
+
+2.filter：可以选择性的筛除某种或几种类型的元素
+
+此接口可传入keep参数来选择需要保留的元素类型，也可直接传入特殊字符来筛除特定元素类型
+
+各字母所代表的元素类型：
+   "t": text
+   "f": formula
+   "g": figure
+   "m": question mark
+   "a": tag
+   "s": sep tag
+
+::
+
+ >>> with s.filter("f"):
+ ...     s
+ ['如图所示，则', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
+ >>> with s.filter(keep="t"):
+ ...     s
+ ['如图所示，则', '的面积是', '。']
+
+3.symbol:选择性的将部分类型的数据转换为特殊符号遮掩起来
+
+symbol所代表的元素类型：
+   "t": text
+   "f": formula
+   "g": figure
+   "m": question mark
+
+::
+
+ >>> seg(test_item, symbol="fgm")
+ ['如图所示，则', '[FORMULA]', '的面积是', '[MARK]', '。', '[FIGURE]']
+ >>> seg(test_item, symbol="tfgm")
+ ['[TEXT]', '[FORMULA]', '[TEXT]', '[MARK]', '[TEXT]', '[FIGURE]']

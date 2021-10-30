@@ -9,6 +9,7 @@ from .ast_token import ast_tokenize
 
 def tokenize(formula, method="linear", errors="raise", **kwargs):
     """
+    The total function to tokenize formula by linear or ast.
 
     Parameters
     ----------

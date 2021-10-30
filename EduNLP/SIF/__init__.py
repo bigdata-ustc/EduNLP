@@ -3,3 +3,4 @@
 
 from .sif import is_sif, to_sif, sif4sci
 from .tokenization import link_formulas
+from .constants import *

@@ -11,6 +11,7 @@ ann_list_no_format = r"$\SIFTag{{list_{}}}$"
 
 @contextmanager
 def add_annotation(key, tag_mode, tar: list, key_as_tag=True):
+    """add tag"""
     if key_as_tag is True:
         if tag_mode == "delimiter":
             tar.append(ann_begin_format.format(key))
@@ -26,6 +27,7 @@ def add_annotation(key, tag_mode, tar: list, key_as_tag=True):
 
 def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_tag=True, keys=None) -> str:
     r"""
+    The function aims to transfer dictionary format item to string format item.
 
     Parameters
     ----------
@@ -38,7 +40,7 @@ def dict2str4sif(obj: dict, key_as_tag=True, tag_mode="delimiter", add_list_no_t
     add_list_no_tag
     keys
 
-    Returns
+    Examples
     -------
     >>> item = {
     ...     "stem": r"若复数$z=1+2 i+i^{3}$，则$|z|=$",

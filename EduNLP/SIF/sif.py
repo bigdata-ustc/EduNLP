@@ -10,17 +10,31 @@ from .parser import Parser
 __all__ = ["is_sif", "to_sif", "sif4sci"]
 
 
-def is_sif(item):
+def is_sif(item, check_formula=True, return_parser=False):
     r"""
+    the part aims to check whether the input is sif format
+
     Parameters
     ----------
-    item
+    item:str
+        a raw item which respects stem
+    check_formula: bool
+        whether to check the formulas when parsing item.
+
+        True if check the validity of formulas in item
+        False if not check the validity of formulas in item, which is faster
+    return_parser: bool
+        whether to put the parsed item in return.
+
+        when True, the format of return is (bool, Parser)
+        when False, the format of return is bool
 
     Returns
     -------
-    when item can not be parsed correctly, raise Error;
-    when item doesn't need to be modified, return Ture;
-    when item needs to be modified, return False;
+    bool
+        when item can not be parsed correctly, raise ValueError;
+        when item is in stardarded format originally, return Ture (and the Parser of item);
+        when item isn't in stardarded format originally, return False (and the Parser of item);
 
     Examples
     --------
@@ -30,27 +44,38 @@ def is_sif(item):
     >>> is_sif(text)
     True
     >>> text = '某校一个课外学习小组为研究某作物的发芽率y和温度x（单位...'
-    >>> is_sif(text)
-    False
+    >>> ret = is_sif(text, return_parser=True)
+    >>> ret # doctest: +ELLIPSIS
+    (False, <EduNLP.SIF.parser.parser.Parser object...>)
     """
-    item_parser = Parser(item)
+    item_parser = Parser(item, check_formula)
     item_parser.description_list()
     if item_parser.fomula_illegal_flag:
         raise ValueError(item_parser.fomula_illegal_message)
-    if item_parser.error_flag == 0 and item_parser.modify_flag == 0:
-        return True
-    return False
+    ret = True if item_parser.error_flag == 0 and item_parser.modify_flag == 0 else False
+    if return_parser is True:
+        return ret, item_parser
+    else:
+        return ret
 
 
-def to_sif(item):
+def to_sif(item, check_formula=True, parser: Parser = None):
     r"""
+    the part aims to switch item to sif formate
+
     Parameters
     ----------
-    item
+    items:str
+        a raw item which respects stem
+    check_formula: bool
+        whether to check the formulas when parsing item (only work when parser=None).
+    parser: Parser
+        the parser of item returned from is_sif.
 
     Returns
     -------
-    item
+    item:str
+        the item which accords with sif format
 
     Examples
     --------
@@ -58,14 +83,20 @@ def to_sif(item):
     >>> siftext = to_sif(text)
     >>> siftext
     '某校一个课外学习小组为研究某作物的发芽率$y$和温度$x$（单位...'
+    >>> ret = is_sif(text, return_parser=True)
+    >>> ret # doctest: +ELLIPSIS
+    (False, <EduNLP.SIF.parser.parser.Parser object...>)
+    >>> to_sif(text, parser=ret[1])
+    '某校一个课外学习小组为研究某作物的发芽率$y$和温度$x$（单位...
+
     """
-    item_parser = Parser(item)
-    item_parser.description_list()
-    item = item_parser.text
-    return item
+    if parser is not None:
+        return parser.text
+    else:
+        return is_sif(item, check_formula, return_parser=True)[1].text
 
 
-def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = None, tokenization=True,
+def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str = None, tokenization=True,
             tokenization_params=None, errors="raise"):
     r"""
 
@@ -73,29 +104,58 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
 
     Parameters
     ----------
-    item
-    figures
-    safe
-    symbol
-    tokenization
-    tokenization_params:
-        method: which tokenizer to be used, "linear" or "ast"
-        The parameters only useful for "linear":
+    item:str
+        a raw item which respects stem
+    figures:dict
+        when it is a dict, it means the id-to-instance for figures in 'FormFigureID{...}' format,
+        when it is a bool, it means whether to instantiate figures in 'FormFigureBase64{...}' format
 
-        The parameters only useful for "ast":
-            ord2token: whether to transfer the variables (mathord) and constants (textord) to special tokens.
-            var_numbering: whether to use number suffix to denote different variables
+    mode: int
+        when safe = 2, use is_sif and check formula in item
+        when safe = 1, use is_sif but don't check formula in item
+        when safe = 0, don't use is_sif and don't check anything in item
+
+    symbol: str
+        select the methods to symbolize:
+            "t": text
+            "f": formula
+            "g": figure
+            "m": question mark
+            "a": tag
+            "s": sep
+
+    tokenization: bool
+        whether to tokenize item after segmentation
+
+    tokenization_params:
+        the dict of text_params, formula_params and figure_params in tokenization
+        For formula_params:
+            method: which tokenizer to be used, "linear" or "ast"
+            The parameters only useful for "linear":
+                skip_figure_formula: whether to skip the formula in figure format
+                symbolize_figure_formula: whether to symbolize the formula in figure format
+            The parameters only useful for "ast":
+                ord2token: whether to transfer the variables (mathord) and constants (textord) to special tokens.
+                var_numbering: whether to use number suffix to denote different variables
+                return_type: 'list' or 'ast'
+            More parameters can be found in the definition in SIF.tokenization.formula
+        For figure_params:
+            figure_instance：whether to return instance of figures in tokens
+        For text_params:
+            See definition in SIF.tokenization.text
+
     errors:
-        warn
-        raise
-        coerce
-        strict
+        warn,
+        raise,
+        coerce,
+        strict,
         ignore
 
     Returns
     -------
-    When tokenization is False, return SegmentList;
-    When tokenization is True, return TokenList
+    list
+        When tokenization is False, return SegmentList;
+        When tokenization is True, return TokenList
 
     Examples
     --------
@@ -188,8 +248,15 @@ def sif4sci(item: str, figures: (dict, bool) = None, safe=True, symbol: str = No
     [['已知'], ['说法', '中', '正确']]
     """
     try:
-        if safe is True and is_sif(item) is not True:
-            item = to_sif(item)
+        if mode in [1, 2]:
+            check_formula = True if mode == 1 else False
+            sif, item_parser = is_sif(item, check_formula=check_formula, return_parser=True)
+            if sif is not True:
+                item = to_sif(item, parser=item_parser)
+        elif mode != 0:
+            raise KeyError(
+                "Unknown mode %s, use only 0 or 1 or 2." % mode
+            )
 
         ret = seg(item, figures, symbol)
 
