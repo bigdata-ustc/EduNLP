@@ -43,7 +43,7 @@ Formula: firstly, in the word segmentation function, the formula of the original
 
 This module also provides the function of formula variable standardization, such as determining whether 'x' in several sub formulas is the same variable.
 
-Call the library
+Import modules
 +++++++++++++++++++++
 
 ::
@@ -233,7 +233,7 @@ Introduction of main content
  
 * Use _is_formula_legal function, check the completeness and analyzability of latex formula, and report an error for formulas that do not conform to latex syntax.
 
-Call the library
+Import modules
 >>>>>>>>>>>>>>>>>>>
 
 ::

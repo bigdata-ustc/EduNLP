@@ -67,8 +67,8 @@ First level version:
 
 Second level version:
 
-* Minor subjects(Chinese,Math,English,History,Geography,Politics,Biology,Physics,Chemistry)
-* Major subjects(science, arts and all subject)
+* Single subject(Chinese,Math,English,History,Geography,Politics,Biology,Physics,Chemistry)
+* Multiple subject(science, arts and all subject)
 
 Third level version【to be finished】:
 
