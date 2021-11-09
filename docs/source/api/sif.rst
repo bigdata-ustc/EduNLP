@@ -8,16 +8,16 @@ SIF
    :imported-members:
 
 
-Parser
---------
-.. automodule:: EduNLP.SIF.parser.parser.Parser
+Segment
+----------
+.. automodule:: EduNLP.SIF.segment
    :members:
    :imported-members:
 
 
-Segment
-----------
-.. automodule:: EduNLP.SIF.segment.segment
+Parser
+--------
+.. automodule:: EduNLP.SIF.parser
    :members:
    :imported-members:
 
@@ -40,14 +40,6 @@ text
 
 formula
 ^^^^^^^^^
-.. automodule:: EduNLP.SIF.tokenization.formula.formula
-   :members:
-   :imported-members:
-
-.. automodule:: EduNLP.SIF.tokenization.formula.ast_token
-   :members:
-   :imported-members:
-
-.. automodule:: EduNLP.SIF.tokenization.formula.linear_token
+.. automodule:: EduNLP.SIF.tokenization.formula
    :members:
    :imported-members:

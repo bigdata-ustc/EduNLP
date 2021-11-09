@@ -35,10 +35,6 @@ from EduNLP.Formula import Formula
 #     return nodes
 
 def traversal_formula(ast, ord2token=False, var_numbering=False, strategy="post", *args, **kwargs):
-    """
-    The part will run only when the return type is list. And it provides two strategy: post and linear.
-    Besides, tokens list will append node follow its type.
-    """
     tokens = []
     if strategy == "post":
         order = nx.dfs_postorder_nodes(ast)
@@ -62,7 +58,6 @@ def traversal_formula(ast, ord2token=False, var_numbering=False, strategy="post"
 
 def ast_tokenize(formula, ord2token=False, var_numbering=False, return_type="formula", *args, **kwargs):
     """
-    According to return type, tokenizing formula by different methods.
 
     Parameters
     ----------

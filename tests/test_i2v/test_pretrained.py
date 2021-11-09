@@ -24,7 +24,5 @@ def test_pretrained_i2v(tmp_path):
 
     get_pretrained_i2v("test_w2v", d)
 
-    get_pretrained_i2v("luna_bert", d)
-
     with pytest.raises(KeyError):
         get_pretrained_i2v("error")

@@ -3,7 +3,7 @@
 
 import pytest
 from EduNLP.SIF.constants import Symbol
-from EduNLP.SIF.segment.segment import SegmentList, LatexFormulaSegment
+from EduNLP.SIF.segment.segment import SegmentList
 from EduNLP.SIF.tokenization import text
 from EduNLP.SIF.tokenization import formula
 from EduNLP.SIF.tokenization.tokenization import TokenList
@@ -32,5 +32,3 @@ def test_tokenization():
 
     with pytest.raises(TypeError):
         tl.append("[Unknown]")
-
-    tl.append(LatexFormulaSegment('x+y'), False)

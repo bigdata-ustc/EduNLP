@@ -1,22 +1,9 @@
 import warnings
 from EduNLP.Formula.ast import str2ast, katex_parse
-import re
 
 
 class Parser:
-    """
-    initial data and special variable
-
-    Attributes
-    ----------
-    get_token
-        Get different elements in the item.
-    txt_list
-        show txt list
-    description_list
-        use Parser to process and describe the txt
-    """
-    def __init__(self, data, check_formula=True):
+    def __init__(self, data):
         self.lookahead = 0
         self.head = 0
         self.text = data
@@ -28,8 +15,6 @@ class Parser:
         self.fomula_illegal_flag = 0
         self.fomula_illegal_message = ''
         self.coerce = ''
-        self.check_formula = check_formula
-        
         # 定义特殊变量
         self.len_bracket = len('$\\SIFChoice$')
         self.len_underline = len('$\\SIFBlank$')
@@ -114,17 +99,6 @@ class Parser:
         self.error_flag = 1
 
     def get_token(self):
-        r"""
-        Get different elements in the item.
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        elements:chinese,alphabet,number,ch_pun_list,en_pun_list,latex formula
-
-        """
         if self.head >= len(self.text):
             return self.empty
         ch = self.text[self.head]
@@ -255,7 +229,7 @@ class Parser:
                     self.coerce = "warning"
                     flag = 0
                 elif flag and ch_informula == '\n':
-                    # latex 中出现换行符，打印且只打印一次 warning
+                    # latex 中出现换行符，打印一次 warning
                     warnings.warn("Warning: there is a '\\n' in formula!")
                     self.warnning = 1
                     self.coerce = "warning"
@@ -264,9 +238,8 @@ class Parser:
             if self.head >= len(self.text):
                 self.call_error()
                 return self.error
-
             # 检查latex公式的完整性和可解析性
-            if self.check_formula and not self._is_formula_legal(self.text[formula_start:self.head]):
+            if not self._is_formula_legal(self.text[formula_start:self.head]):
                 self.call_error()
                 return self.error
             self.head += 1

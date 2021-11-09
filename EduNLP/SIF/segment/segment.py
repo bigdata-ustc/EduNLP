@@ -16,19 +16,16 @@ class LatexFormulaSegment(str):
 
 
 class Figure(object):
-    """decode figure which has been encode by base64"""
     def __init__(self, is_base64=False):
         self.base64 = is_base64
         self.figure = None
 
     @classmethod
     def base64_to_numpy(cls, figure: str):
-        """Creat a arrary in a designated buffer"""
         return np.frombuffer(base64.b64decode(figure), dtype=np.uint8)
 
 
 class FigureFormulaSegment(Figure):
-    """Duel with figureformula, especially coding in base64"""
     def __init__(self, src, is_base64=False, figure_instance: (dict, bool) = None):
         super(FigureFormulaSegment, self).__init__(is_base64)
         self.src = src
@@ -48,7 +45,6 @@ class FigureFormulaSegment(Figure):
 
 
 class FigureSegment(Figure):
-    """Duel with figure, especially coding in base64"""
     def __init__(self, src, is_base64=False, figure_instance: (dict, bool) = None):
         super(FigureSegment, self).__init__(is_base64)
         self.src = src
@@ -80,41 +76,6 @@ class SepSegment(str):
 
 
 class SegmentList(object):
-    """
-
-    Parameters
-    ----------
-    item
-    figures:dict
-
-    Returns
-    ----------
-    list
-        tokenizated item
-
-    Examples
-    --------
-    >>> test_item = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
-    >>> SegmentList(test_item)
-    ['如图所示，则三角形', 'ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
-
-    Attributes
-    ----------
-    segments
-        show all segments
-    text_segments
-        show text segments
-    formula_segments
-        show formula segments
-    figure_segments
-        show figure sements
-    ques_mark_segments
-        show question mark segments
-    tag_segments
-        show tag segments
-    describe
-        show number of each elements
-    """
     def __init__(self, item, figures: dict = None):
         self._segments = []
         self._text_segments = []
@@ -158,7 +119,6 @@ class SegmentList(object):
         return len(self._segments)
 
     def append(self, segment) -> None:
-        """add segment to corresponding segments"""
         if isinstance(segment, TextSegment):
             self._text_segments.append(len(self))
         elif isinstance(segment, (LatexFormulaSegment, FigureFormulaSegment)):
@@ -177,7 +137,6 @@ class SegmentList(object):
 
     @property
     def segments(self):
-        """return segments"""
         if self._seg_idx is None:
             return self._segments
         else:
@@ -185,37 +144,29 @@ class SegmentList(object):
 
     @property
     def text_segments(self):
-        """return text segments"""
         return [self._segments[i] for i in self._text_segments]
 
     @property
     def formula_segments(self):
-        """return formula segments"""
         return [self._segments[i] for i in self._formula_segments]
 
     @property
     def figure_segments(self):
-        """return figure segments"""
         return [self._segments[i] for i in self._figure_segments]
 
     @property
     def ques_mark_segments(self):
-        """return question mark segments"""
         return [self._segments[i] for i in self._ques_mark_segments]
 
     @property
     def tag_segments(self):
-        """return tag segments"""
         return [self._segments[i] for i in self._tag_segments]
 
     def to_symbol(self, idx, symbol):
-        """switch element to its symbol"""
         self._segments[idx] = symbol
 
     def symbolize(self, to_symbolize="fgm"):
         """
-        Switch designated elements to symbol. \
-        It is a good way to protect or preserve the elements which we don't want to tokenize.
 
         Parameters
         ----------
@@ -224,8 +175,6 @@ class SegmentList(object):
             "f": formula
             "g": figure
             "m": question mark
-            "a": tag
-            "s": sep
 
         Returns
         -------
@@ -252,16 +201,6 @@ class SegmentList(object):
 
     @contextmanager
     def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
-        """
-        Output special element list selective.Drop means not show.Keep means show.
-
-        Parameters
-        ----------
-        drop: set or str
-            The alphabet should be included in "tfgmas", which means drop selected segments out of return value.
-        keep: set or str
-            The alphabet should be included in "tfgmas", which means only keep selected segments in return value.
-        """
         _drop = {c for c in drop} if isinstance(drop, str) else drop
         if keep == "*":
             _keep = {c for c in "tfgmas" if c not in _drop}
@@ -284,7 +223,6 @@ class SegmentList(object):
         self._seg_idx = None
 
     def describe(self):
-        """show the length of different segments"""
         return {
             "t": len(self._text_segments),
             "f": len(self._formula_segments),
@@ -295,7 +233,6 @@ class SegmentList(object):
 
 def seg(item, figures=None, symbol=None):
     r"""
-    It is a interface for SegmentList. And show it in an appropriate way.
 
     Parameters
     ----------
@@ -305,8 +242,6 @@ def seg(item, figures=None, symbol=None):
 
     Returns
     -------
-    list
-        segmented item
 
     Examples
     --------
@@ -347,18 +282,18 @@ def seg(item, figures=None, symbol=None):
     ... }
     >>> from EduNLP.utils import dict2str4sif
     >>> test_item_1_str = dict2str4sif(test_item_1)
-    >>> test_item_1_str
+    >>> test_item_1_str  # doctest: +ELLIPSIS
     '$\\SIFTag{stem_begin}$...$\\SIFTag{stem_end}$$\\SIFTag{options_begin}$$\\SIFTag{list_0}$0...$\\SIFTag{options_end}$'
     >>> s1 = seg(test_item_1_str, symbol="tfgm")
-    >>> s1
+    >>> s1  # doctest: +ELLIPSIS
     ['\\SIFTag{stem_begin}'...'\\SIFTag{stem_end}', '\\SIFTag{options_begin}', '\\SIFTag{list_0}', ...]
     >>> with s1.filter(keep="a"):
-    ...     s1
+    ...     s1  # doctest: +ELLIPSIS
     [...'\\SIFTag{list_0}', '\\SIFTag{list_1}', '\\SIFTag{list_2}', '\\SIFTag{list_3}', '\\SIFTag{options_end}']
-    >>> s1.tag_segments
+    >>> s1.tag_segments  # doctest: +ELLIPSIS
     ['\\SIFTag{stem_begin}', '\\SIFTag{stem_end}', '\\SIFTag{options_begin}', ... '\\SIFTag{options_end}']
     >>> test_item_1_str_2 = dict2str4sif(test_item_1, tag_mode="head", add_list_no_tag=False)
-    >>> seg(test_item_1_str_2, symbol="tfgmas")
+    >>> seg(test_item_1_str_2, symbol="tfgmas")  # doctest: +ELLIPSIS
     ['[TAG]', ... '[TAG]', '[TEXT]', '[SEP]', '[TEXT]', '[SEP]', '[FORMULA]', '[SEP]', '[TEXT]']
     >>> s2 = seg(test_item_1_str_2, symbol="fgm")
     >>> s2.tag_segments

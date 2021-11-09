@@ -16,8 +16,7 @@ docs_deps = [
     'sphinx_rtd_theme',
     'sphinx_toggleprompt',
     'sphinx-gallery>=0.6',
-    'nbsphinx',
-    'm2r2'
+    'nbsphinx'
 ]
 
 dev_deps = ["requests"] + docs_deps + test_deps
@@ -35,7 +34,7 @@ except ModuleNotFoundError:
         ml_pytorch_deps = []
         logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
 
-vec_deps = ['gensim'] + ml_pytorch_deps + ['transformers']
+vec_deps = ['gensim'] + ml_pytorch_deps
 
 setup(
     name='EduNLP',

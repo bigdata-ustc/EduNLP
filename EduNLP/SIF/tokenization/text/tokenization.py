@@ -9,7 +9,6 @@ jieba.setLogLevel(logging.INFO)
 
 def tokenize(text, granularity="word", stopwords="default"):
     """
-    Using jieba library to tokenize item by word or char.
 
     Parameters
     ----------
