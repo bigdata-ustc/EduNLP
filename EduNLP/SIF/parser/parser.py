@@ -14,6 +14,7 @@ class Parser:
         self.warnning = 0
         self.fomula_illegal_flag = 0
         self.fomula_illegal_message = ''
+        self.coerce = ""
 
         # 定义特殊变量
         self.len_bracket = len('$\\SIFChoice$')
@@ -226,11 +227,13 @@ class Parser:
                     # latex 中出现中文字符，打印且只打印一次 warning
                     warnings.warn("Warning: there is some chinese characters in formula!")
                     self.warnning = 1
+                    self.coerce = "warning"
                     flag = 0
                 elif flag and ch_informula == '\n':
                     # latex 中出现换行符，打印一次 warning
                     warnings.warn("Warning: there is a '\\n' in formula!")
                     self.warnning = 1
+                    self.coerce = "warning"
                     flag = 0
                 self.head += 1
             if self.head >= len(self.text):
