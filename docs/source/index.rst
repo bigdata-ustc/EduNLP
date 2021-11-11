@@ -143,6 +143,11 @@ If this repository is helpful for you, please cite our work
 
    tutorial/en/index
    tutorial/en/sif
+   tutorial/en/parse
+   tutorial/en/seg
+   tutorial/en/tokenize
+   tutorial/en/pretrain
+   tutorial/en/vectorization
 
 .. toctree::
    :maxdepth: 1
