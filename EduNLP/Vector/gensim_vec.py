@@ -62,7 +62,8 @@ class W2V(Vector):
             yield self[word]
 
     def __getitem__(self, item):
-        return self.wv[item] if item not in self.constants else np.zeros((self.vector_size,))
+        index = self.key_to_index(item)
+        return self.wv[item] if index not in self.constants.values() else np.zeros((self.vector_size,))
 
     def infer_vector(self, items, agg="mean", *args, **kwargs) -> np.ndarray:
         token_vectors = self.infer_tokens(items, *args, **kwargs)

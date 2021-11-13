@@ -86,6 +86,7 @@ def test_w2v(stem_tokens, tmpdir, method, binary):
     assert w2v.vectors.shape == (len(w2v.wv.vectors) + len(w2v.constants), w2v.vector_size)
     assert w2v.key_to_index("[UNK]") == 0
     assert w2v.key_to_index("OOV") == 0
+    assert np.array_equal(w2v["OOV"], np.zeros((10,)))
 
     t2v = T2V("w2v", filepath=filepath, method=method, binary=binary)
     assert len(t2v(stem_tokens[:1])[0]) == t2v.vector_size
