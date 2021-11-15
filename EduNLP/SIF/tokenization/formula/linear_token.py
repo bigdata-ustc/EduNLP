@@ -6,6 +6,37 @@ import re
 
 def cut(formula, preserve_braces=True, with_dollar=False,
         preserve_dollar=False, number_as_tag=False, preserve_src=True):  # pragma: no cover
+    """
+    cut formula thoroughly
+
+    Parameters
+    ----------
+    formula:str
+    preserve_braces:
+        when it is False "{" and "}" will be filted
+    with_dollar:
+        have dollar or not
+    preserve_dollar:
+        keep "$"
+    number_as_tag:
+        whether switch number to tag, it just can idenify the number which is more than one bit.
+    preserve_src
+
+    Returns
+    --------
+    list
+        return a preliminary list which cut fully
+
+    Examples
+    ----------
+    >>> cut(r"${x + y}^\\frac{1}{2} + 12.1 = 0$")
+    ['{x + y}', '^', '\\\\f', 'r', 'a', 'c', '{1}', '{2}', '+', '12.1', '=', '0']
+    >>> cut(r"${x + y}^\\frac{1}{2} + 12.1 = 0$",preserve_dollar=False)
+    ['{x + y}', '^', '\\\\f', 'r', 'a', 'c', '{1}', '{2}', '+', '12.1', '=', '0']
+    >>> cut(r"${x + y}^\\frac{1}{2} + 12.1 = 0$",number_as_tag=True)
+    ['{x + y}', '^', '\\\\f', 'r', 'a', 'c', '{1}', '{2}', '+', '{decimal}', '=', '0']
+
+    """
     class States(IntFlag):
         CHAR = 0
         MATH = 1
@@ -135,6 +166,7 @@ def cut(formula, preserve_braces=True, with_dollar=False,
 
 
 def reduce(fea):  # pragma: no cover
+    """restore some formula"""
     rules = [
         ('a r c s i n', 'arcsin'),
         ('a r c c o s', 'arccos'),
@@ -165,6 +197,7 @@ def reduce(fea):  # pragma: no cover
 
 
 def connect_char(words):  # pragma: no cover
+    """connect and switch to list type"""
     result = []
     buffer = ""
     for w in words:
@@ -201,6 +234,8 @@ def latex_parse(formula, preserve_braces=True, with_dollar=True,
 
 def linear_tokenize(formula, preserve_braces=True, number_as_tag=False, *args, **kwargs):
     """
+    linear tokenize formula.
+    It includes three processes:cut, reduce and connect_char.
 
     Parameters
     ----------

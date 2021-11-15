@@ -11,16 +11,19 @@ from .meta import Vector
 
 
 class W2V(Vector):
-    def __init__(self, filepath, method=None, binary=None):
-        """
+    """
+    The part uses gensim library providing FastText, Word2Vec and KeyedVectors method to transfer word to vector.
 
-        Parameters
-        ----------
-        filepath:
-            path to the pretrained model file
-        method
-        binary
-        """
+    Parameters
+    ----------
+    filepath:
+        path to the pretrained model file
+    method: str
+        fasttext
+        other(Word2Vec)
+    binary
+    """
+    def __init__(self, filepath, method=None, binary=None):
         fp = PurePath(filepath)
         self.binary = binary if binary is not None else (True if fp.suffix == ".bin" else False)
         if self.binary is True:
@@ -59,17 +62,34 @@ class W2V(Vector):
             yield self[word]
 
     def __getitem__(self, item):
-        return self.wv[item] if item not in self.constants else np.zeros((self.vector_size,))
+        index = self.key_to_index(item)
+        return self.wv[item] if index not in self.constants.values() else np.zeros((self.vector_size,))
 
     def infer_vector(self, items, agg="mean", *args, **kwargs) -> np.ndarray:
-        tokens = self.infer_tokens(items, *args, **kwargs)
-        return eval("np.%s" % agg)(tokens, axis=1)
+        token_vectors = self.infer_tokens(items, *args, **kwargs)
+        return [eval("np.%s" % agg)(item, axis=0) for item in token_vectors]
 
     def infer_tokens(self, items, *args, **kwargs) -> list:
         return [list(self(*item)) for item in items]
 
 
 class BowLoader(object):
+    """
+    Using doc2bow model, which has a lot of effects.
+
+    Convert document (a list of words) into the bag-of-words format = list of \
+    (token_id, token_count) 2-tuples. Each word is assumed to be a \
+    tokenized and normalized string (either unicode or utf8-encoded). \
+    No further preprocessing is done on the words in document;\
+     apply tokenization, stemming etc. before calling this method.
+
+    If allow_update is set, then also update dictionary in the process: \
+    create ids for new words. At the same time, update document frequencies – \
+    for each word appearing in this document, increase its document frequency (self.dfs) by one.
+
+    If allow_update is not set, this function is const, \
+    aka read-only.
+    """
     def __init__(self, filepath):
         self.dictionary = corpora.Dictionary.load(filepath)
 
@@ -88,6 +108,11 @@ class BowLoader(object):
 
 
 class TfidfLoader(object):
+    """
+    This module implements functionality related to the Term Frequency - \
+    Inverse Document Frequency <https://en.wikipedia.org/wiki/Tf%E2%80%93idf> \
+    vector space bag-of-words models.
+    """
     def __init__(self, filepath):
         self.tfidf_model = TfidfModel.load(filepath)
         # 'tfidf' model shold be used based on 'bow' model
@@ -111,6 +136,22 @@ class TfidfLoader(object):
 
 
 class D2V(Vector):
+    """
+    It is a collection which include d2v, bow, tfidf method.
+
+    Parameters
+    -----------
+    filepath
+    method: str
+        d2v
+        bow
+        tfidf
+    item
+
+    Returns
+    ---------
+    d2v model:D2V
+    """
     def __init__(self, filepath, method="d2v"):
         self._method = method
         self._filepath = filepath

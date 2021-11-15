@@ -143,6 +143,11 @@ If this repository is helpful for you, please cite our work
 
    tutorial/en/index
    tutorial/en/sif
+   tutorial/en/parse
+   tutorial/en/seg
+   tutorial/en/tokenize
+   tutorial/en/pretrain
+   tutorial/en/vectorization
 
 .. toctree::
    :maxdepth: 1
@@ -151,11 +156,11 @@ If this repository is helpful for you, please cite our work
 
    tutorial/zh/index
    tutorial/zh/sif
-   tutorial/zh/seg
    tutorial/zh/parse
+   tutorial/zh/seg
    tutorial/zh/tokenize
-   tutorial/zh/vectorization
    tutorial/zh/pretrain
+   tutorial/zh/vectorization
 
 
 .. toctree::
@@ -164,13 +169,12 @@ If this repository is helpful for you, please cite our work
    :hidden:
    :glob:
 
-   api/index
-   api/i2v
    api/sif
-   api/tokenizer
+   api/utils
    api/formula
+   api/tokenizer
    api/pretrain
    api/ModelZoo
+   api/i2v
    api/vector
-   api/utils
    

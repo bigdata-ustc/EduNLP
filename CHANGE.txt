@@ -1,3 +1,12 @@
+v0.0.7:
+    1. add BERT and pretrained model (luna_bert)
+    2. speed up the process in sif
+    3. handling OOV in word2vec
+    4. add English tutorials
+    5. add api docs and prettify tutorials
+    6. fix the np.error in gensim_vec.W2V.infer_vector
+    7. fix the parameters lost in tokenization
+
 v0.0.6:
     1. dev: add half-pretrained rnn model
     2. important!!!: rename TextTokenizer to PureTextTokenizer, and add a new tokenizer named TextTokenizer (the two have similar but not the same behaviours).

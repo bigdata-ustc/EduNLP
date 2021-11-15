@@ -35,7 +35,7 @@ except ModuleNotFoundError:
         ml_pytorch_deps = []
         logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
 
-vec_deps = ['gensim'] + ml_pytorch_deps
+vec_deps = ['gensim'] + ml_pytorch_deps + ['transformers']
 
 setup(
     name='EduNLP',
