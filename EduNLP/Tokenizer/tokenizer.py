@@ -141,6 +141,8 @@ def get_tokenizer(name, *args, **kwargs):
     ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']
+    >>> tokenizer = get_tokenizer("pure_text")
+    >>> tokens
     """
     if name not in TOKENIZER:
         raise KeyError(

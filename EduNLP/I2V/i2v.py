@@ -10,7 +10,7 @@ from ..Tokenizer import Tokenizer, get_tokenizer
 from EduNLP.Pretrain import BertTokenizer
 from EduNLP import logger
 
-__all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v", "Elmo"]
 
 
 class I2V(object):
@@ -52,6 +52,7 @@ class I2V(object):
     -------
     i2v model: I2V
     """
+
     def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
@@ -61,8 +62,8 @@ class I2V(object):
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
-            self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
-                                                      if tokenizer_kwargs is not None else {})
+            self.tokenizer: Tokenizer = get_tokenizer(tokenizer,
+                                                      **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         self.params = {
             "tokenizer": tokenizer,
             "tokenizer_kwargs": tokenizer_kwargs,
@@ -152,6 +153,7 @@ class D2V(I2V):
     -------
     i2v model: I2V
     """
+
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
@@ -221,6 +223,7 @@ class W2V(I2V):
     i2v model: W2V
 
     """
+
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
@@ -282,6 +285,7 @@ class Bert(I2V):
     -------
     i2v model: Bert
     """
+
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
         '''
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
@@ -317,6 +321,64 @@ class Bert(I2V):
                    tokenizer_kwargs=tokenizer_kwargs)
 
 
+class Elmo(I2V):
+    """
+    The model aims to transfer item and tokens to vector with Elmo.
+
+    Bases
+    -------
+    I2V
+
+    Parameters
+    -----------
+    tokenizer: str
+        the tokenizer name
+    t2v: str
+        the name of token2vector model
+    args:
+        the parameters passed to t2v
+    tokenizer_kwargs: dict
+        the parameters passed to tokenizer
+    pretrained_t2v: bool
+        True: use pretrained t2v model
+        False: use your own t2v model
+    kwargs:
+        the parameters passed to t2v
+
+    Returns
+    -------
+    i2v model: Bert
+    """
+
+    def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
+        """
+        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+
+        Parameters
+        -----------
+        items: str or list
+            the text of question
+        tokenize:bool
+            True: tokenize the item
+        return_tensors: str
+            tensor type used in tokenizer
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        """
+        inputs = self.tokenize(items, return_tensors=return_tensors) if tokenize is True else items
+        return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
+
+
 MODELS = {
     "d2v_all_256": [D2V, "d2v_all_256"],
     "d2v_sci_256": [D2V, "d2v_sci_256"],
@@ -327,6 +389,13 @@ MODELS = {
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
+    "physics_elmo_large": [Elmo, "physics_elmo_large"],
+    "geography_elmo_large": [Elmo, "geography_elmo_large"],
+    "politics_elmo_large": [Elmo, "politics_elmo_large"],
+    "math_elmo_large": [Elmo, "math_elmo_large"],
+    "history_elmo_large": [Elmo, "history_elmo_large"],
+    "chemistry_elmo_large": [Elmo, "chemistry_elmo_large"],
+    "biology_elmo_large": [Elmo, "biology_elmo_large"]
 }
 
 
