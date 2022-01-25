@@ -1,5 +1,6 @@
 from .rnn import ElmoBilm
 from pathlib import PurePath
+import os
 import torch
 import torch.optim as optim
 import torch.nn as nn
@@ -12,23 +13,23 @@ from .meta import Vector
 
 
 class ElmoModel(Vector):
-    # """
+    """
 
-    # Examples
-    # --------
-    # >>> from EduNLP.Pretrain import ElmoVocab
-    # >>> elmo_vocab=ElmoVocab()
-    # >>> elmo_vocab.load_vocab('examples/test_model/data/elmo/vocab_wiki.json')
-    # 'examples/test_model/data/elmo/vocab_wiki.json'
-    # >>> elmo = ElmoModel(t2id=elmo_vocab.t2id, lr=1e-5)
-    # >>> elmo.load_weights('examples/test_model/data/elmo/elmo_pretrain_weights_wiki.bin')
-    # 'examples/test_model/data/elmo/elmo_pretrain_weights_wiki.bin'
-    # >>> inputs = ['如','图','所','示','，','有','公','式']
-    # >>> elmo.infer_tokens(inputs).shape
-    # torch.Size([8, 1024])
-    # >>> elmo.infer_vector(inputs).shape
-    # torch.Size([1024])
-    # """
+    Examples
+    --------
+    >>> from EduNLP.Pretrain import ElmoVocab
+    >>> elmo_vocab=ElmoVocab()
+    >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
+    >>> elmo_vocab.tokenize(items[0])
+    ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
+    >>> elmo = ElmoModel(elmo_vocab=elmo_vocab)
+    >>> inputs = ['如','图','所','示','，','有','公','式']
+    >>> elmo.infer_tokens(inputs).shape
+    torch.Size([8, 1024])
+    >>> elmo.infer_vector(inputs).shape
+    torch.Size([1024])
+    """
 
     def __init__(self, path=None, elmo_vocab=None, emb_size: int = 512, hidden_size: int = 1024,
                  lr: float = 5e-4):
@@ -53,19 +54,21 @@ class ElmoModel(Vector):
         return self.infer_vector(item)
 
     def train(self, train_set: ElmoDataset, batch_size=16, shuffle=True, epochs=3):
-        self.Bilm.cuda()
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.Bilm.to(device)
         if torch.cuda.device_count() > 1:
             self.Bilm = torch.nn.DataParallel(self.Bilm)
         self.Bilm.train()
         global_step = 0
-        self.loss_function.cuda()
+        self.loss_function.to(device)
         data_loader = tud.DataLoader(train_set, collate_fn=elmo_collate_fn, batch_size=batch_size, shuffle=shuffle)
+        ids = -1
         for epoch in range(epochs):
             for step, sample in enumerate(data_loader):
                 try:
-                    mask = sample['mask'].cuda()
-                    ids = sample['ids'].cuda()
-                    y = F.one_hot(ids, num_classes=len(self.vocab)).cuda()
+                    mask = sample['mask'].to(device)
+                    ids = sample['ids'].to(device)
+                    y = F.one_hot(ids, num_classes=len(self.vocab)).to(device)
                     pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.Bilm(ids)
                     pred_forward = pred_forward[mask]
                     pred_backward = pred_backward[torch.flip(mask, [1])]
@@ -117,13 +120,36 @@ class ElmoModel(Vector):
                 0)), dim=0)
         return scale * torch.sum(representations, dim=0)
 
-    def infer_vector(self, item) -> torch.Tensor:
+    def infer_vector(self, item, *args, **kwargs) -> torch.Tensor:
         item = [0 if token not in self.vocab.t2id else self.vocab.t2id[token] for token in item]
         pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.Bilm([item])
         ret = torch.cat((forward_hiddens[-1, 0, -1], backward_hiddens[-1, 0, -1]), dim=-1)
         return ret
 
-    def infer_tokens(self, item) -> torch.Tensor:
+    def infer_tokens(self, item, *args, **kwargs) -> torch.Tensor:
         item = [0 if token not in self.vocab.t2id else self.vocab.t2id[token] for token in item]
         item_infer = [self.get_contextual_emb(item, i).tolist() for i in range(len(item))]
         return torch.Tensor(item_infer)
+
+    @property
+    def vector_size(self):
+        return self.Bilm.hidden_size
+
+
+def train_elmo(texts, filepath_prefix: str, pretrain_model=None, emb_dim=512, hid_dim=1024, batch_size=4,
+               epochs=1):
+    vocab = ElmoVocab()
+    if pretrain_model is None:
+        texts = [vocab.tokenize(text) for text in texts]  # This WILL append new token to vocabulary
+        vocab.save_vocab(filepath_prefix + '/' + os.path.basename(filepath_prefix) + '_elmo_vocab.json')
+    else:
+        vocab.load_vocab(filepath_prefix + '/' + pretrain_model + '_elmo_vocab.json')
+        texts = [vocab.pure_tokenizer(text) for text in texts]  # This will NOT append new token to vocabulary
+    dataset = ElmoDataset(texts=texts, vocab=vocab)
+    model = ElmoModel(elmo_vocab=vocab, emb_size=emb_dim, hidden_size=hid_dim)
+    model.train(train_set=dataset, batch_size=batch_size, epochs=epochs)
+    if pretrain_model is None:
+        model.save_weights(filepath_prefix + '/' + os.path.basename(filepath_prefix) + '_elmo_weights.bin')
+    else:
+        model.save_weights(filepath_prefix + '/' + pretrain_model + '_elmo_weights.bin')
+    return filepath_prefix

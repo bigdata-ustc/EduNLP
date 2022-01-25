@@ -48,7 +48,7 @@ class T2V(object):
         self.model_type = model
         if model in {"rnn", "lstm", "gru"}:
             self.i2v: Vector = MODELS[model](model, *args, **kwargs)
-        elif model is "elmo":
+        elif model == "elmo":
             self.i2v: Vector = MODELS[model](args[0] + args[1])
         else:
             self.i2v: Vector = MODELS[model](*args, **kwargs)

@@ -132,21 +132,3 @@ class ElmoBilm(nn.Module):
         pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.forward([input_seq])
         probabilities = pred_forward[0][-1]
         return probabilities.argmax().item()
-    #
-    # def to(self, device):
-    #     super(ElmoBilm, self).to(device)
-    #     # self.lstm_forwards = [nn.LSTM(input_size=self.emb_size, hidden_size=self.hidden_size,
-    #     #                               num_layers=1, bias=True, batch_first=True, proj_size=self.emb_size) for i in
-    #     #                       range(self.num_layers)]
-    #     # self.lstm_backwards = [nn.LSTM(input_size=self.emb_size, hidden_size=self.hidden_size,
-    #     #                                num_layers=1, bias=True, batch_first=True, proj_size=self.emb_size) for i in
-    #     #                        range(self.num_layers)]
-    #     for i in range(self.num_layers):
-    #         self.lstm_forwards[i].to(device)
-    #         self.lstm_backwards[i].to(device)
-    #
-    # def cuda(self, device=None):
-    #     super(ElmoBilm, self).cuda(device)
-    #     for i in range(self.num_layers):
-    #         self.lstm_forwards[i].cuda(device)
-    #         self.lstm_backwards[i].cuda(device)
