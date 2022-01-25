@@ -14,9 +14,7 @@ from baize.torch import light_module as lm, Configuration
 from baize.torch import fit_wrapper
 
 from EduNLP.Vector import RNNModel, Embedding
-from EduNLP.Vector.rnn.elmobilm import ElmoBilm
 from EduNLP.ModelZoo import Masker
-from EduNLP.ModelZoo import ElmoBilm
 from EduNLP.Tokenizer import get_tokenizer
 
 
