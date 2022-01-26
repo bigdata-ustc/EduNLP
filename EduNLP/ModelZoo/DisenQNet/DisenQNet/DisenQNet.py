@@ -81,6 +81,15 @@ class DisenQNet(object):
         self.modules = (self.disen_q_net, self.mi_estimator, self.concept_estimator, self.disen_estimator)
         return
     
+    # @classmethod
+    # def load2(cls, model_path):
+    #     model = torch.load(model_path)
+    #     return model
+    
+    # def save2(self, filepath):
+    #     torch.save(model, mymodel.pth)
+    #     return
+
     def train(self, train_data, test_data, device, epoch, lr, step_size, gamma, warm_up, n_adversarial, silent):
         """
             DisenQNet train
@@ -163,6 +172,22 @@ class DisenQNet(object):
                 logging.info(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}")
         return
     
+    def predict(self, items, device):
+        """
+            DisenQNet for i2v inference
+            :param items:  dict, which contains input_ids, input_lens
+                input_ids: Tensor of (batch_size, seq_len)
+                input_lens: Tensor of (batch_size)
+            :param device: str, cpu or cuda
+            :returns: Tensor of (embed, k_hidden, i_hidden)
+        """
+        self.to(device)
+        self.set_mode(False)
+        print("test predict: ",items)
+        text, length = items["input_ids"].to(device), items["input_lens"].to(device)
+        embed, k_hidden, i_hidden = self.disen_q_net(text, length)
+        return embed, k_hidden, i_hidden
+
     def eval(self, test_data, device):
         """
             DisenQNet test

@@ -11,6 +11,8 @@ from torch.utils.data import DataLoader
 
 from DisenQNet import DisenQNet, ConceptModel
 from dataset import QuestionDataset
+from EduNLP.Pretrain.disenQNet_vec import DisenTokenizer
+
 
 def parse_args():
     parser = ArgumentParser("DisenQNet")
@@ -88,14 +90,26 @@ def main(args):
     wv = train_dataset.word2vec
 
     disen_q_net = DisenQNet(vocab_size, concept_size, args.hidden, args.dropout, args.pos_weight, args.cp, args.mi, args.dis, wv)
-    concept_model = ConceptModel(concept_size, disen_q_net.disen_q_net, args.dropout, args.pos_weight)
+    # concept_model = ConceptModel(concept_size, disen_q_net.disen_q_net, args.dropout, args.pos_weight)
 
     # train and test
-    disen_q_net.train(train_dataloader, test_dataloader, args.device, args.epoch, args.lr, args.step, args.gamma, args.warm_up, args.adv, silent=False)
-    concept_model.train(train_dataloader, test_dataloader, args.device, args.epoch, args.lr, args.step, args.gamma, silent=False, use_vi=args.vi, top_k=args.topk, reduction=args.reduction)
-    disen_q_net.save("disen_q_net.th")
-    concept_model.save("concept_model.th")
-    # disen_q_net.load("disen_q_net.th")
+    # disen_q_net.train(train_dataloader, test_dataloader, args.device, args.epoch, args.lr, args.step, args.gamma, args.warm_up, args.adv, silent=False)
+    # concept_model.train(train_dataloader, test_dataloader, args.device, args.epoch, args.lr, args.step, args.gamma, silent=False, use_vi=args.vi, top_k=args.topk, reduction=args.reduction)
+    # disen_q_net.save("disen_q_net.th")
+    # concept_model.save("concept_model.th")
+    
+    disen_q_net.load("disen_q_net.th")
+    tokenizer = DisenTokenizer(vocab_path=os.path.join(args.dataset, "vocab.list"))
+    test_items = [
+        "10 米 的 (2/5) = 多少 米 的 (1/2),有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$",
+        "10 米 的 (2/5) = 多少 米 的 (1/2),有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,若$x,y$满足约束条件公式"
+    ]
+    print("test_items : ", test_items)
+    items = tokenizer(test_items)
+    embed, k_hidden, i_hidden = disen_q_net.predict(items,device="cuda")
+
+    print(f"embed:{embed.shape}, k_hidden:{k_hidden.shape}, i_hidden:{i_hidden.shape}")
+    
     # concept_model.load("concept_model.th")
     return
 

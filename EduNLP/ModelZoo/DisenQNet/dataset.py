@@ -70,6 +70,7 @@ def list_to_onehot(item_list, item2index):
         onehot[item2index[c]] = 1
     return onehot
 
+
 class QuestionDataset(Dataset):
     """
         Question dataset including text, length, concept Tensors
