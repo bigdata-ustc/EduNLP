@@ -5,7 +5,8 @@ import torch
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 from baize.torch import load_net
-
+import torch.nn.functional as F
+import json
 
 class LM(nn.Module):
     """
@@ -13,7 +14,7 @@ class LM(nn.Module):
     Parameters
     ----------
     rnn_type：str
-        Legal types including RNN, LSTM, GRU,ELMO
+        Legal types including RNN, LSTM, GRU, BILM
     vocab_size: int
     embedding_dim: int
     hidden_size: int
@@ -61,7 +62,7 @@ class LM(nn.Module):
             self.rnn = torch.nn.GRU(
                 embedding_dim, hidden_size, num_layers, bidirectional=bidirectional, **kwargs
             )
-        elif rnn_type == "ELMO":
+        elif rnn_type == "BILM":
             bidirectional = True
             self.rnn = torch.nn.LSTM(
                 embedding_dim, hidden_size, num_layers, bidirectional=bidirectional, **kwargs
@@ -75,11 +76,10 @@ class LM(nn.Module):
         if bidirectional is True:
             self.num_layers *= 2
         self.hidden_size = hidden_size
-
         if model_params:
             load_net(model_params, self, allow_missing=True)
 
-    def forward(self, seq_idx, seq_len):
+    def forward(self, seq_idx, seq_len, device=torch.device('cpu')):
         """
 
         Parameters
@@ -88,6 +88,8 @@ class LM(nn.Module):
             a list of indices
         seq_len:Tensor
             length
+        device:torch.device
+            device
 
         Returns
         --------
@@ -95,12 +97,52 @@ class LM(nn.Module):
             a PackedSequence object
         """
         seq = self.embedding(seq_idx)
-        pack = pack_padded_sequence(seq, seq_len, batch_first=True)
-        h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
+        pack = pack_padded_sequence(seq, seq_len.cpu(), batch_first=True, enforce_sorted=False).to(device)
+        h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size).to(device)
         if self.c is True:
-            c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
+            c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size).to(device)
             output, (hn, _) = self.rnn(pack, (h0, c0))
         else:
             output, hn = self.rnn(pack, h0)
         output, _ = pad_packed_sequence(output, batch_first=True)
         return output, hn
+
+
+class ElmoLM(nn.Module):
+    def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
+                 batch_first=True):
+        super(ElmoLM, self).__init__()
+        self.LM_layer = LM("BILM", vocab_size, embedding_dim, hidden_size, num_layers=2, batch_first=batch_first)
+        self.pred_layer = nn.Linear(hidden_size, vocab_size)
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.hidden_size = hidden_size
+        self.dropout = nn.Dropout(dropout_rate)
+
+    def forward(self, seq_idx, seq_len, device=torch.device('cpu')):
+        """
+        Parameters
+        ----------
+        seq_idx:Tensor, of shape (batch_size, sequence_length)
+            a list of indices
+        seq_len:Tensor, of shape (batch_size)
+            length
+        device:torch.device
+            device
+
+        Returns
+        ----------
+        pred_forward: of shape (batch_size, sequence_length)
+        pred_backward: of shape (batch_size, sequence_length)
+        forward_output: of shape (batch_size, sequence_length, hidden_size)
+        backward_output: of shape (batch_size, sequence_length, hidden_size)
+        """
+        lm_output, _ = self.LM_layer(seq_idx, seq_len, device)
+        forward_output = lm_output[:, :, :self.hidden_size]
+        backward_output = lm_output[:, :, self.hidden_size:]
+        forward_output = self.dropout(forward_output)
+        backward_output = self.dropout(backward_output)
+        pred_forward = F.softmax(input=self.pred_layer(forward_output), dim=-1)
+        pred_backward = F.softmax(input=self.pred_layer(backward_output), dim=-1)
+
+        return pred_forward, pred_backward, forward_output, backward_output

@@ -48,8 +48,6 @@ class T2V(object):
         self.model_type = model
         if model in {"rnn", "lstm", "gru"}:
             self.i2v: Vector = MODELS[model](model, *args, **kwargs)
-        elif model == "elmo":
-            self.i2v: Vector = MODELS[model](args[0] + args[1])
         else:
             self.i2v: Vector = MODELS[model](*args, **kwargs)
 
@@ -71,33 +69,13 @@ PRETRAINED_MODELS = {
     "d2v_all_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_all_256.zip", "d2v"],
     "d2v_sci_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_science_256.zip", "d2v"],
     "d2v_eng_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_english_256.zip", "d2v"],
-    "d2v_lit_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_literal_256.zip", "d2v"],
+    "d2v_lit_256": ["http://babase.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_literal_256.zip", "d2v"],
     "w2v_eng_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_english_300.zip", "w2v"],
     "w2v_lit_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_literal_300.zip", "w2v"],
     "test_w2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"],
     "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"],
     "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"],
-    "physics_elmo_large": [
-        "http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo-pub/1/physics_elmo_large.tar/physics_elmo_large.tar",
-        "elmo", "/luna_large_physics_elmo"],
-    "geography_elmo_large": [
-        "http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo-pub/1/geography_elmo_large.tar/geography_elmo_large.tar",
-        "elmo", "/luna_large_geography_elmo"],
-    "politics_elmo_large": [
-        "http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo-pub/1/politics_elmo_large.tar/politics_elmo_large.tar",
-        "elmo", "/luna_large_politics_elmo"],
-    "math_elmo_large": [
-        "http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo-pub/1/math_elmo_large.tar/math_elmo_large.tar",
-        "elmo", "/luna_large_math_elmo"],
-    "history_elmo_large": [
-        "http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo-pub/1/history_elmo_large.tar/history_elmo_large.tar",
-        "elmo", "/luna_large_history_elmo"],
-    "chemistry_elmo_large": [
-        "http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo-pub/1/chemistry_elmo_large.tar/chemistry_elmo_large.tar",
-        "elmo", "/luna_large_chemistry_elmo"],
-    "biology_elmo_large": [
-        "http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo-pub/1/biology_elmo_large.tar/biology_elmo_large.tar",
-        "elmo", "/luna_large_biology_elmo"]
+    "elmo_pub_math": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/Elmo-pub/1/elmo_pub_math.zip/", 'elmo']
 }
 
 

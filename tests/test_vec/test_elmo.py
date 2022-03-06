@@ -2,10 +2,9 @@ import torch
 import numpy as np
 import pytest
 import os
-from EduNLP.Pretrain import ElmoVocab, ElmoDataset
-from EduNLP.Vector import ElmoModel, train_elmo, T2V
+from EduNLP.Pretrain import ElmoTokenizer, ElmoDataset, train_elmo
+from EduNLP.Vector import ElmoModel, T2V
 from EduNLP.I2V import Elmo, get_pretrained_i2v
-from EduNLP.Tokenizer import PureTextTokenizer
 
 
 @pytest.fixture(scope="module")
@@ -27,15 +26,35 @@ def stem_data_elmo(data):
 
 def test_elmo_without_param(stem_data_elmo, tmpdir):
     output_dir = str(tmpdir.mkdir('elmo_test'))
-    vocab = ElmoVocab()
-    train_elmo(stem_data_elmo, output_dir)
-    model = ElmoModel(output_dir + '/' + 'elmo_test')
+    tokenizer = ElmoTokenizer()
+    train_text = [tokenizer.tokenize(data) for data in stem_data_elmo]
+    train_elmo(train_text, output_dir)
+    model = ElmoModel(output_dir)
     item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                 若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
-    inputs = vocab.tokenize(item['stem'])
+    inputs = tokenizer.tokenize(item['stem'])
     output = model(inputs)
     assert model.vector_size > 0
     assert output.shape[-1] == model.vector_size
-    t2v = T2V('elmo', output_dir, '/elmo_test')
+    t2v = T2V('elmo', output_dir)
     assert t2v(inputs).shape[-1] == t2v.vector_size
     assert t2v.infer_vector(inputs).shape[-1] == t2v.vector_size
+
+
+def test_elmo_i2v(stem_data_elmo, tmpdir):
+    output_dir = str(tmpdir.mkdir('elmo_test'))
+    tokenizer = ElmoTokenizer()
+    train_text = [tokenizer.tokenize(data) for data in stem_data_elmo]
+    train_elmo(train_text, output_dir)
+    i2v = Elmo('elmo', 'elmo', output_dir)
+    tokenizer_kwargs = {"path": output_dir}
+    item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
+                若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
+    i_vec, t_vec = i2v(item['stem'], tokenizer_kwargs=tokenizer_kwargs)
+    assert len(i_vec) == i2v.vector_size
+    assert len(t_vec[0]) == i2v.vector_size
+    i_vec = i2v.infer_item_vector(item['stem'])
+    assert len(i_vec) == i2v.vector_size
+
+    t_vec = i2v.infer_token_vector(item['stem'])
+    assert len(t_vec[0]) == i2v.vector_size

@@ -7,7 +7,7 @@ from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import PRETRAINED_MODELS
 from longling import path_append
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import BertTokenizer
+from EduNLP.Pretrain import BertTokenizer, ElmoTokenizer
 from EduNLP import logger
 
 __all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v", "Elmo"]
@@ -61,6 +61,8 @@ class I2V(object):
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'elmo':
+            self.tokenizer = ElmoTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer,
                                                       **tokenizer_kwargs if tokenizer_kwargs is not None else {})
@@ -371,12 +373,14 @@ class Elmo(I2V):
         --------
         vector:list
         """
-        inputs = self.tokenize(items, return_tensors=return_tensors) if tokenize is True else items
+        inputs = self.tokenize(items, return_tensors=return_tensors,
+                               pad_to_max_length=False) if tokenize is True else items
         return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
         return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
+    # def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs)
 
 
 MODELS = {
@@ -389,13 +393,7 @@ MODELS = {
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
-    "physics_elmo_large": [Elmo, "physics_elmo_large"],
-    "geography_elmo_large": [Elmo, "geography_elmo_large"],
-    "politics_elmo_large": [Elmo, "politics_elmo_large"],
-    "math_elmo_large": [Elmo, "math_elmo_large"],
-    "history_elmo_large": [Elmo, "history_elmo_large"],
-    "chemistry_elmo_large": [Elmo, "chemistry_elmo_large"],
-    "biology_elmo_large": [Elmo, "biology_elmo_large"]
+    "elmo_pub_math": [Elmo, "elmo_pub_math"],
 }
 
 
