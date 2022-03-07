@@ -8,6 +8,7 @@ from baize.torch import load_net
 import torch.nn.functional as F
 import json
 
+
 class LM(nn.Module):
     """
 

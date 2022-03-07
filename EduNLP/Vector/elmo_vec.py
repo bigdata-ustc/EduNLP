@@ -30,7 +30,8 @@ class ElmoModel(Vector):
         self.tokenizer.load_vocab(os.path.join(pretrained_model_path, 'vocab.json'))
         with open(os.path.join(pretrained_model_path, 'config.json'), 'r') as f:
             config = json.load(f)
-        self.model = ElmoLM(vocab_size=len(self.tokenizer), embedding_dim=config['emb_dim'], hidden_size=config['hid_dim'])
+        self.model = ElmoLM(vocab_size=len(self.tokenizer), embedding_dim=config['emb_dim'],
+                            hidden_size=config['hid_dim'])
         self.model.load_state_dict(torch.load(os.path.join(pretrained_model_path, 'weight.pt')))
         self.model.eval()
 

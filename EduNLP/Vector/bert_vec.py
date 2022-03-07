@@ -29,6 +29,7 @@ class BertModel(Vector):
     >>> item.shape
     torch.Size([2, 768])
     """
+
     def __init__(self, pretrained_model, tokenizer=None):
         self.model = AutoModel.from_pretrained(pretrained_model)
         if tokenizer:
