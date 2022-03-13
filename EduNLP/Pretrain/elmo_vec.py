@@ -11,6 +11,7 @@ from EduNLP.Pretrain import BertTokenizer
 from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
 from EduNLP.Tokenizer import PureTextTokenizer
 from EduNLP.ModelZoo.rnn import ElmoLM
+from EduNLP.ModelZoo import set_device
 
 UNK_SYMBOL = '[UNK]'
 PAD_SYMBOL = '[PAD]'
@@ -114,7 +115,7 @@ def elmo_collate_fn(batch_data):
     return ret_batch
 
 
-def train_elmo(texts, output_dir, pretrained_dir: str = None, emb_dim=512, hid_dim=1024, batch_size=2,
+def train_elmo(texts, output_dir, pretrained_dir: str = None, emb_dim=512, hid_dim=512, batch_size=2,
                epochs=3, lr: float = 5e-4):
     """
     Parameters
@@ -150,15 +151,18 @@ def train_elmo(texts, output_dir, pretrained_dir: str = None, emb_dim=512, hid_d
                 tokenizer.append(token)
     train_dataset = ElmoDataset(texts, tokenizer)
     if pretrained_dir:
-        model = torch.load(os.path.join(pretrained_dir, 'weight.pt'))
+        with open(os.path.join(pretrained_dir, 'config.json'), 'r') as f:
+            config = json.load(f)
+        model = ElmoLM(vocab_size=len(tokenizer), embedding_dim=config['emb_dim'],
+                       hidden_size=config['hid_dim'])
+        model.load_state_dict(torch.load(os.path.join(pretrained_dir, 'weight.pt')))
     else:
-        model = ElmoLM(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, )
+        model = ElmoLM(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device('cpu')
     model.LM_layer.rnn.flatten_parameters()
     model.to(device)
-    # if torch.cuda.device_count() > 1:
-    #     model = torch.nn.DataParallel(model)
     model.train()
     global_step = 0
     adam = optim.Adam(model.parameters(), lr=lr)
