@@ -83,6 +83,7 @@ class ElmoDataset(tud.Dataset):
         super(ElmoDataset, self).__init__()
         self.tokenizer = tokenizer
         self.texts = [text if len(text) < max_length else text[0:max_length - 1] for text in texts]
+        self.max_length = max_length
 
     def __len__(self):
         return len(self.texts)
@@ -91,14 +92,12 @@ class ElmoDataset(tud.Dataset):
         text = self.texts[index]
         sample = {
             'length': len(text),
-            'idx': self.tokenizer.to_index(text, pad_to_max_length=True)
+            'idx': self.tokenizer.to_index(text, pad_to_max_length=True, max_length=self.max_length)
         }
         return sample
 
 
 def elmo_collate_fn(batch_data):
-    # batch_data = [torch.tensor(t).cuda() for t in batch_data]
-    # batch_data = torch.nn.utils.rnn.pad_sequence(batch_data)
     pred_mask = []
     idx_mask = []
     max_len = max([data['length'] for data in batch_data])
@@ -115,8 +114,8 @@ def elmo_collate_fn(batch_data):
     return ret_batch
 
 
-def train_elmo(texts, output_dir, pretrained_dir: str = None, emb_dim=512, hid_dim=512, batch_size=2,
-               epochs=3, lr: float = 5e-4):
+def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, batch_size=2,
+               epochs=3, lr: float = 5e-4, device=None):
     """
     Parameters
     ----------
@@ -136,6 +135,8 @@ def train_elmo(texts, output_dir, pretrained_dir: str = None, emb_dim=512, hid_d
         The training epochs
     lr: float, optional, default=5e-4
         The learning rate
+    device: str, optional
+        Default is 'cuda' if available, otherwise 'cpu'
 
     Returns
     -------
@@ -159,8 +160,10 @@ def train_elmo(texts, output_dir, pretrained_dir: str = None, emb_dim=512, hid_d
     else:
         model = ElmoLM(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
 
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    device = torch.device('cpu')
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    else:
+        device = torch.device(device)
     model.LM_layer.rnn.flatten_parameters()
     model.to(device)
     model.train()

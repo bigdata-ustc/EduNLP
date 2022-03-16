@@ -148,7 +148,6 @@ def test_rnn(stem_tokens, tmpdir):
 
     for rnn_type in ["Rnn", "lstm", "GRU"]:
         rnn = RNNModel(rnn_type, w2v, 20, device="cpu")
-        # print('DEBUG', next(rnn.rnn.parameters()).device)
         tokens = rnn.infer_tokens(stem_tokens[:1])
         item = rnn.infer_vector(stem_tokens[:1])
         assert tokens.shape == (1, len(stem_tokens[0]), 20 * (2 if rnn.bidirectional else 1))

@@ -349,7 +349,7 @@ class Elmo(I2V):
 
     Returns
     -------
-    i2v model: Bert
+    i2v model: Elmo
     """
 
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
