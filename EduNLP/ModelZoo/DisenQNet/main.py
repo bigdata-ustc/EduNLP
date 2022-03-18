@@ -9,8 +9,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from DisenQNet import DisenQNet, ConceptModel
-from dataset import QuestionDataset
+from .DisenQNet import DisenQNet, ConceptModel
+from .dataset import QuestionDataset
 from EduNLP.Pretrain.disenQNet_vec import DisenTokenizer
 
 
@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument("--pos-weight", type=float, dest="pos_weight", default=1)
 
     # training args
-    parser.add_argument("--epoch", type=int, dest="epoch", default=50)
+    parser.add_argument("--epoch", type=int, dest="epoch", default=10) # 50
     parser.add_argument("--batch", type=int, dest="batch", default=128)
     parser.add_argument("--lr", type=float, dest="lr", default=1e-3)
     parser.add_argument("--step", type=int, dest="step", default=20)
@@ -93,12 +93,17 @@ def main(args):
     # concept_model = ConceptModel(concept_size, disen_q_net.disen_q_net, args.dropout, args.pos_weight)
 
     # train and test
-    # disen_q_net.train(train_dataloader, test_dataloader, args.device, args.epoch, args.lr, args.step, args.gamma, args.warm_up, args.adv, silent=False)
+    disen_q_net.train(train_dataloader, test_dataloader, args.device, args.epoch, args.lr, args.step, args.gamma, args.warm_up, args.adv, silent=False)
     # concept_model.train(train_dataloader, test_dataloader, args.device, args.epoch, args.lr, args.step, args.gamma, silent=False, use_vi=args.vi, top_k=args.topk, reduction=args.reduction)
-    # disen_q_net.save("disen_q_net.th")
-    # concept_model.save("concept_model.th")
     
-    disen_q_net.load("disen_q_net.th")
+    disen_q_net_path = os.path.join(args.dataset, "disen_q_net_test.th") # "disen_q_net.th" | "disen_q_net_test.th"
+    # concept_model_path = os.path.join(args.dataset, "concept_model_test.th")
+
+    disen_q_net.save( disen_q_net_path )
+    # concept_model.save( concept_model_path )
+
+
+    disen_q_net.load(disen_q_net_path)
     tokenizer = DisenTokenizer(vocab_path=os.path.join(args.dataset, "vocab.list"))
     test_items = [
         "10 米 的 (2/5) = 多少 米 的 (1/2),有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$",
@@ -106,11 +111,13 @@ def main(args):
     ]
     print("test_items : ", test_items)
     items = tokenizer(test_items)
-    embed, k_hidden, i_hidden = disen_q_net.predict(items,device="cuda")
+    embed, k_hidden, i_hidden = disen_q_net.predict(items, device="cuda")
 
     print(f"embed:{embed.shape}, k_hidden:{k_hidden.shape}, i_hidden:{i_hidden.shape}")
     
-    # concept_model.load("concept_model.th")
+    # concept_model.load("concept_model_test.th")
+
+
     return
 
 if __name__ == "__main__":

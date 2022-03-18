@@ -5,6 +5,9 @@ import torch
 from torch import nn
 from torch.optim.adam import Adam
 from torch.optim.lr_scheduler import StepLR
+import os
+import json
+from gensim.models import KeyedVectors
 
 from .modules import TextEncoder, AttnModel, ConceptEstimator, MIEstimator, DisenEstimator
 from .utils import MLP, get_mask, get_confuse_matrix, get_f1_score
@@ -77,7 +80,17 @@ class DisenQNet(object):
         self.w_cp = w_cp
         self.w_mi = w_mi
         self.w_dis = w_dis
-
+        
+        self.params = {
+                "vocab_size" : vocab_size,
+                "concept_size" : concept_size,
+                "hidden_dim" : hidden_dim,
+                "dropout" : dropout,
+                "pos_weight" : pos_weight,
+                "w_cp" : w_cp,
+                "w_mi" : w_mi,
+                "w_dis" : w_dis,
+        }
         self.modules = (self.disen_q_net, self.mi_estimator, self.concept_estimator, self.disen_estimator)
         return
     
@@ -221,6 +234,9 @@ class DisenQNet(object):
     def save(self, filepath):
         state_dicts = [module.state_dict() for module in self.modules]
         torch.save(state_dicts, filepath)
+        config_name = "".join(os.path.dirname(filepath).spilt(".")[:-1] +  ["_config.json"])
+        config_path = os.path.join(os.path.dirname(filepath), config_name)
+        self.save_config(config_path)
         return
     
     def load(self, filepath):
@@ -241,6 +257,33 @@ class DisenQNet(object):
             else:
                 module.eval()
         return
+
+
+    def save_config(self, config_path):
+        with open(config_path, "w", encoding="utf-8") as wf:
+            json.dump(self.params, wf, ensure_ascii=False, indent=2)
+
+    @classmethod
+    def from_config(cls, config_path):
+        with open(config_path, "r", encoding="utf-8") as rf:
+            model_config = json.load(rf)
+            wv = KeyedVectors.load(model_config.wv_path, mmap="r") if "wv_path" in model_config else None
+            return cls(
+                model_config.vocab_size, model_config.concept_size, model_config.hidden_dim,
+                model_config.dropout, model_config.pos_weight, model_config.w_cp, model_config.w_mi,
+                model_config.w_dis, wv=wv)
+    
+    @classmethod
+    def from_pretrained(cls, filepath):
+        config_name = "".join(os.path.dirname(filepath).spilt(".")[:-1] +  ["_config.json"])
+        config_path = os.path.join(os.path.dirname(filepath), config_name)
+        model = cls.from_config(config_path)
+        model.load(filepath)
+        return model
+
+
+
+
 
 class ConceptModel(object):
     """
