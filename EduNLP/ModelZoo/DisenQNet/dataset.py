@@ -75,16 +75,19 @@ class QuestionDataset(Dataset):
     """
         Question dataset including text, length, concept Tensors
     """
-    def __init__(self, dataset_path, wv_path, word_list_path, concept_list_path, embed_dim, trim_min_count, max_length, dataset_type, silent):
+    def __init__(self, items, max_length, dataset_type, silent=False, embed_dim=128, trim_min_count=50, wv_path=None, word_list_path=None, concept_list_path=None):
+    # def __init__(self, dataset_path, max_length, dataset_type, silent, wv_path=None, embed_dim=128, trim_min_count=50, word_list_path=None, concept_list_path=None):
         super(QuestionDataset, self).__init__()
         self.num_token = "<num>"
         self.unk_token = "<unk>"
         self.pad_token = "<pad>"
         self.silent = silent
         
-        init = not os.path.exists(wv_path)
+        init = wv_path is None or not os.path.exists(wv_path)
         # load word, concept list
         if not init:
+            assert word_list_path is not None and concept_list_path is not None
+
             self.word2index = load_list(word_list_path)
             self.concept2index = load_list(concept_list_path)
             self.word2vec = torch.load(wv_path)
@@ -94,11 +97,12 @@ class QuestionDataset(Dataset):
             #     logging.info(f"load word2vec from {wv_path}")
         # load dataset, init construct word and concept list
         if dataset_type == "train":
-            self.dataset = self.read_dataset(dataset_path, trim_min_count, max_length, embed_dim, init)
+            self.dataset = self.read_dataset(items, trim_min_count, max_length, embed_dim, init)
         else:
-            self.dataset = self.read_dataset(dataset_path, trim_min_count, max_length, embed_dim, False)
+            self.dataset = self.read_dataset(items, trim_min_count, max_length, embed_dim, False)
         if not silent:
-            logging.info(f"load dataset from {dataset_path}")
+            # logging.info(f"load dataset from {dataset_path}")
+            logging.info(f"processing raw data for QuestionDataset...")
         # save word, concept list
         if init:
             save_list(self.word2index, word_list_path)
@@ -116,23 +120,24 @@ class QuestionDataset(Dataset):
             logging.info(f"concept size: {self.concept_size}")
         return
     
-    def read_dataset(self, path, trim_min_count, max_length, embed_dim, init=False):
+    def read_dataset(self, items, trim_min_count, max_length, embed_dim, init=False):
         # read text
         dataset = list()
         stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
-        with open(path, "rt", encoding="utf-8") as file:
-            for line in file:
-                data = json.loads(line)
-                text = data["content"].strip().split(' ')
-                text = [w for w in text if w != '' and w not in stop_words]
-                if len(text) == 0:
-                    text = [self.unk_token]
-                if len(text) > max_length:
-                    text = text[:max_length]
-                text = [self.num_token if check_num(w) else w for w in text]
-                data["content"] = text
-                data["length"] = len(text)
-                dataset.append(data)
+        # with open(path, "rt", encoding="utf-8") as file:
+        #     for line in file:
+        #         data = json.loads(line)
+        for data in items:
+            text = data["content"].strip().split(' ')
+            text = [w for w in text if w != '' and w not in stop_words]
+            if len(text) == 0:
+                text = [self.unk_token]
+            if len(text) > max_length:
+                text = text[:max_length]
+            text = [self.num_token if check_num(w) else w for w in text]
+            data["content"] = text
+            data["length"] = len(text)
+            dataset.append(data)
         
         # construct word and concept list
         if init:

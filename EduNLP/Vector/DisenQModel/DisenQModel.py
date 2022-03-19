@@ -23,14 +23,12 @@ class DisenQModel(object): # Vector
         self.model = DisenQNet.from_pretrained(pretrained_model)
 
     def __call__(self, items: dict):
-        # 1, sent_len, embedding_size
-        tokens = self.model(**items).last_hidden_state
         embed, k_hidden, i_hidden = self.model.predict(items, device=self.device)
         return embed, k_hidden, i_hidden
 
     def infer_vector(self, items: dict, vector_type=None) -> torch.Tensor:
         embed, k_hidden, i_hidden = self(items)
-        if vector_type is None:
+        if vector_type == None:
             return embed, k_hidden, i_hidden
         elif vector_type == "k":
             return k_hidden

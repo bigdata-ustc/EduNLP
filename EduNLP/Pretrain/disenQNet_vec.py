@@ -1,5 +1,6 @@
 from msilib.schema import Error
 import os
+from re import A
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -8,6 +9,7 @@ from ..ModelZoo.DisenQNet.DisenQNet import DisenQNet, ConceptModel
 from ..ModelZoo.DisenQNet.dataset import QuestionDataset
 from ..Tokenizer import PureTextTokenizer
 from ..SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
+import json
 
 
 def check_num(s):
@@ -60,15 +62,24 @@ def list_to_onehot(item_list, item2index):
     return onehot
 
 
-class DisenTokenizer(object):
-    def __init__(self, vocab_path=None, max_length=250,*args):
-        super(DisenTokenizer, self).__init__(*args)
+class DisenQTokenizer(object):
+    def __init__(self, vocab_path=None, conifg_dir=None, max_length=250,*args):
+        super(DisenQTokenizer, self).__init__(*args)
+
         self.num_token = "<num>"
         self.unk_token = "<unk>"
         self.pad_token = "<pad>"
-
-        self.max_length = max_length
+        if conifg_dir is not None:
+            self.load_tokenizer_config(conifg_dir)
+        else:
+            self.max_length = max_length
+        
         self.word2index = self.get_vocab(vocab_path)
+
+    def load_tokenizer_config(self, conifg_dir):
+        with open(conifg_dir, "r", encoding="utf-8") as rf:
+            model_config = json.load(rf)
+            self.max_length = model_config["max_len"]
 
     def __call__(self, items: (list, str), key=lambda x: x, padding=True, return_tensors=True, *args, **kwargs):
         print("test items : ",items)
@@ -119,7 +130,7 @@ class DisenTokenizer(object):
 
     def _tokenize(self, items, key=lambda x: x):
       text_tokenizer = PureTextTokenizer()
-      items = text_tokenizer(items)
+      items = text_tokenizer(items, key=key)
       
       token_items = list()
       stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
@@ -127,19 +138,30 @@ class DisenTokenizer(object):
           # text = key(data).strip().split(' ')
           print("1 ",text)
           text = [w for w in text if w != '' and w not in stop_words]
-          print("2 ",text)
+        #   print("2 ",text)
           if len(text) == 0:
               text = [self.unk_token]
           if len(text) > self.max_length:
               text = text[:self.max_length]
           text = [self.num_token if check_num(w) else w for w in text]
-          print("3 ",text)
+        #   print("3 ",text)
           token_items.append(text)
           
       return token_items
 
 
-def train_disenQNet(items, output_dir, data_path, train_params=None):
+def load_data(path):
+    if not os.path.exists(path):
+        return None
+    with open(path, "rt", encoding="utf-8") as file:
+        all_data = list()
+        for line in file:
+            data = json.loads(line)
+            all_data.append(data)
+    return all_data
+
+
+def train_disenQNet(train_items, output_dir, train_params=None, predata_path=None, test_items=None):
     """
     Parameters
     ----------
@@ -154,7 +176,7 @@ def train_disenQNet(items, output_dir, data_path, train_params=None):
 
     Examples
     ----------
-    >>> tokenizer = DisenTokenizer()
+    >>> tokenizer = DisenQTokenizer()
     >>> stems = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$",
     ... "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$"]
     >>> token_item = [tokenizer(i) for i in stems]
@@ -189,18 +211,29 @@ def train_disenQNet(items, output_dir, data_path, train_params=None):
         }
         train_params = default_train_params.update(train_params)
 
-    train_path = os.path.join(data_path, "train_small.json") # can replay by items
-    test_path = os.path.join(data_path, "test.json")
-    wv_path = os.path.join(data_path, "wv.th")
-    word_path = os.path.join(data_path, "vocab.list")
-    concept_path = os.path.join(data_path, "concept.list")
+    # wv_path = os.path.join(data_path, "wv.th")
+    # word_path = os.path.join(data_path, "vocab.list")
+    # concept_path = os.path.join(data_path, "concept.list")
+    use_predata_path = True if predata_path is not None and os.path.exists(predata_path) else False
+    wv_path = os.path.join(predata_path, "wv.th") if use_predata_path else None
+    word_path = os.path.join(predata_path, "vocab.list") if use_predata_path else None
+    concept_path = os.path.join(predata_path, "concept.list") if use_predata_path else None
 
-    train_dataset = QuestionDataset(train_path, wv_path, word_path, concept_path, train_params.hidden, train_params.trim_min, train_params.max_len, "train", silent=False)
-    test_dataset = QuestionDataset(test_path, wv_path, word_path, concept_path, train_params.hidden, train_params.trim_min, train_params.max_len, "test", silent=False)
-    
+    # train_items = load_data(os.path.join(data_path, "train.json")) # can replay by items
+    # assert train_items is not None
+    train_dataset = QuestionDataset(train_items, train_params.max_len, "train", silent=False,
+                                    embed_dim=train_params.hidden, trim_min_count=train_params.trim_min, 
+                                    wv_path=wv_path, word_path=word_path, concept_path=concept_path)
     train_dataloader = DataLoader(train_dataset, batch_size=train_params.batch, shuffle=True, collate_fn=train_dataset.collate_data)
-    test_dataloader = DataLoader(test_dataset, batch_size=train_params.batch, shuffle=False, collate_fn=test_dataset.collate_data)
 
+    # test_items = load_data(os.path.join(data_path, "test.json"))
+    if test_items is not None:
+        test_dataset = QuestionDataset(test_items, train_params.max_len, "test", silent=False,
+                                        embed_dim=train_params.hidden, trim_min_count=train_params.trim_min,
+                                        wv_path=wv_path, word_path=word_path, concept_path=concept_path)
+        test_dataloader = DataLoader(test_dataset, batch_size=train_params.batch, shuffle=False, collate_fn=test_dataset.collate_data)
+    else:
+        test_dataloader = None
     
     vocab_size = train_dataset.vocab_size
     concept_size = train_dataset.concept_size
@@ -210,5 +243,5 @@ def train_disenQNet(items, output_dir, data_path, train_params=None):
     disen_q_net = DisenQNet(vocab_size, concept_size, train_params.hidden, train_params.dropout, train_params.pos_weight, train_params.cp, train_params.mi, train_params.dis, wv)
 
     disen_q_net.train(train_dataloader, test_dataloader, train_params.device, train_params.epoch, train_params.lr, train_params.step, train_params.gamma, train_params.warm_up, train_params.adv, silent=False)
-    disen_q_net_path = os.path.join(output_dir, "disen_q_net_test.th")
+    disen_q_net_path = os.path.join(output_dir, "disen_q_net.th")
     disen_q_net.save(disen_q_net_path)

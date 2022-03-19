@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 
 from .DisenQNet import DisenQNet, ConceptModel
 from .dataset import QuestionDataset
-from EduNLP.Pretrain.disenQNet_vec import DisenTokenizer
+from EduNLP.Pretrain.disenQNet_vec import DisenQTokenizer
 
 
 def parse_args():
@@ -104,7 +104,7 @@ def main(args):
 
 
     disen_q_net.load(disen_q_net_path)
-    tokenizer = DisenTokenizer(vocab_path=os.path.join(args.dataset, "vocab.list"))
+    tokenizer = DisenQTokenizer(vocab_path=os.path.join(args.dataset, "vocab.list"))
     test_items = [
         "10 米 的 (2/5) = 多少 米 的 (1/2),有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$",
         "10 米 的 (2/5) = 多少 米 的 (1/2),有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,若$x,y$满足约束条件公式"

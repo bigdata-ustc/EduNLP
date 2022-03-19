@@ -1,0 +1,330 @@
+{"question_id": "2847", "content": "两个 数 相乘 ， 如果 两个 因数 同时 扩大 3 倍 ， 那么 积 多少 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "17358", "content": "一 次 数学 测验 后 ， 小 王 问 小 明 这次 得 了 多少 分 ， 小 明说 “ 用 我 的 得分 加上 3 ， 减去 18 ， 再 除以 8 ， 最后 乘以 10 就是 100 分 ． ” ， 小 明 的 得分 = 多少 分 ？", "knowledge": ["*", "+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "9816", "content": "为了 帮助 四川 地震 灾民 ， 工厂 赶制 一批 救灾 帐篷 ， 第一 车间 完成 了 这 批 帐篷 的 (1/5) ， 第 二 车间 完成 了 这 批 帐篷 的 (1/4) ， 还 剩下 这 批 帐篷 的 几分 之 几 没 完成 ？", "knowledge": ["-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "2658", "content": "明明 把 240 元 零花钱 中 的 (5/6) 捐给 希望工程 ， 明明 捐 了 多少 元 钱 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "9667", "content": "一 辆 自行车 200 元 ， 在 原价 基础 上 打 0.8 ， 小 明 有 贵宾卡 ， 还 可以 再 打 0.9 ， 小 明 买 这辆 车 花 了 多少 钱 ？", "knowledge": ["*"], "difficulty": 0.1, "length": 5}
+  {"question_id": "1985", "content": "口袋 里 装有 红 、 黄 、 蓝 、 绿 4 种颜色 的 球 各 5 个 ． 小 华 闭 着 眼睛 从 口袋 里 往 外 摸 球 ， 每次 摸 出 1 个 球 ． 他 至少 要 摸 出 多少 个 球 才能 保证 摸 出 的 球 中 每种 颜色 的 球 都 有 ．", "knowledge": ["+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "19456", "content": "师徒俩 人 按 3 ： 2 共同 加工 一批 零件 ， 师傅 分配任务 270 个 ； 当 师傅 正好 完成 时 ， 徒弟 完成 了 分配任务 的 (5/6) ， 徒弟 实际 完成 了 多少 个 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.6, "length": 15}
+  {"question_id": "20538", "content": "一 个 长方形 的 长 是 (2/5) 米 ， 宽 是 长 的 (3/4) ， 这个 长方形 的 面积 = 多少 平方米 ．", "knowledge": ["*"], "difficulty": 0.1, "length": 5}
+  {"question_id": "17136", "content": "梨树 有 30 棵 ， 梨树 的 棵 数 比 桃树 多 (1/5) ， 梨树 比 桃树 多 多少 棵 ．", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "16672", "content": "有 37 名 战士 要 过河 ， 河边 只有 一条 小船 ， 船上 每次 只能 坐 5 人 ， 至少 载 几次 才能 使 他们 全部 过河 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "6179", "content": "东风 灯泡厂 生产 一种 新型 节能 灯泡 ， 首批 共 生产 4000 个 ， 合格率 为 98% ， 不 合格 灯泡 有 多少 个 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "15493", "content": "某个 数 与 15 的 积 ， 加上 8.2 ， 等于 28 * 0.4 ， 求 这个 数 ．", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "19388", "content": "一 辆 汽车 从 甲地 开往 乙地 用 了 12 小时 ， 去 时 80 千米 / 时 ， 返回 时 用 了 10 小时 ． 返回 时 每 小时 行 多少 千米 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4912", "content": "同学 们 排队 做操 ， 小 红 排 在 第 8 ， 她 前面 有 多少 人 ．", "knowledge": ["-"], "difficulty": 0.0, "length": 3}
+  {"question_id": "7643", "content": "一 根 绳子 ， 剪 去 它 的 (2/5) ， 正好 剪 去 8 米 ， 这根 绳子 还 剩下 多少 米 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "2856", "content": "水果店 运 来 苹果 480 千克 ， 卖出 了 (5/8) ， 卖出 了 多少 千克 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "12330", "content": "一 个数 的 80% 是 3.2 ， 这个 数 的 30% = ．", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4238", "content": "一 种 含盐 率 为 10% 的 盐水 50 克 ， 水 有 多少 克 ．", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "22065", "content": "一 台 拖拉机 一次 可 运 桃子 30 筐 ． 一个 果园 要 运 7200 筐 桃子 ， 用 12 台 这样 的 拖拉机 运 ， 多少 次 可以 运 完 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "15617", "content": "两个 工程队 共建 一项 工程 ， 甲队 每天 完成 这项 工程 的 (1/5) ， 乙 队 每天 完成 这项 工程 的 (1/7) ， 两个 工程队 一天 可以 完成 这项 工程 的 几分 之 几 ？", "knowledge": ["+"], "difficulty": 0.0, "length": 3}
+  {"question_id": "5974", "content": "计算 9999 * 1111 + 3333 * 6667 = ．", "knowledge": ["*", "+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "5064", "content": "1997 年 至今 ， 我国 铁路 进行 了 大规模 提速 ． 有 一列 火车 提速 40% 后 速度 达到 了 每 时 112 千米 ， 这 列 火车 原来 每 时 行驶 多少 千米 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9290", "content": "一 部 动画片 的 胶片 长 960 米 ， 4 分钟 放映 了 120 米 ， 照 这样 的 速度 ， 放 完 这部 动画片 ， 共 需要 多少 分钟 ？", "knowledge": ["/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4935", "content": "一 列 火车 长 180 米 ， 每秒 行驶 25 米 ． 全 车 通过 一条 120 米 长 的 山洞 ， 需要 多长时间 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "17139", "content": "长安 国际 酒店 运 来 一些 大米 ， 吃 了 (2/5) ， 还 剩下 2 吨 ， 酒店 运 来 大米 多少 吨 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "17546", "content": "小 红 有 272 元 钱 ， 小毛 比 他 多 (1/8) ， 问 小毛 有 多少 钱 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "5332", "content": "箱 苹果 ， 连 箱 共 重 22 千克 ， 其中 箱 的 重量 占 苹果 重量 的 (1/10) ， 箱 中 苹果 重 多少 千克 ．", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "19131", "content": "甲 、 乙 两 数 的 和 是 40 ， 甲 ： 乙 = 3 ： 2 ， 甲 数 = ．", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "10047", "content": "一 个数 的 25% 是 50 ， 这个 数 的 20% = ．", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "170", "content": "甲 、 乙 两 人 从 两地 同时 相对 出发 ， 甲 每分钟 行 110 米 ， 乙 每分钟 行 120 米 ， 经过 15 分钟 两 人 相遇 ， 两地 相距 多少 米 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "16695", "content": "看 一 本书 ， 第一天 看 了 全书 的 20% ， 第 二 天 看 了 全书 的 25% ， 两天 正好 看 了 108 页 ， 这 本书 共有 多少 页 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "2634", "content": "把 一批 课外书 按 3 ： 2 分给 甲乙 两个 学校 ， 乙 校 分 得 96 本 ， 这 批 书 共有 多少 本 ．", "knowledge": ["+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "21836", "content": "食品店 运进 一批 白糖 和 200 千克 红糖 ， 卖出 50 千克 白糖 和 80 千克 红糖 后 ， 剩下 的 红糖 和 白糖 的 千克 数 同样 多 ． 食品店 原有 白糖 多少 千克 ．", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10709", "content": "29 届 奥运会 在 北京 举行 ， 天津 也 是 协办 城市 之一 ， 从 北京 到 天津 ， 汽车 每 小时 行 55 千米 ， 行 2 小时 后 离 天津 还有 20 千米 ， 北京 到 天津 有 多少 千米 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "1562", "content": "学校 买来 6 箱 图书 ， 每箱 50 本 ， 平均 分给 4 个 年级 ， 每个 年级 分 多少 本 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "1320", "content": "一 堆 煤 ， 第一天 运走 了 总数 的 (2/5) ， 第 二 天 运走 了 总数 的 (1/3) ， 还 剩下 这 堆 煤 的 几分 之 几 ？", "knowledge": ["-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "782", "content": "2012 - 2 * 7 * 11 * 13 = ．", "knowledge": ["*", "-"], "difficulty": 0.3, "length": 9}
+  {"question_id": "14460", "content": "植物园 中 ， 红杉树 占 总 棵 数 的 5% ， 银杏树 占 总 棵 数 的 7% ， 红杉树 比 银杏树 少 20 棵 ， 植物园 里 共有 多少 棵 树 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "13809", "content": "有 不同 的 语文 书 4 本 ， 数学 书 5 本 ， 英语书 3 本 ， 自然 书 2 本 ． 从中 各 任 取 一本 ， 共有 多少 种 不同 的 取法 ．", "knowledge": ["*"], "difficulty": 0.2, "length": 7}
+  {"question_id": "9425", "content": "250 与 350 的 和 减去 13 与 26 的 积 ， 差 = ？", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "9326", "content": "张 奶奶 把 30000 元 存入 银行 ， 年利率 为 3.60% ， 利息税 为 5% ， 存期 2 年 ， 到期 后 她 可以 得到 本金 和 税后 利息 共 多少 元 ．", "knowledge": ["*", "+", "-"], "difficulty": 0.4, "length": 11}
+  {"question_id": "18849", "content": "植树节 四年级 栽树 345 棵 ， 五年级 栽 的 棵 树 比 四年级 的 3 倍 少 25 棵 ， 两个 年级 一共 栽 多少 棵 树 ？", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "400", "content": "一 辆 汽车 从 甲地 到 乙地 ， 第一 小时 行 了 全程 的 25% ， 第 二 小时 行 了 全程 的 30% ， 两 小时 一共 行 了 220 千米 ， 甲乙 两地 全长 多少 千米 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "3495", "content": "125 千克 增加 10% 后 = 多少 千克 ．", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4035", "content": "一 座 山上 共有 白杨树 275 棵 ， 梧桐树 是 白杨树 的 10 倍 还 多 5 棵 ， 白杨树 和 梧桐 共 多少 棵 ？", "knowledge": ["*", "+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "7286", "content": "小 英 从 图书馆 借来 一本 小说 ， 每天 看 8 页 ， 15 天 看 了 这 本书 的 一半 ， 以后 每天 看 12 页 ， 正好 在 借 期内 看 完 ， 这 本书 的 借期 = 多少 天 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "18520", "content": "4.4 与 (1/40) 的 积 ， 减去 8 / 300 的 商 ， 所得 的 差 除 (1/3) ， 商 = ．", "knowledge": ["*", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "10729", "content": "服装厂 生产 一批 校服 ， 原 计划 15 天 完成 ， 实际 每天 比 计划 多 做 30 套 ， 因此 比 计划 提前 3 天 完成 ， 这 批 服 校服 共有 多少 套 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "17042", "content": "把 41.5 千克 的 白砂糖 装 成 若干 袋 ， 每 袋 0.5 千克 ， 每 袋 售价 2.3 元 ， 这些 白砂糖 一共 可以 卖 多少 元 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "90", "content": "两地 相距 120 千米 ， 甲 、 乙 两 人 骑 自行车 同时 从 两地 相对 出发 ， 甲 车 每 小时 行 14 千米 ， 经过 4 小时 后 与 乙 车 相遇 ， 乙 车 每 小时 行 多少 千米 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "13332", "content": "一 个 压路机 的 前轮 是 圆柱形 ， 轮 宽 1.5 米 ， 直径 是 1.2 米 ， 前轮 转动 一周 ， 压路 面积 = 多少 平方米 ？", "knowledge": ["*"], "difficulty": 0.1, "length": 5}
+  {"question_id": "21335", "content": "一 支 钢笔 的 售价 是 75 元 ， 打 0.8 后 的 售价 = 多少 元 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "22027", "content": "小 刚 家 上个月 共 用水 20 吨 ， 每吨 水 收费 1.5 元 ， 小 刚 家 共有 4 口 人 ， 上个月 平均 每人 交 水费 多 是 元 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "21956", "content": "爷爷 今年 72 岁 ， 爸爸 年龄 是 爷爷 的 (5/9) ， 我 的 年龄 是 爸爸 的 (3/10) ． 我 今年 多少岁 ？", "knowledge": ["*"], "difficulty": 0.1, "length": 5}
+  {"question_id": "158", "content": "打字员 打 一部 书稿 ， 每 小时 打 3.6 千字 ， 5 小时 完成 ， 如果 每 小时 打 4.5 千字 ， 几小时 能 打 完 这部 书稿 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9969", "content": "红旗 村 今年 已 植树 1200 棵 ， 正好 是 原 计划 的 (5/6) ， 原 计划 植树 多少 棵 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "14480", "content": "服装厂 加工 一批 工作服 ， 做 一件 上衣 需 2.1 米 布 ， 做 一条 裤子 需 1.2 米 布 ， 采购 85.8 米 布 ， 可以 加工 多少 套 工作服 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "3873", "content": "小 青 买 了 2 棵 黄瓜 ， 付出 1.2 元 ， 找回 0.08 元 ， 每棵 黄瓜 的 价钱 = 多少 元 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "14584", "content": "丁丁 、 东东 和 当 当 3 人 的 年龄 和 是 31 岁 ， 丁丁 今年 12 岁 ， 比 当 当 大 3 岁 ． 请问 ： 东东 今年 多少岁 ．", "knowledge": ["-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "6870", "content": "工程队 修 一条 600 米 的 公路 ， 修 了 8 天 后 ， 还 剩 120 米 没 修 完 ． 平均 每天 修 多少 米 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "258", "content": "学校 买 了 4 盒 钢笔 ， 每盒 8 枝 ， 每支 钢笔 25 元 ， 一共 花 了 多少 元 ？", "knowledge": ["*"], "difficulty": 0.1, "length": 5}
+  {"question_id": "22597", "content": "有 浓度 为 10% 的 盐水 170 克 ， 加入 多少 克 盐 后 ， 盐水 的 浓度 为 15% ．", "knowledge": ["*", "-", "/"], "difficulty": 0.4, "length": 11}
+  {"question_id": "7264", "content": "小 明 买 了 3.2 千克 香蕉 ， 共 花 了 8 元 钱 ， 平均 每千克 香蕉 多少 钱 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "8153", "content": "全世界 哺乳类 动物 约 有 4000 种 ， 其中 我国 约 有 500 种 ， 我国 哺乳类 动物 占 全世界 的 百分之几 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "11885", "content": "小 红 家 装修 新房 ， 实际 花费 8 万元 ， 比 计划 节约 2 万元 ． 节约 了 百分之几 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "18112", "content": "农科院 研究所 有 一块 400 m ^ 2 的 实验田 ， 先 划出 总面积 的 (2/5) 种 白菜 ， 剩下 的 面积 按 3 ： 5 的 比例 种 西红柿 和 黄瓜 ， 种 黄瓜 的 面积 = ？", "knowledge": ["*", "+", "-", "/"], "difficulty": 0.4, "length": 11}
+  {"question_id": "16673", "content": "学习 要 买 9 个 篮球 和 8 个 小 足球 ， 共 付出 300 元 ， 每个 小 足球 价格 15 元 ， 每个 篮球 价格 多少 元 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "19447", "content": "一 根 铁丝 的 长度 为 2 米 ， 如果 把 它 平均 分成 3 份 ， 那么 每份 的 长度 = 多少 米 ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "2146", "content": "小朋友 排队 看 电影 ， 从 排头 数起 ， 小 华 是 第 18 个 ， 从 排 尾数 起 ， 小 华 是 第 30 个 ． 这 队 共有 多少 人 ．", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "1378", "content": "水果店 有 水果 820 千克 ， 每天 白天 卖出 120 千克 ， 晚上 又 进货 70 千克 ， 照 这样 计算 ， 多少 天 后 水果 恰好 卖完 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "769", "content": "一 条 路 3000 米 ， 前 5 天 平均 每天 修 100 米 ， 剩下 的 要 4 天 修 完 ， 平均 每天 修 多少 米 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "20559", "content": "(3/4) - (2/5) 的 差 去除 (5/8) ， 商 = ．", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "8557", "content": "168.54 + 368.54 + 568.54 + 768.54 + 968.54 = ．", "knowledge": ["+"], "difficulty": 0.3, "length": 9}
+  {"question_id": "22032", "content": "冬天 到 了 ， 商场 上午 卖出 25 台 取暖器 ， 下午 卖出 30 台 ， 每 台 取暖器 的 价钱 是 308 元 ， 这个 商场 这天 卖 取暖器 的 收入 = 多少 元 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "17002", "content": "计算 ： 500 + 501 + 502 + 503 = ．", "knowledge": ["+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "369", "content": "一 只 蜗牛 沿着 10 米 高 的 柱子 往上爬 ， 每天 清晨 到 傍晚 共 向 上爬 5 米 ， 夜间 下滑 4 米 ， 像 这样 ， 从 某 天 清晨 开始 ， 它 需要 几天 才能 爬 上 柱子 的 顶端 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "10440", "content": "少先队员 采集 树种 ， 第一 小组 4 人 ， 平均 每人 采集 树种 1.2 千克 ， 第 二 小组 6 人 ， 平均 每人 采集 树种 1.25 千克 ． 这 两个 组 平均 每人 采集 树种 多少 千克 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.4, "length": 11}
+  {"question_id": "12267", "content": "公交车 ， 下车 9 天 ， 上车 3 天 ， 这时 车上 还有 19 人 ， 到 站 前 车上 有 几 人 ？", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "18583", "content": "公园 里 有 柳树 160 棵 ， 是 杨树 的 (8/5) ， 槐树 棵 数 又 是 杨树 的 (4/5) ． 槐树 有 多少 棵 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9046", "content": "4 （ 2 ） 班 大部分 同学 积极 参加 课外 兴趣小组 ． 有 (4/15) 的 同学 参加 美术组 活动 ， 比 书法 小组 多 (1/15) ． 还有 几分 之 几 的 同学 没有 参加 这 两个 小组 ？", "knowledge": ["-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "12317", "content": "甲 、 乙 、 丙 3 人 共同 加工 一批 零件 ， 甲 加工 的 零件 与 乙 、 丙 两 人 加工 的 零件 总数 比 是 1 ： 2 ， 甲 、 丙 两 人 共 加工 135 个 ， 乙 加工 了 这 批 零件 的 (1/4) ， 这 批 零件 共有 几个 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "32", "content": "一 班 开展 课外活动 ， 全班 人数 的 (1/7) 参加 科技 组 ， 比 参加 阅读 组 的 少 占 全班 人数 的 (2/7) ， 参加 这 两个 组 的 人数 占 全班 人数 的 几分 之 几 ？", "knowledge": ["+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "5990", "content": "商场 在 做 促销 活动 ， 有 一种 商品 原价 1600 元 ， 在 原来 基础 上 降价 10 元 后 ， 又 降价 10% ， 现在 售价 多少 元 ？", "knowledge": ["*", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "6614", "content": "学校 有 12 个 同学 参加 朗诵 比赛 ， 比赛 的 先后顺序 由 抽签 决定 ， 小 红 抽 到 1 号 的 可能性 = ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "2122", "content": "木 工厂 要 做 2000 套 家具 ， 已经 做 了 15 天 ， 每天 做 130 套 ， 还 剩 多少 套 没有 做 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "19398", "content": "一 年 定期存款 的 年利率 是 2.25% ， 10000 元 的 存款 一年 以后 按 20% 缴纳 利息税 ， 应 交纳 利息税 多少 元 ？", "knowledge": ["*"], "difficulty": 0.2, "length": 7}
+  {"question_id": "14527", "content": "刘 明 从 学校 到 电影院 要 走 910 米 ， 4 分钟 走 了 364 米 ， 照 这样 的 速度 ， 他 从 学校 到 电影院 还要 走 多长时间 ？", "knowledge": ["-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "9348", "content": "师傅 和 徒弟 两 人 同时 加工 同 一种 零件 ， 经过 2.5 小时 ， 师傅 比 徒弟 多 加工 了 30 个 ． 已知 徒弟 每 小时 加工 80 个 ， 师傅 每 小时 加工 多少 个 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "8708", "content": "小 红 每分钟 大约 走 55 米 ， 她 从 学校 到 图书馆 大约 要 走 9 分钟 ． 学校 距 图书馆 大约 有 多 远 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "12116", "content": "食品盒 厂 原来 每天 生产 食品盒 300 个 ， 由于 改进 生产 设备 ， 现在 每天 可以 多 生产 60 个 ． 照 这样 计算 ， 生产 9000 个 食品盒 ， 可以 比 原来 提前 多少 天 完成 任务 ．", "knowledge": ["+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "22736", "content": "一 副 羽毛 拍 76 元 ， 一个 羽毛球 3 元 钱 ， 王老师 拿出 100 元 钱 买 了 一副 羽毛 拍 ， 剩下 的 钱 还 能 买 几个 羽毛球 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "5950", "content": "王 叔叔 选择 的 上网 收费 标准 是 ： 每月 交 30 元 可以 上网 50 时 ， 超时 每 时 收 1.5 元 ． 7 月份 陈 叔叔 交 了 66 元 ， 这个 月 上网 多少 时 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "1996", "content": "陶瓷工艺 厂 委托 运输 公司 送 10000 只 陶瓷 花瓶 ， 每 只 成本价 7.5 元 ， 双方 在 合同 中 规定 ， 每 只 的 运费 为 成本价 的 4% ， 若 损坏 ， 每 只 扣除 运费 ， 并 赔付 损失费 8.2 元 ， 运输 员 在 和 万 利 公司 交换 货物 后 ， 得到 2966 元 运费 ， 那么 在 运输 过程 中 ， 打破 了 几只 花瓶 ？", "knowledge": ["*", "+", "-", "/"], "difficulty": 0.5, "length": 13}
+  {"question_id": "12062", "content": "李 大伯 参加 县 农村 合作 医疗保险 ． 条款 规定 ： 农民 住院 医疗费 设 起 付 线 ， 县级 医疗机构 为 300 元 ； 在 起 付 线 以上 的 部分 按 60% 补偿 ． 今年 4 月份 李 大伯 患 了 急性 肠炎 ， 在 县 定点医院 住院治疗 了 10 天 ， 医疗 费用 共计 6260 元 ． 按 条款 规定 ， 李 大伯 只要 自付 多少 元 ？", "knowledge": ["*", "+", "-"], "difficulty": 0.3, "length": 9}
+  {"question_id": "22623", "content": "某 方便面 的 广告语 这样 说 ： “ 赠 量 25% ， 加 量 不 加价 ． ” 一袋 方便面 现在 的 重量 是 120 克 ， 你 知道 赠 量 前 = 多少 克 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "21718", "content": "李 锋 拿到 一笔 2000 元 的 奖学金 ． 他 打算 按 下面 的 方案 进行 分配 ： 其中 15% 购 学习 用书 ， (2/5) 用来 帮助 他人 ， 其余 的 全部 存入 银行 ． 他 存入 银行 的 钱 = 多少 元 ？", "knowledge": ["*", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "14346", "content": "小 明 家 的 鸡 一 天下 8 个 鸡蛋 ， 一共 重 (4/5) 千克 ， 平均 每个 鸡蛋 重 多少 千克 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "19282", "content": "芳 芳 打 一份 稿件 ， 上午 打 了 这份 稿件 总 字 的 20% ， 下午 打 了 这份 稿件 总 字 的 25% ， 一共 打 了 1350 个 字 ． 这份 稿件 一共 有 多少 个 字 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "12886", "content": "一 块 长方形 铁皮 ， 长 10 分 米 ， 宽 8 分 米 ， 沿 它 的 对角线 裁开 ， 可 裁成 2 个 大小 相等 的 三角形 ， 每个 三角形 的 面积 = 多少 平方分米 ．", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "864", "content": "一 艘 军舰 的 静水 速度 为 每 小时 54 千米 ， 海水 的 速度 是 每 小时 16 千米 ， 逆水 航行 798 千米 ， 需要 用 多少 小时 ．", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "20308", "content": "饲养场 有 鸡 500 只 ， 鸭 是 鸡 的 120% ， 鸭 有 多少 只 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "1211", "content": "5 （ 1 ） 班 图书 角 原有 一些 书 ， 借出 40 本 后 ， 还 剩 26 本 ． 图书 角 原有 多少 本书 ？", "knowledge": ["+"], "difficulty": 0.0, "length": 3}
+  {"question_id": "12031", "content": "一 个数 的 103 倍 是 5974 ， 这个 数 = ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "20755", "content": "一 根 铁丝 ， 第一次 用 去 12 米 ， 是 第 二 次 用 去 的 (6/7) ， 两次 一 共用 去 多少 米 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "2715", "content": "一 个 圆柱形 水桶 ， 若 将 高 改为 原来 的 一半 ， 底面 直径 为 原来 的 2 倍 ， 可 装 水 40 千克 ， 那么 原来 可 装 水 多少 千克 ？", "knowledge": ["*", "/", "^"], "difficulty": 0.2, "length": 7}
+  {"question_id": "22035", "content": "某 小学 有 学生 1200 人 ， 每个 学生 一天 上 5 节 课 ， 每个 老师 一天 教 4 节 课 ， 每个 班 有 1 名 教师 和 30 名 学生 ， 那么 这 所 学校 共有 教师 多少 名 ．", "knowledge": ["*", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "14234", "content": "修 一条 长 1000 m 的 水渠 ， 已经 修 了 7 天 ， 每天 修 120 m ， 还 剩下 多少 米 没有 修 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "5060", "content": "一 瓶 饮料 1.25 升 ， 喝 了 一些 后 还 剩 0.75 升 ． 喝 了 多少 升 ？", "knowledge": ["-"], "difficulty": 0.0, "length": 3}
+  {"question_id": "22893", "content": "王老师 去 某班 教室 上课 ， 从 一楼 开始 ， 每 走 一层 有 16 个 台阶 ， 一共 走 了 48 个 台阶 ， 你 知道 王老师 去 多少 楼 教室 上课 ．", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "18274", "content": "数学课 上 ， 叶 老师 布置 了 两道 数学题 ， 结果 有 15 人 做 对 了 第一道 题 ； 有 24 人 做 对 了 第 二 道 题 ； 两道 题 都 做 对 的 与 两道 题 都 做 错 的 都 是 4 人 ． 那么 ， 这个 班上 共有 多少 人 ．", "knowledge": ["+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "14210", "content": "20 加上 一个 数 的 35% 正好 等于 55 ， 求 这个 数 ．", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4290", "content": "张 阿姨 打 一份 稿件 ， 第一天 打 了 总数 的 12% ， 第 二 天 打 了 总数 的 18% ， 两天 一共 打 了 180 页 ， 这份 稿件 一共 有 多少 页 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9107", "content": "张老师 是 集邮 爱好者 ， 他 收集 了 240 张 中国 邮票 ， 收集 的 外国 邮票 比 中国 邮票 少 (1/8) ． 收集 的 外国 邮票 有 多少 张 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "224", "content": "一 堆 煤 ， 用 去 它 的 60% ， 还 剩下 24 吨 ； 若 用 去 它 的 50% ， 则 剩下 多少 吨 ．", "knowledge": ["*", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "22188", "content": "25 * 2 的 积 与 5 乘 多少 的 积 相等 ．", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10289", "content": "某 公司 要 生产 手机 54 万部 ， 前 10 天 平均 每天 生产 1.5 万部 余下 的 要 在 13 天 内 完成 ， 平均 每天 生产 手机 多少 万部 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "796", "content": "地球 上 重 1 千克 的 物体 在 月球 上 只有 (5/24) 千克 重 ， 那么 在 地球 上 重 40 千克 的 物体 在 月球 上 重 多少 千克 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "20568", "content": "小 明 爸爸 买 了 10000 元 的 国债 （ 免征 利息税 ） ， 定期 3 年 ， 利率 为 4.76% ， 到期 后 他 一共 可以 取出 多少 元 ．", "knowledge": ["*", "+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "15130", "content": "一 个数 除以 29 ， 商 和 余数 都 是 9 ， 这个 数 = ．", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10321", "content": "五年级 气象 小组 中 ， 女生 人数 占 男生 的 (3/4) ， 后来 又 有 2 名 女生 参加 这个 小组 ， 女生 人数 占 男生 人数 的 (7/8) ． 问 这个 气象 小组 原来 有 女生 多少 人 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "4946", "content": "某 自行车厂 去年 计划 生产 自行车 12600 辆 ， 结果 上半年 完成 计划 的 55% ， 下半年 完成 计划 的 60% ， 实际 比 计划 多 生产 了 多少 辆 ？", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "8291", "content": "全国 统一 鞋号 中 ， 成年 男 鞋 有 14 种 尺码 ， 其中 最小 的 尺码 是 23.5 厘米 ， 各 相邻 两个 尺码 都 相差 0.5 厘米 ， 其中 最大 的 尺码 = ？", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "22945", "content": "学校 图书室 原有 藏书 4580 册 ， 有 209 册 破损 清除 了 ， 6 一 儿童节 时 同学 们 又 补 捐 了 1049 册 ， 学校 现有 图书 多少 册 ？", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9470", "content": "比 13 少 3 的 数 = ．", "knowledge": ["-"], "difficulty": 0.0, "length": 3}
+  {"question_id": "5955", "content": "一 个 平行四边形 面积 是 36.4 平方厘米 ， 高 是 1.4 厘米 ， 它 的 底 = 多少 厘米 ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "11486", "content": "有 足球 72 个 ， 正好 是 篮球 个数 的 8 倍 ， 篮球 有 多少 个 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "17321", "content": "东风 轧钢厂 ， 4.5 小时 轧钢 94.5 吨 ， 照 这样 算 ， 轧 50.4 吨 的 钢 ， 需要 多少 小时 ？", "knowledge": ["/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "11915", "content": "第一 车间 原 计划 用 48 小时 生产 3360 个 零件 ， 实际 每 小时 生产 75 个 ， 比 原 计划 每 小时 多 生产 多少 个 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "8023", "content": "一 批 冬瓜 ， 卖出 100 千克 ， 卖出 的 与 剩下 的 比 是 5 ： 8 ． 这 批 冬瓜 共 多少 千克 ？", "knowledge": ["+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "18817", "content": "某 工厂 制造 一批 机器 ， 计划 每天 生产 64 台 ， 15 天 完成 ． 实际 只用 了 12 天 就 完成 了 任务 ， 比 原 计划 每天 多 生产 多少 台 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "1118", "content": "小 英 说 ： “ 我 做 了 38 朵 红花 ， 18 朵 黄花 ． ” 小 玲 说 ： “ 我 要 将 小 英 做 的 花 扎成 花束 ， 每 8 朵 扎成 一束 ， 可以 扎成 多少 束 ？ ” 请 你 帮 小 玲 算 一 算 ．", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10943", "content": "5 只 面包 共 重 300 克 ， 一只 面包 重 多少 克 ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "7767", "content": "一 辆 卡车 运 苹果 ， 每次 运 200 箱 ， 4 次 运 完 这 批 苹果 的 (2/7) ． 这 批 苹果 有 多少 箱 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "3428", "content": "工程队 要 挖 一条 900 米 长 的 水渠 ， 计划 每天 挖 60 米 ， 由于 采用 新 技术 ， 实际 每天 比 计划 多 挖 30 米 ． 实际 用 多少 天 挖 完 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "7965", "content": "实际 产量比 计划 产量 增加 20% ， 实际 产量 是 计划 产量 的 多少 % ．", "knowledge": ["+"], "difficulty": 0.0, "length": 3}
+  {"question_id": "6344", "content": "一 座 电视塔 高 120 米 ， 是 电视台 大楼 高度 的 4 倍 ． 电视台 大楼 高 多少 米 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "7476", "content": "一 捆 电线 长 200 米 ， 用 去 一些 后 ， 还 剩下 (2/5) ． 用 去 的 比 剩下 的 多 多少 米 ？", "knowledge": ["*", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "13620", "content": "新兴 学校食堂 原来 有 大米 427 千克 ， 上周 吃 了 300 千克 后 ， 又 运 来 大米 325 千克 ， 食堂 现在 有 多少 千克 大米 ？", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "22847", "content": "电信局 给 景 华 小区 710 户 居民 安装 电话 ， 7 天 安装 了 556 户 ， 余下 的 2 天 完成 ， 余下 的 平均 每天 安装 多少 户 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "7499", "content": "某 农场 植树造林 ， 去年 植树 80 公顷 ， 今年 植树 100 公顷 ， 今年 造林 面积 比 去年 多 百分之几 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "8546", "content": "甲乙 两地 相距 480 千米 ， 客货 两车 同时 从 甲乙 两地 相向 而 行 ， 客车 平均 每 小时 行 65 千米 ， 货车 平均 每 小时 行 60 千米 ， 行驶 了 3 小时 ， 这时 两车 还 相距 多少 千米 ？", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "8902", "content": "320 被 68 - 4 的 差 除 ， 商 = ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "22245", "content": "六年级 一班 男生 有 72 人 ， 女生 有 21 人 ， 全班学生 占 六年级 学生 总数 的 (3/10) ． 六年级 有 学生 多少 人 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "19221", "content": "三年级 有 4 个 小组 ， 每组 11 人 ， 平均 每人 采 5 个 昆虫 标本 ， 全年 级 一共 采集 多少 个 ？", "knowledge": ["*"], "difficulty": 0.1, "length": 5}
+  {"question_id": "16412", "content": "5679 + 9999 + 8889 + 4321 = ．", "knowledge": ["+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "21845", "content": "甲 、 乙 两个 工程队 分别 从 两端 同时 开凿 一条 隧道 ． 甲队 每天 开凿 18 米 ， 乙 队 每天 开凿 32 米 ， 120 天 后 凿 完 ． 这 条 隧道 长 多少 米 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "19740", "content": "一 种 药水 原价 每瓶 3.8 元 ， 降价 后 为 3.42 元 ． 现价 比 原价 降低 了 百分之几 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "16091", "content": "285 / 5 的 商 再 加上 141 ， 和 = ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "6416", "content": "北欧 有 一种 候鸟 ， 名叫 金 鴴 ． 迁徙 时 它 的 飞行速度 很快 ， 平均 每 小时 能 飞行 90 千米 ． 如果 连续飞行 15 小时 ， 一共 能 飞行 多少 千米 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "37", "content": "李 叔叔 把 2000 元 人民 存入 银行 ， 定期 2 年 ， 年利率 为 2.25% ， 到期 后 他 一共 从 银行 取回 多少 元 钱 ？", "knowledge": ["*", "+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "21606", "content": "计算 ： 41.7 * 4.3 + 43 * 0.71 + 512 * 0.43 = ．", "knowledge": ["*", "+"], "difficulty": 0.4, "length": 11}
+  {"question_id": "5589", "content": "有 一 本书 ， 丁丁 每天 看 40 页 ， 看 了 8 天 ， 还 剩 58 页 ， 这 本书 一共 有 几页 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9805", "content": "工人 师傅 和 徒弟 做 机器 零件 ， 王师傅 每 小时 做 45 个 ， 徒弟 每 小时 做工 35 个 ， 他们 一起 工作 8 小时 ， 一共 做 了 多少 个 零件 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "332", "content": "一 项 工程 ， 如果 40 人 来 做 ， 30 天 可以 完成 ． 如果 50 人 来 做 ， 多少 天 可以 完成 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "3079", "content": "在 一条 长 600 米 的 马路 一边 安装 路灯 （ 两端 都 装 ） ， 每隔 30 米 装 1 盏 ， 一共 要 装 多少 盏 路灯 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "21890", "content": "某 机械厂 加工 一批 零件 ， 第一 车间 加工 了 这些 零件 的 (3/5) ， 第 二 车间 加工 了 这 批 零件 的 (5/8) ， 结果 超产 450 个 ， 这个 厂 计划 加工 多少 个 机器 零件 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "16974", "content": "甲乙 两车 同时 从 ab 两地 对 开 ， 甲 每 小时 比 乙 多行 5 千米 ， 4 小时 两车 相遇 ， 相遇 时 乙 行 全程 的 48% ， a 、 b 两地 有 多少 千米 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "15842", "content": "一 节 课 的 时间 是 (2/3) 小时 ， 老师 讲课 用 了 (1/4) 小时 ， 同学 们 用于 探索 、 实践 活动 的 时间 是 (1/3) 小时 ， 剩下 的 是 同学 们 独立 作业 的 时间 ． 同学 们 独立 作业 的 时间 = 多少 小时 ？", "knowledge": ["-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9861", "content": "学校食堂 运 来 大米 3000 千克 ， 计划 吃 20 天 ， 实际 吃 了 25 天 ， 实际 每天 比 原 计划 少 吃 多少 千克 ？", "knowledge": ["-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "8435", "content": "72 与 23 的 积 ， 减去 2400 / 30 所得 的 商 ， 差 = ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "18690", "content": "友谊 超市 有 进口 水果 120 千克 ， 恰好 是 国产 水果 的 (4/5) ． 这个 超市 有 国产 水果 多少 千克 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "9103", "content": "妈妈 带 了 800 元 钱 ， 买手机 用 去 450 元 ， 买 书 用 去 了 185 元 ， 还 剩 多少 元 ？", "knowledge": ["-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "17377", "content": "“ 苹果 的 筐 数 比 梨 多 (1/3) ” 这 句 话 是 把 多少 看作 单位 “ 1 ” 也就是说 苹果 的 筐 数 是 梨 的 多少 ．", "knowledge": ["+"], "difficulty": 0.0, "length": 3}
+  {"question_id": "12001", "content": "一 种 商品 降价 20% 后 是 160 元 ， 这种 商品 原价 多少 元 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10127", "content": "“ 6 一 ” 儿童节 书店 优惠 售书 ， 所有 图书 一律 0.8 出售 ． 李 芳 买 了 两本书 ， 标价 分别 为 32 元 和 18 元 ． 李 芳 一共 花 多少 元 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "3533", "content": "强强 家 每月 收入 3000 元 ， 除去 600 元 的 住房贷款 外 ， 余下 的 按 3 ： 5 分配 ， 分别 作为 储蓄 和 生活费用 ． 请 你 帮忙 算 一 算 ， 强强 家 每月 的 生活费用 = 多少 元 ？", "knowledge": ["*", "+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "8220", "content": "减数 是 45 ， 被减数 是 92 ， 差 = ？", "knowledge": ["-"], "difficulty": 0.0, "length": 3}
+  {"question_id": "7101", "content": "甲 数 是 305 ， 比 乙 数 少 84 ， 乙 数 = ．", "knowledge": ["+"], "difficulty": 0.0, "length": 3}
+  {"question_id": "17299", "content": "甲 、 乙 两包 糖 的 质量 比 是 4 ： 1 ， 如果 从 甲 包 中 取出 10 克 放入 乙 包 后 ， 甲 、 乙 两包 糖 的 质量 比 变为 7 ： 8 ， 那么 甲 、 乙 两包 糖果 质量 的 总和 = 多少 克 ．", "knowledge": ["+", "-", "/"], "difficulty": 0.5, "length": 13}
+  {"question_id": "10532", "content": "学校 美术 小组 有 12 人 ， 是 书法 小组 人数 的 (3/5) ， 书法 小组 的 人数 是 音乐 小组 的 (5/8) ， 音乐 小组 有 多少 人 ？", "knowledge": ["/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "18380", "content": "一 种 钢材 ， 现在 每吨 售价 1800 元 ， 比 原价 调 高 了 12.5% ， 原来 每吨 售价 多少 元 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "13722", "content": "小 明 和 小 刚 上学 同时 从 家 出发 ， 相向 而 行 ． 小 明 每分钟 走 60 米 ， 小 刚 每分钟 走 50 米 ． 18 分钟 后 ， 两 人 在 学校 相遇 ， 小 明 和 小 刚 家 相距 多少 米 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "2604", "content": "新华书店 新 到 一批 书 ， 这 批 书 如果 每包 20 本 ， 要 捆 18 包 ． 如果 要 捆成 15 包 ， 每包 多少 本 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "14201", "content": "某 服装厂 原有 工人 500 人 ， 其中 女工 占 (4/5) ， 今年 又 招进 一批 女工 ， 这时 女工 占 总 人数 的 (5/6) ， 今年 又 招进 多少 人 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.4, "length": 11}
+  {"question_id": "20087", "content": "沿 一个 长方形 操场 4 周 种树 ， 每隔 4 米 种 一棵 ， 一共 种 了 30 棵 ． 这个 操场 的 周长 = 多少 米 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "22337", "content": "一 个 书架 ， 上下 两层 ， 上层 存放 了 80 本书 ， 下层 存放 的 图书 比 上层 的 4 倍 还 多 12 本 ． 这个 书架上 一共 存放 了 多少 本书 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9917", "content": "修建 一幢 大楼 ， 用 去 1128 万元 ， 比 计划 节约 6% ， 原 计划 投资 多少 万元 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "8490", "content": "甲 、 乙 两城 相距 520 千米 ， 一列 快车 从 甲 城 出发 ， 同时 一列 慢车 从 乙 城 开出 ， 两车 相向 而 行 ． 快车 每 小时 行 80 千米 ， 是 慢车 速度 的 1.6 倍 ， 经过 多少 时间 两车 相遇 ？", "knowledge": ["+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "6717", "content": "2.99 加上 多少 个 0.01 是 5 ．", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "1516", "content": "一 袋 米 用 去 了 (1/3) ， 再 加入 1.5 千克 ， 这时 袋 里 的 米 相当于 原来 的 (3/4) ， 这 袋 米 原来 有 多少 千克 ？", "knowledge": ["-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "9924", "content": "9899 再 添 上 1 = ．", "knowledge": ["+"], "difficulty": 0.0, "length": 3}
+  {"question_id": "18201", "content": "某 电脑公司 4 月份 营业额 35 万元 ， 如果 按 营业额 的 5% 缴纳 营业税 ． 应 缴纳 营业税 多少 万元 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "5256", "content": "某 页 口 算 ， 小 明 做 了 5 分钟 ， 平均 每分钟 做 10 道 ， 还有 16 道 没 完成 ， 这 页 口 算 一共 有 多少 道 题 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "3413", "content": "五年级 体育 “ 达标 ” 人数 比 四年级 多 (2/9) ， 实际 多 12 人 ． 四年级 体育 “ 达标 ” 的 有 多少 人 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "7187", "content": "矿泉水 每箱 24 瓶 ， 学校 买来 25 箱 这样 的 矿泉水 ， 一共 买 了 多少 瓶 矿泉水 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "20740", "content": "一 辆 客车 上午 9 时 从 甲地 出发 ， 14 时 到达 乙地 ， 这辆 客车 的 车速 是 每 小时 45 千米 ． 甲乙 两地 的 距离 = 多少 千米 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "17185", "content": "从 76 里面 连续 减 8 ， 减 了 多少 次 还 剩 4 ．", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4154", "content": "文具店 运进 一批 红 、 蓝墨水 ， 其中 红墨水 65 箱 ． 当 红墨水 售出 25 箱 ， 蓝墨水 售出 20% 后 ， 剩下 的 红 蓝墨水 相等 ． 原 运进 的 蓝墨水 有 多少 箱 ？", "knowledge": ["-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "7646", "content": "星星 小学 一年级 有 男生 378 人 ， 女生 346 人 ． 已经 检查 身体 的 有 398 人 ， 没 检查 身体 的 有 多少 人 ？", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "1368", "content": "一 个数 的 2 倍 + 1.8 的 和 是 16 ， 求 这个 数 ．", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "14290", "content": "学校 图书室 订阅 科技 书 和 童话 书 共 83 种 ， 其中 科技 书 38 种 ． 科技 书 比 童话 书 少 订阅 多少 种 ？", "knowledge": ["-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "12390", "content": "妈妈 从 家 出发 到 学校 去 接 小 红 ， 妈妈 每分钟 走 75 米 ． 妈妈 走 了 3 分钟 后 ， 小 红 从 学校 出发 ， 小 红 每分钟 走 60 米 ． 再 经过 20 分钟 妈妈 和小红 相遇 ． 从小红 家 到 学校 有 多少 米 ？", "knowledge": ["*", "+"], "difficulty": 0.3, "length": 9}
+  {"question_id": "3371", "content": "一 件 衣服 现价 320 元 ， 这件 衣服 的 价格比 原来 降低 了 80 元 ． 问 这件 衣服 的 价格比 原来 降低 了 百分之几 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "17255", "content": "在 一条 长 60 米 的 公路 上 ， 每隔 6 米 种 一棵 杨树 （ 两端 都 种 ） ． 如果 只 种 一侧 ， 需要 多少 棵 树苗 ．", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10156", "content": "一年级 有 43 人 ， 二年级 的 人数 比 一年级 少 18 人 ， 二年级 有 多少 人 ？", "knowledge": ["-"], "difficulty": 0.0, "length": 3}
+  {"question_id": "15329", "content": "一 条 公路 长 4600 米 ， 已经 修 了 25 天 ， 平均 每天 修 160 米 ， 还 剩下 多少 没有 修 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "8000", "content": "某 小学 750 名 学生 去年 参加 了 小学生 团体 平安保险 ， 每人 的 保险金额 是 4000 元 ， 保险费率 是 0.1% ． 去年 有 2 名 学生 因 意外事故 受伤 ， 每人 得到 保险公司 的 赔款 450 元 ． 这些 赔款 占 全校 缴纳 保险费 总数 的 百分之几 ？", "knowledge": ["*", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "1719", "content": "小 华 家 今年 收 玉米 6000 千克 ， 今年 比 去年 增产 25% ， 小 华 家 去年 和 今年 共 收 玉米 多少 千克 ？", "knowledge": ["+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "18157", "content": "汽车 5 小时 行驶 375 千米 ， 飞机 4 小时 行驶 1800 千米 ， 飞机 时速 是 汽车 时速 的 多少倍 ？", "knowledge": ["/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "3634", "content": "把 42 米 长 的 铁丝 截 成 相等 的 小 段 ， 每 段长 (6/7) 米 ， 可以 截 成 几段 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "1422", "content": "科技馆 播放 “ 火星 的 秘密 ” ， 每场 可 容纳 125 人 ， 每天 播放 6 场 ， 连播 了 4 天 还有 35 名 学生 没有 看到 ． 一共 有 多少 名 学生 要 看 “ 火星 的 秘密 ” ？", "knowledge": ["*", "+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "7124", "content": "等差数列 1 、 3 、 5 、 … 、 197 、 199 共有 多少 项 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "16637", "content": "修 一条 公路 ， 原 计划 每天 修 0.5 千米 ， 40 天 完成 ， 实际 每天 比 原 计划 多 修 0.3 千米 ， 实际 多少 天 完成 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "17939", "content": "春节 到 了 ， 糖果店 要 配置 一种 礼品 糖 ， 所 需 奶糖 和 巧克力 的 质量 比 为 5 ： 3 ． 现 要 配置 这种 礼品 糖 ， 奶糖 和 巧克力 各 有 60 千克 ， 那么 当 奶糖 全部 用 完 时 ， 巧克力 还 剩 多少 千克 ．", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "9114", "content": "从 甲地 到 乙地 ， 其中 (3/10) 是 上坡路 ， (7/10) 是 下坡路 ． 一 人 在 甲乙 间 往返 一趟 ， 共 走 上坡路 5 千米 ， 那么 从 乙地 返回 甲地 时 行 上坡路 多少 千米 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "15852", "content": "甲 数 是 20 ， 乙 数 是 甲 数 的 (1/6) ， 丙 数 是 乙 数 的 (6/5) ， 丙 数 = ．", "knowledge": ["*"], "difficulty": 0.1, "length": 5}
+  {"question_id": "2788", "content": "多少 是 20 米 的 (7/10) ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "9299", "content": "贺 林家 养鸡 的 只 数 是 鹅 的 6 倍 ， 鸭 比 鹅 多 8 只 ， 鸭 有 15 只 ． 贺 林 家养 了 多少 只 鸡 ．", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "15050", "content": "a型 电脑 的 键盘 有 104 个 键 ， 比 b型 钢琴 的 键 的 个数 的 2 倍 少 72 个 ， 则 b型 钢琴 的 键盘 有 多少 个 键 ．", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "22880", "content": "我国 火车 提速 后 ， 某 铁路干线 上 火车 速度 是 平均 每 小时 200 千米 ， 比 提速 前 每 小时 快 40 千米 ， 火车 速度 提高 了 百分之几 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9021", "content": "一 份 报纸 的 批发价 是 1.8 元 ， 零售价 是 2.5 元 ， 王 阿姨 星期天 卖报 赚 了 56 元 ， 她 卖出 了 多少 份 报纸 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9793", "content": "360 / 40 的 商 减去 100 与 95 的 差 ， 差 = ？", "knowledge": ["-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "10185", "content": "买 一辆 汽车 ， 分期付款 要 多 加价 7% ， 如果 用 现金 购买 只 需 按 原价 的 95% 付款 ， 韦 老师 算了算 ， 发现 分期付款 比 现金 购买 要 多付 7200 元 ， 这辆 汽车 的 原价 = 多少 元 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "17235", "content": "把 一根 钢管 截 成 6 段 ， 每 截 一次 用 3 分钟 ， 一共 要 用 多少 分钟 ．", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "5358", "content": "(1/2) + 0.5 的 和 乘 12.75 与 (1/3) 的 差 ， 积 = ？", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "15205", "content": "明明 和 3 名 同学 到 公园 游玩 ， 他们 带 50 元 钱 买 门票 还 剩 18.8 元 ． 门票 每张 多少 元 钱 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "19757", "content": "一 辆 汽车 行 25 千米 耗油 2 升 ， 平均 每 升 油 能 行驶 多少 千米 ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "12112", "content": "粮库 有 大米 850 吨 ， 面粉 的 重量 是 大米 的 2 倍 ． 玉米 比 大米 、 面粉 重量 的 总和 少 30 吨 ， 玉米 有 多少 吨 ？", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "18233", "content": "小 南 、 小 北 和 小 东 参加 接力赛 ， 小 南 跑 第一 棒 ， 跑 完全 程 的 (1/3) 后 ， 把 接力棒 传给 小 北 ， 小 北 接着 跑 完全 程 的 (2/5) ， 把 接力棒 传给 小 东 ， 小 东 跑 到 了 终点 ， 小 东 跑 了 全程 的 几分 之 几 ？", "knowledge": ["-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "1584", "content": "妈妈 带 100 元 去 商店 ， 买 了 水壶 后 还 剩 57 元 ， 买 水壶 花 了 多少 钱 ？", "knowledge": ["-"], "difficulty": 0.0, "length": 3}
+  {"question_id": "2569", "content": "农场 养 了 348 只 公鸡 ， 295 只 母鸡 ． 养鸭 的 只 数 比 鸡 的 只 数多 68 只 ． 农场 养 了 多少 只 鸭 ？", "knowledge": ["+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "13166", "content": "小 明 和 小 华 俩 人 各 有 一些 书 ， 小 明 借给 小 华 10 本书 后 ， 小 华 的 本 数 恰好 是 小 明 书 的 (4/5) ． 如果 小 明 原来 有 180 本书 ， 小 华 原来 有 书 有 多少 本 ？", "knowledge": ["*", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "22323", "content": "某 小区 新建 15 栋 楼房 ， 每栋 有 6 层 ， 每层 8 户 ， 新建 楼房 可以 住 多少 户 人家 ？", "knowledge": ["*"], "difficulty": 0.1, "length": 5}
+  {"question_id": "19903", "content": "食品店 运 来 奶油 饼干 10 千克 ， 比 巧克力 饼干 少 42 千克 ， 运 来 巧克力 饼干 多少 千克 ．", "knowledge": ["+"], "difficulty": 0.0, "length": 3}
+  {"question_id": "8815", "content": "小 华 和 小 明 各 集邮票 45 张 ， 小 华 的 邮票 给 小 明 5 张 ， 这时 ， 小 华 的 邮票 是 小 明 的 百分之几 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "21048", "content": "张师傅 将 一批 瓶装 矿泉水 装箱 ， 当 他 装满 15 箱 时 ， 发现 已 装 的 矿泉水瓶 数 比 这 批 矿泉水瓶 数 的 (4/7) 还 少 12 瓶 ， 接着 他 又 装满 13 箱 ， 正好 装完 ． 这 批 矿泉水 共有 多少 瓶 ．", "knowledge": ["+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "9213", "content": "小 明 5 天 看 了 15 页 书 ， 照 这样 计算 ， 他 一个月 （ 30 天 ） 能 看 多少 页 书 ．", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "2429", "content": "为 有效 调控 过 快 上涨 的 房价 ， 国务院 于 2010 年 4 月 出台 一项 关于 住房贷款 的 新 政策 ： 家庭 购买 第 二 套 住房 ， 首付 比例 从不 低于 30% 上调 至 不 低于 50% ． 小 明 家 现在 打算 贷款 购买 一套 总价 为 45 万元 的 住房 （ 小 明 家 已有 一套 房子 ） ， 首付款 最少 需要 多少 万元 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "22150", "content": "小 兰 的 妈妈 到 超市 买 毛线 ， 带 的 钱 刚好 够买 每千克 9.5 元 的 毛线 和 每千克 8.5 元 的 蓝 毛线 4 千克 ， 现在 她 想 用 这些 钱 买 每千克 12.5 元 的 黄 毛线 ， 可以 买 几千克 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "21689", "content": "特快 列车 1 小时 约 行 120 千米 ， 6 小时 可行 多少 千米 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "14043", "content": "一 段 公路 长 60 千米 ， 已经 修 了 这 段 公路 的 (3/5) ， 已经 修 了 多少 千米 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "19101", "content": "为 迎接 奥运 ， 学校 制作 了 一批 纸花 ， 其中 红花 375 朵 ， 比 黄花 多 25% ， 黄花 有 多少 朵 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "8824", "content": "一 张 桌 130 元 ， 一把 椅子 比 一张 桌子 便宜 63.5 元 ． 一张 桌子 和 一把 椅子 共 多少 元 ？", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4275", "content": "师徒 二 人 合 做 800 个 零件 ， 师傅 每 时 加工 50 个 ， 徒弟 每 时 加工 40 个 ， 师傅 有事 耽误 了 2 时 ， 完成 了 任务 后 ， 师傅 工作 了 多少 时 ？", "knowledge": ["*", "+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "16457", "content": "蔬菜 批发市场 运 来 675 千克 黄瓜 ， 运 来 西红柿 的 重量 是 黄瓜 的 (7/9) ． 运 来 黄瓜 和 西红柿 共 多少 千克 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "16360", "content": "一 个 梯形 的 上 底 是 7 厘米 ， 下 底 是 上 底 的 2 倍 ， 高 比 下 底 少 3 厘米 ， 它 的 面积 = 多少 平方厘米 ．", "knowledge": ["*", "+", "-", "/"], "difficulty": 0.5, "length": 13}
+  {"question_id": "7300", "content": "一 辆 公共汽车 上 原来 有 25 位 乘客 ， 到 人民 公园 后 ， 下去 9 人 ， 又 上 了 17 人 ， 现在 公共汽车 上 有 多少 位 乘客 ？", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "13325", "content": "学校 买来 120 套 课桌椅 ， 每张 案子 的 价格 是 75 元 ， 每 把 椅子 的 价格 是 36 元 ， 学校 买 这些 课桌椅 一 共用 去 多少 元 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "7431", "content": "李师傅 昨天上午 生产 80 个 零件 ， 下午 生产 100 个 零件 ． 今天 生产 的 是 昨天 的 (8/9) ． 今天 李师傅 生产 了 多少 个 零件 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9094", "content": "同学 们 参加 兴趣小组 ， 音乐 小组 有 27 人 ， 比 英语 小组 少 (2/5) ， 音乐 小组 比 英语 小组 少 多少 人 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "21809", "content": "学校 把 植 一批 树 的 任务 按 3 ： 4 ： 5 分给 4 、 5 、 六 3 个 年级 ， 五年级 植 了 40 棵 ， 这 批 树 共有 多少 棵 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "1434", "content": "粮店 运进 一批 面粉 (5/4) 吨 ， 第一天 售出 (1/4) 吨 ， 第 二 天 售出 (1/5) 吨 ． 两天 一共 售出 多少 吨 ？", "knowledge": ["+"], "difficulty": 0.0, "length": 3}
+  {"question_id": "7245", "content": "丽丽 的 母亲 给 家中 汇款 1000 元 ， 按规定 汇费 是 汇款 的 1% ， 丽丽 的 母亲 应付 汇费 多少 元 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "21896", "content": "乐 购 超市 在 国庆 期间 进行 薯片 促销 活动 ， 原价 每罐 7.8 元 ， 现在 以 买 3 送 1 的 形式 进行 “ 捆绑式 销售 ” ． 折算 下来 ， 现在 每罐 薯片 的 价格 相当于 原价 的 百分之几 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "13524", "content": "工程队 铺 一条 路 ， 如果 每天 铺 0.75 千米 ， 12 天 可以 铺 完 ． 如果 每天 多 铺 0.15 千米 ， 多少 天 可以 铺 完 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "2163", "content": "0.6 * 1.2 = ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "13289", "content": "一 批 水泥 ， 用 去 12 吨 ， 剩下 的 是 用 去 的 (1/4) ， 剩下 水泥 多少 吨 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "11774", "content": "把 7.36 扩大 多少倍 是 7360 ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "20949", "content": "一 条 绳子 长 5 米 ， 第一次 用 去 它 的 (3/5) ， 第 二 次 用 去 它 的 (1/6) ， 还 剩 它 的 几分 之 几 ．", "knowledge": ["-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9751", "content": "一 个数 的 (1/2) 比 这个 数 的 25% 多 10 ， 这个 数 = ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "15718", "content": "把 一根 钢管 截 成 3 段 需要 14.4 分钟 ， 照 这样 计算 ， 如果 把 一根 钢管 截 成 6 段 ， 要 用 多少 分钟 ．", "knowledge": ["*", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "3087", "content": "有 10 箱 可乐 和 15 箱 水 ， 每箱 都 装 24 瓶 ， 一共 多少 瓶 饮料 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "13173", "content": "三年级 一班 有 45 人 ， 每人 至少 参加 了 跳绳 、 长跑 两项 体育 活动 中 的 一项 ． 参加 跳绳 活动 的 有 28 人 ， 参加 长跑 活动 的 有 30 人 ， 两项 活动 都 参加 的 有 多少 人 ．", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "12519", "content": "有 大小 两种 包装 的 面粉 各 4 袋 ， 大袋 每包 75 千克 ， 小袋 每包 25 千克 ． 一共 有 多少 千克 面粉 ？", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "21518", "content": "王老师 把 一根 1 米 长 的 绳子 平均 截 成 3 段 ， 每 段 占 绳子 全长 的 几分 之 几 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "12520", "content": "学校食堂 有 一些 大米 ， 3 天 吃 了 (3/5) ， 还 剩 60 千克 ， 这些 大米 共有 多少 千克 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "13247", "content": "新兴 机床厂 要 生产 720 台 机床 ． 计划 每天 生产 80 台 ， 实际 每天 比 计划 多 生产 10 台 ， 实际 多少 天 可 完成 任务 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "14564", "content": "修路 队 要 修 一段 公路 ． 第一天 修 了 全长 的 25% ， 第 二 天 修 了 70 米 ， 这时 已修 的 和 未 修 的 长度 比 是 3 ： 2 ， 这 段 公路 有 多长 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "9675", "content": "学校 美术 展览 中 ， 有 40 幅 水彩画 ， 50 幅 蜡笔画 ， 蜡笔画 比 水彩画 多 百分之几 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10083", "content": "一 件 衣服 原价 是 45 元 ， 打 0.8 后 ， 现在 价钱 = 多少 元 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "7422", "content": "甲乙 两地 相距 300 千米 ， 一辆 汽车 由 甲地 开出 5 小时 后 ， 距离 乙地 还有 74.5 千米 ， 这辆 汽车 平均 每 小时 行 多少 千米 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "982", "content": "甲 、 乙 两艘 轮船 同时 从 天津 沿 同一 航线 开往 武汉 ， 甲 船 每 小时 行 26.8 千米 ， 经过 12.5 小时 乙 船 超过 甲 船 7.5 千米 ． 乙 船 每 小时 行 多少 千米 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "20248", "content": "一 台 收录机 485 元 ， 王老师 买 了 2 台 ， 付 了 1000 元 ， 应 找回 多少 元 钱 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "17322", "content": "12 元 钱 可以 买 3 辆 汽车 ， 那么 小 明 想 买 5 辆 小汽车 ， 需要 多少 钱 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "22704", "content": "甲 数 是 120 ， 比 乙 数多 40 ， 乙 数 恰好 等于 丙 数 的 (5/6) ， 丙 数 = ．", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "11620", "content": "一 台 拖拉机 要 耕 9.6 公顷 地 ， 前 3 小时 耕 了 3.6 公顷 ， 照 这样 计算 ， 剩下 的 几小时 耕 完 ？", "knowledge": ["-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "13515", "content": "爸爸 的 身高 是 180 厘米 ， 小 刚 的 身高 是 爸爸 的 (7/9) ， 小 刚 的 身高 = 多少 厘米 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "11052", "content": "在 国庆 长假 里 ， 超市 前 3 天 共 完成 销售额 3.52 亿元 ， 后 4 天 平均 每天 完成 销售额 1.85 亿元 ｡ 国庆 长假 间 ， 超市 平均 每天 的 销售额 = 多少 亿元 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "8889", "content": "57 / □ = 9 … 3 ， 方框 里 应 填 多少 ．", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "5325", "content": "8.28 / 3.6 与 0.5 的 积 ， 商 = ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "19121", "content": "19.38 * 39 + 193.8 * 1.7 + 1.938 * 440 = ．", "knowledge": ["*", "+"], "difficulty": 0.4, "length": 11}
+  {"question_id": "14299", "content": "一 个 正方体 的 容器 ， 棱 长 12 厘米 ， 装满水 后 ， 倒入 一 底面 长 20 厘米 ， 宽 15 厘米 ， 高 18 厘米 的 长方体 容器 中 ， 现在 水 的 深度 = 多少 厘米 ？", "knowledge": ["*", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "11591", "content": "把 12 支 铅笔 看做 一个 “ 整体 ” ， 它 的 (5/6) = 多少 支 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "4254", "content": "2 个人 (7/2) 天 吃 35 个 馒头 ， 平均 每个 人 每天 吃 几个 馒头 ？", "knowledge": ["/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "19152", "content": "由于 采用 了 高新技术 ， 某 产品 现在 每件 成本 是 45 元 ， 比 原来 降低 了 25% ， 原来 每 件产品 成本 = 多少 元 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "2580", "content": "一 辆车 平均 每 小时 行 48 千米 ， 5 小时 到达 目的地 ． 如果 平均 每 小时 行 60 千米 ， 可以 提前 几小时 到达 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "11138", "content": "小 刚 和 同学 一共 买 了 3 枝 钢笔 ， 付给 营业员 20 元 ， 找回 0.8 元 ， 平均 每枝 钢笔 多少 元 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4876", "content": "69 + 18 + 23 + 31 + 82 = ．", "knowledge": ["+"], "difficulty": 0.3, "length": 9}
+  {"question_id": "1298", "content": "长方形 的 长 是 8 cm ， 宽比 长短 2 cm ， 这个 长方形 的 周长 = ．", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "6507", "content": "人 骑 自行车 的 速度 是 16 千米 / 时 ， 小 王 双休日 骑车 15 时 ， 求 他 所 行 的 路程 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "22104", "content": "操场上 原来 有 30 个 同学 ， 又 来 25 个 同学 ． 这些 同学 5 人 排 一行 ， 可以 排 多少 行 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "14605", "content": "一 本书 共 200 页 ， 已经 看 了 50 页 ， 已经 看 了 这 本书 的 几分 之 几 ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "2581", "content": "一 个 因数 是 126 ， 另 一个 因数 是 15 ， 积 = ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "9724", "content": "新华书店 有 故事书 1072 本 ， 是 科技 书 的 4 倍 ， 连环画 的 本 数 比 科技 书 的 3 倍 还 多 20 本 ， 连环画 有 多少 本 ？", "knowledge": ["*", "+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "1792", "content": "师傅 每分钟 织布 (1/5) 米 ， 徒弟 8 分钟 织 的 布 和 师傅 6 分钟 织 的 布 同样 多 ， 徒弟 每分钟 织布 多少 米 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "22205", "content": "甲 、 乙 两车 a 、 b 两地 同时 出发 相向 行驶 ， 8 分钟 相遇 ． 若 甲 车 每分钟 少 行 180 米 ， 乙 车 每分钟 多行 230 米 ， 7 分钟 相遇 ． a 、 b 两地 的 距离 = 多少 米 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.4, "length": 11}
+  {"question_id": "14825", "content": "双 鹿 毛线 0.8 千克 卖 46 元 ， 平均 每千克 多少 元 ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "22474", "content": "一 车间 有 32 名 工人 ， 5 月份 前 9 天 共 加工 零件 14400 个 ． 平均 每个 工人 每天 加工 零件 多少 个 ？", "knowledge": ["/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "7267", "content": "兵 兵家 去年 比 今年 少收 500 千克 葡萄 ， 今年 收 葡萄 比 去年 增产 8% ， 今年 收 葡萄 多少 千克 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4374", "content": "0.9 是 9 个 多少 ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "17146", "content": "张大妈 家 上个月 用 了 8 吨 水 ， 水费 是 12.8 元 ． 李 奶奶家 上个月 用 了 10 吨 水 ， 李 奶奶家 上个月 的 水费 = 多少 钱 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "16117", "content": "一 幢 高 59 米 的 楼房 ， 第一层 的 层高 4.6 米 ， 其余 每层 的 层高 都 是 3.2 米 ， 这幢 楼房 一共 有 几层 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "8104", "content": "一 根 钢管 ， 如果 截去 它 的 40% 后 ， 还 剩 2.4 米 ； 如果 截去 它 的 (1/3) ， 还 剩 多少 米 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "13265", "content": "新村 今年 修 了 2 条 乡村 公路 ， 总长 960 米 ， 是 去年 的 3 倍 ， 今年 比 去年 多 修 了 多少 米 公路 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "9786", "content": "计算 ： 197 * 198 - 196 * 199 = ．", "knowledge": ["*", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "19652", "content": "甲 树 是 500 ， 甲 数 是 已 数 的 4 倍 ， 乙 数 = ？", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "16978", "content": "某 玩具厂 计划 30 天 生产 玩具 6000 件 ， 实际 比 计划 提前 5 天 完成 ． 实际 每天 生产 玩具 多少 件 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "16663", "content": "化肥厂 计划 全 月 生产 化肥 2400 吨 ， 实际上 半月 完成 计划 的 (7/12) ， 下半月 生产 的 和 上 半月 同样 多 ， 实际 超产 多少 吨 ？", "knowledge": ["*", "+", "-"], "difficulty": 0.2, "length": 7}
+  {"question_id": "13183", "content": "甲 数 比 乙 数多 (1/6) ， 乙 数 比 甲 数 少 ( ( ( ) ) / ( ( ) ) ) ．", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "22258", "content": "在 一条 公路 的 一旁 种 了 8 棵 柳树 ， 每 两棵 柳树 之间 相距 5 米 ， 这 条 公路 有 多长 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "18227", "content": "打 一份 稿子 ， 已经 打 了 30% ， 剩下 的 如果 每分钟 打 98 个 字 ， 40 分钟 可以 打 完 ， 这 篇 稿子 共 多少 字 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "7912", "content": "星星 服装厂 要 为 亚运会 闭幕式 赶制 一批 表演 服装 1200 件 ， 原 计划 每天 做 100 件 ． 4 天 以后 ， 提高 了 工作效率 ， 每天 比 原 计划 多 做 60 件 ． 这样 比 原 计划 提前 几天 完成 ？", "knowledge": ["*", "+", "-", "/"], "difficulty": 0.6, "length": 15}
+  {"question_id": "13966", "content": "山羊 有 15 只 ， 绵羊 的 只 数 是 山羊 的 3 倍 ， 山羊 和 绵羊 一共 有 多少 只 ．", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "19105", "content": "一 个 电器厂 原 计划 21 天 生产 电冰箱 4200 台 ． 实际 每天 生产 210 台 ， 实际 比 原 计划 提前 几天 完成 任务 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "20629", "content": "某 宾馆 9 月份 营业 收入 85000 元 ， 应 缴 税款 5100 元 ， 营业税 率 = ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "4297", "content": "一 根 长 (7/8) 米 的 绳子 ， 用 去 一部分 后 还 剩 (4/5) ， 还 剩 多少 米 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "3856", "content": "李 刚 看 一 本书 ， 第一天 看 了 (1/4) ， 第 二 天 看 了 60 页 ， 这时 看 了 的 与 未 看 的 页数 比 是 2 ： 3 ， 这 本书 一共 有 多少 页 ？", "knowledge": ["+", "-", "/"], "difficulty": 0.3, "length": 9}
+  {"question_id": "2943", "content": "2010 全国 粮食 生产 克服 了 前期 干旱 的 不利 局面 ， 取得 了 大丰收 ． 以东 乐 乡 为 例 ， 粮食 总产量 达 4.73 万斤 ， 比 上年 增产 了 10% ， 上一年 粮食产量 = 多少 万斤 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4951", "content": "(35/56) * (4/7) = ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "7299", "content": "某 工厂 第一个 月 用 煤 3.5 吨 ， 比 第 二 个 月 多 (1/5) 吨 ， 两个 月 共用 煤 多少 吨 ？", "knowledge": ["+", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "7507", "content": "五年级 有 144 人 ， 比 六年级 的 (5/6) 少 6 人 ． 六年级 有 多少 人 ？", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "15694", "content": "一 种 商品 ， 按 成本 的 120% 定价 后 打 0.9 出售 ， 结果 赚 了 400 元 ， 这种 商品 的 成本 = 多少 元 ．", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "9598", "content": "一 个 修路 队 ， 第一天 修 了 全程 的 (2/5) ． 第一天 比 第 二 天 少 修 全程 的 (1/10) ， 两天 正好 修 70 km ， 该 路 全长 多少 km ？", "knowledge": ["+", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "12639", "content": "把 一根 192 厘米 长 的 木条 锯 成 16 厘米 长 的 小 段 ， 一共 要 锯 多少 次 ？", "knowledge": ["-", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "3711", "content": "花园 小区 1 号 楼 共有 7 个 单元 ， 每个 单元 住 14 户 ． 这幢 楼房 共 住 多少 户 人家 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "12032", "content": "某 公司 预算 一天 的 开支 为 9600 元 ， 实际 比 预算 节约 了 (3/8) ， 该 公司 一天 节约开支 多少 元 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "4149", "content": "一 个 直角三角形 ， 它 的 两条 直角 边 分别 是 6 cm 和 8 cm ， 它 的 面积 = 多少 cm ^ 2 ．", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "7407", "content": "雅乐 学校 买来 2 张 课桌 和 9 把 椅子 共用 去 300 元 ， 买 一张 桌子 的 价格 与 买 3 把 椅子 的 价格 相等 ， 每张 桌子 多少 元 ．", "knowledge": ["+", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "5591", "content": "某 文具店 有 一种 钢笔 原来 每枝 16 元 ， 现在 推出 “ 买 3 枝 送 1 枝 ” ， 小惠 买 4 枝 这样 的 钢笔 需要 准备 多少 元 人民币 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "10803", "content": "多少 / 23 = 30 … 22 ．", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "4391", "content": "已知 两个 数 的 积 是 39.9 ， 一个 因数 是 19 ， 另 一个 因数 = ．", "knowledge": ["/"], "difficulty": 0.0, "length": 3}
+  {"question_id": "13063", "content": "(7/15) / (1/3) 的 商 加上 (9/14) 与 (5/14) 的 差 ， 和 = ？", "knowledge": ["+", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "20730", "content": "一 张 纸 从左往右 数 有 8 个 格子 ， 从 上 往 下 数 有 5 个 格子 ， 一共 有 多少 个 格子 ．", "knowledge": ["*"], "difficulty": 0.0, "length": 3}
+  {"question_id": "6526", "content": "一 批 零件 ， 计划 每天 做 800 个 ， 6 天 就 能 完成 ． 实际 比 计划 提前 1 天 完成 ， 实际 每天 做 多少 个 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}
+  {"question_id": "21221", "content": "小 明 有 一枝 18 厘米 的 铅笔 ， 第一周 用 去 (1/3) ， 第 二 周 用 去 (1/4) ， 两周 一 共用 去 多少 厘米 ？", "knowledge": ["*", "+"], "difficulty": 0.2, "length": 7}
+  {"question_id": "10789", "content": "沿江 粮店 运进 一批 大米 ， 第一天 上午 售出 35% ， 下午 售出 这 批 米 的 20% ； 第 二 天 售出 了 余下 的 75% ， 两天 后 还 剩 3690 千克 ． 这 批 大米 共有 多少 千克 ？", "knowledge": ["*", "-", "/"], "difficulty": 0.6, "length": 15}
+  {"question_id": "20687", "content": "一 只 微波炉 450 元 ， 比 一台 复读机 贵 75 元 ， 一台 电冰箱 的 价钱 是 复读机 的 8 倍 ， 电冰箱 多少 钱 ？", "knowledge": ["*", "-"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10736", "content": "一 本 故事书 共 135 页 ， 第一天 从 第一页 看 起 ， 看 了 全书 的 (2/5) ， 第 二 天 接着 看 ， 从 第 多少 页 看 起 ．", "knowledge": ["*", "+"], "difficulty": 0.1, "length": 5}
+  {"question_id": "10090", "content": "生产 一批 零件 ， 甲 每 小时 可以 生产 16 个 ， 乙 单独 生产 需要 12 小时 完成 ， 现在 由 甲 、 乙 两 人 合 做 ， 完成 任务 时 ， 甲 生产 的 零件 数量 是 乙 的 80% ， 批 零件 有 多少 个 ？", "knowledge": ["*", "/"], "difficulty": 0.1, "length": 5}
+  {"question_id": "15741", "content": "小 玲 的 身高 是 135 厘米 ， 小强 比 小 玲 高 (1/5) ， 小强 比 小 玲 高 多少 厘米 ？", "knowledge": ["*"], "difficulty": 0.0, "length": 3}

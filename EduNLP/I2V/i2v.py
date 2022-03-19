@@ -7,8 +7,9 @@ from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import PRETRAINED_MODELS
 from longling import path_append
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import BertTokenizer
+from EduNLP.Pretrain import BertTokenizer, DisenQTokenizer
 from EduNLP import logger
+import os
 
 __all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v"]
 
@@ -60,6 +61,8 @@ class I2V(object):
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'disenQ':
+            self.tokenizer = DisenQTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
                                                       if tokenizer_kwargs is not None else {})
@@ -313,6 +316,70 @@ class Bert(I2V):
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
         tokenizer_kwargs = {"pretrain_model": model_path}
+        return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
+                   tokenizer_kwargs=tokenizer_kwargs)
+
+
+class DisenQ(I2V):
+    """
+    The model aims to transfer item and tokens to vector with Bert.
+
+    Bases
+    -------
+    I2V
+
+    Parameters
+    -----------
+    tokenizer: str
+        the tokenizer name
+    t2v: str
+        the name of token2vector model
+    args:
+        the parameters passed to t2v
+    tokenizer_kwargs: dict
+        the parameters passed to tokenizer
+    pretrained_t2v: bool
+        True: use pretrained t2v model
+        False: use your own t2v model
+    kwargs:
+        the parameters passed to t2v
+
+    Returns
+    -------
+    i2v model: DisenQ
+    """
+
+    def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
+        """
+        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+
+        Parameters
+        -----------
+        items: str or list
+            the text of question
+        tokenize:bool
+            True: tokenize the item
+        return_tensors: str
+            tensor type used in tokenizer
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        """
+        inputs = self.tokenize(items) if tokenize is True else items
+        return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        logger.info("model_dir: %s" % model_dir)
+
+        vocab_path =  os.path.join(model_dir, "vocab.list")
+        config_path = os.path.join(model_dir, "model_config.json")
+        tokenizer_kwargs = {"vocab_path": vocab_path, "config_path"}
         return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
 

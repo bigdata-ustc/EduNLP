@@ -174,7 +174,6 @@ class DisenQNet(object):
             if not warming_up:
                 scheduler.step()
                 adv_scheduler.step()
-            
             # test
             train_loss = self.eval(train_data, device)
             if test_data is not None and not warming_up:
@@ -234,7 +233,7 @@ class DisenQNet(object):
     def save(self, filepath):
         state_dicts = [module.state_dict() for module in self.modules]
         torch.save(state_dicts, filepath)
-        config_name = "".join(os.path.dirname(filepath).spilt(".")[:-1] +  ["_config.json"])
+        config_name = "".join(os.path.dirname(filepath), "model_config.json")
         config_path = os.path.join(os.path.dirname(filepath), config_name)
         self.save_config(config_path)
         return
