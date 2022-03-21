@@ -11,6 +11,7 @@ from EduNLP.Pretrain.disenQNet_vec import QuestionDataset, DisenQTokenizer, trai
 from EduNLP.I2V import DisenQ
 import json
 import torch
+import logging
 
 def test_disenQTokenzier():
     tokenizer = DisenQTokenizer()
@@ -58,21 +59,24 @@ def test_train():
     train_params = {
         'epoch': 1,
         'batch': 16,
-        'trim_min': 10,
+        'trim_min': 5,
     }
 
     train_disenQNet(
         disen_train_data(),
         output_dir,
         predata_dir,
-        train_params=train_params
+        train_params=train_params,
+
+        test_items = disen_test_data(),
     )
 
 def test_i2v():
+    logging.getLogger().setLevel(logging.INFO)
     output_dir = "test_disen/"
     vocab_path =  os.path.join(output_dir, "vocab.list")
     tokenizer_kwargs = {
-        "vocab_path": vocab_path, 
+        "vocab_path": vocab_path,
         "max_length": 150,
         "text_tokenzier": "space",
     }
@@ -82,18 +86,18 @@ def test_i2v():
         {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式"},
         {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式 , 如 图 , 若 $x,y$ 满 足 约 束 条 件 公 式"},
     ]
-    
-    t_vec = i2v.infer_token_vector(test_items, key=lambda x:x["content"])
-    i_vec = i2v.infer_item_vector(test_items, key=lambda x:x["content"], vector_type="k")
-    assert i_vec.shape == torch.Size([2, 128])
-    assert t_vec.shape == torch.Size([2, 128])
 
-    i_vec, t_vec = i2v.infer_vector(test_items, key=lambda x:x["content"], vector_type=None)
+    t_vec = i2v.infer_token_vector(test_items[1], key=lambda x:x["content"])
+    i_vec = i2v.infer_item_vector(test_items[1], key=lambda x:x["content"], vector_type="k")
+    assert i_vec.shape == torch.Size([1, 128])
+    assert t_vec.shape == torch.Size([1, 150, 128])
+
+    i_vec, t_vec = i2v.infer_vector(test_items[1], key=lambda x:x["content"], vector_type=None)
     assert len(i_vec) == 2
-    assert i_vec[0].shape == torch.Size([2, 128])
-    assert i_vec[1].shape == torch.Size([2, 128])
-    assert t_vec.shape == torch.Size([2, 128])
+    assert i_vec[0].shape == torch.Size([1, 128])
+    assert i_vec[1].shape == torch.Size([1, 128])
+    assert t_vec.shape == torch.Size([1, 150, 128])
 
 # test_disenQTokenzier()
-# test_train()
+test_train()
 test_i2v()

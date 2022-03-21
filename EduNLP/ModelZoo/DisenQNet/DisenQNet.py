@@ -121,6 +121,7 @@ class DisenQNet(object):
             :param n_adversarial: int, ratio of disc/enc training for adversarial process
             :param silent: bool, whether to log loss
         """
+        print("Start training the disenQNet...", test_data is not None)
         # optimizer & scheduler
         model_params = list(self.disen_q_net.parameters()) + list(self.mi_estimator.parameters()) + list(self.concept_estimator.parameters())
         adv_params = list(self.disen_estimator.parameters())
@@ -180,24 +181,37 @@ class DisenQNet(object):
             if test_data is not None and not warming_up:
                 test_loss = self.eval(test_data, device)
                 if not silent:
-                    logging.info(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, eval loss: {test_loss:.4f}")
+                    print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, eval loss: {test_loss:.4f}")
             elif not silent:
-                logging.info(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}")
+                print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}")
         return
     
-    def predict(self, items, device):
+    def inference(self, item, device):
         """
-            DisenQNet for i2v inference
-            :param items:  dict, which contains input_ids, input_lens
-                content_idxs: Tensor of (batch_size, seq_len)
-                content_lens: Tensor of (batch_size)
-            :param device: str, cpu or cuda
-            :returns: Tensor of (embed, k_hidden, i_hidden)
+        DisenQNet for i2v inference. Now not support for batch !
+        
+        Parameters
+        ----------
+        item:  dict
+            which contains content_idx and  content_len
+            - content_idx: Tensor of (batch_size, seq_len)
+            - content_len: Tensor of (batch_size)
+        device: str
+            cpu or cuda
+        
+        Returns
+        ---------
+        embed: torch.Tensor
+            Tensor of (batch_size, seq_len, hidden_dim)
+        k_hidden: torch.Tensor
+            Tensor of (batch_size, hidden_dim)
+        i_hidden: torch.Tensor
+            Tensor of (batch_size, hidden_dim)
         """
         self.to(device)
         self.set_mode(False)
         # print("test predict: ",items)
-        text, length = items["content_idxs"].to(device), items["content_lens"].to(device)
+        text, length = item["content_idx"].unsqueeze(0).to(device), item["content_len"].unsqueeze(0).to(device)
         embed, k_hidden, i_hidden = self.disen_q_net(text, length)
         return embed, k_hidden, i_hidden
 
@@ -224,10 +238,13 @@ class DisenQNet(object):
                 mi_loss = - self.mi_estimator(embed, hidden, length)
                 cp_loss = self.concept_estimator(k_hidden, concept)
                 dis_loss = self.disen_estimator(k_hidden, i_hidden)
+                print(f"mi_loss: {mi_loss}, cp_loss:{cp_loss}, dis_loss:{dis_loss}")
                 loss = self.w_mi * mi_loss + self.w_cp * cp_loss + self.w_dis * dis_loss
                 batch_size = text.size(0)
                 total_size += batch_size
                 total_loss += loss.item() * batch_size
+        print("total_loss ",total_loss," | total_size ",total_size)
+        print()
         loss = total_loss / total_size
         return loss
     
@@ -359,9 +376,9 @@ class ConceptModel(object):
             if test_data is not None:
                 test_loss, test_f1 = self.eval(test_data, device, use_vi, top_k, reduction)
                 if not silent:
-                    logging.info(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, f1: {train_f1:.3f}, eval loss: {test_loss:.4f}, f1: {test_f1:.3f}")
+                    print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, f1: {train_f1:.3f}, eval loss: {test_loss:.4f}, f1: {test_f1:.3f}")
             elif not silent:
-                logging.info(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, f1: {train_f1:.3f}")
+                print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, f1: {train_f1:.3f}")
         return
     
     def eval(self, test_data, device, use_vi, top_k, reduction):

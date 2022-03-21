@@ -103,63 +103,67 @@ class DisenQTokenizer(object):
     #         model_config = json.load(rf)
     #         self.max_length = model_config["max_len"]
 
-    def __call__(self, items: (list, str, dict), key=lambda x: x, padding=True,
+    def __call__(self, item: (str, dict), key=lambda x: x, padding=True,
                 return_tensors=True, return_text=False, *args, **kwargs):
-        token_items = self.tokenize(items, key)
-        ids = list()
-        lengths = list()
-        for item in token_items:
-            indexs = [self.word2index.get(w, self.word2index[self.unk_token]) for w in item]
-            ids.append(indexs)
-            lengths.append(len(indexs))
+        token_item = self.tokenize(item, key)
+        # token_items = self.tokenize(items, key)
+        # ids = list()
+        # lengths = list()
+        # for item in token_items:
+        indexs = [self.word2index.get(w, self.word2index[self.unk_token]) for w in item]
+        # ids.append(indexs)
+        # lengths.append(len(indexs))
+        length = len(indexs)
         ret = {
-            "content_idxs": self.padding(ids, self.max_length) if padding else ids,
-            "content_lens": lengths
+            "content_idx": self.padding(indexs, self.max_length) if padding else indexs,
+            "content_len": length
         }
 
         if return_tensors:
             return {key: torch.as_tensor(val) for key, val in ret.items()}
         elif return_text:
-            ret["content"] = token_items
+            ret["content"] = token_item
 
         return ret
 
-    def tokenize(self, items: (list, str, dict), key=lambda x: x, *args, **kwargs):
-      if isinstance(items, str) or isinstance(items, dict):
-        return self._tokenize([items], key)
-      elif isinstance(items, list):
-        return self._tokenize(items, key)
+    def tokenize(self, item: (str, dict), key=lambda x: x, *args, **kwargs):
+      if isinstance(item, str) or isinstance(item, dict):
+        return self._tokenize(item, key)
+    #   elif isinstance(items, list):
+    #     return self._tokenize(items, key)
       else:
          raise ValueError("items should be str or list!")
 
-    def padding(self, ids, max_length):
+    def padding(self, idx, max_length):
     #   max_len = max([len(i) for i in ids])
-      padding_ids = [t + [ self.word2index[self.pad_token]] * (max_length - len(t) ) for t in ids]
-      return padding_ids
+      padding_idx = idx + [ self.word2index[self.pad_token]] * (max_length - len(idx) )
+      return padding_idx
 
     def _space_toeknzier(self, items, key=lambda x: x):
-        return [key(item).strip().split(' ') for item in items]
+        for item in items:
+            yield key(item).strip().split(' ')
 
-    def _tokenize(self, items, key=lambda x: x):
+    def _tokenize(self, item, key=lambda x: x):
         # print("[test] _tokenize",items[0])
         # print("[test] key",key(items[0]))
-        items = self.text_tokenizer(items, key=key)
+        item = next(self.text_tokenizer([item], key=key))
       
-        token_items = list()
+        # token_item = list()
         stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
-        for text in items:
-            # text = key(data).strip().split(' ')
-            # print("1 ",text)
-            text = [w for w in text if w != '' and w not in stop_words]
-            #   print("2 ",text)
-            if len(text) == 0:
-                text = [self.unk_token]
-            if len(text) > self.max_length:
-                text = text[:self.max_length]
-            text = [self.num_token if check_num(w) else w for w in text]
-            #   print("3 ",text)
-            token_items.append(text)
-        return token_items
+        # for text in items:
+        # text = key(data).strip().split(' ')
+        # print("1 ",text)
+        token_text = [w for w in item if w != '' and w not in stop_words]
+        #   print("2 ",text)
+        if len(token_text) == 0:
+            token_text = [self.unk_token]
+        if len(token_text) > self.max_length:
+            token_text = token_text[:self.max_length]
+        token_text = [self.num_token if check_num(w) else w for w in token_text]
+        #   print("3 ",text)
+        # token_items.append(text)
+        # return token_items
+        return token_text
 
     def load_vocab(self, path):
         with open(path, "rt", encoding="utf-8") as file:
@@ -178,7 +182,10 @@ class DisenQTokenizer(object):
             determine how to get the text of each item
         """
         word2cnt = dict()
-        token_items = self._tokenize(items, key=key)
+        token_items = list()
+        for item in items:
+            token_item = self.tokenize(item, key=key)
+            token_items.append(token_item)
         # print("test token_items : ", token_items)
         for item in token_items:
             for w in item:
@@ -190,7 +197,7 @@ class DisenQTokenizer(object):
         if not silent:
             keep_word_cnts = sum(word2cnt[w] for w in words)
             all_word_cnts = sum(word2cnt.values())
-            logging.info(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words)/len(word2cnt):.4f} with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts/all_word_cnts:.4f}")
+            print(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words)/len(word2cnt):.4f} with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts/all_word_cnts:.4f}")
         
         self.words = ctrl_tokens + sorted(words)
         
@@ -232,14 +239,14 @@ class QuestionDataset(Dataset):
             self.disen_tokenzier = DisenQTokenizer(vocab_path=self.word_list_path, max_length=max_length)
 
             # if not silent:
-            #     logging.info(f"load vocab from {word_list_path}")
-            #     logging.info(f"load concept from {concept_list_path}")
-            #     logging.info(f"load word2vec from {wv_path}")
+            #     print(f"load vocab from {word_list_path}")
+            #     print(f"load concept from {concept_list_path}")
+            #     print(f"load word2vec from {wv_path}")
         else:
             self.disen_tokenzier = DisenQTokenizer()
-            self.disen_tokenzier.set_vocab(items, self.word_list_path, key=lambda x: x["content"])
+            self.disen_tokenzier.set_vocab(items, self.word_list_path, key=lambda x: x["content"], trim_min_count=trim_min_count)
             if not silent:
-                logging.info(f"save vocab to {self.word_list_path}")
+                print(f"save vocab to {self.word_list_path}")
             self.word2index = self.disen_tokenzier.word2index
 
         self.num_token = self.disen_tokenzier.num_token # "<num>"
@@ -254,14 +261,14 @@ class QuestionDataset(Dataset):
             self.dataset = self.process_dataset(items, trim_min_count, embed_dim, False)
 
         if not silent:
-            # logging.info(f"load dataset from {dataset_path}")
-            logging.info(f"processing raw data for QuestionDataset...")
+            # print(f"load dataset from {dataset_path}")
+            print(f"processing raw data for QuestionDataset...")
 
         self.vocab_size = len(self.word2index)
         self.concept_size = len(self.concept2index)
         if dataset_type == "train" and not silent:
-            logging.info(f"vocab size: {self.vocab_size}")
-            logging.info(f"concept size: {self.concept_size}")
+            print(f"vocab size: {self.vocab_size}")
+            print(f"concept size: {self.concept_size}")
         return
 
     def process_dataset(self, items, trim_min_count, embed_dim, init=False, text_key=lambda x: x["content"]):
@@ -270,9 +277,9 @@ class QuestionDataset(Dataset):
             # print("[test] process_dataset ",items[0] )
             # print("[test] text_key ",text_key(items[0]) )
             token_data = self.disen_tokenzier(item, key=text_key, return_tensors=False, return_text=True, padding=True)
-            items[i]["content_idx"] = token_data["content_idxs"][0]
-            items[i]["content_len"] = token_data["content_lens"][0]
-            items[i]["content"] = token_data["content"][0]
+            items[i]["content_idx"] = token_data["content_idx"]
+            items[i]["content_len"] = token_data["content_len"]
+            items[i]["content"] = token_data["content"]
 
         if init:
             # construct concept list
@@ -287,7 +294,7 @@ class QuestionDataset(Dataset):
                 self.concept2index = {concept:index for index, concept in enumerate(concepts)}
                 save_list(self.concept2index, self.concept_list_path)
                 if not self.silent:
-                    logging.info(f"save concept to {self.concept_list_path}")
+                    print(f"save concept to {self.concept_list_path}")
             else:
                 self.concept2index = load_list(self.concept_list_path)
             # word2vec
@@ -306,7 +313,7 @@ class QuestionDataset(Dataset):
                 self.word2vec = torch.tensor(wv_list)
                 torch.save(self.word2vec, self.wv_path)
                 if not self.silent:
-                    logging.info(f"save word2vec to {self.wv_path}")
+                    print(f"save word2vec to {self.wv_path}")
             else:
                 self.word2vec = torch.load(self.wv_path)
         return items
@@ -360,7 +367,7 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
     """
     # dataset
     default_train_params = {
-        "trim_min" : 50,
+        "trim_min" : 2,
         "max_len" : 250,
 
         "hidden" : 128,
@@ -376,7 +383,7 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
         "lr" : 1e-3,
         "step" : 20,
         "gamma" : 0.5,
-        "warm_up" : 5,
+        "warm_up" : 8,
         "adv" : 10,
 
         "device": "cuda",
@@ -401,6 +408,7 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
                                     shuffle=True, collate_fn=train_dataset.collate_data)
 
     # test_items = load_data(os.path.join(data_path, "test.json"))
+    print("test_items", len(test_items))
     if test_items is not None:
         test_dataset = QuestionDataset(test_items, predata_dir, train_params["max_len"], "test", silent=False,
                                         embed_dim=train_params["hidden"], trim_min_count=train_params["trim_min"])
@@ -417,7 +425,8 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
     # model
     disen_q_net = DisenQNet(vocab_size, concept_size, train_params["hidden"], train_params["dropout"],
                             train_params["pos_weight"], train_params["cp"], train_params["mi"], train_params["dis"], wv)
-
+    
+    print("test_dataloader",test_dataloader)
     disen_q_net.train(train_dataloader, test_dataloader, train_params["device"], train_params["epoch"],
                         train_params["lr"], train_params["step"], train_params["gamma"],
                         train_params["warm_up"], train_params["adv"], silent=False)

@@ -24,12 +24,12 @@ class DisenQModel(object): # Vector
         self.model = DisenQNet.from_pretrained(pretrained_model)
         
 
-    def __call__(self, items: dict):
-        embed, k_hidden, i_hidden = self.model.predict(items, device=self.device)
+    def __call__(self, item: dict):
+        embed, k_hidden, i_hidden = self.model.inference(item, device=self.device)
         return embed, k_hidden, i_hidden
 
-    def infer_vector(self, items: dict, vector_type=None) -> torch.Tensor:
-        _, k_hidden, i_hidden = self(items)
+    def infer_vector(self, item: dict, vector_type=None) -> torch.Tensor:
+        _, k_hidden, i_hidden = self(item)
         if vector_type == None:
             return k_hidden, i_hidden
         elif vector_type == "k":
@@ -39,8 +39,8 @@ class DisenQModel(object): # Vector
         else:
             raise KeyError("vector_type must be one of (None, 'k', 'i') ")
 
-    def infer_tokens(self, items: dict, return_special_tokens=False) -> torch.Tensor:
-        embed, _, _ = self(items)
+    def infer_tokens(self, item: dict) -> torch.Tensor:
+        embed, _, _ = self(item)
         return embed
 
     @property
