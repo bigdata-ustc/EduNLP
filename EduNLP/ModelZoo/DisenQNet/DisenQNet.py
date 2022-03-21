@@ -133,7 +133,7 @@ class DisenQNet(object):
             epoch_idx += 1
             # warming_up: cp_loss & mi_loss only, ignore adversarial dis_loss
             warming_up = (epoch_idx <= warm_up)
-            
+
             self.to(device)
             self.set_mode(True)
             for data in train_data:

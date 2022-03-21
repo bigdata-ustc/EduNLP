@@ -19,7 +19,7 @@ MODELS = {
     "gru": RNNModel,
     "elmo": RNNModel,
     'bert': BertModel,
-    "disenQNet": DisenQModel,
+    "disenQ": DisenQModel,
 }
 
 

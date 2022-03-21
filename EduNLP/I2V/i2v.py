@@ -379,8 +379,11 @@ class DisenQ(I2V):
 
         vocab_path =  os.path.join(model_dir, "vocab.list")
         config_path = os.path.join(model_dir, "model_config.json")
-        tokenizer_kwargs = {"vocab_path": vocab_path, "config_path"}
-        return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
+        tokenizer_kwargs = {
+            "vocab_path": vocab_path, 
+            "config_path": config_path,
+        }
+        return cls("disenQ", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
 
 

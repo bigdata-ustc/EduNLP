@@ -79,6 +79,7 @@ def main(args):
     wv_path = os.path.join(args.dataset, "wv.th")
     word_path = os.path.join(args.dataset, "vocab.list")
     concept_path = os.path.join(args.dataset, "concept.list")
+    
     train_dataset = QuestionDataset(train_path, wv_path, word_path, concept_path, args.hidden, args.trim_min, args.max_len, "train", silent=False)
     test_dataset = QuestionDataset(test_path, wv_path, word_path, concept_path, args.hidden, args.trim_min, args.max_len, "test", silent=False)
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch, shuffle=True, collate_fn=train_dataset.collate_data)

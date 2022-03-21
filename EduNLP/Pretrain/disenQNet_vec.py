@@ -63,21 +63,21 @@ def list_to_onehot(item_list, item2index):
 
 
 class DisenQTokenizer(object):
-    def __init__(self, vocab_path=None, conifg_dir=None, max_length=250,*args):
+    def __init__(self, vocab_path=None, config_path=None, max_length=250,*args):
         super(DisenQTokenizer, self).__init__(*args)
 
         self.num_token = "<num>"
         self.unk_token = "<unk>"
         self.pad_token = "<pad>"
-        if conifg_dir is not None:
-            self.load_tokenizer_config(conifg_dir)
+        if config_path is not None:
+            self.load_tokenizer_config(config_path)
         else:
             self.max_length = max_length
         
         self.word2index = self.get_vocab(vocab_path)
 
-    def load_tokenizer_config(self, conifg_dir):
-        with open(conifg_dir, "r", encoding="utf-8") as rf:
+    def load_tokenizer_config(self, config_path):
+        with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
             self.max_length = model_config["max_len"]
 
@@ -161,7 +161,7 @@ def load_data(path):
     return all_data
 
 
-def train_disenQNet(train_items, output_dir, train_params=None, predata_path=None, test_items=None):
+def train_disenQNet(train_items, output_dir, train_params=None, predata_dir=None, test_items=None):
     """
     Parameters
     ----------
@@ -214,10 +214,10 @@ def train_disenQNet(train_items, output_dir, train_params=None, predata_path=Non
     # wv_path = os.path.join(data_path, "wv.th")
     # word_path = os.path.join(data_path, "vocab.list")
     # concept_path = os.path.join(data_path, "concept.list")
-    use_predata_path = True if predata_path is not None and os.path.exists(predata_path) else False
-    wv_path = os.path.join(predata_path, "wv.th") if use_predata_path else None
-    word_path = os.path.join(predata_path, "vocab.list") if use_predata_path else None
-    concept_path = os.path.join(predata_path, "concept.list") if use_predata_path else None
+    use_predata_dir = True if predata_dir is not None and os.path.exists(predata_dir) else False
+    wv_path = os.path.join(predata_dir, "wv.th") if use_predata_dir else None
+    word_path = os.path.join(predata_dir, "vocab.list") if use_predata_dir else None
+    concept_path = os.path.join(predata_dir, "concept.list") if use_predata_dir else None
 
     # train_items = load_data(os.path.join(data_path, "train.json")) # can replay by items
     # assert train_items is not None
