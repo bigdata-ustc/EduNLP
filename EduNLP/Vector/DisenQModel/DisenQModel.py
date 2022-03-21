@@ -1,3 +1,4 @@
+import imp
 from pickle import NONE
 import numpy as np
 from pathlib import PurePath
@@ -21,15 +22,16 @@ class DisenQModel(object): # Vector
     def __init__(self, pretrained_model, device="cpu"):
         self.device = device
         self.model = DisenQNet.from_pretrained(pretrained_model)
+        
 
     def __call__(self, items: dict):
         embed, k_hidden, i_hidden = self.model.predict(items, device=self.device)
         return embed, k_hidden, i_hidden
 
     def infer_vector(self, items: dict, vector_type=None) -> torch.Tensor:
-        embed, k_hidden, i_hidden = self(items)
+        _, k_hidden, i_hidden = self(items)
         if vector_type == None:
-            return embed, k_hidden, i_hidden
+            return k_hidden, i_hidden
         elif vector_type == "k":
             return k_hidden
         elif vector_type == "i":

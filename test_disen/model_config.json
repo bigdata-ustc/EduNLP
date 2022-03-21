@@ -1,0 +1,10 @@
+{
+  "vocab_size": 159,
+  "concept_size": 5,
+  "hidden_dim": 128,
+  "dropout": 0.2,
+  "pos_weight": 1,
+  "w_cp": 1.5,
+  "w_mi": 1.0,
+  "w_dis": 2.0
+}

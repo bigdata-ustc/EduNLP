@@ -11,6 +11,7 @@ from gensim.models import KeyedVectors
 
 from .modules import TextEncoder, AttnModel, ConceptEstimator, MIEstimator, DisenEstimator
 from .utils import MLP, get_mask, get_confuse_matrix, get_f1_score
+from EduNLP.ModelZoo.utils import set_device
 
 class QuestionEncoder(nn.Module):
     """
@@ -188,15 +189,15 @@ class DisenQNet(object):
         """
             DisenQNet for i2v inference
             :param items:  dict, which contains input_ids, input_lens
-                input_ids: Tensor of (batch_size, seq_len)
-                input_lens: Tensor of (batch_size)
+                content_idxs: Tensor of (batch_size, seq_len)
+                content_lens: Tensor of (batch_size)
             :param device: str, cpu or cuda
             :returns: Tensor of (embed, k_hidden, i_hidden)
         """
         self.to(device)
         self.set_mode(False)
-        print("test predict: ",items)
-        text, length = items["input_ids"].to(device), items["input_lens"].to(device)
+        # print("test predict: ",items)
+        text, length = items["content_idxs"].to(device), items["content_lens"].to(device)
         embed, k_hidden, i_hidden = self.disen_q_net(text, length)
         return embed, k_hidden, i_hidden
 
@@ -233,8 +234,7 @@ class DisenQNet(object):
     def save(self, filepath):
         state_dicts = [module.state_dict() for module in self.modules]
         torch.save(state_dicts, filepath)
-        config_name = "".join(os.path.dirname(filepath), "model_config.json")
-        config_path = os.path.join(os.path.dirname(filepath), config_name)
+        config_path = os.path.join(os.path.dirname(filepath), "model_config.json")
         self.save_config(config_path)
         return
     
@@ -246,7 +246,8 @@ class DisenQNet(object):
     
     def to(self, device):
         for module in self.modules:
-            module.to(device)
+            # module.to(device)
+            set_device(module, device)
         return
     
     def set_mode(self, train):
@@ -266,21 +267,28 @@ class DisenQNet(object):
     def from_config(cls, config_path):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            wv = KeyedVectors.load(model_config.wv_path, mmap="r") if "wv_path" in model_config else None
+            wv = torch.load(model_config["wv_path"], mmap="r") if "wv_path" in model_config else None
             return cls(
-                model_config.vocab_size, model_config.concept_size, model_config.hidden_dim,
-                model_config.dropout, model_config.pos_weight, model_config.w_cp, model_config.w_mi,
-                model_config.w_dis, wv=wv)
+                model_config["vocab_size"], model_config["concept_size"], model_config["hidden_dim"],
+                model_config["dropout"], model_config["pos_weight"], model_config["w_cp"], model_config["w_mi"],
+                model_config["w_dis"], wv=wv)
     
     @classmethod
-    def from_pretrained(cls, filepath):
-        config_name = "".join(os.path.dirname(filepath).spilt(".")[:-1] +  ["_config.json"])
-        config_path = os.path.join(os.path.dirname(filepath), config_name)
+    def from_pretrained(cls, model_dir):
+        config_path = os.path.join(os.path.dirname(model_dir), "model_config.json")
+        model_path = os.path.join(os.path.dirname(model_dir), "disen_q_net.th")
         model = cls.from_config(config_path)
-        model.load(filepath)
+        model.load(model_path)
         return model
 
-
+                # "vocab_size" : vocab_size,
+                # "concept_size" : concept_size,
+                # "hidden_dim" : hidden_dim,
+                # "dropout" : dropout,
+                # "pos_weight" : pos_weight,
+                # "w_cp" : w_cp,
+                # "w_mi" : w_mi,
+                # "w_dis" : w_dis,
 
 
 

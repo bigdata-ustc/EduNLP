@@ -349,7 +349,8 @@ class DisenQ(I2V):
     i2v model: DisenQ
     """
 
-    def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
+    def infer_vector(self, items, tokenize=True, key=lambda x:x,
+                    return_tensors='pt', vector_type=None, *args, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
@@ -370,8 +371,8 @@ class DisenQ(I2V):
         --------
         vector:list
         """
-        inputs = self.tokenize(items) if tokenize is True else items
-        return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+        inputs = self.tokenize(items, key=key, *args, **kwargs) if tokenize is True else items
+        return self.t2v.infer_vector(inputs, vector_type=vector_type, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):

@@ -39,6 +39,7 @@ def test_disen_train(disen_data, tmpdir):
     tokenizer_kwargs = {
         "vocab_path": vocab_path, 
         "config_path": config_path,
+        "text_tokenzier": "space",
     }
     i2v = DisenQ('disenQ', 'disenQ', output_dir, tokenizer_kwargs=tokenizer_kwargs)
 
