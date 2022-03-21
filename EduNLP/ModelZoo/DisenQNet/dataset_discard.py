@@ -6,7 +6,8 @@ import os
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+
+from EduNLP.Pretrain.disenQNet_vec import DisenQTokenizer
 
 def load_list(path):
     with open(path, "rt", encoding="utf-8") as file:
@@ -78,11 +79,8 @@ class QuestionDataset(Dataset):
     def __init__(self, items, max_length, dataset_type, silent=False, embed_dim=128, trim_min_count=50, wv_path=None, word_list_path=None, concept_list_path=None):
     # def __init__(self, dataset_path, max_length, dataset_type, silent, wv_path=None, embed_dim=128, trim_min_count=50, word_list_path=None, concept_list_path=None):
         super(QuestionDataset, self).__init__()
-        self.num_token = "<num>"
-        self.unk_token = "<unk>"
-        self.pad_token = "<pad>"
         self.silent = silent
-        
+
         init = wv_path is None or not os.path.exists(wv_path)
         # load word, concept list
         if not init:
@@ -91,25 +89,40 @@ class QuestionDataset(Dataset):
             self.word2index = load_list(word_list_path)
             self.concept2index = load_list(concept_list_path)
             self.word2vec = torch.load(wv_path)
+
+            self.disen_tokenzier = DisenQTokenizer(vocab_path=word_list_path)
+
             # if not silent:
             #     logging.info(f"load vocab from {word_list_path}")
             #     logging.info(f"load concept from {concept_list_path}")
             #     logging.info(f"load word2vec from {wv_path}")
+        else:
+            self.disen_tokenzier = DisenQTokenizer()
+            self.disen_tokenzier.set_vocab(items, word_list_path)
+            if not silent:
+                logging.info(f"save vocab to {word_list_path}")
+
+            self.word2index = self.disen_tokenzier.word2index
+
+        self.num_token = self.disen_tokenzier.num_token # "<num>"
+        self.unk_token = self.disen_tokenzier.unk_token # "<unk>"
+        self.pad_token = self.disen_tokenzier.pad_token # "<pad>"
+        self.unk_idx = self.word2index[self.unk_token]
+
         # load dataset, init construct word and concept list
         if dataset_type == "train":
-            self.dataset = self.read_dataset(items, trim_min_count, max_length, embed_dim, init)
-        else:
-            self.dataset = self.read_dataset(items, trim_min_count, max_length, embed_dim, False)
+            self.dataset = self.process_dataset(items, trim_min_count, max_length, embed_dim, init)
+        elif dataset_type == "test":
+            self.dataset = self.process_dataset(items, trim_min_count, max_length, embed_dim, False)
+
         if not silent:
             # logging.info(f"load dataset from {dataset_path}")
             logging.info(f"processing raw data for QuestionDataset...")
         # save word, concept list
         if init:
-            save_list(self.word2index, word_list_path)
             save_list(self.concept2index, concept_list_path)
             torch.save(self.word2vec, wv_path)
             if not silent:
-                logging.info(f"save vocab to {word_list_path}")
                 logging.info(f"save concept to {concept_list_path}")
                 logging.info(f"save word2vec to {wv_path}")
         
@@ -119,78 +132,56 @@ class QuestionDataset(Dataset):
             logging.info(f"vocab size: {self.vocab_size}")
             logging.info(f"concept size: {self.concept_size}")
         return
-    
-    def read_dataset(self, items, trim_min_count, max_length, embed_dim, init=False):
-        # read text
-        dataset = list()
-        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
-        # with open(path, "rt", encoding="utf-8") as file:
-        #     for line in file:
-        #         data = json.loads(line)
-        for data in items:
-            text = data["content"].strip().split(' ')
-            text = [w for w in text if w != '' and w not in stop_words]
-            if len(text) == 0:
-                text = [self.unk_token]
-            if len(text) > max_length:
-                text = text[:max_length]
-            text = [self.num_token if check_num(w) else w for w in text]
-            data["content"] = text
-            data["length"] = len(text)
-            dataset.append(data)
+
         
-        # construct word and concept list
+
+    def process_dataset(self, items, trim_min_count, embed_dim, init=False, text_key=lambda x: x["content"]):
+        # make items in standard format
+        for i, item in enumerate(items):
+            token_data = self.disen_tokenzier(item, key=text_key, return_tensors=False, padding=False)
+            items[i]["content_idx"] = token_data["content_idxs"][0]
+            items[i]["content_len"] = token_data["content_lens"][0]
+
         if init:
-            # word count
-            word2cnt = dict()
+            # construct concept list
             concepts = set()
-            for data in dataset:
-                text = data["content"]
+            for data in items:
                 concept = data["knowledge"]
-                for w in text:
-                    word2cnt[w] = word2cnt.get(w, 0) + 1
                 for c in concept:
                     if c not in concepts:
                         concepts.add(c)
             
-            # word & concept list
-            ctrl_tokens = [self.num_token, self.unk_token, self.pad_token]
-            words = [w for w, c in word2cnt.items() if c >= trim_min_count and w not in ctrl_tokens]
-            keep_word_cnts = sum(word2cnt[w] for w in words)
-            all_word_cnts = sum(word2cnt.values())
-            if not self.silent:
-                logging.info(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words)/len(word2cnt):.4f} with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts/all_word_cnts:.4f}")
             concepts = sorted(concepts)
-            words = ctrl_tokens + sorted(words)
-
-            # word2vec
+            
+            # # word2vec
+            words = self.disen_tokenzier.words
             from gensim.models import Word2Vec
             corpus = list()
             word_set = set(words)
-            for data in dataset:
+            for data in items:
                 text = [w if w in word_set else self.unk_token for w in data["content"]]
                 corpus.append(text)
             wv = Word2Vec(corpus, vector_size =embed_dim, min_count=trim_min_count).wv
-            wv_list = [wv[w] if w in wv.key_to_index else np.random.rand(embed_dim) for w in words]
+            # 按照 vocab 中的词序 来保存
+            # wv_list = [wv[w] if w in wv.key_to_index else np.random.rand(embed_dim) for w in words]
+            wv_list = [wv[w] for w in words ]
             self.word2vec = torch.tensor(wv_list)
             self.concept2index = {concept:index for index, concept in enumerate(concepts)}
-            self.word2index = {word:index for index, word in enumerate(words)}
-        
-        # map word to index
-        unk_idx = self.word2index[self.unk_token]
-        for data in dataset:
-            data["content"] = [self.word2index.get(w, unk_idx) for w in data["content"]]
-            data["knowledge"] = list_to_onehot(data["knowledge"], self.concept2index)
-        return dataset
+
+        return items
     
     def __len__(self):
         return len(self.dataset)
     
     def __getitem__(self, index):
+        # map word to index
         data = self.dataset[index]
-        text = data["content"]
-        length = data["length"]
-        concept = data["knowledge"]
+        text = data["content_idx"]
+        length = data["content_len"]
+        concept = list_to_onehot(data["knowledge"], self.concept2index) # 有待查询：预测试需要concept吗
+        # text = data["content"]
+        # length = data["length"]
+        # concept = data["knowledge"]
         return text, length, concept
     
     def collate_data(self, batch_data):

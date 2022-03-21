@@ -10,8 +10,8 @@ import torch
 from torch.utils.data import DataLoader
 
 from .DisenQNet import DisenQNet, ConceptModel
-from .dataset import QuestionDataset
-from EduNLP.Pretrain.disenQNet_vec import DisenQTokenizer
+# from .dataset import 
+from EduNLP.Pretrain.disenQNet_vec import QuestionDataset, DisenQTokenizer
 
 
 def parse_args():

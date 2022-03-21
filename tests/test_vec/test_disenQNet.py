@@ -16,6 +16,7 @@ def disen_data(disen_raw_data):
     return _data
 
 
+
 def test_disen_train(disen_data, tmpdir):
     output_dir = str(tmpdir.mkdir('disenQ'))
     train_params = {
@@ -29,10 +30,10 @@ def test_disen_train(disen_data, tmpdir):
     )
 
     test_items = [
-        "10 米 的 (2/5) = 多少 米 的 (1/2),有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$",
-        "10 米 的 (2/5) = 多少 米 的 (1/2),有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,若$x,y$满足约束条件公式"
+        "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式",
+        "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式 , 如 图 , 若 $x,y$ 满 足 约 束 条 件 公 式"
     ]
-    
+
     vocab_path =  os.path.join(output_dir, "vocab.list")
     config_path = os.path.join(output_dir, "model_config.json")
     tokenizer_kwargs = {
