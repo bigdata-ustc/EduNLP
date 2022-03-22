@@ -17,12 +17,19 @@ class DisenQModel(object): # Vector
     """
     Examples
     --------
-    
+
     """
     def __init__(self, pretrained_model, device="cpu"):
+        """
+        Parameters
+        ----------
+        pretrained_model: str
+            the path to pretrained model
+        device: str
+            cpu or cuda, default is cpu
+        """
         self.device = device
         self.model = DisenQNet.from_pretrained(pretrained_model)
-        
 
     def __call__(self, item: dict):
         embed, k_hidden, i_hidden = self.model.inference(item, device=self.device)

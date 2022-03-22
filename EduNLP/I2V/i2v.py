@@ -30,15 +30,11 @@ class I2V(object):
     tokenizer_kwargs: dict
         the parameters passed to tokenizer
     pretrained_t2v: bool
-
-        True: use pretrained t2v model
-
-        False: use your own t2v model
-
+        - True: use pretrained t2v model
+        - False: use your own t2v model
     kwargs:
         the parameters passed to t2v
 
-    def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
     Examples
     --------
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
@@ -322,31 +318,27 @@ class Bert(I2V):
 
 class DisenQ(I2V):
     """
-    The model aims to transfer item and tokens to vector with Bert.
+    The model aims to transfer item and tokens to vector with DisenQ.
 
     Bases
     -------
     I2V
 
-    Parameters
-    -----------
-    tokenizer: str
-        the tokenizer name
-    t2v: str
-        the name of token2vector model
-    args:
-        the parameters passed to t2v
-    tokenizer_kwargs: dict
-        the parameters passed to tokenizer
-    pretrained_t2v: bool
-        True: use pretrained t2v model
-        False: use your own t2v model
-    kwargs:
-        the parameters passed to t2v
-
-    Returns
-    -------
-    i2v model: DisenQ
+    Examples
+    --------
+    >>> output_dir = "../../examples/data/disenq"
+    >>> vocab_path =  os.path.join(output_dir, "vocab.list")
+    >>> tokenizer_kwargs = {
+    ...     "vocab_path": vocab_path,
+    ...     "max_length": 150,
+    ...     "text_tokenzier": "space",
+    ... }
+    >>> i2v = DisenQ('disenQ', 'disenq', output_dir, tokenizer_kwargs=tokenizer_kwargs, device="cuda")
+    >>> test_item = {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式 , 如 图 , 若 $x,y$ 满 足 约 束 条 件 公 式"},
+    >>> t_vec = i2v.infer_token_vector(test_item, key=lambda x:x["content"])
+    >>> i_vec = i2v.infer_item_vector(test_item, key=lambda x:x["content"], vector_type="k")
+    >>> i_vec_k, i_vec_i = i2v.infer_item_vector(test_item, key=lambda x:x["content"])
+    >>> i_vec, t_vec = i2v.infer_vector(test_item, key=lambda x:x["content"])
     """
 
     def infer_vector(self, items, tokenize=True, key=lambda x:x,

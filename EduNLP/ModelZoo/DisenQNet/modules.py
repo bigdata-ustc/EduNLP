@@ -9,13 +9,17 @@ from .utils import MLP, Disc, TextCNN
 
 class TextEncoder(nn.Module):
     """
-        TextCNN Encoder
-        :param vocab_size: int, size of vocabulary
-        :param hidden_dim: int, size of word and question embedding
-        :param dropout: float, dropout rate
-        :param wv: Tensor of (vocab_size, hidden_dim), initial word embedding, default = None
+    Parameters
+    ----------
+    vocab_size: int
+        size of vocabulary
+    hidden_dim: int
+        size of word and question embedding
+    dropout: float
+        dropout rate
+    wv: torch.Tensor
+        Tensor of (vocab_size, hidden_dim), initial word embedding, default = None
     """
-
     def __init__(self, vocab_size, hidden_dim, dropout, wv=None):
         super(TextEncoder, self).__init__()
         self.embed = nn.Embedding(vocab_size, hidden_dim)
@@ -27,10 +31,16 @@ class TextEncoder(nn.Module):
     
     def forward(self, input):
         """
-            :param input: Tensor of long (batch_size, seq_len), word index
-            :returns: (embed, hidden)
-                embed: Tensor of (batch_size, seq_len, hidden_dim), word embedding
-                hidden: Tensor of (batch_size, hidden_dim), question embedding
+        Parameters
+        ----------
+        input:
+            Tensor of long (batch_size, seq_len), word index
+
+        Returns
+        -------
+        (embed, hidden)
+            - embed: Tensor of (batch_size, seq_len, hidden_dim), word embedding
+            - hidden: Tensor of (batch_size, hidden_dim), question embedding
         """
         embed = self.embed(input)
         embed_dp = self.dropout(embed)
@@ -39,9 +49,14 @@ class TextEncoder(nn.Module):
 
 class AttnModel(nn.Module):
     """
-        Attention Model
-        :param dim: int, size of hidden vector
-        :param dropout: float, dropout rate of attention model
+    Attention Model
+    
+    Parameters
+    ----------
+    dim: int
+        size of hidden vector
+    dropout: float
+        dropout rate of attention model
     """
 
     def __init__(self, dim, dropout):
@@ -49,17 +64,25 @@ class AttnModel(nn.Module):
         self.score = MLP(dim*2, 1, dim, 0, n_layers=2, act=torch.tanh)
         self.fw = nn.Linear(dim, dim)
         self.dropout = nn.Dropout(p=dropout)
-        return
     
     def forward(self, q, k, v=None, mask=None):
         """
-            :param q: Tensor of (batch_size, hidden_size) or (batch_size, out_size, hidden_size), query, out_size = 1 if discarded
-            :param k: Tensor of (batch_size, in_size, hidden_size), key
-            :param v: Tensor of (batch_size, in_size, hidden_size), value, default = None, means v = k
-            :param mask: Tensor of (batch_size, in_size), key/value mask, where 0 means data and 1 means pad, default = None, means zero matrix
-            :returns: (output, attn)
-                output: Tensor of (batch_size, hidden_size) or (batch_size, out_size, hidden_size), attention output, shape according to q
-                attn: Tensor of (batch_size, in_size) or (batch_size, out_size, in_size), attention weight, shape according to q
+        Parameters
+        ----------
+        q: torch.Tensor
+            Tensor of (batch_size, hidden_size) or (batch_size, out_size, hidden_size), query, out_size = 1 if discarded
+        k: torch.Tensor
+            Tensor of (batch_size, in_size, hidden_size), key
+        v: torch.Tensor
+            Tensor of (batch_size, in_size, hidden_size), value, default = None, means v = k
+        mask: torch.Tensor
+            Tensor of (batch_size, in_size), key/value mask, where 0 means data and 1 means pad, default = None, means zero matrix
+        
+        Returns
+        -------
+        (output, attn)
+            - output: Tensor of (batch_size, hidden_size) or (batch_size, out_size, hidden_size), attention output, shape according to q
+            - attn: Tensor of (batch_size, in_size) or (batch_size, out_size, in_size), attention weight, shape according to q
         """
         if v is None:
             v = k
@@ -67,7 +90,6 @@ class AttnModel(nn.Module):
         q_dim = q.dim()
         if q_dim == 2:
             q = q.unsqueeze(1)
-
         # (b, o, i, h)
         output_size = q.size(1)
         input_size = k.size(1)
@@ -80,24 +102,28 @@ class AttnModel(nn.Module):
         attn = F.softmax(score, dim=-1)
         # (b, o, i) * (b, i, h) -> (b, o, h)
         output = torch.bmm(attn, v)
-        
         # (b, o, h) -> (b, h), (b, o, i) -> (b, i)
         if q_dim == 2:
             output = output.squeeze(1)
             attn = attn.squeeze(1)
-        
         output = F.leaky_relu(self.fw(self.dropout(output)))
         return output, attn
 
 class ConceptEstimator(nn.Module):
     """
-        Concept estimator
-        min Classifier_loss
-
-        :param hidden_dim: int, size of question embedding
-        :param concept_size: int, number of concept classes
-        :param pos_weight: float, positive sample weight in unbalanced multi-label concept classifier
-        :param dropout: float, dropout rate
+    Concept estimator
+    min Classifier_loss
+    
+    Parameters
+    ----------
+    hidden_dim: int
+        size of question embedding
+    concept_size: int
+        number of concept classes
+    pos_weight: float
+        positive sample weight in unbalanced multi-label concept classifier
+    dropout: float
+        dropout rate
     """
 
     def __init__(self, hidden_dim, concept_size, pos_weight, dropout):
@@ -109,9 +135,17 @@ class ConceptEstimator(nn.Module):
     
     def forward(self, hidden, label):
         """
-            :param hidden: Tensor of (batch_size, hidden_dim), question embedding
-            :param label: Tensor of long (batch_size, concept_size), question concept one-hot label
-            :returns: Tensor of (), BCE loss of concept label
+        Parameters
+        ----------
+        hidden: torch.Tensor
+            Tensor of (batch_size, hidden_dim), question embedding
+        label: torch.Tensor
+            Tensor of long (batch_size, concept_size), question concept one-hot label
+        
+        Returns
+        -------
+        loss: float
+            Tensor of (), BCE loss of concept label
         """
         output = self.classifier(hidden)
         loss = self.loss(output, label.float())
@@ -119,12 +153,17 @@ class ConceptEstimator(nn.Module):
 
 class MIEstimator(nn.Module):
     """
-        MI estimator between question and word embedding for maximization
-        max MI(X,Y)
+    MI estimator between question and word embedding for maximization
+    max MI(X,Y)
 
-        :param embed_dim: int, size of word embedding
-        :param hidden_dim: int, size of question embedding
-        :param dropout: float, dropout rate
+    Parameters
+    ----------
+    embed_dim: int
+        size of word embedding
+    hidden_dim: int
+        size of question embedding
+    dropout: float
+        dropout rate
     """
 
     def __init__(self, embed_dim, hidden_dim, dropout):
@@ -154,13 +193,22 @@ class MIEstimator(nn.Module):
     
     def forward(self, embed, hidden, lengths):
         """
-            average MI between hidden and each word embedding
-            MI(X,Y) = Avg(E_pxy[-sp(-T(xi,y))] - E_pxpy[sp(T(xi,y))])
-
-            :param embed: Tensor of (batch_size, seq_len, embed_dim), word embedding vector
-            :param hidden: Tensor of (batch_size, hidden_dim), question hidden vector
-            :param lengths: Tensor of (batch_size), length of valid words in each question
-            :returns: Tensor of (), mi between question and each word embedding
+        average MI between hidden and each word embedding
+        MI(X,Y) = Avg(E_pxy[-sp(-T(xi,y))] - E_pxpy[sp(T(xi,y))])
+        
+        Parameters
+        ----------
+        embed: torch.Tensor
+            Tensor of (batch_size, seq_len, embed_dim), word embedding vector
+        hidden: torch.Tensor
+            Tensor of (batch_size, hidden_dim), question hidden vector
+        lengths: torch.Tensor
+            Tensor of (batch_size), length of valid words in each question
+        
+        Returns
+        -------
+        mi: float
+            mi between question and each word embedding
         """
         # batch_size * seq_len * hidden_dim
         seq_len = embed.size(1)
@@ -180,12 +228,16 @@ class MIEstimator(nn.Module):
 
 class DisenEstimator(nn.Module):
     """
-        Disentangling estimator by WGAN-like adversarial training and spectral normalization for MI minimization
-        MI(X,Y) = E_pxy[T(x,y)] - E_pxpy[T(x,y)]
-        min_xy max_T MI(X,Y)
-
-        :param hidden_dim: int, size of question embedding
-        :param dropout: float, dropout rate
+    Disentangling estimator by WGAN-like adversarial training and spectral normalization for MI minimization
+    MI(X,Y) = E_pxy[T(x,y)] - E_pxpy[T(x,y)]
+    min_xy max_T MI(X,Y)
+    
+    Parameters
+    ----------
+    hidden_dim: int
+        size of question embedding
+    dropout: float
+        dropout rate
     """
 
     def __init__(self, hidden_dim, dropout):
@@ -195,9 +247,17 @@ class DisenEstimator(nn.Module):
     
     def forward(self, x, y):
         """
-            :param x: Tensor of (batch_size, hidden_dim), x
-            :param y: Tensor of (batch_size, hidden_dim), y
-            :returns: Tensor of (), loss for MI minimization
+        Parameters
+        ----------
+        x: torch.Tensor
+            Tensor of (batch_size, hidden_dim), x
+        y: torch.Tensor
+            Tensor of (batch_size, hidden_dim), y
+        
+        Returns
+        -------
+        loss:
+            loss for MI minimization
         """
         sy = shuffle(y)
         loss = self.disc(x, y).mean() - self.disc(x, sy).mean()

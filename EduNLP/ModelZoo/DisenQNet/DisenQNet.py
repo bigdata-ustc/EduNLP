@@ -15,11 +15,18 @@ from EduNLP.ModelZoo.utils import set_device
 
 class QuestionEncoder(nn.Module):
     """
-        DisenQNet question representation model
-        :param vocab_size: int, size of vocabulary
-        :param hidden_dim: int, size of word and question embedding
-        :param dropout: float, dropout rate
-        :param wv: Tensor of (vocab_size, hidden_dim) or None, initial word embedding, default = None
+    DisenQNet question representation model
+
+    Parameters
+    ----------
+    vocab_size: int
+        size of vocabulary
+    hidden_dim: int
+        size of word and question embedding
+    dropout: float
+        dropout rate    
+    wv: torch.Tensor
+        Tensor of (vocab_size, hidden_dim) or None, initial word embedding, default = None
     """
 
     def __init__(self, vocab_size, hidden_dim, dropout, wv=None):
@@ -33,14 +40,23 @@ class QuestionEncoder(nn.Module):
     
     def forward(self, input, length, get_vk=True, get_vi=True):
         """
-            :param input: Tensor of (batch_size, seq_len), word index
-            :param length: Tensor of (batch_size), valid sequence length of each batch
-            :param get_vk: bool, whether to return vk
-            :param get_vi: bool, whether to return vi
-            :returns: (embed, k_hidden, i_hidden)
-                embed: Tensor of (batch_size, seq_len, hidden_dim), word embedding
-                k_hidden: Tensor of (batch_size, hidden_dim) or None, concept representation of question
-                i_hidden: Tensor of (batch_size, hidden_dim) or None, individual representation of question
+        Parameters
+        ----------
+        input: Tensor of (batch_size, seq_len)
+            word index
+        length: Tensor of (batch_size)
+            valid sequence length of each batch
+        get_vk: bool
+            whether to return vk
+        get_vi: bool
+            whether to return vi
+        
+        Returns
+        -------
+        (embed, k_hidden, i_hidden)
+            - embed: Tensor of (batch_size, seq_len, hidden_dim), word embedding
+            - k_hidden: Tensor of (batch_size, hidden_dim) or None, concept representation of question
+            - i_hidden: Tensor of (batch_size, hidden_dim) or None, individual representation of question
         """
         # embed: batch_size * seq_len * hidden_dim
         # q_hidden: batch_size * hidden_dim
@@ -60,18 +76,29 @@ class QuestionEncoder(nn.Module):
 
 class DisenQNet(object):
     """
-        DisenQNet training and evaluation model
-        :param vocab_size: int, size of vocabulary
-        :param concept_size: int, number of concept classes
-        :param hidden_dim: int, size of word and question embedding
-        :param dropout: float, dropout rate
-        :param pos_weight: float, positive sample weight in unbalanced multi-label concept classifier
-        :param w_cp: float, weight of concept loss
-        :param w_mi: float, weight of mutual information loss
-        :param w_dis: float, weight of disentangling loss
-        :param wv: Tensor of (vocab_size, hidden_dim) or None, initial word embedding, default = None
-    """
+    DisenQNet training and evaluation model
 
+    Parameters
+    ----------
+    vocab_size: int
+        size of vocabulary
+    concept_size: int
+        number of concept classes
+    hidden_dim: int
+        size of word and question embedding
+    dropout: float
+        dropout rate
+    pos_weight: float
+        positive sample weight in unbalanced multi-label concept classifier
+    w_cp: float
+        weight of concept loss
+    w_mi: float
+        weight of mutual information loss
+    w_dis: float
+        weight of disentangling loss
+    wv: torch.Tensor
+        Tensor of (vocab_size, hidden_dim) or None, initial word embedding, default = None
+    """
     def __init__(self, vocab_size, concept_size, hidden_dim, dropout, pos_weight, w_cp, w_mi, w_dis, wv=None):
         super(DisenQNet, self).__init__()
         self.disen_q_net = QuestionEncoder(vocab_size, hidden_dim, dropout, wv)
@@ -93,35 +120,39 @@ class DisenQNet(object):
                 "w_dis" : w_dis,
         }
         self.modules = (self.disen_q_net, self.mi_estimator, self.concept_estimator, self.disen_estimator)
-        return
-    
-    # @classmethod
-    # def load2(cls, model_path):
-    #     model = torch.load(model_path)
-    #     return model
-    
-    # def save2(self, filepath):
-    #     torch.save(model, mymodel.pth)
-    #     return
 
     def train(self, train_data, test_data, device, epoch, lr, step_size, gamma, warm_up, n_adversarial, silent):
         """
-            DisenQNet train
-            :param train_data: iterable, train dataset, contains text, length, concept
-                text: Tensor of (batch_size, seq_len)
-                length: Tensor of (batch_size)
-                concept: Tensor of (batch_size, class_size)
-            :param test_data: iterable, test dataset
-            :param device: str, cpu or cuda
-            :param epoch: int, number of epoch
-            :param lr: float, initial learning rate
-            :param step_size: int, step_size for StepLR, period of learning rate decay
-            :param gamma: float, gamma for StepLR, multiplicative factor of learning rate decay
-            :param warm_up: int, number of epoch for warming up, without adversarial process for dis_loss
-            :param n_adversarial: int, ratio of disc/enc training for adversarial process
-            :param silent: bool, whether to log loss
+        train DisenQNet
+
+        Parameters
+        ----------
+        train_data:
+            train dataloader, contains text, length, concept
+            - text: Tensor of (batch_size, seq_len)
+            - length: Tensor of (batch_size)
+            - concept: Tensor of (batch_size, class_size)
+        test_data: 
+            test dataloader
+        device: str
+            cpu or cuda
+        epoch: int
+            number of epoch
+        lr: float
+            initial learning rate
+        step_size: int
+            step_size for StepLR, period of learning rate decay
+        gamma: float
+            gamma for StepLR, multiplicative factor of learning rate decay
+        warm_up: int
+            number of epoch for warming up, without adversarial process for dis_loss
+        n_adversarial: int
+            ratio of disc/enc training for adversarial process
+        silent: bool
+            whether to log loss
         """
-        print("Start training the disenQNet...", test_data is not None)
+        if not silent:
+            print("Start training the disenQNet...")
         # optimizer & scheduler
         model_params = list(self.disen_q_net.parameters()) + list(self.mi_estimator.parameters()) + list(self.concept_estimator.parameters())
         adv_params = list(self.disen_estimator.parameters())
@@ -185,7 +216,7 @@ class DisenQNet(object):
             elif not silent:
                 print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}")
         return
-    
+
     def inference(self, item, device):
         """
         DisenQNet for i2v inference. Now not support for batch !
@@ -210,20 +241,28 @@ class DisenQNet(object):
         """
         self.to(device)
         self.set_mode(False)
-        # print("test predict: ",items)
         text, length = item["content_idx"].unsqueeze(0).to(device), item["content_len"].unsqueeze(0).to(device)
         embed, k_hidden, i_hidden = self.disen_q_net(text, length)
         return embed, k_hidden, i_hidden
 
     def eval(self, test_data, device):
         """
-            DisenQNet test
-            :param test_data: iterable, train dataset, contains text, length, concept
-                text: Tensor of (batch_size, seq_len)
-                length: Tensor of (batch_size)
-                concept: Tensor of (batch_size, class_size)
-            :param device: str, cpu or cuda
-            :returns: float, average loss for test dataset
+        eval DisenQNet
+
+        Parameters
+        ----------
+        test_data: 
+            iterable, train dataset, contains text, length, concept
+            - text: Tensor of (batch_size, seq_len)
+            - length: Tensor of (batch_size)
+            - concept: Tensor of (batch_size, class_size)
+        device: str
+            cpu or cuda
+
+        Returns
+        --------- 
+        loss: float
+            average loss for test dataset
         """
         total_size = 0
         total_loss = 0
@@ -238,16 +277,13 @@ class DisenQNet(object):
                 mi_loss = - self.mi_estimator(embed, hidden, length)
                 cp_loss = self.concept_estimator(k_hidden, concept)
                 dis_loss = self.disen_estimator(k_hidden, i_hidden)
-                print(f"mi_loss: {mi_loss}, cp_loss:{cp_loss}, dis_loss:{dis_loss}")
                 loss = self.w_mi * mi_loss + self.w_cp * cp_loss + self.w_dis * dis_loss
                 batch_size = text.size(0)
                 total_size += batch_size
                 total_loss += loss.item() * batch_size
-        print("total_loss ",total_loss," | total_size ",total_size)
-        print()
         loss = total_loss / total_size
         return loss
-    
+
     def save(self, filepath):
         state_dicts = [module.state_dict() for module in self.modules]
         torch.save(state_dicts, filepath)
@@ -275,7 +311,6 @@ class DisenQNet(object):
                 module.eval()
         return
 
-
     def save_config(self, config_path):
         with open(config_path, "w", encoding="utf-8") as wf:
             json.dump(self.params, wf, ensure_ascii=False, indent=2)
@@ -289,7 +324,7 @@ class DisenQNet(object):
                 model_config["vocab_size"], model_config["concept_size"], model_config["hidden_dim"],
                 model_config["dropout"], model_config["pos_weight"], model_config["w_cp"], model_config["w_mi"],
                 model_config["w_dis"], wv=wv)
-    
+
     @classmethod
     def from_pretrained(cls, model_dir):
         config_path = os.path.join(os.path.dirname(model_dir), "model_config.json")
@@ -298,24 +333,20 @@ class DisenQNet(object):
         model.load(model_path)
         return model
 
-                # "vocab_size" : vocab_size,
-                # "concept_size" : concept_size,
-                # "hidden_dim" : hidden_dim,
-                # "dropout" : dropout,
-                # "pos_weight" : pos_weight,
-                # "w_cp" : w_cp,
-                # "w_mi" : w_mi,
-                # "w_dis" : w_dis,
-
-
-
 class ConceptModel(object):
     """
-        Concept prediction training and evaluation model, with pretrained and fixed DisenQNet
-        :param concept_size: int, number of concept classes
-        :param disen_q_net: QuestionEncoder, pretrained DisenQNet model
-        :param dropout: float, dropout rate
-        :param pos_weight: float, positive sample weight in unbalanced multi-label concept classifier
+    Concept prediction training and evaluation model, with pretrained and fixed DisenQNet
+
+    Parameters
+    ----------
+    concept_size: int
+        number of concept classes
+    disen_q_net: QuestionEncoder
+        pretrained DisenQNet model
+    dropout: float
+        dropout rate
+    pos_weight: float
+        positive sample weight in unbalanced multi-label concept classifier
     """
 
     def __init__(self, concept_size, disen_q_net, dropout, pos_weight):
@@ -330,20 +361,32 @@ class ConceptModel(object):
     
     def train(self, train_data, test_data, device, epoch, lr, step_size, gamma, silent, use_vi=False, top_k=2, reduction="micro"):
         """
-            Concept model train
-            :param train_data: iterable, train dataset, contains text, length, concept
-                text: Tensor of (batch_size, seq_len)
-                length: Tensor of (batch_size)
-                concept: Tensor of (batch_size, class_size)
-            :param test_data: iterable, test dataset
-            :param device: str, cpu or cuda
-            :param epoch: int, number of epoch
-            :param lr: float, initial learning rate
-            :param step_size: int, step_size for StepLR, period of learning rate decay
-            :param gamma: float, gamma for StepLR, multiplicative factor of learning rate decay
-            :param silent: bool, whether to log loss
-            :param top_k: int, number of top k classes as positive label for multi-label classification
-            :param reduction: str, macro or micro, reduction type for F1 score
+        Concept model train
+
+        Parameters
+        ----------
+        train_data: iterable, train dataset, contains text, length, concept
+            text: Tensor of (batch_size, seq_len)
+            length: Tensor of (batch_size)
+            concept: Tensor of (batch_size, class_size)
+        test_data:
+            iterable, test dataset
+        device: str
+            cpu or cuda
+        epoch: int
+            number of epoch
+        lr: float
+            initial learning rate
+        step_size: int
+            step_size for StepLR, period of learning rate decay
+        gamma: float
+            gamma for StepLR, multiplicative factor of learning rate decay
+        silent: bool
+            whether to log loss
+        top_k: int
+            number of top k classes as positive label for multi-label classification
+        reduction: str
+            macro or micro, reduction type for F1 score
         """
         # optimizer & scheduler
         optimizer = Adam(self.classifier.parameters(), lr=lr)
@@ -383,17 +426,27 @@ class ConceptModel(object):
     
     def eval(self, test_data, device, use_vi, top_k, reduction):
         """
-            Concept model test
-            :param test_data: iterable, test dataset, contains text, length, concept
-                text: Tensor of (batch_size, seq_len)
-                length: Tensor of (batch_size)
-                concept: Tensor of (batch_size, class_size)
-            :param device: str, cpu or cuda
-            :param top_k: int, number of top k classes as positive label for multi-label classification
-            :param reduction: str, macro or micro, reduction type for F1 score
-            :returns: (loss, f1)
-                loss: float, loss for test data
-                f1: float, F1 score for multi-label classification for test data
+        Concept model test
+
+        Parameters
+        ----------
+        test_data: 
+            iterable, test dataset, contains text, length, concept
+            - text: Tensor of (batch_size, seq_len)
+            - length: Tensor of (batch_size)
+            - concept: Tensor of (batch_size, class_size)
+        device: str
+            cpu or cuda
+        top_k: int
+            number of top k classes as positive label for multi-label classification
+        reduction: str
+            macro or micro, reduction type for F1 score
+        
+        Returns
+        ---------
+        (loss, f1):
+            - loss: float, loss for test data
+            - f1: float, F1 score for multi-label classification for test data
         """
         self.to(device)
         self.set_mode(False)

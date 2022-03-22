@@ -18,7 +18,7 @@ def data():
 @pytest.fixture(scope="module")
 def disen_train_data():
     _data = []
-    with codecs.open(path_append(abs_current_dir(__file__), "disenQ_train.json", to_str=True), encoding="utf-8") as f:
+    with codecs.open(path_append(abs_current_dir(__file__), "disenq_train.json", to_str=True), encoding="utf-8") as f:
         for line in f.readlines():
             _data.append(json.loads(line))
     return _data
@@ -26,7 +26,7 @@ def disen_train_data():
 @pytest.fixture(scope="module")
 def disen_test_data():
     _data = []
-    with codecs.open(path_append(abs_current_dir(__file__), "disenQ_test.json", to_str=True), encoding="utf-8") as f:
+    with codecs.open(path_append(abs_current_dir(__file__), "disenq_test.json", to_str=True), encoding="utf-8") as f:
         for line in f.readlines():
             _data.append(json.loads(line))
     return _data
