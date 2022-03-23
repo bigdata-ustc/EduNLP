@@ -17,6 +17,7 @@ import logging
 import warnings
 from gensim.models import Word2Vec
 
+
 def check_num(s):
     # (1/2) -> 1/2
     if s.startswith('(') and s.endswith(')'):
@@ -36,7 +37,7 @@ def check_num(s):
             return False
         else:
             sep_index = s.index('/')
-            is_num = s[:sep_index].isdigit() and s[sep_index+1:].isdigit()
+            is_num = s[:sep_index].isdigit() and s[sep_index + 1:].isdigit()
             return is_num
     else:
         # 1.2% -> 1.2
@@ -53,7 +54,7 @@ def check_num(s):
                 try:
                     float(s)
                     return True
-                except:
+                except Exception:
                     return False
         # 12
         else:
@@ -71,7 +72,7 @@ def list_to_onehot(item_list, item2index):
 def load_list(path):
     with open(path, "rt", encoding="utf-8") as file:
         items = file.read().strip().split('\n')
-    item2index = {item:index for index, item in enumerate(items)}
+    item2index = {item: index for index, item in enumerate(items)}
     return item2index
 
 
@@ -84,7 +85,22 @@ def save_list(item2index, path):
 
 
 class DisenQTokenizer(object):
-    def __init__(self, vocab_path=None, max_length=250, text_tokenzier="space", *args, **argv):
+    """
+    Examples
+    --------
+    >>> tokenizer = DisenQTokenizer()
+    >>> test_items = [{
+    ...     "question_id": "946",
+    ...     "content": "甲 数 除以 乙 数 的 商 是 1.5 ， 如果 甲 数 增加 20 ， 则 甲 数 是 乙 的 4 倍 ． 原来 甲 数 = ．",
+    ...     "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}]
+    >>> tokenizer.set_vocab(test_items,
+    ...     trim_min_count=1, key=lambda x: x["content"], silent=True)
+    >>> token_items = [tokenizer(i, key=lambda x: x["content"]) for i in test_items]
+    >>> print(token_items[0].keys())
+    dict_keys(['content_idx', 'content_len'])
+    """
+    def __init__(self, vocab_path=None, max_length=250, tokenize_method="space",
+                 num_token="<num>", unk_token="<unk>", pad_token="<pad>", *args, **argv):
         """
         Parameters
         ----------
@@ -92,29 +108,18 @@ class DisenQTokenizer(object):
             default is None
         max_length: int
             default is 250
-        text_tokenzier: str
+        tokenize_method: str
             default: "space"
             when text is already seperated by space, use "space"
             when text is row text format, use Tokentizer defined in get_tokenizer(), such as "pure_text" and "text"
-
-        Examples
-        --------
-        >>> tokenizer = DisenQTokenizer()
-        >>> test_items = [{
-        ...    "question_id": "946", "content": "甲 数 除以 乙 数 的 商 是 1.5 ， 如果 甲 数 增加 20 ， 则 甲 数 是 乙 的 4 倍 ． 原来 甲 数 = ．",
-        ...    "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}]
-        >>> tokenizer.set_vocab(test_items, save_path="../../examples/data/disenq/test_vocab.list", trim_min_count=1)
-        >>> token_item = [tokenizer(i) for i in stems]
-        >>> print(token_item[0].keys())
-        dict_keys(['content_idx', 'content_len'])
         """
         super(DisenQTokenizer, self).__init__(*args)
-        
-        self.text_tokenizer = get_tokenizer(text_tokenzier) if text_tokenzier != "space" else self._space_toeknzier
+        self.tokenize_method = tokenize_method
+        self.text_tokenizer = get_tokenizer(tokenize_method) if tokenize_method != "space" else self._space_toeknzier
 
-        self.num_token = "<num>"
-        self.unk_token = "<unk>"
-        self.pad_token = "<pad>"
+        self.num_token = num_token
+        self.unk_token = unk_token
+        self.pad_token = pad_token
         self.max_length = max_length
         if vocab_path is not None:
             self.load_vocab(vocab_path)
@@ -123,7 +128,7 @@ class DisenQTokenizer(object):
             self.secure = False
 
     def __call__(self, item: (str, dict), key=lambda x: x, padding=True,
-                return_tensors=True, return_text=False, *args, **kwargs):
+                 return_tensors=True, return_text=False, *args, **kwargs):
         """
         item: str or dict
             the question item
@@ -152,18 +157,17 @@ class DisenQTokenizer(object):
         return ret
 
     def tokenize(self, item: (str, dict), key=lambda x: x, *args, **kwargs):
-      if isinstance(item, str) or isinstance(item, dict):
-        return self._tokenize(item, key)
-      else:
-         raise ValueError("items should be str or list!")
+        if isinstance(item, str) or isinstance(item, dict):
+            return self._tokenize(item, key)
+        else:
+            raise ValueError("items should be str or list!")
 
     def padding(self, idx, max_length):
-      padding_idx = idx + [ self.word2index[self.pad_token]] * (max_length - len(idx) )
-      return padding_idx
+        padding_idx = idx + [self.word2index[self.pad_token]] * (max_length - len(idx))
+        return padding_idx
 
     def _space_toeknzier(self, items, key=lambda x: x):
         for item in items:
-            print(item)
             yield key(item).strip().split(' ')
 
     def _tokenize(self, item, key=lambda x: x):
@@ -182,17 +186,15 @@ class DisenQTokenizer(object):
     def load_vocab(self, path):
         with open(path, "rt", encoding="utf-8") as file:
             self.words = file.read().strip().split('\n')
-            self.word2index = {word:index for index, word in enumerate(self.words)}
+            self.word2index = {word: index for index, word in enumerate(self.words)}
 
-    def set_vocab(self, items: list, save_path, key=lambda x: x, trim_min_count=50, silent=False):
+    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=50, silent=True):
         """
         Parameters
         -----------
         items: list
             can be the list of str, or list of dict
-        save_path:
-            the path to save the vocab
-        key: 
+        key: function
             determine how to get the text of each item
         """
         self.secure = True
@@ -204,22 +206,55 @@ class DisenQTokenizer(object):
         for item in token_items:
             for w in item:
                 word2cnt[w] = word2cnt.get(w, 0) + 1
-
         ctrl_tokens = [self.num_token, self.unk_token, self.pad_token]
         words = [w for w, c in word2cnt.items() if c >= trim_min_count and w not in ctrl_tokens]
-
         if not silent:
             keep_word_cnts = sum(word2cnt[w] for w in words)
             all_word_cnts = sum(word2cnt.values())
-            print(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words)/len(word2cnt):.4f} with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts/all_word_cnts:.4f}")
-        
-        self.words = ctrl_tokens + sorted(words)
-        
-        self.word2index = {word:index for index, word in enumerate(self.words)}
-        save_list(self.word2index, save_path) # only save words
+            print(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words)/len(word2cnt):.4f}\
+                  with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts/all_word_cnts:.4f}")
 
-    def update_vocab(self, save_path):
-        save_list(self.word2index, save_path) # only save words
+        self.words = ctrl_tokens + sorted(words)
+        self.word2index = {word: index for index, word in enumerate(self.words)}
+
+    def save_vocab(self, save_vocab_path):
+        save_list(self.word2index, save_vocab_path)  # only save words
+
+    @classmethod
+    def from_pretrained(cls, tokenzier_config_dir):
+        """
+        Parameters:
+        -----------
+        tokenzier_config_dir: str
+            must contain tokenzier_config.json and vocab.list
+        """
+        with open(tokenzier_config_dir, "r", encoding="utf-8") as rf:
+            tokenzier_config = json.load(rf)
+            return cls(
+                vocab_path=tokenzier_config["vocab_path"], max_length=tokenzier_config["max_length"],
+                tokenize_method=tokenzier_config["tokenize_method"], num_token=tokenzier_config["num_token"],
+                unk_token=tokenzier_config["unk_token"], pad_token=tokenzier_config["pad_token"])
+
+    def save_pretrained(self, tokenzier_config_dir):
+        """
+        Parameters:
+        -----------
+        tokenzier_config_dir: str
+            save tokenzier params in tokenzier_config.json and save words in vocab.list
+        """
+        tokenzier_config_path = os.path.join(tokenzier_config_dir, "tokenzier_config.json")
+        save_vocab_path = os.path.join(tokenzier_config_dir, "vocab.list")
+        tokenzier_params = {
+            "tokenize_method": self.tokenize_method,
+            "num_token": self.num_token,
+            "unk_token": self.unk_token,
+            "pad_token": self.pad_token,
+            "max_length": self.max_length,
+            "vocab_path": save_vocab_path,
+        }
+        self.save_vocab(save_vocab_path)
+        with open(tokenzier_config_path, "w", encoding="utf-8") as wf:
+            json.dump(tokenzier_params, wf, ensure_ascii=False, indent=2)
 
     @property
     def vocab_size(self):
@@ -266,14 +301,16 @@ class QuestionDataset(Dataset):
                 print(f"load word2vec from {self.wv_path}")
         else:
             self.disen_tokenzier = DisenQTokenizer(max_length=max_length)
-            self.disen_tokenzier.set_vocab(items, self.word_list_path, key=lambda x: x["content"], trim_min_count=trim_min_count)
+            self.disen_tokenzier.set_vocab(items, key=lambda x: x["content"],
+                                           trim_min_count=trim_min_count)
+            self.disen_tokenzier.save_pretrained(predata_dir)
             if not silent:
                 print(f"save vocab to {self.word_list_path}")
             self.word2index = self.disen_tokenzier.word2index
 
-        self.num_token = self.disen_tokenzier.num_token # "<num>"
-        self.unk_token = self.disen_tokenzier.unk_token # "<unk>"
-        self.pad_token = self.disen_tokenzier.pad_token # "<pad>"
+        self.num_token = self.disen_tokenzier.num_token  # "<num>"
+        self.unk_token = self.disen_tokenzier.unk_token  # "<unk>"
+        self.pad_token = self.disen_tokenzier.pad_token  # "<pad>"
         self.unk_idx = self.word2index[self.unk_token]
 
         # load dataset, init construct word and concept list
@@ -283,8 +320,7 @@ class QuestionDataset(Dataset):
             self.dataset = self.process_dataset(items, trim_min_count, embed_dim, False)
 
         if not silent:
-            # print(f"load dataset from {dataset_path}")
-            print(f"processing raw data for QuestionDataset...")
+            print("processing raw data for QuestionDataset...")
 
         self.vocab_size = len(self.word2index)
         self.concept_size = len(self.concept2index)
@@ -296,9 +332,6 @@ class QuestionDataset(Dataset):
     def process_dataset(self, items, trim_min_count, embed_dim, init=False, text_key=lambda x: x["content"]):
         # make items in standard format
         for i, item in enumerate(items):
-            # print("[test] process_dataset ",items[0] )
-            # print("[test] text_key ",text_key(items[0]) )
-            print("[test process_dataset]", item)
             token_data = self.disen_tokenzier(item, key=text_key, return_tensors=False, return_text=True, padding=False)
             items[i]["content_idx"] = token_data["content_idx"]
             items[i]["content_len"] = token_data["content_len"]
@@ -314,7 +347,7 @@ class QuestionDataset(Dataset):
                         if c not in concepts:
                             concepts.add(c)
                 concepts = sorted(concepts)
-                self.concept2index = {concept:index for index, concept in enumerate(concepts)}
+                self.concept2index = {concept: index for index, concept in enumerate(concepts)}
                 save_list(self.concept2index, self.concept_list_path)
                 if not self.silent:
                     print(f"save concept to {self.concept_list_path}")
@@ -328,11 +361,11 @@ class QuestionDataset(Dataset):
                 for data in items:
                     text = [w if w in word_set else self.unk_token for w in data["content"]]
                     corpus.append(text)
-                wv = Word2Vec(corpus, vector_size =embed_dim, min_count=trim_min_count).wv
+                wv = Word2Vec(corpus, vector_size=embed_dim, min_count=trim_min_count).wv
                 # 按照 vocab 中的词序 来保存
                 # wv_list = [wv[w] if w in wv.key_to_index else np.random.rand(embed_dim) for w in words]
                 ctrl_tokens = [self.num_token, self.unk_token, self.pad_token]
-                wv_list = [wv[w] if w not in ctrl_tokens else np.random.rand(embed_dim) for w in words ]
+                wv_list = [wv[w] if w not in ctrl_tokens else np.random.rand(embed_dim) for w in words]
                 self.word2vec = torch.tensor(wv_list)
                 torch.save(self.word2vec, self.wv_path)
                 if not self.silent:
@@ -340,10 +373,10 @@ class QuestionDataset(Dataset):
             else:
                 self.word2vec = torch.load(self.wv_path)
         return items
-    
+
     def __len__(self):
         return len(self.dataset)
-    
+
     def __getitem__(self, index):
         # map word to index
         data = self.dataset[index]
@@ -351,20 +384,19 @@ class QuestionDataset(Dataset):
         length = data["content_len"]
         concept = list_to_onehot(data["knowledge"], self.concept2index)
         return text, length, concept
-        
-    
+
     def collate_data(self, batch_data):
         pad_idx = self.word2index[self.pad_token]
         text, length, concept = list(zip(*batch_data))
         max_length = max(length)
-        text = [t+[pad_idx]*(max_length-len(t)) for t in text]
+        text = [t + [pad_idx] * (max_length - len(t)) for t in text]
         text = torch.tensor(text)
         length = torch.tensor(length)
         concept = torch.tensor(concept)
         return text, length, concept
 
 
-def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, test_items=None):
+def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, test_items=None, silent=False):
     """
     Parameters
     ----------
@@ -381,51 +413,48 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
 
     Examples
     ----------
-    >>> train_data = load_items("../../test/test_vec/disenq_train.json")[:100]
-    >>> test_data = load_items("../../test/test_vec/disenq_test.json")[:100]
-    >>> train_disenQNet(train_data, "../../examples/test_model/data/disenq","examples/test_model/data/disenq") #doctest: +ELLIPSIS
+    >>> train_data = load_items("tests/test_vec/disenq_train.json")[:100]
+    >>> test_data = load_items("tests/test_vec/disenq_test.json")[:100]
+    >>> train_disenQNet(train_data,
+    ... "examples/test_model/data/disenq","examples/test_model/data/disenq", silent=True) #doctest: +ELLIPSIS
     """
     # dataset
     default_train_params = {
-        "trim_min" : 2,
-        "max_len" : 250,
+        "trim_min": 2,
+        "max_len": 250,
 
-        "hidden" : 128,
-        "dropout" : 0.2,
-        "pos_weight" : 1,
+        "hidden": 128,
+        "dropout": 0.2,
+        "pos_weight": 1,
 
-        "cp" : 1.5,
-        "mi" : 1.0,
-        "dis" : 2.0,
+        "cp": 1.5,
+        "mi": 1.0,
+        "dis": 2.0,
 
-        "epoch" : 10,
-        "batch" : 64,
-        "lr" : 1e-3,
-        "step" : 20,
-        "gamma" : 0.5,
-        "warm_up" : 5,
-        "adv" : 10,
+        "epoch": 1,
+        "batch": 64,
+        "lr": 1e-3,
+        "step": 20,
+        "gamma": 0.5,
+        "warm_up": 1,
+        "adv": 10,
         "device": "cpu",
     }
-
     if train_params is not None:
         default_train_params.update(train_params)
     train_params = default_train_params
 
-    train_dataset = QuestionDataset(train_items, predata_dir, train_params["max_len"], "train", silent=False,
+    train_dataset = QuestionDataset(train_items, predata_dir, train_params["max_len"], "train", silent=silent,
                                     embed_dim=train_params["hidden"], trim_min_count=train_params["trim_min"])
     train_dataloader = DataLoader(train_dataset, batch_size=train_params["batch"],
-                                    shuffle=True, collate_fn=train_dataset.collate_data)
-
+                                  shuffle=True, collate_fn=train_dataset.collate_data)
     if test_items is not None:
-        print("test_items", len(test_items))
-        test_dataset = QuestionDataset(test_items, predata_dir, train_params["max_len"], "test", silent=False,
-                                        embed_dim=train_params["hidden"], trim_min_count=train_params["trim_min"])
+        test_dataset = QuestionDataset(test_items, predata_dir, train_params["max_len"], "test", silent=silent,
+                                       embed_dim=train_params["hidden"], trim_min_count=train_params["trim_min"])
         test_dataloader = DataLoader(test_dataset, batch_size=train_params["batch"],
-                                        shuffle=False, collate_fn=test_dataset.collate_data)
+                                     shuffle=False, collate_fn=test_dataset.collate_data)
     else:
         test_dataloader = None
-    
     vocab_size = train_dataset.vocab_size
     concept_size = train_dataset.concept_size
     wv = train_dataset.word2vec
@@ -433,10 +462,9 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
     # model
     disen_q_net = DisenQNet(vocab_size, concept_size, train_params["hidden"], train_params["dropout"],
                             train_params["pos_weight"], train_params["cp"], train_params["mi"], train_params["dis"], wv)
-    
-    print("test_dataloader",test_dataloader)
+
     disen_q_net.train(train_dataloader, test_dataloader, train_params["device"], train_params["epoch"],
-                        train_params["lr"], train_params["step"], train_params["gamma"],
-                        train_params["warm_up"], train_params["adv"], silent=False)
+                      train_params["lr"], train_params["step"], train_params["gamma"],
+                      train_params["warm_up"], train_params["adv"], silent=silent)
     disen_q_net_path = os.path.join(output_dir, "disen_q_net.th")
     disen_q_net.save(disen_q_net_path)

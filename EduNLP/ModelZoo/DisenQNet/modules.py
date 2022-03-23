@@ -7,6 +7,7 @@ from torch.nn import functional as F
 from .utils import get_mask, shuffle, spectral_norm
 from .utils import MLP, Disc, TextCNN
 
+
 class TextEncoder(nn.Module):
     """
     Parameters
@@ -28,7 +29,7 @@ class TextEncoder(nn.Module):
         self.encoder = TextCNN(hidden_dim, hidden_dim)
         self.dropout = nn.Dropout(p=dropout)
         return
-    
+
     def forward(self, input):
         """
         Parameters
@@ -47,10 +48,11 @@ class TextEncoder(nn.Module):
         hidden = self.encoder(embed_dp)
         return embed, hidden
 
+
 class AttnModel(nn.Module):
     """
     Attention Model
-    
+
     Parameters
     ----------
     dim: int
@@ -61,28 +63,32 @@ class AttnModel(nn.Module):
 
     def __init__(self, dim, dropout):
         super(AttnModel, self).__init__()
-        self.score = MLP(dim*2, 1, dim, 0, n_layers=2, act=torch.tanh)
+        self.score = MLP(dim * 2, 1, dim, 0, n_layers=2, act=torch.tanh)
         self.fw = nn.Linear(dim, dim)
         self.dropout = nn.Dropout(p=dropout)
-    
+
     def forward(self, q, k, v=None, mask=None):
         """
         Parameters
         ----------
         q: torch.Tensor
-            Tensor of (batch_size, hidden_size) or (batch_size, out_size, hidden_size), query, out_size = 1 if discarded
+            Tensor of (batch_size, hidden_size) or (batch_size, out_size, hidden_size)
+            query, out_size = 1 if discarded
         k: torch.Tensor
             Tensor of (batch_size, in_size, hidden_size), key
         v: torch.Tensor
             Tensor of (batch_size, in_size, hidden_size), value, default = None, means v = k
         mask: torch.Tensor
-            Tensor of (batch_size, in_size), key/value mask, where 0 means data and 1 means pad, default = None, means zero matrix
-        
+            Tensor of (batch_size, in_size),
+            key/value mask, where 0 means data and 1 means pad, default = None, means zero matrix
+
         Returns
         -------
         (output, attn)
-            - output: Tensor of (batch_size, hidden_size) or (batch_size, out_size, hidden_size), attention output, shape according to q
-            - attn: Tensor of (batch_size, in_size) or (batch_size, out_size, in_size), attention weight, shape according to q
+            - output: Tensor of (batch_size, hidden_size) or (batch_size, out_size, hidden_size),
+            attention output, shape according to q
+            - attn: Tensor of (batch_size, in_size) or (batch_size, out_size, in_size),
+            attention weight, shape according to q
         """
         if v is None:
             v = k
@@ -109,11 +115,12 @@ class AttnModel(nn.Module):
         output = F.leaky_relu(self.fw(self.dropout(output)))
         return output, attn
 
+
 class ConceptEstimator(nn.Module):
     """
     Concept estimator
     min Classifier_loss
-    
+
     Parameters
     ----------
     hidden_dim: int
@@ -132,7 +139,7 @@ class ConceptEstimator(nn.Module):
         pos_weight = torch.ones(concept_size) * pos_weight
         self.loss = nn.BCEWithLogitsLoss(reduction="mean", pos_weight=pos_weight)
         return
-    
+
     def forward(self, hidden, label):
         """
         Parameters
@@ -141,7 +148,7 @@ class ConceptEstimator(nn.Module):
             Tensor of (batch_size, hidden_dim), question embedding
         label: torch.Tensor
             Tensor of long (batch_size, concept_size), question concept one-hot label
-        
+
         Returns
         -------
         loss: float
@@ -150,6 +157,7 @@ class ConceptEstimator(nn.Module):
         output = self.classifier(hidden)
         loss = self.loss(output, label.float())
         return loss
+
 
 class MIEstimator(nn.Module):
     """
@@ -170,7 +178,7 @@ class MIEstimator(nn.Module):
         super(MIEstimator, self).__init__()
         self.disc = Disc(embed_dim, hidden_dim, dropout)
         return
-    
+
     def shuffle_in_batch(self, x):
         # |0 0 0 0 0|    |1 2 3 1 2|
         # |1 1 1 1 1| => |2 3 0 2 3|
@@ -182,20 +190,21 @@ class MIEstimator(nn.Module):
             sx = x
         else:
             batch_index = torch.arange(batch_size).unsqueeze(1)
-            shuffle_index = (torch.arange(batch_size - 1) + 1).repeat(seq_len // (batch_size - 1) + 1)[:seq_len].unsqueeze(0)
+            shuffle_index = (torch.arange(batch_size - 1) + 1)
+            shuffle_index = shuffle_index.repeat(seq_len // (batch_size - 1) + 1)[:seq_len].unsqueeze(0)
             batch_index = batch_index.to(device)
             shuffle_index = shuffle_index.to(device)
-            shuffled_batch_index  = (batch_index + shuffle_index) % batch_size
+            shuffled_batch_index = (batch_index + shuffle_index) % batch_size
             seq_batch_index = torch.arange(seq_len).unsqueeze(0).expand(batch_size, -1)
             seq_batch_index = seq_batch_index.to(device)
             sx = x[shuffled_batch_index, seq_batch_index]
         return sx
-    
+
     def forward(self, embed, hidden, lengths):
         """
         average MI between hidden and each word embedding
         MI(X,Y) = Avg(E_pxy[-sp(-T(xi,y))] - E_pxpy[sp(T(xi,y))])
-        
+
         Parameters
         ----------
         embed: torch.Tensor
@@ -204,7 +213,7 @@ class MIEstimator(nn.Module):
             Tensor of (batch_size, hidden_dim), question hidden vector
         lengths: torch.Tensor
             Tensor of (batch_size), length of valid words in each question
-        
+
         Returns
         -------
         mi: float
@@ -221,17 +230,19 @@ class MIEstimator(nn.Module):
         # P(X,Y) = (x, y), P(X)P(Y) = (x, sy)
         # batch_size * seq_len -> seq_len
         # -sp(disc(x, y)).mean() - sp(disc(x, sy)).mean()
-        seq_mi = -F.softplus(-self.disc(embed, hidden)).masked_fill(mask, 0).sum(dim=0) / seq_batch_len - F.softplus(self.disc(embed, s_hidden)).masked_fill(mask, 0).sum(dim=0) / seq_batch_len
+        seq_mi = - F.softplus(-self.disc(embed, hidden)).masked_fill(mask, 0).sum(dim=0) / seq_batch_len\
+                 - F.softplus(self.disc(embed, s_hidden)).masked_fill(mask, 0).sum(dim=0) / seq_batch_len
         # seq_len -> 1
         mi = seq_mi.mean()
         return mi
+
 
 class DisenEstimator(nn.Module):
     """
     Disentangling estimator by WGAN-like adversarial training and spectral normalization for MI minimization
     MI(X,Y) = E_pxy[T(x,y)] - E_pxpy[T(x,y)]
     min_xy max_T MI(X,Y)
-    
+
     Parameters
     ----------
     hidden_dim: int
@@ -244,7 +255,7 @@ class DisenEstimator(nn.Module):
         super(DisenEstimator, self).__init__()
         self.disc = Disc(hidden_dim, hidden_dim, dropout)
         return
-    
+
     def forward(self, x, y):
         """
         Parameters
@@ -253,7 +264,7 @@ class DisenEstimator(nn.Module):
             Tensor of (batch_size, hidden_dim), x
         y: torch.Tensor
             Tensor of (batch_size, hidden_dim), y
-        
+
         Returns
         -------
         loss:
@@ -262,7 +273,7 @@ class DisenEstimator(nn.Module):
         sy = shuffle(y)
         loss = self.disc(x, y).mean() - self.disc(x, sy).mean()
         return loss
-    
+
     def spectral_norm(self):
         """
             spectral normalization to satisfy Lipschitz constrain for Disc of WGAN

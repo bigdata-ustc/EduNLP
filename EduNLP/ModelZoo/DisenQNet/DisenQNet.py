@@ -13,6 +13,7 @@ from .modules import TextEncoder, AttnModel, ConceptEstimator, MIEstimator, Dise
 from .utils import MLP, get_mask, get_confuse_matrix, get_f1_score
 from EduNLP.ModelZoo.utils import set_device
 
+
 class QuestionEncoder(nn.Module):
     """
     DisenQNet question representation model
@@ -24,7 +25,7 @@ class QuestionEncoder(nn.Module):
     hidden_dim: int
         size of word and question embedding
     dropout: float
-        dropout rate    
+        dropout rate
     wv: torch.Tensor
         Tensor of (vocab_size, hidden_dim) or None, initial word embedding, default = None
     """
@@ -36,8 +37,7 @@ class QuestionEncoder(nn.Module):
         self.k_model = AttnModel(hidden_dim, dropout)
         self.i_model = AttnModel(hidden_dim, dropout)
         self.dropout = nn.Dropout(p=dropout)
-        return
-    
+
     def forward(self, input, length, get_vk=True, get_vi=True):
         """
         Parameters
@@ -50,7 +50,7 @@ class QuestionEncoder(nn.Module):
             whether to return vk
         get_vi: bool
             whether to return vi
-        
+
         Returns
         -------
         (embed, k_hidden, i_hidden)
@@ -73,6 +73,7 @@ class QuestionEncoder(nn.Module):
         if get_vi:
             i_hidden, _ = self.i_model(q_hidden_dp, embed_dp, embed_dp, mask)
         return embed, k_hidden, i_hidden
+
 
 class DisenQNet(object):
     """
@@ -102,22 +103,21 @@ class DisenQNet(object):
     def __init__(self, vocab_size, concept_size, hidden_dim, dropout, pos_weight, w_cp, w_mi, w_dis, wv=None):
         super(DisenQNet, self).__init__()
         self.disen_q_net = QuestionEncoder(vocab_size, hidden_dim, dropout, wv)
-        self.mi_estimator = MIEstimator(hidden_dim, hidden_dim*2, dropout)
+        self.mi_estimator = MIEstimator(hidden_dim, hidden_dim * 2, dropout)
         self.concept_estimator = ConceptEstimator(hidden_dim, concept_size, pos_weight, dropout)
         self.disen_estimator = DisenEstimator(hidden_dim, dropout)
         self.w_cp = w_cp
         self.w_mi = w_mi
         self.w_dis = w_dis
-        
         self.params = {
-                "vocab_size" : vocab_size,
-                "concept_size" : concept_size,
-                "hidden_dim" : hidden_dim,
-                "dropout" : dropout,
-                "pos_weight" : pos_weight,
-                "w_cp" : w_cp,
-                "w_mi" : w_mi,
-                "w_dis" : w_dis,
+            "vocab_size": vocab_size,
+            "concept_size": concept_size,
+            "hidden_dim": hidden_dim,
+            "dropout": dropout,
+            "pos_weight": pos_weight,
+            "w_cp": w_cp,
+            "w_mi": w_mi,
+            "w_dis": w_dis,
         }
         self.modules = (self.disen_q_net, self.mi_estimator, self.concept_estimator, self.disen_estimator)
 
@@ -132,7 +132,7 @@ class DisenQNet(object):
             - text: Tensor of (batch_size, seq_len)
             - length: Tensor of (batch_size)
             - concept: Tensor of (batch_size, class_size)
-        test_data: 
+        test_data:
             test dataloader
         device: str
             cpu or cuda
@@ -154,7 +154,11 @@ class DisenQNet(object):
         if not silent:
             print("Start training the disenQNet...")
         # optimizer & scheduler
-        model_params = list(self.disen_q_net.parameters()) + list(self.mi_estimator.parameters()) + list(self.concept_estimator.parameters())
+        model_params = list()
+        for params in [list(self.disen_q_net.parameters()),
+                       list(self.mi_estimator.parameters()), list(self.concept_estimator.parameters())]:
+            model_params.extend(params)
+
         adv_params = list(self.disen_estimator.parameters())
         optimizer = Adam(model_params, lr=lr)
         adv_optimizer = Adam(adv_params, lr=lr)
@@ -179,14 +183,13 @@ class DisenQNet(object):
                     # stop gradient propagation to encoder
                     k_hidden, i_hidden = k_hidden.detach(), i_hidden.detach()
                     # max dis_loss
-                    dis_loss =  - self.disen_estimator(k_hidden, i_hidden)
+                    dis_loss = - self.disen_estimator(k_hidden, i_hidden)
                     dis_loss = n_adversarial * self.w_dis * dis_loss
                     adv_optimizer.zero_grad()
                     dis_loss.backward()
                     adv_optimizer.step()
                     # Lipschitz constrain for Disc of WGAN
                     self.disen_estimator.spectral_norm()
-                
                 # train enc
                 embed, k_hidden, i_hidden = self.disen_q_net(text, length)
                 hidden = torch.cat((k_hidden, i_hidden), dim=-1)
@@ -203,7 +206,6 @@ class DisenQNet(object):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-            
             if not warming_up:
                 scheduler.step()
                 adv_scheduler.step()
@@ -220,7 +222,7 @@ class DisenQNet(object):
     def inference(self, item, device):
         """
         DisenQNet for i2v inference. Now not support for batch !
-        
+
         Parameters
         ----------
         item:  dict
@@ -229,7 +231,7 @@ class DisenQNet(object):
             - content_len: Tensor of (batch_size)
         device: str
             cpu or cuda
-        
+
         Returns
         ---------
         embed: torch.Tensor
@@ -251,7 +253,7 @@ class DisenQNet(object):
 
         Parameters
         ----------
-        test_data: 
+        test_data:
             iterable, train dataset, contains text, length, concept
             - text: Tensor of (batch_size, seq_len)
             - length: Tensor of (batch_size)
@@ -260,7 +262,7 @@ class DisenQNet(object):
             cpu or cuda
 
         Returns
-        --------- 
+        ---------
         loss: float
             average loss for test dataset
         """
@@ -290,19 +292,19 @@ class DisenQNet(object):
         config_path = os.path.join(os.path.dirname(filepath), "model_config.json")
         self.save_config(config_path)
         return
-    
+
     def load(self, filepath):
         state_dicts = torch.load(filepath)
         for module, state_dict in zip(self.modules, state_dicts):
             module.load_state_dict(state_dict)
         return
-    
+
     def to(self, device):
         for module in self.modules:
             # module.to(device)
             set_device(module, device)
         return
-    
+
     def set_mode(self, train):
         for module in self.modules:
             if train:
@@ -327,11 +329,12 @@ class DisenQNet(object):
 
     @classmethod
     def from_pretrained(cls, model_dir):
-        config_path = os.path.join(os.path.dirname(model_dir), "model_config.json")
-        model_path = os.path.join(os.path.dirname(model_dir), "disen_q_net.th")
+        config_path = os.path.join(model_dir, "model_config.json")
+        model_path = os.path.join(model_dir, "disen_q_net.th")
         model = cls.from_config(config_path)
         model.load(model_path)
         return model
+
 
 class ConceptModel(object):
     """
@@ -358,8 +361,9 @@ class ConceptModel(object):
         self.loss = nn.BCEWithLogitsLoss(reduction="mean", pos_weight=pos_weight)
         self.modules = (self.disen_q_net, self.classifier, self.loss)
         return
-    
-    def train(self, train_data, test_data, device, epoch, lr, step_size, gamma, silent, use_vi=False, top_k=2, reduction="micro"):
+
+    def train(self, train_data, test_data, device, epoch, lr, step_size, gamma, silent,
+              use_vi=False, top_k=2, reduction="micro"):
         """
         Concept model train
 
@@ -419,18 +423,19 @@ class ConceptModel(object):
             if test_data is not None:
                 test_loss, test_f1 = self.eval(test_data, device, use_vi, top_k, reduction)
                 if not silent:
-                    print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, f1: {train_f1:.3f}, eval loss: {test_loss:.4f}, f1: {test_f1:.3f}")
+                    print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f},\
+                     f1: {train_f1:.3f}, eval loss: {test_loss:.4f}, f1: {test_f1:.3f}")
             elif not silent:
                 print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, f1: {train_f1:.3f}")
         return
-    
+
     def eval(self, test_data, device, use_vi, top_k, reduction):
         """
         Concept model test
 
         Parameters
         ----------
-        test_data: 
+        test_data:
             iterable, test dataset, contains text, length, concept
             - text: Tensor of (batch_size, seq_len)
             - length: Tensor of (batch_size)
@@ -441,7 +446,7 @@ class ConceptModel(object):
             number of top k classes as positive label for multi-label classification
         reduction: str
             macro or micro, reduction type for F1 score
-        
+
         Returns
         ---------
         (loss, f1):
@@ -471,23 +476,23 @@ class ConceptModel(object):
         loss = total_loss / total_size
         f1 = get_f1_score(confuse_matrix, reduction)
         return loss, f1
-    
+
     def save(self, filepath):
         state_dicts = [module.state_dict() for module in self.modules]
         torch.save(state_dicts, filepath)
         return
-    
+
     def load(self, filepath):
         state_dicts = torch.load(filepath)
         for module, state_dict in zip(self.modules, state_dicts):
             module.load_state_dict(state_dict)
         return
-    
+
     def to(self, device):
         for module in self.modules:
             module.to(device)
         return
-    
+
     def set_mode(self, train):
         self.disen_q_net.eval()
         if train:

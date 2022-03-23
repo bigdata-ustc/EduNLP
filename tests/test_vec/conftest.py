@@ -15,6 +15,7 @@ def data():
             _data.append(json.loads(line))
     return _data
 
+
 @pytest.fixture(scope="module")
 def disen_train_data():
     _data = []
@@ -22,6 +23,7 @@ def disen_train_data():
         for line in f.readlines():
             _data.append(json.loads(line))
     return _data
+
 
 @pytest.fixture(scope="module")
 def disen_test_data():

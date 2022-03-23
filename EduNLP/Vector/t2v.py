@@ -46,7 +46,6 @@ class T2V(object):
     def __init__(self, model: str, *args, **kwargs):
         model = model.lower()
         self.model_type = model
-        print("[test T2V] ", model, args, kwargs)
         if model in {"rnn", "lstm", "gru", "elmo"}:
             self.i2v: Vector = MODELS[model](model, *args, **kwargs)
         else:

@@ -6,30 +6,21 @@ from transformers import AutoModel
 # from .const import UNK, PAD
 # from .meta import Vector
 import torch
-from  EduNLP.ModelZoo.DisenQNet.DisenQNet import DisenQNet
+from EduNLP.ModelZoo.DisenQNet.DisenQNet import DisenQNet
 
 
-"""
-注意修改DisenQNet中输入数据的格式，使用tokenizer处理后的令牌序列？
-"""
-
-class DisenQModel(object): # Vector
-    """
-    Examples
-    --------
-
-    """
-    def __init__(self, pretrained_model, device="cpu"):
+class DisenQModel(object):
+    def __init__(self, pretrained_dir, device="cpu"):
         """
         Parameters
         ----------
-        pretrained_model: str
-            the path to pretrained model
+        pretrained_dir: str
+            the dirname to pretrained model
         device: str
             cpu or cuda, default is cpu
         """
         self.device = device
-        self.model = DisenQNet.from_pretrained(pretrained_model)
+        self.model = DisenQNet.from_pretrained(pretrained_dir)
 
     def __call__(self, item: dict):
         embed, k_hidden, i_hidden = self.model.inference(item, device=self.device)
@@ -37,7 +28,7 @@ class DisenQModel(object): # Vector
 
     def infer_vector(self, item: dict, vector_type=None) -> torch.Tensor:
         _, k_hidden, i_hidden = self(item)
-        if vector_type == None:
+        if vector_type is None:
             return k_hidden, i_hidden
         elif vector_type == "k":
             return k_hidden

@@ -324,32 +324,30 @@ class DisenQ(I2V):
     -------
     I2V
 
-    Examples
-    --------
-    >>> output_dir = "../../examples/data/disenq"
-    >>> vocab_path =  os.path.join(output_dir, "vocab.list")
-    >>> tokenizer_kwargs = {
-    ...     "vocab_path": vocab_path,
-    ...     "max_length": 150,
-    ...     "text_tokenzier": "space",
-    ... }
-    >>> i2v = DisenQ('disenQ', 'disenq', output_dir, tokenizer_kwargs=tokenizer_kwargs, device="cuda")
-    >>> test_item = {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式 , 如 图 , 若 $x,y$ 满 足 约 束 条 件 公 式"},
-    >>> t_vec = i2v.infer_token_vector(test_item, key=lambda x:x["content"])
-    >>> i_vec = i2v.infer_item_vector(test_item, key=lambda x:x["content"], vector_type="k")
-    >>> i_vec_k, i_vec_i = i2v.infer_item_vector(test_item, key=lambda x:x["content"])
-    >>> i_vec, t_vec = i2v.infer_vector(test_item, key=lambda x:x["content"])
     """
-
-    def infer_vector(self, items, tokenize=True, key=lambda x:x,
-                    return_tensors='pt', vector_type=None, *args, **kwargs) -> tuple:
+    # Examples
+    # --------
+    # >>> pretrained_model_dir = "examples/data/disenq"
+    # >>> vocab_path =  os.path.join(pretrained_model_dir, "vocab.list")
+    # >>> tokenizer_kwargs = {
+    # ...     "vocab_path": vocab_path,
+    # ...     "max_length": 150,
+    # ...     "tokenize_method": "space",
+    # ... }
+    # >>> i2v = DisenQ('disenQ', 'disenq', pretrained_model_dir, tokenizer_kwargs=tokenizer_kwargs, device="cuda")
+    # >>> test_item = {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式 , 如 图 , 若 $x,y$ 满 足 约 束 条 件 公 式"},
+    # >>> t_vec = i2v.infer_token_vector(test_item, key=lambda x:x["content"])
+    # >>> i_vec = i2v.infer_item_vector(test_item, key=lambda x:x["content"], vector_type="k")
+    # >>> i_vec_k, i_vec_i = i2v.infer_item_vector(test_item, key=lambda x:x["content"])
+    # >>> i_vec, t_vec = i2v.infer_vector(test_item, key=lambda x:x["content"])
+    def infer_vector(self, item, tokenize=True, key=lambda x: x, vector_type=None, *args, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
         Parameters
         -----------
-        items: str or list
-            the text of question
+        item: str or dict
+            the item of question
         tokenize:bool
             True: tokenize the item
         return_tensors: str
@@ -363,18 +361,18 @@ class DisenQ(I2V):
         --------
         vector:list
         """
-        inputs = self.tokenize(items, key=key, *args, **kwargs) if tokenize is True else items
-        return self.t2v.infer_vector(inputs, vector_type=vector_type, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+        input = self.tokenize(item, key=key, *args, **kwargs) if tokenize is True else item
+        i_vec = self.t2v.infer_vector(input, vector_type=vector_type, *args, **kwargs)
+        t_vec = self.t2v.infer_tokens(input, *args, **kwargs)
+        return i_vec, t_vec
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
         logger.info("model_dir: %s" % model_dir)
 
-        vocab_path =  os.path.join(model_dir, "vocab.list")
-        config_path = os.path.join(model_dir, "model_config.json")
+        config_path = os.path.join(model_dir, "tokenizer_config.json")
         tokenizer_kwargs = {
-            "vocab_path": vocab_path, 
-            "config_path": config_path,
+            "tokenizer_config_path": config_path,
         }
         return cls("disenQ", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
