@@ -1,19 +1,12 @@
-from msilib.schema import Error
 import os
-from re import A
-from sre_constants import ASSERT
-from cv2 import erode
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
-
 from ..ModelZoo.DisenQNet.DisenQNet import DisenQNet, ConceptModel
 from ..Tokenizer import get_tokenizer
 from ..ModelZoo.utils import load_items
 
-from ..SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
 import json
-import logging
 import warnings
 from gensim.models import Word2Vec
 
