@@ -10,7 +10,7 @@ import json
 from gensim.models import KeyedVectors
 
 from .modules import TextEncoder, AttnModel, ConceptEstimator, MIEstimator, DisenEstimator
-from .utils import MLP, get_mask, get_confuse_matrix, get_f1_score
+from .utils import MLP, get_mask
 from EduNLP.ModelZoo.utils import set_device
 
 

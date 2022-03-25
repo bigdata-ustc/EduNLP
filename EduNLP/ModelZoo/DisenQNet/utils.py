@@ -49,52 +49,6 @@ def spectral_norm(W, n_iteration=5):
     return sn
 
 
-def get_topk_class(probability, top_k):  # doctest: +ELLIPSIS
-    # batch_size * class_size
-    device = probability.device
-    batch_size, class_size = probability.size()
-    # batch_size * k
-    label_index = probability.topk(top_k, dim=-1, sorted=False)[1]
-    batch_index = torch.arange(batch_size).unsqueeze(-1).expand(-1, top_k)
-    # batch_size * class_size
-    label = torch.zeros(batch_size, class_size).long()
-    batch_index = batch_index.to(device)
-    label = label.to(device)
-    label[batch_index, label_index] = 1
-    return label
-
-
-def get_confuse_matrix(label, probability, top_k):  # doctest: +ELLIPSIS
-    prediction = get_topk_class(probability, top_k).bool()
-    label = label.bool()
-    # batch_size * class_size -> class_size
-    tp = (label & prediction).sum(dim=0)
-    fp = ((~label) & prediction).sum(dim=0)
-    fn = (label & (~prediction)).sum(dim=0)
-    # 3 * class_size
-    cm = torch.stack((tp, fp, fn), dim=0)
-    return cm
-
-
-def get_f1_score(confuse_matrix, reduction="micro"):  # doctest: +ELLIPSIS
-    # 3 * class_size -> class_size
-    tp, fp, fn = confuse_matrix
-    if reduction == "macro":
-        precise = tp.float() / (tp + fp).float()
-        recall = tp.float() / (tp + fn).float()
-        f1 = (2 * precise * recall) / (precise + recall)
-        f1[tp == 0] = 0
-        f1 = f1.mean().item()
-    elif reduction == "micro":
-        tp, fp, fn = tp.sum(), fp.sum(), fn.sum()
-        precise = tp.float() / (tp + fp).float()
-        recall = tp.float() / (tp + fn).float()
-        f1 = ((2 * precise * recall) / (precise + recall)).item()
-        if tp.item() == 0:
-            f1 = 0
-    return f1
-
-
 class MLP(nn.Module):
     def __init__(self, in_dim, n_classes, hidden_dim, dropout, n_layers=2, act=F.leaky_relu):
         super(MLP, self).__init__()

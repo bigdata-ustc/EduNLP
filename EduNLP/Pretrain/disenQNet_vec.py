@@ -120,7 +120,7 @@ class DisenQTokenizer(object):
         else:
             self.secure = False
 
-    def __call__(self, item: (str, dict), key=lambda x: x, padding=True,
+    def __call__(self, item: (str, dict), key=lambda x: x, padding=False,
                  return_tensors=True, return_text=False, *args, **kwargs):
         """
         item: str or dict
@@ -135,7 +135,7 @@ class DisenQTokenizer(object):
             whether to return text tokens
         """
         token_item = self.tokenize(item, key)
-        indexs = [self.word2index.get(w, self.word2index[self.unk_token]) for w in item]
+        indexs = [self.word2index.get(w, self.word2index[self.unk_token]) for w in token_item]
         length = len(indexs)
         ret = {
             "content_idx": self.padding(indexs, self.max_length) if padding else indexs,
@@ -208,30 +208,31 @@ class DisenQTokenizer(object):
         save_list(self.word2index, save_vocab_path)  # only save words
 
     @classmethod
-    def from_pretrained(cls, tokenzier_config_dir):
+    def from_pretrained(cls, tokenizer_config_dir):
         """
         Parameters:
         -----------
-        tokenzier_config_dir: str
-            must contain tokenzier_config.json and vocab.list
+        tokenizer_config_dir: str
+            must contain tokenizer_config.json and vocab.list
         """
-        with open(tokenzier_config_dir, "r", encoding="utf-8") as rf:
-            tokenzier_config = json.load(rf)
+        tokenizer_config_path = os.path.join(tokenizer_config_dir, "tokenizer_config.json")
+        with open(tokenizer_config_path, "r", encoding="utf-8") as rf:
+            tokenizer_config = json.load(rf)
             return cls(
-                vocab_path=tokenzier_config["vocab_path"], max_length=tokenzier_config["max_length"],
-                tokenize_method=tokenzier_config["tokenize_method"], num_token=tokenzier_config["num_token"],
-                unk_token=tokenzier_config["unk_token"], pad_token=tokenzier_config["pad_token"])
+                vocab_path=tokenizer_config["vocab_path"], max_length=tokenizer_config["max_length"],
+                tokenize_method=tokenizer_config["tokenize_method"], num_token=tokenizer_config["num_token"],
+                unk_token=tokenizer_config["unk_token"], pad_token=tokenizer_config["pad_token"])
 
-    def save_pretrained(self, tokenzier_config_dir):
+    def save_pretrained(self, tokenizer_config_dir):
         """
         Parameters:
         -----------
-        tokenzier_config_dir: str
-            save tokenzier params in tokenzier_config.json and save words in vocab.list
+        tokenizer_config_dir: str
+            save tokenizer params in tokenizer_config.json and save words in vocab.list
         """
-        tokenzier_config_path = os.path.join(tokenzier_config_dir, "tokenzier_config.json")
-        save_vocab_path = os.path.join(tokenzier_config_dir, "vocab.list")
-        tokenzier_params = {
+        tokenizer_config_path = os.path.join(tokenizer_config_dir, "tokenizer_config.json")
+        save_vocab_path = os.path.join(tokenizer_config_dir, "vocab.list")
+        tokenizer_params = {
             "tokenize_method": self.tokenize_method,
             "num_token": self.num_token,
             "unk_token": self.unk_token,
@@ -240,8 +241,8 @@ class DisenQTokenizer(object):
             "vocab_path": save_vocab_path,
         }
         self.save_vocab(save_vocab_path)
-        with open(tokenzier_config_path, "w", encoding="utf-8") as wf:
-            json.dump(tokenzier_params, wf, ensure_ascii=False, indent=2)
+        with open(tokenizer_config_path, "w", encoding="utf-8") as wf:
+            json.dump(tokenizer_params, wf, ensure_ascii=False, indent=2)
 
     @property
     def vocab_size(self):
@@ -281,23 +282,23 @@ class QuestionDataset(Dataset):
             self.concept2index = load_list(self.concept_list_path)
             self.word2vec = torch.load(self.wv_path)
 
-            self.disen_tokenzier = DisenQTokenizer(vocab_path=self.word_list_path, max_length=max_length)
+            self.disen_tokenizer = DisenQTokenizer(vocab_path=self.word_list_path, max_length=max_length)
             if not silent:
                 print(f"load vocab from {self.word_list_path}")
                 print(f"load concept from {self.concept_list_path}")
                 print(f"load word2vec from {self.wv_path}")
         else:
-            self.disen_tokenzier = DisenQTokenizer(max_length=max_length)
-            self.disen_tokenzier.set_vocab(items, key=lambda x: x["content"],
+            self.disen_tokenizer = DisenQTokenizer(max_length=max_length)
+            self.disen_tokenizer.set_vocab(items, key=lambda x: x["content"],
                                            trim_min_count=trim_min_count)
-            self.disen_tokenzier.save_pretrained(predata_dir)
+            self.disen_tokenizer.save_pretrained(predata_dir)
             if not silent:
                 print(f"save vocab to {self.word_list_path}")
-            self.word2index = self.disen_tokenzier.word2index
+            self.word2index = self.disen_tokenizer.word2index
 
-        self.num_token = self.disen_tokenzier.num_token  # "<num>"
-        self.unk_token = self.disen_tokenzier.unk_token  # "<unk>"
-        self.pad_token = self.disen_tokenzier.pad_token  # "<pad>"
+        self.num_token = self.disen_tokenizer.num_token  # "<num>"
+        self.unk_token = self.disen_tokenizer.unk_token  # "<unk>"
+        self.pad_token = self.disen_tokenizer.pad_token  # "<pad>"
         self.unk_idx = self.word2index[self.unk_token]
 
         # load dataset, init construct word and concept list
@@ -319,7 +320,7 @@ class QuestionDataset(Dataset):
     def process_dataset(self, items, trim_min_count, embed_dim, init=False, text_key=lambda x: x["content"]):
         # make items in standard format
         for i, item in enumerate(items):
-            token_data = self.disen_tokenzier(item, key=text_key, return_tensors=False, return_text=True, padding=False)
+            token_data = self.disen_tokenizer(item, key=text_key, return_tensors=False, return_text=True, padding=False)
             items[i]["content_idx"] = token_data["content_idx"]
             items[i]["content_len"] = token_data["content_len"]
             items[i]["content"] = token_data["content"]
@@ -342,7 +343,7 @@ class QuestionDataset(Dataset):
                 self.concept2index = load_list(self.concept_list_path)
             # word2vec
             if not os.path.exists(self.wv_path):
-                words = self.disen_tokenzier.words
+                words = self.disen_tokenizer.words
                 corpus = list()
                 word_set = set(words)
                 for data in items:
@@ -403,7 +404,7 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
     >>> train_data = load_items("tests/test_vec/disenq_train.json")[:100]
     >>> test_data = load_items("tests/test_vec/disenq_test.json")[:100]
     >>> train_disenQNet(train_data,
-    ... "examples/test_model/data/disenq","examples/test_model/data/disenq", silent=True) #doctest: +ELLIPSIS
+    ... "examples/test_model/data/disenq","examples/test_model/data/disenq", silent=True)  # doctest: +SKIP
     """
     # dataset
     default_train_params = {
