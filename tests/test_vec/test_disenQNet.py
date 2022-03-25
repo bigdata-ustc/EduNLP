@@ -43,7 +43,7 @@ def test_disen_train(disen_data_train, disen_data_test, tmpdir):
         "max_length": 150,
         "tokenize_method": "space",
     }
-    i2v = DisenQ('disenQ', 'disenq', output_dir, tokenizer_kwargs=tokenizer_kwargs, device="cuda")
+    i2v = DisenQ('disenQ', 'disenq', output_dir, tokenizer_kwargs=tokenizer_kwargs, device="cpu")
 
     test_items = [
         {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式"},
@@ -51,12 +51,18 @@ def test_disen_train(disen_data_train, disen_data_test, tmpdir):
     ]
 
     t_vec = i2v.infer_token_vector(test_items[1], key=lambda x: x["content"])
-    i_vec = i2v.infer_item_vector(test_items[1], key=lambda x: x["content"], vector_type="k")
-    assert i_vec.shape == torch.Size([1, 128])
+    i_vec_k = i2v.infer_item_vector(test_items[1], key=lambda x: x["content"], vector_type="k")
+    i_vec_i = i2v.infer_item_vector(test_items[1], key=lambda x: x["content"], vector_type="i")
+    assert i_vec_k.shape == torch.Size([1, 128])
+    assert i_vec_i.shape == torch.Size([1, 128])
     assert t_vec.shape == torch.Size([1, 150, 128])
+    assert i2v.vector_size == i_vec_k.shape[1]
 
     i_vec, t_vec = i2v.infer_vector(test_items[1], key=lambda x: x["content"], vector_type=None)
     assert len(i_vec) == 2
     assert i_vec[0].shape == torch.Size([1, 128])
     assert i_vec[1].shape == torch.Size([1, 128])
     assert t_vec.shape == torch.Size([1, 150, 128])
+
+    with pytest.raises(KeyError):
+        i_vec = i2v.infer_item_vector(test_items[1], key=lambda x: x["content"], vector_type="x")

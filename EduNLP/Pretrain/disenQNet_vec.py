@@ -2,7 +2,7 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
-from ..ModelZoo.DisenQNet.DisenQNet import DisenQNet, ConceptModel
+from ..ModelZoo.DisenQNet.DisenQNet import DisenQNet
 from ..Tokenizer import get_tokenizer
 from ..ModelZoo.utils import load_items
 
@@ -150,20 +150,6 @@ class DisenQTokenizer(object):
         return ret
 
     def tokenize(self, item: (str, dict), key=lambda x: x, *args, **kwargs):
-        if isinstance(item, str) or isinstance(item, dict):
-            return self._tokenize(item, key)
-        else:
-            raise ValueError("items should be str or list!")
-
-    def padding(self, idx, max_length):
-        padding_idx = idx + [self.word2index[self.pad_token]] * (max_length - len(idx))
-        return padding_idx
-
-    def _space_toeknzier(self, items, key=lambda x: x):
-        for item in items:
-            yield key(item).strip().split(' ')
-
-    def _tokenize(self, item, key=lambda x: x):
         if not self.secure:
             raise Exception("Must set the vocab first before tokenize item (either set_vocab() or load_vocab() )")
         item = next(self.text_tokenizer([item], key=key))
@@ -175,6 +161,14 @@ class DisenQTokenizer(object):
             token_text = token_text[:self.max_length]
         token_text = [self.num_token if check_num(w) else w for w in token_text]
         return token_text
+
+    def padding(self, idx, max_length):
+        padding_idx = idx + [self.word2index[self.pad_token]] * (max_length - len(idx))
+        return padding_idx
+
+    def _space_toeknzier(self, items, key=lambda x: x):
+        for item in items:
+            yield key(item).strip().split(' ')
 
     def load_vocab(self, path):
         with open(path, "rt", encoding="utf-8") as file:

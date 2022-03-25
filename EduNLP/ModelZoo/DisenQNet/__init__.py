@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from .DisenQNet import DisenQNet, ConceptModel
+from .DisenQNet import DisenQNet

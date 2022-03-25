@@ -49,7 +49,7 @@ def spectral_norm(W, n_iteration=5):
     return sn
 
 
-def get_topk_class(probability, top_k):
+def get_topk_class(probability, top_k):  # doctest: +ELLIPSIS
     # batch_size * class_size
     device = probability.device
     batch_size, class_size = probability.size()
@@ -64,7 +64,7 @@ def get_topk_class(probability, top_k):
     return label
 
 
-def get_confuse_matrix(label, probability, top_k):
+def get_confuse_matrix(label, probability, top_k):  # doctest: +ELLIPSIS
     prediction = get_topk_class(probability, top_k).bool()
     label = label.bool()
     # batch_size * class_size -> class_size
@@ -76,7 +76,7 @@ def get_confuse_matrix(label, probability, top_k):
     return cm
 
 
-def get_f1_score(confuse_matrix, reduction="micro"):
+def get_f1_score(confuse_matrix, reduction="micro"):  # doctest: +ELLIPSIS
     # 3 * class_size -> class_size
     tp, fp, fn = confuse_matrix
     if reduction == "macro":
