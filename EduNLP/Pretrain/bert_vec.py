@@ -107,7 +107,7 @@ def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_p
     >>> token_item = [tokenizer(i) for i in stems]
     >>> print(token_item[0].keys())
     dict_keys(['input_ids', 'token_type_ids', 'attention_mask'])
-    >>> finetune_bert(token_item, "examples/test_model/data/bert")  # doctest: +SKIP
+    >>> finetune_bert(token_item, "../examples/test_model/data/bert")  # doctest: +SKIP
     {'train_runtime': ..., ..., 'epoch': 1.0}
     """
     model = AutoModelForMaskedLM.from_pretrained(pretrain_model)

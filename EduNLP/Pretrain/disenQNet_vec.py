@@ -399,10 +399,10 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
 
     Examples
     ----------
-    >>> train_data = load_items("tests/test_vec/disenq_train.json")[:100]
-    >>> test_data = load_items("tests/test_vec/disenq_test.json")[:100]
+    >>> train_data = load_items("../tests/test_vec/disenq_train.json")[:100]
+    >>> test_data = load_items("../tests/test_vec/disenq_test.json")[:100]
     >>> train_disenQNet(train_data,
-    ... "examples/test_model/data/disenq","examples/test_model/data/disenq", silent=True)  # doctest: +SKIP
+    ... "../examples/test_model/data/disenq","../examples/test_model/data/disenq", silent=True)  # doctest: +SKIP
     """
     # dataset
     default_train_params = {
