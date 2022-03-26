@@ -11,7 +11,7 @@ from EduNLP.Pretrain import BertTokenizer, DisenQTokenizer
 from EduNLP import logger
 import os
 
-__all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Bert", "DisenQ", "get_pretrained_i2v"]
 
 
 class I2V(object):
@@ -58,7 +58,7 @@ class I2V(object):
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'disenQ':
-            self.tokenizer = DisenQTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+            self.tokenizer = DisenQTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
                                                       if tokenizer_kwargs is not None else {})
@@ -75,11 +75,11 @@ class I2V(object):
         """transfer item to vector"""
         return self.infer_vector(items, *args, **kwargs)
 
-    def tokenize(self, items, indexing=True, padding=False, key=lambda x: x, *args, **kwargs) -> list:
+    def tokenize(self, items, *args, indexing=True, padding=False, key=lambda x: x, **kwargs) -> list:
         # """tokenize item"""
-        return self.tokenizer(items, key=key, *args, **kwargs)
+        return self.tokenizer(items, *args, key=key, **kwargs)
 
-    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
+    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x,
                      **kwargs) -> tuple:
         raise NotImplementedError
 
@@ -89,7 +89,7 @@ class I2V(object):
     def infer_token_vector(self, tokens, *args, **kwargs) -> ...:
         return self.infer_vector(tokens, *args, **kwargs)[1]
 
-    def save(self, config_path, *args, **kwargs):
+    def save(self, config_path):
         with open(config_path, "w", encoding="utf-8") as wf:
             json.dump(self.params, wf, ensure_ascii=False, indent=2)
 
@@ -324,22 +324,17 @@ class DisenQ(I2V):
     -------
     I2V
 
+    Examples
+    --------
+    >>> pretrained_model_dir = "examples/test_model/data/disenq"
+    >>> i2v = get_pretrained_i2v('disenq_pub_128', pretrained_model_dir)
+    >>> test_item = {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式 , 如 图 , 若 $x,y$ 满 足 约 束 条 件 公 式"}
+    >>> t_vec = i2v.infer_token_vector(test_item, key=lambda x:x["content"])
+    >>> i_vec = i2v.infer_item_vector(test_item, key=lambda x:x["content"], vector_type="k")
+    >>> i_vec_k, i_vec_i = i2v.infer_item_vector(test_item, key=lambda x:x["content"])
+    >>> i_vec, t_vec = i2v.infer_vector(test_item, key=lambda x:x["content"])
     """
-    # Examples
-    # --------
-    # >>> pretrained_model_dir = "examples/data/disenq"
-    # >>> vocab_path =  os.path.join(pretrained_model_dir, "vocab.list")
-    # >>> tokenizer_kwargs = {
-    # ...     "vocab_path": vocab_path,
-    # ...     "max_length": 150,
-    # ...     "tokenize_method": "space",
-    # ... }
-    # >>> i2v = DisenQ('disenQ', 'disenq', pretrained_model_dir, tokenizer_kwargs=tokenizer_kwargs, device="cuda")
-    # >>> test_item = {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式 , 如 图 , 若 $x,y$ 满 足 约 束 条 件 公 式"},
-    # >>> t_vec = i2v.infer_token_vector(test_item, key=lambda x:x["content"])
-    # >>> i_vec = i2v.infer_item_vector(test_item, key=lambda x:x["content"], vector_type="k")
-    # >>> i_vec_k, i_vec_i = i2v.infer_item_vector(test_item, key=lambda x:x["content"])
-    # >>> i_vec, t_vec = i2v.infer_vector(test_item, key=lambda x:x["content"])
+
     def infer_vector(self, item, tokenize=True, key=lambda x: x, vector_type=None, *args, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
@@ -367,15 +362,17 @@ class DisenQ(I2V):
         return i_vec, t_vec
 
     @classmethod
-    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        logger.info("model_dir: %s" % model_dir)
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, **kwargs):
+        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_dir: %s" % model_path)
 
-        config_path = os.path.join(model_dir, "tokenizer_config.json")
         tokenizer_kwargs = {
-            "tokenizer_config_path": config_path,
+            "tokenizer_config_dir": model_path,
         }
         return cls("disenQ", name, pretrained_t2v=True, model_dir=model_dir,
-                   tokenizer_kwargs=tokenizer_kwargs)
+                   tokenizer_kwargs=tokenizer_kwargs, **kwargs)
 
 
 MODELS = {
@@ -388,6 +385,7 @@ MODELS = {
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
+    'disenq_pub_128': [DisenQ, 'disenq_pub_128']
 }
 
 
@@ -406,6 +404,7 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
         d2v_lit_256
         w2v_sci_300
         w2v_lit_300
+        disenq_pub_128
     model_dir:str
         the path of model, default: MODEL_DIR = '~/.EduNLP/model'
 

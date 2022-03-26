@@ -216,10 +216,11 @@ class DisenQTokenizer(object):
             must contain tokenizer_config.json and vocab.list
         """
         tokenizer_config_path = os.path.join(tokenizer_config_dir, "tokenizer_config.json")
+        pretrained_vocab_path = os.path.join(tokenizer_config_dir, "vocab.list")
         with open(tokenizer_config_path, "r", encoding="utf-8") as rf:
             tokenizer_config = json.load(rf)
             return cls(
-                vocab_path=tokenizer_config["vocab_path"], max_length=tokenizer_config["max_length"],
+                vocab_path=pretrained_vocab_path, max_length=tokenizer_config["max_length"],
                 tokenize_method=tokenizer_config["tokenize_method"], num_token=tokenizer_config["num_token"],
                 unk_token=tokenizer_config["unk_token"], pad_token=tokenizer_config["pad_token"])
 
@@ -238,7 +239,6 @@ class DisenQTokenizer(object):
             "unk_token": self.unk_token,
             "pad_token": self.pad_token,
             "max_length": self.max_length,
-            "vocab_path": save_vocab_path,
         }
         self.save_vocab(save_vocab_path)
         with open(tokenizer_config_path, "w", encoding="utf-8") as wf:
@@ -351,9 +351,7 @@ class QuestionDataset(Dataset):
                     corpus.append(text)
                 wv = Word2Vec(corpus, vector_size=embed_dim, min_count=trim_min_count).wv
                 # 按照 vocab 中的词序 来保存
-                # wv_list = [wv[w] if w in wv.key_to_index else np.random.rand(embed_dim) for w in words]
-                ctrl_tokens = [self.num_token, self.unk_token, self.pad_token]
-                wv_list = [wv[w] if w not in ctrl_tokens else np.random.rand(embed_dim) for w in words]
+                wv_list = [wv[w] if w in wv.key_to_index else np.random.rand(embed_dim) for w in words]
                 self.word2vec = torch.tensor(wv_list)
                 torch.save(self.word2vec, self.wv_path)
                 if not self.silent:
