@@ -75,7 +75,7 @@ PRETRAINED_MODELS = {
     "test_w2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"],
     "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"],
     "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"],
-    "elmo_pub_math": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/Elmo-pub/1/elmo_pub_math.zip/elmo_pub_math.zip",
+    "elmo_pub_math": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo_pub/1/elmo_pub_math.zip",
                       'elmo']
 }
 
@@ -120,6 +120,7 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     if model_name in ["d2v", "w2v"]:
         postfix = ".bin" if model_name == "d2v" else ".kv"
         model_path = path_append(model_path, os.path.basename(model_path) + postfix, to_str=True)
-    # elif model_name in ["physics_elmo_large", "geography_elmo_large", "politics_elmo_large", "math_elmo_large",
-    #                     "history_elmo_large", "chemistry_elmo_large", "biology_elmo_large"]:
+    if model_name in ['elmo']:
+        # This is for cases like: "./elmo_dir.zip" -> unzip -> "./elmo_dir/elmo_dir/"
+        model_path = os.path.join(model_path, os.path.basename(model_path))
     return T2V(model_name, model_path, *args)
