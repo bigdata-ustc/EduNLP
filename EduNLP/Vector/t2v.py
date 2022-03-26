@@ -76,7 +76,9 @@ PRETRAINED_MODELS = {
     "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"],
     "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"],
     "elmo_pub_math": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo_pub/1/elmo_pub_math.zip",
-                      'elmo']
+                      'elmo'],
+    "elmo_test": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo_pub/1/elmo_test.zip",
+                  "elmo"],
 }
 
 

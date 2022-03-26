@@ -397,6 +397,7 @@ MODELS = {
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
     "elmo_pub_math": [Elmo, "elmo_pub_math"],
+    'elmo_test': [Elmo, "elmo_test"],
 }
 
 
