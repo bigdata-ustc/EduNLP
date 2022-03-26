@@ -2,6 +2,8 @@
 # 2021/8/1 @ tongshiwei
 
 import json
+import os.path
+
 from EduNLP.constant import MODEL_DIR
 from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import PRETRAINED_MODELS
@@ -379,7 +381,8 @@ class Elmo(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
+        tokenizer_kwargs = {"path": os.path.join(model_dir, 'vocab.json')}
+        return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir, tokenizer_kwargs=tokenizer_kwargs)
     # def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs)
 
 
