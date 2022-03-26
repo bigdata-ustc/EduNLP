@@ -295,7 +295,7 @@ class DisenQNet(object):
         return
 
     def load(self, filepath):
-        state_dicts = torch.load(filepath)
+        state_dicts = torch.load(filepath, map_location='cpu')
         for module, state_dict in zip(self.modules, state_dicts):
             module.load_state_dict(state_dict)
         return
@@ -322,7 +322,8 @@ class DisenQNet(object):
     def from_config(cls, config_path):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            wv = torch.load(model_config["wv_path"], mmap="r") if "wv_path" in model_config else None
+            wv = torch.load(model_config["wv_path"],
+                            map_location='cpu', mmap="r") if "wv_path" in model_config else None
             return cls(
                 model_config["vocab_size"], model_config["concept_size"], model_config["hidden_dim"],
                 model_config["dropout"], model_config["pos_weight"], model_config["w_cp"], model_config["w_mi"],
