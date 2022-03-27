@@ -54,12 +54,11 @@ def test_elmo_i2v(stem_data_elmo, tmpdir):
     assert len(t_vec[0]) == i2v.vector_size
     i_vec = i2v.infer_item_vector(item['stem'])
     assert len(i_vec) == i2v.vector_size
-
     t_vec = i2v.infer_token_vector(item['stem'])
     assert len(t_vec[0]) == i2v.vector_size
 
 
-def test_pretrained_i2v(stem_data_elmo, tmpdir):
+def test_pretrained_elmo_i2v(stem_data_elmo, tmpdir):
     output_dir = str(tmpdir.mkdir('elmo_test'))
     i2v = get_pretrained_i2v("elmo_test", output_dir)
     item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
@@ -69,6 +68,5 @@ def test_pretrained_i2v(stem_data_elmo, tmpdir):
     assert len(t_vec[0]) == i2v.vector_size
     i_vec = i2v.infer_item_vector(item['stem'])
     assert len(i_vec) == i2v.vector_size
-
     t_vec = i2v.infer_token_vector(item['stem'])
     assert len(t_vec[0]) == i2v.vector_size

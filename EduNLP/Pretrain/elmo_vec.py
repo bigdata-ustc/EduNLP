@@ -19,19 +19,24 @@ PAD_SYMBOL = '[PAD]'
 
 class ElmoTokenizer(object):
     """
-
     Examples
     --------
-    >>> vocab=ElmoTokenizer()
+    >>> t=ElmoTokenizer()
     >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\\
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
-    >>> vocab.tokenize(items[0])
+    >>> t.tokenize(items[0])
     ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
-    >>> len(vocab)
+    >>> len(t)
     18
     """
 
-    def __init__(self, path=None):
+    def __init__(self, path: str = None):
+        """
+        Parameters
+        ----------
+        path: str, optional
+            the path of saved ElmoTokenizer, e.g. "../elmo_pub_math/vocab.json"
+        """
         self.pure_tokenizer = PureTextTokenizer()
         self.t2id = {PAD_SYMBOL: 0, UNK_SYMBOL: 1, FORMULA_SYMBOL: 2, FIGURE_SYMBOL: 3,
                      QUES_MARK_SYMBOL: 4, TAG_SYMBOL: 5, SEP_SYMBOL: 6}
@@ -82,6 +87,13 @@ class ElmoTokenizer(object):
 
 class ElmoDataset(tud.Dataset):
     def __init__(self, texts: list, tokenizer: ElmoTokenizer, max_length=128):
+        """
+        Parameters
+        ----------
+        texts: list
+        tokenizer: ElmoTokenizer
+        max_length: int, optional, default=128
+        """
         super(ElmoDataset, self).__init__()
         self.tokenizer = tokenizer
         self.texts = [text if len(text) < max_length else text[0:max_length - 1] for text in texts]
@@ -183,7 +195,7 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
             length = sample['length'].to(device)
             try:
                 y = F.one_hot(idx, num_classes=len(tokenizer)).to(device)
-                pred_forward, pred_backward, _, _ = model.forward(idx, length, device)
+                pred_forward, pred_backward, _, _ = model.forward(idx, length)
                 pred_forward = pred_forward[pred_mask]
                 pred_backward = pred_backward[torch.flip(pred_mask, [1])]
                 y_rev = torch.flip(y, [1])[torch.flip(idx_mask, [1])]
@@ -207,7 +219,8 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     config = {
         'emb_dim': emb_dim,
         'hid_dim': hid_dim,
-        'batch_first': True
+        'batch_first': True,
+        'vocab_size': len(tokenizer)
     }
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)

@@ -80,7 +80,7 @@ class LM(nn.Module):
         if model_params:
             load_net(model_params, self, allow_missing=True)
 
-    def forward(self, seq_idx, seq_len, device=torch.device('cpu')):
+    def forward(self, seq_idx, seq_len):
         """
 
         Parameters
@@ -89,16 +89,13 @@ class LM(nn.Module):
             a list of indices
         seq_len:Tensor
             length
-        device:torch.device
-            device
-
         Returns
         --------
         sequence
             a PackedSequence object
         """
         seq = self.embedding(seq_idx)
-        pack = pack_padded_sequence(seq, seq_len, batch_first=True, enforce_sorted=False)
+        pack = pack_padded_sequence(seq, seq_len.cpu(), batch_first=True, enforce_sorted=False)
         h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
         if self.c is True:
             c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
@@ -120,7 +117,7 @@ class ElmoLM(nn.Module):
         self.hidden_size = hidden_size
         self.dropout = nn.Dropout(dropout_rate)
 
-    def forward(self, seq_idx, seq_len, device=torch.device('cpu')):
+    def forward(self, seq_idx, seq_len):
         """
         Parameters
         ----------
@@ -128,8 +125,6 @@ class ElmoLM(nn.Module):
             a list of indices
         seq_len:Tensor, of shape (batch_size)
             length
-        device:torch.device
-            device
 
         Returns
         ----------
@@ -138,7 +133,7 @@ class ElmoLM(nn.Module):
         forward_output: of shape (batch_size, sequence_length, hidden_size)
         backward_output: of shape (batch_size, sequence_length, hidden_size)
         """
-        lm_output, _ = self.LM_layer(seq_idx, seq_len, device)
+        lm_output, _ = self.LM_layer(seq_idx, seq_len)
         forward_output = lm_output[:, :, :self.hidden_size]
         backward_output = lm_output[:, :, self.hidden_size:]
         forward_output = self.dropout(forward_output)

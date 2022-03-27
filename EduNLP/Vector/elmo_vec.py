@@ -14,17 +14,12 @@ import json
 
 
 class ElmoModel(Vector):
-    """
-
-    Parameters
-    --------
-    pretrain_model: str, required
-        The pretrained model name.
-    torch.Size([1024])
-
-    """
-
-    def __init__(self, pretrained_model_path):
+    def __init__(self, pretrained_model_path: str):
+        """
+        Parameters
+        ----------
+        pretrained_model_path: str
+        """
         super(ElmoModel, self).__init__()
         self.tokenizer = ElmoTokenizer()
         self.tokenizer.load_vocab(os.path.join(pretrained_model_path, 'vocab.json'))
@@ -43,15 +38,13 @@ class ElmoModel(Vector):
 
     def infer_vector(self, item, *args, **kwargs) -> torch.Tensor:
         pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor([item]),
-                                                                                    torch.tensor([len(item)]),
-                                                                                    torch.device('cpu'))
+                                                                                    torch.tensor([len(item)]))
         ret = torch.cat((forward_hiddens[0, -1, :], backward_hiddens[0, 0, :]), dim=-1)
         return ret
 
     def infer_tokens(self, item, *args, **kwargs) -> torch.Tensor:
         pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor([item]),
-                                                                                    torch.tensor([len(item)]),
-                                                                                    torch.device('cpu'))
+                                                                                    torch.tensor([len(item)]))
 
         ret = torch.cat((forward_hiddens[0], torch.flip(backward_hiddens, [1])[0]), dim=-1)
         return ret
