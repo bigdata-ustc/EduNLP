@@ -42,7 +42,6 @@ class ElmoModel(Vector):
         return self.model.get_contextual_emb(item_indices, token_idx, scale)
 
     def infer_vector(self, item, *args, **kwargs) -> torch.Tensor:
-        item = [0 if token not in self.tokenizer.t2id else self.tokenizer.t2id[token] for token in item]
         pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor([item]),
                                                                                     torch.tensor([len(item)]),
                                                                                     torch.device('cpu'))
@@ -50,7 +49,6 @@ class ElmoModel(Vector):
         return ret
 
     def infer_tokens(self, item, *args, **kwargs) -> torch.Tensor:
-        item = [0 if token not in self.tokenizer.t2id else self.tokenizer.t2id[token] for token in item]
         pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor([item]),
                                                                                     torch.tensor([len(item)]),
                                                                                     torch.device('cpu'))

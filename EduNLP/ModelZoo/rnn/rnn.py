@@ -98,7 +98,7 @@ class LM(nn.Module):
             a PackedSequence object
         """
         seq = self.embedding(seq_idx)
-        pack = pack_padded_sequence(seq, seq_len, batch_first=True)
+        pack = pack_padded_sequence(seq, seq_len, batch_first=True, enforce_sorted=False)
         h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
         if self.c is True:
             c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
