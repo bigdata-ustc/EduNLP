@@ -122,7 +122,4 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     if model_name in ["d2v", "w2v"]:
         postfix = ".bin" if model_name == "d2v" else ".kv"
         model_path = path_append(model_path, os.path.basename(model_path) + postfix, to_str=True)
-    if model_name in ['elmo']:
-        # This is for cases like: "./elmo_dir.zip" -> unzip -> "./elmo_dir/elmo_dir/"
-        model_path = os.path.join(model_path, os.path.basename(model_path))
     return T2V(model_name, model_path, *args)

@@ -375,7 +375,7 @@ class Elmo(I2V):
         --------
         vector:list
         """
-        inputs = self.tokenize(items, return_tensors=return_tensors,
+        inputs = self.tokenize(items, freeze_vocab=True, return_tensors=return_tensors,
                                pad_to_max_length=False) if tokenize is True else items
         return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
@@ -383,7 +383,6 @@ class Elmo(I2V):
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
         tokenizer_kwargs = {"path": os.path.join(model_dir, 'vocab.json')}
         return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir, tokenizer_kwargs=tokenizer_kwargs)
-    # def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs)
 
 
 MODELS = {

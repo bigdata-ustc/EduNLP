@@ -40,16 +40,18 @@ class ElmoTokenizer(object):
         else:
             self.load_vocab(path)
 
-    def __call__(self, item, *args, **kwargs):
-        return self.to_index(self.tokenize(item))
+    def __call__(self, item, freeze_vocab=False, pad_to_max_length=False, *args, **kwargs):
+        return self.to_index(item=self.tokenize(item=item, freeze_vocab=freeze_vocab),
+                             pad_to_max_length=pad_to_max_length)
 
     def __len__(self):
         return len(self.t2id)
 
-    def tokenize(self, item: str):
+    def tokenize(self, item: str, freeze_vocab=False):
         tokens = next(self.pure_tokenizer([item]))
-        for token in tokens:
-            self.append(token)
+        if not freeze_vocab:
+            for token in tokens:
+                self.append(token)
         return tokens
 
     def to_index(self, item: list, max_length=128, pad_to_max_length=False):
