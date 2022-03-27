@@ -10,6 +10,7 @@ from .bert_vec import BertModel
 from .elmo_vec import ElmoModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
+from EduNLP import logger
 
 MODELS = {
     "w2v": W2V,

@@ -46,7 +46,8 @@ def test_elmo_i2v(stem_data_elmo, tmpdir):
     tokenizer = ElmoTokenizer()
     train_text = [tokenizer.tokenize(item=data, freeze_vocab=False) for data in stem_data_elmo]
     train_elmo(train_text, output_dir)
-    i2v = Elmo('elmo', 'elmo', output_dir)
+    tokenizer_kwargs = {"path": os.path.join(output_dir, "vocab.json")}
+    i2v = Elmo('elmo', 'elmo', output_dir, tokenizer_kwargs=tokenizer_kwargs, pretrained_t2v=False)
     item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                 若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
     i_vec, t_vec = i2v(item['stem'])

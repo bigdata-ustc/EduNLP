@@ -64,7 +64,7 @@ class I2V(object):
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'elmo':
-            self.tokenizer = ElmoTokenizer(**tokenizer_kwargs) if tokenizer_kwargs else self.t2v.i2v.tokenizer
+            self.tokenizer = ElmoTokenizer(**tokenizer_kwargs)
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer,
                                                       **tokenizer_kwargs if tokenizer_kwargs is not None else {})
@@ -381,8 +381,13 @@ class Elmo(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        model_dir = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
-        return cls("elmo", name, pretrained_t2v=True, model_dir=model_dir)
+        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_path: %s" % model_path)
+        tokenizer_kwargs = {"path": os.path.join(model_path, "vocab.json")}
+        return cls("elmo", name, pretrained_t2v=True, model_dir=model_dir,
+                   tokenizer_kwargs=tokenizer_kwargs)
 
 
 MODELS = {
