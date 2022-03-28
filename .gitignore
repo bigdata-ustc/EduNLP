@@ -111,3 +111,4 @@ venv.bak/
 
 # User Definition
 data/
+! test_dev/data

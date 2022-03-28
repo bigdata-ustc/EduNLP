@@ -21,7 +21,7 @@ class W2V(Vector):
     method: str
         fasttext
         other(Word2Vec)
-    binary
+    binary: bool
     """
     def __init__(self, filepath, method=None, binary=None):
         fp = PurePath(filepath)

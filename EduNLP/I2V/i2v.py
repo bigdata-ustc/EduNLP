@@ -40,8 +40,8 @@ class I2V(object):
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
-    >>> model_path = "examples/test_model/test_gensim_luna_stem_tf_d2v_256.bin" # doctest: +ELLIPSIS
-    >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False) # doctest: +ELLIPSIS
+    >>> model_path = "examples/test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+    >>> i2v = D2V("text", "d2v", filepath=model_path, pretrained_t2v=False)
     >>> i2v(item) # doctest: +ELLIPSIS
     ([array([...dtype=float32)], None)
 
@@ -143,8 +143,8 @@ class D2V(I2V):
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
     >>> model_path = "examples/test_model/test_gensim_luna_stem_tf_d2v_256.bin"
-    >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-    >>> i2v(item)
+    >>> i2v = D2V("text", "d2v", filepath=model_path, pretrained_t2v=False)
+    >>> i2v(item) # doctest: +ELLIPSIS
     ([array([ ...dtype=float32)], None)
 
     Returns
@@ -323,16 +323,6 @@ class DisenQ(I2V):
     Bases
     -------
     I2V
-
-    Examples
-    --------
-    >>> pretrained_model_dir = "examples/test_model/data/disenq" # doctest: +SKIP
-    >>> i2v = get_pretrained_i2v('disenq_pub_128', pretrained_model_dir)  # doctest: +SKIP
-    >>> test_item = {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式 , 如 图 , 若 $x,y$ 满 足 约 束 条 件 公 式"} # doctest: +SKIP
-    >>> t_vec = i2v.infer_token_vector(test_item, key=lambda x:x["content"]) # doctest: +SKIP
-    >>> i_vec = i2v.infer_item_vector(test_item, key=lambda x:x["content"], vector_type="k") # doctest: +SKIP
-    >>> i_vec_k, i_vec_i = i2v.infer_item_vector(test_item, key=lambda x:x["content"]) # doctest: +SKIP
-    >>> i_vec, t_vec = i2v.infer_vector(test_item, key=lambda x:x["content"]) # doctest: +SKIP
     """
 
     def infer_vector(self, item, tokenize=True, key=lambda x: x, vector_type=None, *args, **kwargs) -> tuple:
@@ -343,10 +333,10 @@ class DisenQ(I2V):
         -----------
         item: str or dict
             the item of question
-        tokenize:bool
+        tokenize: bool
             True: tokenize the item
-        return_tensors: str
-            tensor type used in tokenizer
+        key:
+            map the when item is dict
         args:
             the parameters passed to t2v
         kwargs:

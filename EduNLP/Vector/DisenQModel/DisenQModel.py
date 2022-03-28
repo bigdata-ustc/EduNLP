@@ -27,6 +27,15 @@ class DisenQModel(object):
         return embed, k_hidden, i_hidden
 
     def infer_vector(self, item: dict, vector_type=None) -> torch.Tensor:
+        """
+        Parameters
+        ----------
+        vector_type: str
+            choose the type of item tensor to return.
+            Default is None, which means return both (k_hidden, i_hidden)
+            when vector_type="k", return k_hidden;
+            when vector_type="i", return i_hidden;
+        """
         _, k_hidden, i_hidden = self(item)
         if vector_type is None:
             return k_hidden, i_hidden
