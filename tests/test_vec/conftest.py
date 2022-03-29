@@ -10,7 +10,7 @@ from EduNLP.utils import abs_current_dir, path_append
 @pytest.fixture(scope="module")
 def data():
     _data = []
-    data_path = path_append(abs_current_dir(__file__),"test_data/OpenLUNA.json", to_str=True)
+    data_path = path_append(abs_current_dir(__file__), "test_data/OpenLUNA.json", to_str=True)
     with codecs.open(data_path, encoding="utf-8") as f:
         for line in f.readlines():
             _data.append(json.loads(line))
