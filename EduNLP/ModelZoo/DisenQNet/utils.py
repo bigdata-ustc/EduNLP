@@ -53,11 +53,10 @@ class MLP(nn.Module):
     def __init__(self, in_dim, n_classes, hidden_dim, dropout, n_layers=2, act=F.leaky_relu):
         super(MLP, self).__init__()
         self.l_in = nn.Linear(in_dim, hidden_dim)
-        self.l_hs = nn.ModuleList(nn.Linear(hidden_dim, hidden_dim) for _ in range(n_layers - 2))
+        self.l_hs = nn.ModuleList(nn.Linear(hidden_dim, hidden_dim) for _ in range(n_layers - 2))  # doctest: +ELLIPSIS
         self.l_out = nn.Linear(hidden_dim, n_classes)
         self.dropout = nn.Dropout(p=dropout)
         self.act = act
-        return
 
     def forward(self, input):
         hidden = self.act(self.l_in(self.dropout(input)))
@@ -74,7 +73,6 @@ class TextCNN(nn.Module):
         channel_dim = hidden_dim // len(kernel_sizes)
         self.min_seq_len = max(kernel_sizes)
         self.convs = nn.ModuleList([nn.Conv1d(embed_dim, channel_dim, k_size) for k_size in kernel_sizes])
-        return
 
     def forward(self, embed):
         if embed.size(1) < self.min_seq_len:
@@ -94,7 +92,6 @@ class Disc(nn.Module):
     def __init__(self, x_dim, y_dim, dropout):
         super(Disc, self).__init__()
         self.disc = MLP(x_dim + y_dim, 1, y_dim, dropout, n_layers=2)
-        return
 
     def forward(self, x, y):
         input = torch.cat((x, y), dim=-1)
@@ -103,11 +100,10 @@ class Disc(nn.Module):
         return score
 
 
-class MI(nn.Module):
+class MI(nn.Module):  # doctest: +ELLIPSIS
     def __init__(self, x_dim, y_dim, dropout):
         super(MI, self).__init__()
         self.disc = Disc(x_dim, y_dim, dropout)
-        return
 
     def forward(self, x, y):
         # P(X,Y) = (x, y), P(X)P(Y) = (x, sy)

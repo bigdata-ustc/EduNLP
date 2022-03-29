@@ -41,14 +41,11 @@ def check_num(s):
                 s = s[:-1]
         # 1.2
         if '.' in s:
-            if s == '.':
+            try:
+                float(s)
+                return True
+            except ValueError:
                 return False
-            else:
-                try:
-                    float(s)
-                    return True
-                except Exception:
-                    return False
         # 12
         else:
             is_num = s.isdigit()
@@ -151,24 +148,25 @@ class DisenQTokenizer(object):
 
     def tokenize(self, item: (str, dict), key=lambda x: x, *args, **kwargs):
         if not self.secure:
-            raise Exception("Must set the vocab first before tokenize item (either set_vocab() or load_vocab() )")
-        item = next(self.text_tokenizer([item], key=key))
-        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
-        token_text = [w for w in item if w != '' and w not in stop_words]
-        if len(token_text) == 0:
-            token_text = [self.unk_token]
-        if len(token_text) > self.max_length:
-            token_text = token_text[:self.max_length]
-        token_text = [self.num_token if check_num(w) else w for w in token_text]
-        return token_text
+            raise RuntimeError("Must set the vocab first before tokenize item (either set_vocab() or load_vocab() )")
+        token_item = next(self.text_tokenizer([item], key=key))
+        if len(token_item) == 0:
+            token_item = [self.unk_token]
+        if len(token_item) > self.max_length:
+            token_item = token_item[:self.max_length]
+        token_item = [self.num_token if check_num(w) else w for w in token_item]
+        return token_item
 
     def padding(self, idx, max_length):
         padding_idx = idx + [self.word2index[self.pad_token]] * (max_length - len(idx))
         return padding_idx
 
     def _space_toeknzier(self, items, key=lambda x: x):
+        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
         for item in items:
-            yield key(item).strip().split(' ')
+            tokens = key(item).strip().split(' ')
+            token_item = [w for w in tokens if w != '' and w not in stop_words]
+            yield token_item
 
     def load_vocab(self, path):
         with open(path, "rt", encoding="utf-8") as file:
@@ -273,8 +271,8 @@ class QuestionDataset(Dataset):
 
         file_num = sum(map(lambda x: os.path.exists(x), [self.wv_path, self.word_list_path, self.concept_list_path]))
         if file_num > 0 and file_num < 3:
-            warnings.warn("Some files are missed in predata_dir(which including wv.th, vocab.list, and concept.list)")
-
+            warnings.warn("Some files are missed in predata_dir(which including wv.th, vocab.list, and concept.list)",
+                          UserWarning)
         init = file_num != 3
         if not init:
             # load word, concept list

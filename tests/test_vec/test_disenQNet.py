@@ -5,6 +5,34 @@ import os
 from EduNLP.Pretrain import DisenQTokenizer, train_disenQNet
 from EduNLP.Vector import DisenQModel, T2V
 from EduNLP.I2V import DisenQ, get_pretrained_i2v
+import warnings
+from copy import deepcopy
+
+
+def test_dataset(disen_train_data, disen_test_data, tmpdir):
+    output_dir = str(tmpdir.mkdir('disenq_dataset'))
+    train_params = {
+        'epoch': 2,
+        'batch': 1,
+        'trim_min': 1,
+    }
+    train_disenQNet(
+        deepcopy(disen_train_data[:100]),
+        output_dir,
+        output_dir,
+        train_params=train_params,
+        test_items=disen_test_data[:100],
+    )
+    # for test Datasets
+    os.remove(os.path.join(output_dir, "vocab.list"))
+    with pytest.warns(UserWarning):
+        train_disenQNet(
+            deepcopy(disen_train_data[:100]),
+            output_dir,
+            output_dir,
+            train_params=train_params,
+            test_items=None,
+        )
 
 
 def test_disen_train(disen_train_data, disen_test_data, tmpdir):
@@ -14,12 +42,13 @@ def test_disen_train(disen_train_data, disen_test_data, tmpdir):
         'batch': 16,
         'trim_min': 5,
     }
+
     train_disenQNet(
-        disen_train_data[:100],
+        disen_train_data[-100:],
         output_dir,
         output_dir,
         train_params=train_params,
-        test_items=disen_test_data[:100],
+        test_items=disen_test_data[-100:],
     )
 
     pretrained_dir = output_dir
