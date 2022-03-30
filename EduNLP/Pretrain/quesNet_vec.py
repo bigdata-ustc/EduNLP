@@ -25,7 +25,7 @@ from ..SIF.segment.segment import FigureSegment
 
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
-from ..ModelZoo.QuesNet.modules import BiHRNN
+from ..ModelZoo.QuesNet import QuesNet
 
 import linecache
 import subprocess
@@ -57,7 +57,7 @@ class QuesNetTokenizer(object):
     >>> print(token_items[0].keys())
     dict_keys(['content_idx', 'meta_idx'])
     """
-    def __init__(self, img_dir=None, vocab_path=None, max_length=250, meta='knowledge',
+    def __init__(self, img_dir=None, vocab_path=None, max_length=250, meta=['know_name'],
                  img_token='<img>', unk_token="<unk>", pad_token="<pad>", *args, **argv):
         """
         Parameters
@@ -113,8 +113,8 @@ class QuesNetTokenizer(object):
         return token_text
 
     def __call__(self, item: Union[str, dict], key=lambda x: x,
-                 meta_key: Optional[function] = None, padding=False,
-                 return_text=False, *args, **kwargs):
+                 meta: Optional[list] = None,
+                 padding=False, return_text=False, *args, **kwargs):
         """
         item: str or dict
             the question item
@@ -140,25 +140,34 @@ class QuesNetTokenizer(object):
                 # word
                 token_idx.append(self.stoi['word'].get(w) or self.stoi['word'][self.unk_token])
 
-        meta = []
-        if meta_key and isinstance(meta_key, function):
-            meta_item = meta_key(item)
-            if isinstance(meta_item, str):
-                meta_item = eval(meta_item)
-            elif isinstance(meta_item, list):
-                pass
-            else:
-                raise Exception("Side information must be a list!")
-            for k in meta_item:
-                meta.append(self.stoi[self.meta].get(k) or self.stoi[self.meta][self.unk_token])
+        meta_idxs = {}
+        meta_items = {}
+        if meta is None:
+            meta = self.meta
+        for m in meta:
+            meta_idx = []
+            if isinstance(item, dict) and m in item:
+                meta_item = item[m]
+                if isinstance(meta_item, str):
+                    if meta_item.startswith('['):
+                        # a list of labels ['+', '-', '/']
+                        meta_item = eval(meta_item)
+                elif isinstance(meta_item, list):
+                    pass
+                else:
+                    raise Exception("Side information must be a list!")
+                meta_items[m] = meta_item
+                for k in meta_item:
+                    meta_idx.append(self.stoi[m].get(k) or self.stoi[m][self.unk_token])
+            meta_idxs[m] = meta_idx
         ret = {
             "content_idx": self.padding(token_idx, self.max_length) if padding else token_idx,
-            "meta_idx": meta
+            "meta_idx": meta_idxs
         }
 
         if return_text:
             ret["content"] = token_item
-            ret["meta"] = meta_item
+            ret["meta"] = meta_items
 
         return ret
 
@@ -175,16 +184,17 @@ class QuesNetTokenizer(object):
             words = f.read().strip().split('\n')
             self.stoi['word'] = {word: index for index, word in enumerate(words)}
             self.itos['word'] = {i: s for i, s in self.stoi['word'].items()}
-        try:
-            with open(os.path.join(path, 'meta.txt'), "rt", encoding="utf-8") as f:
-                meta = f.read().strip().split('\n')
-                self.stoi[self.meta] = {word: index for index, word in enumerate(meta)}
-                self.itos[self.meta] = {i: s for i, s in self.stoi[self.meta].items()}
-        except Exception:
-            self.stoi[self.meta] = None
-            self.itos[self.meta] = None
+        for m in self.meta:
+            try:
+                with open(os.path.join(path, f'meta_{m}.txt'), "rt", encoding="utf-8") as f:
+                    meta = f.read().strip().split('\n')
+                    self.stoi[m] = {word: index for index, word in enumerate(meta)}
+                    self.itos[m] = {i: s for i, s in self.stoi[m].items()}
+            except Exception:
+                self.stoi[m] = None
+                self.itos[m] = None
 
-    def set_vocab(self, items: list, key=lambda x: x, meta_key=None, trim_min_count=50, silent=True):
+    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=50, silent=True):
         """
         Parameters
         -----------
@@ -214,22 +224,25 @@ class QuesNetTokenizer(object):
         self.itos['word'] = {i: s for i, s in self.stoi['word'].items()}
 
         # meta
-        meta = set()
-        if meta_key and isinstance(meta_key, function):
-            for item in items:
-                meta_item = meta_key(item)
-                if isinstance(meta_item, str):
-                    meta_item = eval(meta_item)
-                elif isinstance(meta_item, list):
-                    pass
-                else:
-                    raise Exception("Side information must be a list!")
-                meta = meta | set(meta_item)
-        meta = [self.unk_token] + sorted(meta)
-        if not silent:
-            print(f"save meta information: {len(meta)}")
-        self.stoi[self.meta] = {word: index for index, word in enumerate(meta)}
-        self.itos[self.meta] = {i: s for i, s in self.stoi[self.meta].items()}
+        for m in self.meta:
+            meta = set()
+            if m in items[0]:
+                for item in items:
+                    meta_item = item[m]
+                    if isinstance(meta_item, str):
+                        if meta_item.startswith('['):
+                            # a list of labels ['+', '-', '/']
+                            meta_item = eval(meta_item)
+                    elif isinstance(meta_item, list):
+                        pass
+                    else:
+                        raise Exception("Side information must be a list!")
+                    meta = meta | set(meta_item)
+            meta = [self.unk_token] + sorted(meta)
+            if not silent:
+                print(f"save meta information {m}: {len(meta)}")
+            self.stoi[m] = {word: index for index, word in enumerate(meta)}
+            self.itos[m] = {i: s for i, s in self.stoi[m].items()}
 
     def save_vocab(self, save_vocab_path):
         """
@@ -240,7 +253,8 @@ class QuesNetTokenizer(object):
             path to save word vocabulary and meta vocabulary
         """
         save_list(self.stoi['word'], os.path.join(save_vocab_path, 'word.txt'))
-        save_list(self.stoi[self.meta], os.path.join(save_vocab_path, 'meta.txt'))
+        for m in self.meta:
+            save_list(self.stoi[m], os.path.join(save_vocab_path, f'meta_{m}.txt'))
 
     @classmethod
     def from_pretrained(cls, tokenizer_config_dir, img_dir=None):
@@ -248,7 +262,7 @@ class QuesNetTokenizer(object):
         Parameters:
         -----------
         tokenizer_config_dir: str
-            must contain tokenizer_config.json and vocab/word.txt vocab/meta.txt
+            must contain tokenizer_config.json and vocab/word.txt vocab/meta_{meta_name}.txt
         img_dir: str
             default None
             the path of image directory
@@ -290,10 +304,6 @@ class QuesNetTokenizer(object):
     @property
     def vocab_size(self):
         return len(self.stoi['word'])
-
-    @property
-    def vocab(self, type='word'):
-        return self.stoi[type]
 
     def set_img_dir(self, path):
         self.img_dir = path
@@ -358,8 +368,8 @@ class lines:
 
 class QuestionLoader:
     def __init__(self, ques_file, tokenizer: QuesNetTokenizer,
-                 pipeline=None, range=None,
-                 content_key=lambda x: x['ques_content'], meta_key=lambda x: x['know_name']):
+                 pipeline=None, range=None, meta: Optional[list]=None,
+                 content_key=lambda x: x['ques_content']):
         """ Read question file as data list. Same behavior on same file.
 
         Parameters
@@ -385,7 +395,7 @@ class QuestionLoader:
         self.tokenizer = tokenizer
 
         self.content_key = content_key
-        self.meta_key = meta_key
+        self.meta = meta if meta else tokenizer.meta
 
         self.pipeline = pipeline
 
@@ -412,7 +422,7 @@ class QuestionLoader:
         for line in self.ques[item]:
             q = json.loads(line)
             qid = q['ques_id']
-            token = self.tokenizer(q, key=self.content_key, meta_key=self.meta_key)
+            token = self.tokenizer(q, key=self.content_key, meta=self.meta)
             content = token['content_idx']
             meta = token['meta_idx']
             # TODO: answer
@@ -538,9 +548,10 @@ def save_model(model, path, model_name, tag):
 def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     default_train_params = {
         "n_epochs": 1,
-        "batch_size": 64,
+        "batch_size": 4,
         "lr": 1e-3,
-        'save_every': 1
+        'save_every': 1,
+        'log_steps': 1
         # TODO: more params
     }
     if train_params is not None:
@@ -552,7 +563,7 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     ques_dl = QuestionLoader(path, tokenizer)
-    model = BiHRNN(_stoi=tokenizer.stoi).to(device)
+    model = QuesNet(_stoi=tokenizer.stoi).to(device)
 
     # TODO: pretrain embedding layers: MetaAE, ImageAE, word2vec
 
@@ -562,7 +573,6 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     optim = optimizer(model, lr=train_params['lr'])
     n_batches = 0
     print('begin')
-    torch.autograd.set_detect_anomaly(True)
     for epoch in range(0, train_params['n_epochs']):
         train_iter = pretrain_iter(ques_dl, train_params['batch_size'])
 
@@ -579,12 +589,14 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
                             total_loss += v
                     loss = total_loss
                 optim.zero_grad()
-                with torch.autograd.detect_anomaly():
-                    loss.backward()
+                loss.backward()
                 optim.step()
 
                 if train_params['save_every'] > 0 and i % train_params['save_every'] == 0:
                     save_model(model, output_dir, 'QuesNet', '%d.%d' % (epoch, i))
+
+                if train_params['log_steps'] > 0 and i % train_params['log_steps'] == 0:
+                    print(f"{epoch}.{i}---loss: {loss.item()}")
 
             save_model(model, output_dir, 'QuesNet', '%d' % (epoch + 1))
 

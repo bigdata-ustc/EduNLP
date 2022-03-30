@@ -173,7 +173,7 @@ class BiHRNN(FeatureExtractor):
     """Sequence-to-sequence feature extractor based on RNN. Supports different
     input forms and different RNN types (LSTM/GRU), """
     def __init__(self, _stoi, embs=None,
-                 meta='knowledge',
+                 meta='know_name',
                  emb_size=256,
                  rnn='LSTM',
                  lambda_input=[1., 1., 1.],
@@ -256,7 +256,7 @@ class BiHRNN(FeatureExtractor):
         ans_output = []
         for q in data:
             meta = torch.zeros(len(self.stoi[self.meta])).to(device)
-            meta[q.labels or []] = 1
+            meta[q.labels.get(self.meta) or []] = 1
             _lembs = [self.we(torch.tensor([0], device=device)),
                       self.we(torch.tensor([0], device=device)),
                       self.me.enc(meta.unsqueeze(0)) * self.lambda_input[2]]
