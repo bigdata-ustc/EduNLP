@@ -5,6 +5,9 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import PackedSequence, pad_packed_sequence
 from torchvision.transforms.functional import to_tensor
 from .util import SeqBatch
+import json
+import os
+from pathlib import Path
 
 
 class FeatureExtractor(nn.Module):
@@ -429,3 +432,43 @@ class BiHRNN(FeatureExtractor):
             return self.h0.expand(size)
         else:
             return self.h0.expand(size), self.c0.expand(size)
+
+    @classmethod
+    def from_pretrained(cls, pretrained_dir, tokenizer):
+        config_path = os.path.join(pretrained_dir, "config.json")
+        model_path = os.path.join(pretrained_dir, "model.pt")
+        model = cls.from_config(config_path, tokenizer.stoi)
+        model.load_state_dict(torch.load(model_path))
+        return model
+
+    @classmethod
+    def from_config(cls, config_path, stoi):
+        with open(config_path, "r", encoding="utf-8") as rf:
+            model_config = json.load(rf)
+            wv = torch.load(model_config["wv_path"],
+                            map_location='cpu', mmap="r") if "wv_path" in model_config else None
+            return cls(
+                _stoi=stoi,
+                embs=wv, meta=model_config["meta"], emb_size=model_config["emb_size"],
+                rnn=model_config["rnn"], lambda_input=model_config["lambda_input"],
+                lambda_loss=model_config["lambda_loss"], layers=model_config["layers"])
+
+    def save(self, path):
+        """ Save model to path/model_name.pt and path/config.json
+
+        Parameters
+        ----------
+        path : str
+            directory to save model
+        """
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+        model_path = os.path.join(path, 'model.pt')
+        model_path = Path(model_path)
+        torch.save(self.state_dict(), model_path.open('wb'))
+        config_path = os.path.join(path, "config.json")
+        self.save_config(config_path)
+
+    def save_config(self, config_path):
+        with open(config_path, "w", encoding="utf-8") as wf:
+            json.dump(self.config, wf, ensure_ascii=False, indent=2)

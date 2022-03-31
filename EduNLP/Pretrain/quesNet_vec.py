@@ -16,9 +16,6 @@ import math
 import queue
 import random
 from typing import Union, Optional
-from types import FunctionType as function
-
-import numpy as np
 from PIL import Image
 from torchvision.transforms.functional import to_grayscale
 from ..SIF.segment.segment import FigureSegment
@@ -593,12 +590,12 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
                 optim.step()
 
                 if train_params['save_every'] > 0 and i % train_params['save_every'] == 0:
-                    save_model(model, output_dir, 'QuesNet', '%d.%d' % (epoch, i))
+                    model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
 
                 if train_params['log_steps'] > 0 and i % train_params['log_steps'] == 0:
                     print(f"{epoch}.{i}---loss: {loss.item()}")
 
-            save_model(model, output_dir, 'QuesNet', '%d' % (epoch + 1))
+            model.save(os.path.join(output_dir, f'QuesNet_{epoch}+1'))
 
         except KeyboardInterrupt:
             raise
