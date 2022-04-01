@@ -1,1 +1,1 @@
-from .modules import BiHRNN as QuesNet
+from .QuesNet import BiHRNN as QuesNet

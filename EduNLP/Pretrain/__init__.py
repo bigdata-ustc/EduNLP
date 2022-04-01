@@ -3,4 +3,4 @@
 
 from .gensim_vec import train_vector, GensimWordTokenizer, GensimSegTokenizer
 from .bert_vec import BertTokenizer, finetune_bert
-from .quesNet_vec import QuesNetTokenizer, pretrain_QuesNet
+from .quesNet_vec import QuesNetTokenizer, pretrain_QuesNet, Question

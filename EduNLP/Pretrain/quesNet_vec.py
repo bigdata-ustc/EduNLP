@@ -128,7 +128,7 @@ class QuesNetTokenizer(object):
             if isinstance(w, FigureSegment):
                 # image
                 try:
-                    im = Image.open(os.path.join(self.img_dir, w.src[10:-1]))
+                    im = Image.open(os.path.join(self.img_dir, f'{w.src[10:-1]}.png'))
                     im = im.resize((56, 56))
                     token_idx.append(to_grayscale(im))
                 except Exception:
