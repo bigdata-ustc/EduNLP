@@ -55,8 +55,7 @@ class EERNNSeqNet(nn.Module):
     def __init__(self, ques_size, seq_hidden_size, n_layers, attn_k):
         super(EERNNSeqNet, self).__init__()
 
-        self.initial_h = nn.Parameter(torch.zeros(n_layers *
-                                                  seq_hidden_size))
+        self.initial_h = nn.Parameter(torch.zeros(n_layers * seq_hidden_size))
         self.ques_size = ques_size  # exercise size
         self.seq_hidden_size = seq_hidden_size
         self.n_layers = n_layers

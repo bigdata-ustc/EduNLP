@@ -43,14 +43,14 @@ class QuesNetTokenizer(object):
     """
     Examples
     --------
-    >>> tokenizer = QuesNetTokenizer()
+    >>> tokenizer = QuesNetTokenizer(meta=['knowledge'])
     >>> test_items = [{
     ...     "ques_id": "946",
-    ...     "ques_content": "$\\triangle A B C$ 的内角为 $A, \\quad B, $\FigureID{test_id}$",
+    ...     "ques_content": "$\\triangle A B C$ 的内角为 $A, \\quad B, $\\FigureID{test_id}$",
     ...     "knowledge": "['*', '-', '/']"}]
     >>> tokenizer.set_vocab(test_items,
-    ...     trim_min_count=1, key=lambda x: x["content"], silent=True)
-    >>> token_items = [tokenizer(i, key=lambda x: x["content"]) for i in test_items]
+    ...     trim_min_count=1, key=lambda x: x["ques_content"], silent=True)
+    >>> token_items = [tokenizer(i, key=lambda x: x["ques_content"]) for i in test_items]
     >>> print(token_items[0].keys())
     dict_keys(['content_idx', 'meta_idx'])
     """
@@ -365,7 +365,7 @@ class lines:
 
 class QuestionLoader:
     def __init__(self, ques_file, tokenizer: QuesNetTokenizer,
-                 pipeline=None, range=None, meta: Optional[list]=None,
+                 pipeline=None, range=None, meta: Optional[list] = None,
                  content_key=lambda x: x['ques_content']):
         """ Read question file as data list. Same behavior on same file.
 
@@ -548,7 +548,10 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
         "batch_size": 4,
         "lr": 1e-3,
         'save_every': 1,
-        'log_steps': 1
+        'log_steps': 1,
+        'feat_size': 256,
+        'device': 'cpu',
+        'max_steps': 0,
         # TODO: more params
     }
     if train_params is not None:
@@ -557,10 +560,10 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
 
     os.makedirs(output_dir, exist_ok=True)
 
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device(train_params['device'])
 
     ques_dl = QuestionLoader(path, tokenizer)
-    model = QuesNet(_stoi=tokenizer.stoi).to(device)
+    model = QuesNet(_stoi=tokenizer.stoi, feat_size=train_params['feat_size']).to(device)
 
     # TODO: pretrain embedding layers: MetaAE, ImageAE, word2vec
 
@@ -569,9 +572,12 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     model.train()
     optim = optimizer(model, lr=train_params['lr'])
     n_batches = 0
+    stop_flag = False
     print('begin')
     for epoch in range(0, train_params['n_epochs']):
         train_iter = pretrain_iter(ques_dl, train_params['batch_size'])
+        if stop_flag:
+            break
 
         try:
             bar = enumerate(tqdm(train_iter, initial=train_iter.pos),
@@ -595,7 +601,12 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
                 if train_params['log_steps'] > 0 and i % train_params['log_steps'] == 0:
                     print(f"{epoch}.{i}---loss: {loss.item()}")
 
-            model.save(os.path.join(output_dir, f'QuesNet_{epoch}+1'))
+                if train_params['max_steps'] > 0 and n_batches % train_params['max_steps'] == 0:
+                    stop_flag = True
+                    break
+
+            model.save(output_dir)
 
         except KeyboardInterrupt:
             raise
+    model.save(os.path.join(output_dir, 'QuesNet'))

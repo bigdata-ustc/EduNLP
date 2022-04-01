@@ -7,10 +7,11 @@ from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import PRETRAINED_MODELS
 from longling import path_append
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import BertTokenizer
+from EduNLP.Pretrain import BertTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
-__all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v"]
+
+__all__ = ["I2V", "D2V", "W2V", "Bert", "QuesNet", "get_pretrained_i2v"]
 
 
 class I2V(object):
@@ -60,6 +61,9 @@ class I2V(object):
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'quesnet':
+            self.tokenizer = QuesNetTokenizer.from_pretrained(**tokenizer_kwargs
+                                                              if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
                                                       if tokenizer_kwargs is not None else {})
@@ -317,6 +321,57 @@ class Bert(I2V):
                    tokenizer_kwargs=tokenizer_kwargs)
 
 
+class QuesNet(I2V):
+    """
+    The model aims to transfer item and tokens to vector with QuesNet.
+
+    Bases
+    -------
+    I2V
+    """
+    def infer_vector(self, item, tokenize=True, key=lambda x: x, meta=['know_name'], *args, **kwargs):
+        """ It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+
+        Parameters
+        ----------
+        item : str or dict
+            the item of question
+        tokenize : bool, optional
+            True: tokenize the item
+        key : _type_, optional
+            _description_, by default lambdax:x
+        meta : list, optional
+            meta information, by default ['know_name']
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        -------
+        token embeddings
+        question embedding
+        """
+        input = self.tokenize(item, key=key, meta=meta, *args, **kwargs) if tokenize is True else item
+        content = input['content_idx']
+        meta = input['meta_idx']
+        # TODO: answer
+        # TODO: false_options
+        qs = [Question(item['ques_id'] if 'ques_id' in item else None, content, [0], [0], meta)]
+        return self.t2v(qs)
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_path: %s" % model_path)
+        tokenizer_kwargs = {
+            "tokenizer_config_dir": model_path}
+        return cls("quesnet", name, pretrained_t2v=True, model_dir=model_dir,
+                   tokenizer_kwargs=tokenizer_kwargs)
+
+
 MODELS = {
     "d2v_all_256": [D2V, "d2v_all_256"],
     "d2v_sci_256": [D2V, "d2v_sci_256"],
@@ -327,6 +382,7 @@ MODELS = {
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
+    "quesnet_pub_256": [QuesNet, "quesnet_pub_256"]
 }
 
 

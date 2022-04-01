@@ -29,7 +29,8 @@ class BiHRNN(FeatureExtractor):
             'rnn': rnn,
             'lambda_input': lambda_input,
             'lambda_loss': lambda_loss,
-            'layers': layers
+            'layers': layers,
+            'feat_size': self.feat_size,
         }
         feat_size = self.feat_size
         rnn_size = self.rnn_size = feat_size // 2
@@ -146,7 +147,7 @@ class BiHRNN(FeatureExtractor):
         words = []
         ims = []
         metas = []
-        p = lembs.packed().data
+        # p = lembs.packed().data
         wmask = torch.zeros(length, device=device).byte()
         imask = torch.zeros(length, device=device).byte()
         mmask = torch.zeros(length, device=device).byte()
@@ -200,7 +201,7 @@ class BiHRNN(FeatureExtractor):
         scores = self.drop(F.softmax(scores, dim=-1))  # (B, S, S)
         h = (scores @ v).max(1)[0]  # (B, D)
 
-        return hs, batch.invert(h, 0)
+        return y, batch.invert(h, 0), hs
 
     def pretrain_loss(self, batch):
         left, right, words, ims, metas, wmask, imask, mmask, \
@@ -221,6 +222,8 @@ class BiHRNN(FeatureExtractor):
         wloss = iloss = mloss = None
 
         if words is not None:
+            # print(left_hid.shape)
+            # print(wmask.shape)
             lwfea = torch.masked_select(left_hid, wmask.unsqueeze(1).bool()) \
                 .view(-1, self.rnn_size)
             lout = self.lwoutput(lwfea)
@@ -228,9 +231,8 @@ class BiHRNN(FeatureExtractor):
                 .view(-1, self.rnn_size)
             rout = self.rwoutput(rwfea)
             out = self.woutput(torch.cat([lwfea, rwfea], dim=1))
-            wloss = (F.cross_entropy(out, words) +
-                     F.cross_entropy(lout, words) +
-                     F.cross_entropy(rout, words)) * self.lambda_input[0] / 3
+            wloss = (F.cross_entropy(out, words) + F.cross_entropy(lout, words) + F.
+                     cross_entropy(rout, words)) * self.lambda_input[0] / 3
             wloss *= self.lambda_loss[0]
 
         if ims is not None:
@@ -241,9 +243,8 @@ class BiHRNN(FeatureExtractor):
                 .view(-1, self.rnn_size)
             rout = self.rioutput(rifea)
             out = self.ioutput(torch.cat([lifea, rifea], dim=1))
-            iloss = (self.ie.loss(ims, out) +
-                     self.ie.loss(ims, lout) +
-                     self.ie.loss(ims, rout)) * self.lambda_input[1] / 3
+            iloss = (self.ie.loss(ims, out) + self.ie.loss(ims, lout) + self.ie.
+                     loss(ims, rout)) * self.lambda_input[1] / 3
             iloss *= self.lambda_loss[0]
 
         if metas is not None:
@@ -254,9 +255,8 @@ class BiHRNN(FeatureExtractor):
                 .view(-1, self.rnn_size)
             rout = self.rmoutput(rmfea)
             out = self.moutput(torch.cat([lmfea, rmfea], dim=1))
-            mloss = (self.me.loss(metas, out) +
-                     self.me.loss(metas, lout) +
-                     self.me.loss(metas, rout)) * self.lambda_input[2] / 3
+            mloss = (self.me.loss(metas, out) + self.me.loss(metas, lout) + self.me.
+                     loss(metas, rout)) * self.lambda_input[2] / 3
             mloss *= self.lambda_loss[0]
 
         return {
@@ -293,7 +293,8 @@ class BiHRNN(FeatureExtractor):
                 _stoi=stoi,
                 embs=wv, meta=model_config["meta"], emb_size=model_config["emb_size"],
                 rnn=model_config["rnn"], lambda_input=model_config["lambda_input"],
-                lambda_loss=model_config["lambda_loss"], layers=model_config["layers"])
+                lambda_loss=model_config["lambda_loss"], layers=model_config["layers"],
+                feat_size=model_config["feat_size"])
 
     def save(self, path):
         """ Save model to path/model_name.pt and path/config.json

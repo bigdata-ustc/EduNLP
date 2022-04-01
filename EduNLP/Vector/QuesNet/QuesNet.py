@@ -27,8 +27,8 @@ class QuesNetModel(Vector):
         item : Question
             namedtuple, ['id', 'content', 'answer', 'false_options', 'labels']
         """
-        t_embs, v_embs = self.model(self.model.make_batch(item, device=self.device))
-        return t_embs[:, 2: -2, :], v_embs
+        _, v_embs, i_embs = self.model(self.model.make_batch(item, device=self.device))
+        return i_embs[:, 2: -2, :], v_embs
 
     def infer_vector(self, item: Question) -> torch.Tensor:
         """ get question embedding with QuesNet
@@ -53,7 +53,7 @@ class QuesNetModel(Vector):
         torch.Tensor
             meta_emb + word_embs
         """
-        return self.model(self.model.make_batch(item))[0][:, 2:-2, :]
+        return self.model(self.model.make_batch(item))[2][:, 2:-2, :]
 
     @property
     def vector_size(self):
