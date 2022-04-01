@@ -222,8 +222,6 @@ class BiHRNN(FeatureExtractor):
         wloss = iloss = mloss = None
 
         if words is not None:
-            # print(left_hid.shape)
-            # print(wmask.shape)
             lwfea = torch.masked_select(left_hid, wmask.unsqueeze(1).bool()) \
                 .view(-1, self.rnn_size)
             lout = self.lwoutput(lwfea)

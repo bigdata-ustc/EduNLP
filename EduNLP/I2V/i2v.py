@@ -358,7 +358,7 @@ class QuesNet(I2V):
         # TODO: answer
         # TODO: false_options
         qs = [Question(item['ques_id'] if 'ques_id' in item else None, content, [0], [0], meta)]
-        return self.t2v(qs)
+        return self.t2v.infer_vector(qs), self.t2v.infer_tokens(qs)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):

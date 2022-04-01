@@ -44,12 +44,10 @@ class QuesNetTokenizer(object):
     Examples
     --------
     >>> tokenizer = QuesNetTokenizer(meta=['knowledge'])
-    >>> test_items = [{
-    ...     "ques_id": "946",
-    ...     "ques_content": "$\\triangle A B C$ 的内角为 $A, \\quad B, $\\FigureID{test_id}$",
-    ...     "knowledge": "['*', '-', '/']"}]
+    >>> test_items = [{"ques_content": "$\\triangle A B C$ 的内角为 $A, \\quad B, $\\FigureID{test_id}$",
+    ... "knowledge": "['*', '-', '/']"}]
     >>> tokenizer.set_vocab(test_items,
-    ...     trim_min_count=1, key=lambda x: x["ques_content"], silent=True)
+    ... trim_min_count=1, key=lambda x: x["ques_content"], silent=True)
     >>> token_items = [tokenizer(i, key=lambda x: x["ques_content"]) for i in test_items]
     >>> print(token_items[0].keys())
     dict_keys(['content_idx', 'meta_idx'])
@@ -536,23 +534,41 @@ def critical(f):
             break
 
 
-def save_model(model, path, model_name, tag):
-    path = os.path.join(path, f'{model_name}_{tag}.pt')
-    path = Path(path)
-    torch.save(model.state_dict(), path.open('wb'))
-
-
 def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
+    """ pretrain QuesNet
+
+    Parameters
+    ----------
+    path : str
+        path of question file
+    output_dir : str
+        output path
+    tokenizer : QuesNetTokenizer
+        QuesNet tokenizer
+    train_params : dict, optional
+        the training parameters and model parameters, by default None
+
+    Examples
+    ----------
+    >>> tokenizer = QuesNetTokenizer(meta=['know_name'])
+    >>> items = [{"ques_content": "若复数$z=1+2 i+i^{3}$，则$|z|=$，$\\FigureID{000004d6-0479-11ec-829b-797d5eb43535}$",
+    ... "ques_id": "726cdbec-33a9-11ec-909c-98fa9b625adb",
+    ... "know_name": "['代数', '集合', '集合的相等']"
+    ... }]
+    >>> tokenizer.set_vocab(items, key=lambda x: x['ques_content'], trim_min_count=1, silent=True)
+    >>> pretrain_QuesNet('./data/quesnet_data.json', './testQuesNet', tokenizer) # doctest: +SKIP
+    """
     default_train_params = {
+        # train params
         "n_epochs": 1,
         "batch_size": 4,
         "lr": 1e-3,
         'save_every': 1,
         'log_steps': 1,
-        'feat_size': 256,
         'device': 'cpu',
         'max_steps': 0,
-        # TODO: more params
+        # model params
+        'feat_size': 256,
     }
     if train_params is not None:
         default_train_params.update(train_params)
@@ -573,7 +589,7 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     optim = optimizer(model, lr=train_params['lr'])
     n_batches = 0
     stop_flag = False
-    print('begin')
+
     for epoch in range(0, train_params['n_epochs']):
         train_iter = pretrain_iter(ques_dl, train_params['batch_size'])
         if stop_flag:
