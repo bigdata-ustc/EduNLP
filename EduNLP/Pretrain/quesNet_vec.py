@@ -621,8 +621,8 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
                     stop_flag = True
                     break
 
-            model.save(output_dir)
+            model.save(os.path.join(output_dir, f'QuesNet_{epoch}'))
 
         except KeyboardInterrupt:
             raise
-    model.save(os.path.join(output_dir, 'QuesNet'))
+    model.save(os.path.join(output_dir))

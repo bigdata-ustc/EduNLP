@@ -16,10 +16,10 @@ class QuesNetModel(object):
         tokenizer: QuesNetTokenizer
             QuesNet  tokenzier
         """
-        self.device = device
+        self.device = torch.device(device)
         if tokenizer is None:
             tokenizer = QuesNetTokenizer.from_pretrained(pretrained_dir)
-        self.model = QuesNet.from_pretrained(pretrained_dir, tokenizer)
+        self.model = QuesNet.from_pretrained(pretrained_dir, tokenizer).to(device)
 
     def infer_vector(self, items: Question) -> torch.Tensor:
         """ get question embedding with QuesNet

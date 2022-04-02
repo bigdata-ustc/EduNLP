@@ -60,4 +60,4 @@ class SeqBatch:
         return self._index[item[0], self.inv[item[1]]]
 
     def invert(self, batch, dim=0):
-        return batch.index_select(dim, torch.tensor(self.inv))
+        return batch.index_select(dim, torch.tensor(self.inv, device=self.device))
