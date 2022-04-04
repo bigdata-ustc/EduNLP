@@ -90,9 +90,9 @@ def test_taledu_bert(stem_data_bert, tmpdir):
     assert len(t_vec[0][0]) == i2v.vector_size
 
 
-def test_luna_bert(stem_data_bert, tmpdir):
+def test_luna_pub_bert(stem_data_bert, tmpdir):
     output_dir = str(tmpdir.mkdir('bert_test'))
-    i2v = get_pretrained_i2v("luna_pub_math_base", output_dir)
+    i2v = get_pretrained_i2v("luna_pub_bert_math_base", output_dir)
     item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                         若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
     i_vec, t_vec = i2v([item['stem'], item['stem']])

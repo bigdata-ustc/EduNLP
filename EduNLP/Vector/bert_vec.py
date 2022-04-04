@@ -12,7 +12,7 @@ class BertModel(Vector):
     --------
     >>> from EduNLP.Pretrain import BertTokenizer
     >>> tokenizer = BertTokenizer("bert-base-chinese")
-    >>> model = BertModel("bert-base-chinese", tokenizer=tokenizer)
+    >>> model = BertModel("bert-base-chinese")
     >>> item = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$，若$x,y$满足约束",
     ... "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$，若$x,y$满足约束"]
     >>> inputs = tokenizer(item, return_tensors='pt')
@@ -29,10 +29,9 @@ class BertModel(Vector):
     >>> item.shape
     torch.Size([2, 768])
     """
-    def __init__(self, pretrained_model, tokenizer=None):
+
+    def __init__(self, pretrained_model):
         self.model = AutoModel.from_pretrained(pretrained_model)
-        if tokenizer:
-            self.model.resize_token_embeddings(len(tokenizer.tokenizer))
 
     def __call__(self, items: dict):
         # 1, sent_len, embedding_size

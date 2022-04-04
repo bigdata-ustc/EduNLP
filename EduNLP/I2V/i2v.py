@@ -333,7 +333,7 @@ MODELS = {
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
     "tal_edu_bert": [Bert, "tal_edu_bert"],
-    "luna_pub_math_base": [Bert, "luna_pub_math_base"]
+    "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"]
 }
 
 
