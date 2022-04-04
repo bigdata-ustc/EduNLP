@@ -10,7 +10,6 @@ from .bert_vec import BertModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
 
-
 MODELS = {
     "w2v": W2V,
     "d2v": D2V,
@@ -42,6 +41,7 @@ class T2V(object):
     >>> print(t2v(item)) # doctest: +ELLIPSIS
     [array([...dtype=float32)]
     """
+
     def __init__(self, model: str, *args, **kwargs):
         model = model.lower()
         self.model_type = model
@@ -73,7 +73,10 @@ PRETRAINED_MODELS = {
     "w2v_lit_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_literal_300.zip", "w2v"],
     "test_w2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"],
     "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"],
-    "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"]
+    "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"],
+    "tal_edu_bert": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/tal_edu_bert.zip", "bert"],
+    "luna_pub_math_base": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/luna_pub_bert_math_base.zip",
+                           "bert"],
 }
 
 

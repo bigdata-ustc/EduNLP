@@ -12,7 +12,6 @@ from transformers.file_utils import TensorType
 from torch.utils.data import Dataset
 from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
 
-
 __all__ = ["BertTokenizer", "finetune_bert"]
 
 
@@ -23,6 +22,8 @@ class BertTokenizer(object):
     ----------
     pretrain_model:
         used pretrained model
+    add_special_tokens:
+        Whether to add tokens like [FIGURE], [TAG], etc.
 
     Returns
     ----------
@@ -44,31 +45,35 @@ class BertTokenizer(object):
     >>> print(len(tokenizer.tokenize(items)))
     2
     """
-    def __init__(self, pretrain_model="bert-base-chinese"):
+
+    def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=True):
         self.tokenizer = AutoTokenizer.from_pretrained(pretrain_model)
-        customize_tokens = []
-        for i in [FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL]:
-            if i not in self.tokenizer.additional_special_tokens:
-                customize_tokens.append(Symbol(i))
-        if customize_tokens:
-            self.tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
+        if add_special_tokens:
+            customize_tokens = []
+            for i in [FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL]:
+                if i not in self.tokenizer.additional_special_tokens:
+                    customize_tokens.append(Symbol(i))
+            if customize_tokens:
+                self.tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
         self.pure_text_tokenizer = PureTextTokenizer()
+        self.add_special_tokens = add_special_tokens
 
     def __call__(self, item: (list, str), return_tensors: Optional[Union[str, TensorType]] = None, *args, **kwargs):
-        if isinstance(item, str):
-            item = ''.join(next(self.pure_text_tokenizer([item])))
-        else:
-            token_generation = self.pure_text_tokenizer(item)
-            item = [''.join(next(token_generation)) for i in range(len(item))]
+        if self.add_special_tokens:
+            if isinstance(item, str):
+                item = ''.join(next(self.pure_text_tokenizer([item])))
+            else:
+                token_generation = self.pure_text_tokenizer(item)
+                item = [''.join(next(token_generation)) for i in range(len(item))]
         return self.tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
 
     def tokenize(self, item: (list, str), *args, **kwargs):
         if isinstance(item, str):
-            item = ''.join(next(self.pure_text_tokenizer([item])))
+            item = ''.join(next(self.pure_text_tokenizer([item]))) if self.add_special_tokens else item
             return self.tokenizer.tokenize(item)
         else:
             token_generation = self.pure_text_tokenizer(item)
-            item = [''.join(next(token_generation)) for i in range(len(item))]
+            item = [''.join(next(token_generation)) for i in range(len(item))] if self.add_special_tokens else item
             item = [self.tokenizer.tokenize(i) for i in item]
             return item
 

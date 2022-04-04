@@ -52,6 +52,7 @@ class I2V(object):
     -------
     i2v model: I2V
     """
+
     def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
@@ -62,7 +63,7 @@ class I2V(object):
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
-                                                      if tokenizer_kwargs is not None else {})
+            if tokenizer_kwargs is not None else {})
         self.params = {
             "tokenizer": tokenizer,
             "tokenizer_kwargs": tokenizer_kwargs,
@@ -152,6 +153,7 @@ class D2V(I2V):
     -------
     i2v model: I2V
     """
+
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
@@ -221,6 +223,7 @@ class W2V(I2V):
     i2v model: W2V
 
     """
+
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
@@ -282,8 +285,9 @@ class Bert(I2V):
     -------
     i2v model: Bert
     """
+
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
-        '''
+        """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
         Parameters
@@ -302,7 +306,7 @@ class Bert(I2V):
         Returns
         --------
         vector:list
-        '''
+        """
         inputs = self.tokenize(items, return_tensors=return_tensors) if tokenize is True else items
         return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
@@ -312,7 +316,8 @@ class Bert(I2V):
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
-        tokenizer_kwargs = {"pretrain_model": model_path}
+        add_special_tokens = True if "luna" in name.lower() else False
+        tokenizer_kwargs = {"pretrain_model": model_path, "add_special_tokens": add_special_tokens}
         return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
 
@@ -327,6 +332,8 @@ MODELS = {
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
+    "tal_edu_bert": [Bert, "tal_edu_bert"],
+    "luna_pub_math_base": [Bert, "luna_pub_math_base"]
 }
 
 
