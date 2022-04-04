@@ -62,8 +62,8 @@ class I2V(object):
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
-            self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
-            if tokenizer_kwargs is not None else {})
+            self.tokenizer: Tokenizer = get_tokenizer(tokenizer,
+                                                      **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         self.params = {
             "tokenizer": tokenizer,
             "tokenizer_kwargs": tokenizer_kwargs,
