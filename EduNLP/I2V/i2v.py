@@ -316,8 +316,7 @@ class Bert(I2V):
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
-        add_special_tokens = True if "luna" in name.lower() else False
-        tokenizer_kwargs = {"pretrain_model": model_path, "add_special_tokens": add_special_tokens}
+        tokenizer_kwargs = {"pretrain_model": model_path}
         return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
 
