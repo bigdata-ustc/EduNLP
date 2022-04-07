@@ -30,7 +30,7 @@ class BertTokenizer(object):
 
     Examples
     ----------
-    >>> tokenizer = BertTokenizer()
+    >>> tokenizer = BertTokenizer(add_special_tokens=True)
     >>> item = "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"
     >>> token_item = tokenizer(item)
