@@ -105,7 +105,7 @@ class DisenQTokenizer(object):
         """
         super(DisenQTokenizer, self).__init__(*args)
         self.tokenize_method = tokenize_method
-        self.text_tokenizer = get_tokenizer(tokenize_method) if tokenize_method != "space" else self._space_toeknzier
+        self.text_tokenizer = get_tokenizer(tokenize_method) if tokenize_method != "space" else self._space_tokenizer
 
         self.num_token = num_token
         self.unk_token = unk_token
@@ -161,7 +161,7 @@ class DisenQTokenizer(object):
         padding_idx = idx + [self.word2index[self.pad_token]] * (max_length - len(idx))
         return padding_idx
 
-    def _space_toeknzier(self, items, key=lambda x: x):
+    def _space_tokenizer(self, items, key=lambda x: x):
         stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
         for item in items:
             tokens = key(item).strip().split(' ')
