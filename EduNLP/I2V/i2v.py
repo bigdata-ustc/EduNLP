@@ -57,7 +57,7 @@ class I2V(object):
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
-        elif tokenizer == 'disenQ':
+        elif tokenizer == 'disenq':
             self.tokenizer = DisenQTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
@@ -361,7 +361,7 @@ class DisenQ(I2V):
         tokenizer_kwargs = {
             "tokenizer_config_dir": model_path,
         }
-        return cls("disenQ", name, pretrained_t2v=True, model_dir=model_dir,
+        return cls("disenq", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs, **kwargs)
 
 

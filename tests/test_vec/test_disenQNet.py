@@ -55,7 +55,7 @@ def test_disen_train(disen_train_data, disen_test_data, tmpdir):
     tokenizer_kwargs = {
         "tokenizer_config_dir": pretrained_dir,
     }
-    i2v = DisenQ('disenQ', 'disenq', pretrained_dir, tokenizer_kwargs=tokenizer_kwargs, device="cpu")
+    i2v = DisenQ('disenq', 'disenq', pretrained_dir, tokenizer_kwargs=tokenizer_kwargs, device="cpu")
 
     test_items = [
         {"content": "10 米 的 (2/5) = 多少 米 的 (1/2),有 公 式"},
