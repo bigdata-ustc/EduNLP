@@ -46,7 +46,7 @@ class BertTokenizer(object):
     2
     """
 
-    def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=True):
+    def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False):
         self.tokenizer = AutoTokenizer.from_pretrained(pretrain_model)
         if add_special_tokens:
             customize_tokens = []
@@ -56,24 +56,22 @@ class BertTokenizer(object):
             if customize_tokens:
                 self.tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
         self.pure_text_tokenizer = PureTextTokenizer()
-        self.add_special_tokens = add_special_tokens
 
     def __call__(self, item: (list, str), return_tensors: Optional[Union[str, TensorType]] = None, *args, **kwargs):
-        if self.add_special_tokens:
-            if isinstance(item, str):
-                item = ''.join(next(self.pure_text_tokenizer([item])))
-            else:
-                token_generation = self.pure_text_tokenizer(item)
-                item = [''.join(next(token_generation)) for i in range(len(item))]
+        if isinstance(item, str):
+            item = ''.join(next(self.pure_text_tokenizer([item])))
+        else:
+            token_generation = self.pure_text_tokenizer(item)
+            item = [''.join(next(token_generation)) for i in range(len(item))]
         return self.tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
 
     def tokenize(self, item: (list, str), *args, **kwargs):
         if isinstance(item, str):
-            item = ''.join(next(self.pure_text_tokenizer([item]))) if self.add_special_tokens else item
+            item = ''.join(next(self.pure_text_tokenizer([item])))
             return self.tokenizer.tokenize(item)
         else:
             token_generation = self.pure_text_tokenizer(item)
-            item = [''.join(next(token_generation)) for i in range(len(item))] if self.add_special_tokens else item
+            item = [''.join(next(token_generation)) for i in range(len(item))]
             item = [self.tokenizer.tokenize(i) for i in item]
             return item
 
@@ -116,8 +114,8 @@ def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_p
     {'train_runtime': ..., ..., 'epoch': 1.0}
     """
     model = AutoModelForMaskedLM.from_pretrained(pretrain_model)
-    tokenizer = BertTokenizer(pretrain_model)
-    # resize embedding for additional sepecial tokens
+    tokenizer = BertTokenizer(pretrain_model, add_special_tokens=True)
+    # resize embedding for additional special tokens
     model.resize_token_embeddings(len(tokenizer.tokenizer))
 
     # training parameters
