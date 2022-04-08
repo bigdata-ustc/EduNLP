@@ -10,8 +10,8 @@ import json
 from gensim.models import KeyedVectors
 
 from .modules import TextEncoder, AttnModel, ConceptEstimator, MIEstimator, DisenEstimator
-from .utils import MLP, get_mask
-from EduNLP.ModelZoo.utils import set_device
+from .utils import get_mask
+from ..utils import set_device
 
 
 class QuestionEncoder(nn.Module):
@@ -220,13 +220,13 @@ class DisenQNet(object):
                 print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}")
         return
 
-    def inference(self, item, device):
+    def inference(self, items: dict, device):
         """
         DisenQNet for i2v inference. Now not support for batch !
 
         Parameters
         ----------
-        item:  dict
+        items:  dict
             which contains content_idx and  content_len
             - content_idx: Tensor of (batch_size, seq_len)
             - content_len: Tensor of (batch_size)
@@ -244,7 +244,7 @@ class DisenQNet(object):
         """
         self.to(device)
         self.set_mode(False)
-        text, length = item["content_idx"].unsqueeze(0).to(device), item["content_len"].unsqueeze(0).to(device)
+        text, length = items["content_idx"].to(device), items["content_len"].to(device)
         embed, k_hidden, i_hidden = self.disen_q_net(text, length)
         return embed, k_hidden, i_hidden
 

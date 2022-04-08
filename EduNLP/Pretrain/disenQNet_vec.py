@@ -4,8 +4,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from ..ModelZoo.DisenQNet.DisenQNet import DisenQNet
 from ..Tokenizer import get_tokenizer
-from ..ModelZoo.utils import load_items
-
+from ..ModelZoo.utils import load_items, pad_sequence
 import json
 import warnings
 from gensim.models import Word2Vec
@@ -80,7 +79,6 @@ class DisenQTokenizer(object):
     --------
     >>> tokenizer = DisenQTokenizer()
     >>> test_items = [{
-    ...     "question_id": "946",
     ...     "content": "甲 数 除以 乙 数 的 商 是 1.5 ， 如果 甲 数 增加 20 ， 则 甲 数 是 乙 的 4 倍 ． 原来 甲 数 = ．",
     ...     "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}]
     >>> tokenizer.set_vocab(test_items,
@@ -97,11 +95,11 @@ class DisenQTokenizer(object):
         vocab_path: str
             default is None
         max_length: int
-            default is 250
+            default is 250, used to clip the sentence out of length
         tokenize_method: str
             default: "space"
             when text is already seperated by space, use "space"
-            when text is row text format, use Tokentizer defined in get_tokenizer(), such as "pure_text" and "text"
+            when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
         """
         super(DisenQTokenizer, self).__init__(*args)
         self.tokenize_method = tokenize_method
@@ -117,11 +115,13 @@ class DisenQTokenizer(object):
         else:
             self.secure = False
 
-    def __call__(self, item: (str, dict), key=lambda x: x, padding=False,
+    def __call__(self, items: (list, str, dict), key=lambda x: x, padding=True,
                  return_tensors=True, return_text=False, *args, **kwargs):
         """
-        item: str or dict
-            the question item
+        Parameters
+        ----------
+        items: list or str or dict
+            the question items
         key: function
             determine how to get the text of each item
         padding: bool
@@ -130,25 +130,57 @@ class DisenQTokenizer(object):
             whether to return data as tensors (would ignore text tokens)
         return_text: bool
             whether to return text tokens
-        """
-        token_item = self.tokenize(item, key)
-        indexs = [self.word2index.get(w, self.word2index[self.unk_token]) for w in token_item]
-        length = len(indexs)
-        ret = {
-            "content_idx": self.padding(indexs, self.max_length) if padding else indexs,
-            "content_len": length
-        }
 
+        Returns
+        -------
+        ret: dict
+            {"content_idx": None, "content_len": None}
+            or {"content": None, content_idx": None, "content_len": None}.
+            The shape of element is (batch, seq) or (batch,).
+        """
+        token_items = self.tokenize(items, key)
+        if isinstance(items, str) or isinstance(items, dict):
+            token_items = [token_items]
+
+        seqs = [self._indexing(token_item) for token_item in token_items]
+        lengths = [len(seq) for seq in seqs]
+        ret = {
+            "content_idx": pad_sequence(seqs, pad_val=self.word2index[self.pad_token]) if padding else seqs,
+            "content_len": lengths
+        }
         if return_tensors:
             return {key: torch.as_tensor(val) for key, val in ret.items()}
         elif return_text:
-            ret["content"] = token_item
+            ret["content"] = token_items
 
         return ret
 
-    def tokenize(self, item: (str, dict), key=lambda x: x, *args, **kwargs):
+    def _indexing(self, token_item):
+        return [self.word2index.get(w, self.word2index[self.unk_token]) for w in token_item]
+
+    def tokenize(self, items: (list, str, dict), key=lambda x: x, *args, **kwargs):
+        """
+        Parameters
+        ----------
+        items: list or str or dict
+            the question items
+        key: function
+            determine how to get the text of each item
+
+        Returns
+        -------
+        tokens: list
+            the token of items
+        """
+        if isinstance(items, str) or isinstance(items, dict):
+            return self._tokenize(items, key=key)
+        else:
+            return [self._tokenize(item, key=key) for item in items]
+
+    def _tokenize(self, item: (str, dict), key=lambda x: x):
         if not self.secure:
             raise RuntimeError("Must set the vocab first before tokenize item (either set_vocab() or load_vocab() )")
+
         token_item = next(self.text_tokenizer([item], key=key))
         if len(token_item) == 0:
             token_item = [self.unk_token]
@@ -156,10 +188,6 @@ class DisenQTokenizer(object):
             token_item = token_item[:self.max_length]
         token_item = [self.num_token if check_num(w) else w for w in token_item]
         return token_item
-
-    def padding(self, idx, max_length):
-        padding_idx = idx + [self.word2index[self.pad_token]] * (max_length - len(idx))
-        return padding_idx
 
     def _space_tokenizer(self, items, key=lambda x: x):
         stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
@@ -319,9 +347,9 @@ class QuestionDataset(Dataset):
         # make items in standard format
         for i, item in enumerate(items):
             token_data = self.disen_tokenizer(item, key=text_key, return_tensors=False, return_text=True, padding=False)
-            items[i]["content_idx"] = token_data["content_idx"]
-            items[i]["content_len"] = token_data["content_len"]
-            items[i]["content"] = token_data["content"]
+            items[i]["content_idx"] = token_data["content_idx"][0]
+            items[i]["content_len"] = token_data["content_len"][0]
+            items[i]["content"] = token_data["content"][0]
 
         if init:
             # construct concept list

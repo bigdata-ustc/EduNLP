@@ -325,18 +325,19 @@ class DisenQ(I2V):
     I2V
     """
 
-    def infer_vector(self, item, tokenize=True, key=lambda x: x, vector_type=None, *args, **kwargs) -> tuple:
+    def infer_vector(self, items: (dict, list), tokenize=True,
+                     key=lambda x: x, vector_type=None, *args, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
         Parameters
         -----------
-        item: str or dict
+        item: dict or list
             the item of question
         tokenize: bool
             True: tokenize the item
-        key:
-            map the when item is dict
+        key: lambda function
+            the parameter passed to tokenizer, select the text to be processed
         args:
             the parameters passed to t2v
         kwargs:
@@ -346,9 +347,9 @@ class DisenQ(I2V):
         --------
         vector:list
         """
-        input = self.tokenize(item, key=key, *args, **kwargs) if tokenize is True else item
-        i_vec = self.t2v.infer_vector(input, vector_type=vector_type, *args, **kwargs)
-        t_vec = self.t2v.infer_tokens(input, *args, **kwargs)
+        inputs = self.tokenize(items, key=key, *args, **kwargs) if tokenize is True else items
+        i_vec = self.t2v.infer_vector(inputs, vector_type=vector_type, *args, **kwargs)
+        t_vec = self.t2v.infer_tokens(inputs, *args, **kwargs)
         return i_vec, t_vec
 
     @classmethod

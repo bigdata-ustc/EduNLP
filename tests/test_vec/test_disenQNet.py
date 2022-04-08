@@ -105,3 +105,6 @@ def test_disen_i2v(tmpdir):
     assert i_vec[0].shape == torch.Size([1, 128])
     assert i_vec[1].shape == torch.Size([1, 128])
     assert t_vec.shape == torch.Size([1, 11, 128])
+
+    i_vec, t_vec = i2v(test_items, key=lambda x: x["content"])
+    assert t_vec.shape == torch.Size([2, 23, 128])

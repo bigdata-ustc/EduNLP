@@ -5,7 +5,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from .utils import get_mask, shuffle, spectral_norm
-from .utils import MLP, Disc, TextCNN
+from ..utils import MLP, TextCNN
 
 
 class TextEncoder(nn.Module):
@@ -67,7 +67,7 @@ class AttnModel(nn.Module):
         self.fw = nn.Linear(dim, dim)
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, q, k, v=None, mask=None):
+    def forward(self, q, k, v, mask=None):
         """
         Parameters
         ----------
@@ -77,7 +77,7 @@ class AttnModel(nn.Module):
         k: torch.Tensor
             Tensor of (batch_size, in_size, hidden_size), key
         v: torch.Tensor
-            Tensor of (batch_size, in_size, hidden_size), value, default = None, means v = k
+            Tensor of (batch_size, in_size, hidden_size), value
         mask: torch.Tensor
             Tensor of (batch_size, in_size),
             key/value mask, where 0 means data and 1 means pad, default = None, means zero matrix
@@ -90,8 +90,6 @@ class AttnModel(nn.Module):
             - attn: Tensor of (batch_size, in_size) or (batch_size, out_size, in_size),
             attention weight, shape according to q
         """
-        if v is None:
-            v = k
         # (b, h) -> (b, o, h)
         q_dim = q.dim()
         if q_dim == 2:
@@ -283,3 +281,15 @@ class DisenEstimator(nn.Module):
             for w in self.parameters():
                 w.data /= spectral_norm(w.data)
         return
+
+
+class Disc(nn.Module):
+    def __init__(self, x_dim, y_dim, dropout):
+        super(Disc, self).__init__()
+        self.disc = MLP(x_dim + y_dim, 1, y_dim, dropout, n_layers=2)
+
+    def forward(self, x, y):
+        input = torch.cat((x, y), dim=-1)
+        # (b, 1) -> (b)
+        score = self.disc(input).squeeze(-1)
+        return score
