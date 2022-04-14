@@ -99,8 +99,11 @@ class DisenQNet(object):
         weight of disentangling loss
     wv: torch.Tensor
         Tensor of (vocab_size, hidden_dim) or None, initial word embedding, default = None
+    device: str, defaults as 'cpu'
+        Set device for model, examples 'cpu'、'cuda'、'cuda:0,2'
     """
-    def __init__(self, vocab_size, concept_size, hidden_dim, dropout, pos_weight, w_cp, w_mi, w_dis, wv=None):
+    def __init__(self, vocab_size, concept_size, hidden_dim, dropout, pos_weight, w_cp, w_mi, w_dis,
+                 wv=None, device="cpu"):
         super(DisenQNet, self).__init__()
         self.disen_q_net = QuestionEncoder(vocab_size, hidden_dim, dropout, wv)
         self.mi_estimator = MIEstimator(hidden_dim, hidden_dim * 2, dropout)
@@ -121,8 +124,9 @@ class DisenQNet(object):
             "w_dis": w_dis,
         }
         self.modules = (self.disen_q_net, self.mi_estimator, self.concept_estimator, self.disen_estimator)
+        self.to(device)
 
-    def train(self, train_data, test_data, device, epoch, lr, step_size, gamma, warm_up, n_adversarial, silent):
+    def train(self, train_data, test_data, epoch, lr, step_size, gamma, warm_up, n_adversarial, silent):
         """
         train DisenQNet
 
@@ -135,8 +139,6 @@ class DisenQNet(object):
             - concept: Tensor of (batch_size, class_size)
         test_data:
             test dataloader
-        device: str
-            cpu or cuda
         epoch: int
             number of epoch
         lr: float
@@ -171,12 +173,10 @@ class DisenQNet(object):
             epoch_idx += 1
             # warming_up: cp_loss & mi_loss only, ignore adversarial dis_loss
             warming_up = (epoch_idx <= warm_up)
-
-            self.to(device)
             self.set_mode(True)
             for data in train_data:
                 text, length, concept = data
-                text, length, concept = text.to(device), length.to(device), concept.to(device)
+                text, length, concept = text.to(self.device), length.to(self.device), concept.to(self.device)
                 # WGAN-like adversarial training: min_enc max_disc dis_loss
                 # train disc
                 if not warming_up:
@@ -211,16 +211,16 @@ class DisenQNet(object):
                 scheduler.step()
                 adv_scheduler.step()
             # test
-            train_loss = self.eval(train_data, device)
+            train_loss = self.eval(train_data)
             if test_data is not None and not warming_up:
-                test_loss = self.eval(test_data, device)
+                test_loss = self.eval(test_data)
                 if not silent:
                     print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}, eval loss: {test_loss:.4f}")
             elif not silent:
                 print(f"[Epoch {epoch_idx:2d}] train loss: {train_loss:.4f}")
         return
 
-    def inference(self, items: dict, device):
+    def inference(self, items: dict):
         """
         DisenQNet for i2v inference. Now not support for batch !
 
@@ -242,13 +242,12 @@ class DisenQNet(object):
         i_hidden: torch.Tensor
             Tensor of (batch_size, hidden_dim)
         """
-        self.to(device)
         self.set_mode(False)
-        text, length = items["content_idx"].to(device), items["content_len"].to(device)
+        text, length = items["content_idx"].to(self.device), items["content_len"].to(self.device)
         embed, k_hidden, i_hidden = self.disen_q_net(text, length)
         return embed, k_hidden, i_hidden
 
-    def eval(self, test_data, device):
+    def eval(self, test_data):
         """
         eval DisenQNet
 
@@ -269,12 +268,11 @@ class DisenQNet(object):
         """
         total_size = 0
         total_loss = 0
-        self.to(device)
         self.set_mode(False)
         with torch.no_grad():
             for data in test_data:
                 text, length, concept = data
-                text, length, concept = text.to(device), length.to(device), concept.to(device)
+                text, length, concept = text.to(self.device), length.to(self.device), concept.to(self.device)
                 embed, k_hidden, i_hidden = self.disen_q_net(text, length)
                 hidden = torch.cat((k_hidden, i_hidden), dim=-1)
                 mi_loss = - self.mi_estimator(embed, hidden, length)
@@ -287,10 +285,11 @@ class DisenQNet(object):
         loss = total_loss / total_size
         return loss
 
-    def save(self, filepath):
+    def save_pretrained(self, output_dir):
+        filepath = os.path.join(output_dir, "disen_q_net.th")
+        config_path = os.path.join(output_dir, "model_config.json")
         state_dicts = [module.state_dict() for module in self.modules]
         torch.save(state_dicts, filepath)
-        config_path = os.path.join(os.path.dirname(filepath), "model_config.json")
         self.save_config(config_path)
         return
 
@@ -304,6 +303,7 @@ class DisenQNet(object):
         for module in self.modules:
             # module.to(device)
             set_device(module, device)
+        self.device = "cpu" if device == "cpu" else "cuda"
         return
 
     def set_mode(self, train):

@@ -14,7 +14,7 @@ def set_device(_net, ctx, *args, **kwargs):  # pragma: no cover
     elif any(map(lambda x: x in ctx, ["cuda", "gpu"])):
         if not torch.cuda.is_available():
             try:
-                torch.ones((1,), device=torch.device("cuda: 0"))
+                torch.ones((1,), device=torch.device("cuda:0"))
             except AssertionError as e:
                 raise TypeError("no cuda detected, noly cpu is supported, the detailed error msg:%s" % str(e))
         if torch.cuda.device_count() >= 1:
@@ -24,7 +24,7 @@ def set_device(_net, ctx, *args, **kwargs):  # pragma: no cover
                 device_ids = [int(i) for i in device_ids.strip().split(",")]
                 try:
                     if not isinstance(_net, DataParallel):
-                        return DataParallel(_net, device_ids).cuda
+                        return DataParallel(_net, device_ids).cuda()
                     return _net.cuda(device_ids)
                 except AssertionError as e:
                     logging.error(device_ids)

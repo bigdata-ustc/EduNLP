@@ -11,23 +11,31 @@ from copy import deepcopy
 
 def test_dataset(disen_train_data, disen_test_data, tmpdir):
     output_dir = str(tmpdir.mkdir('disenq_dataset'))
+    tokenizer = DisenQTokenizer(max_length=250, tokenize_method="space")
     train_params = {
         'epoch': 2,
         'batch': 1,
         'trim_min': 1,
     }
+    data_formation = {
+        "content": "content",
+        "knowledge": "knowledge"
+    }
     train_disenQNet(
         deepcopy(disen_train_data[:100]),
+        tokenizer,
         output_dir,
         output_dir,
         train_params=train_params,
         test_items=disen_test_data[:100],
+        data_formation=data_formation
     )
     # for test Datasets
     os.remove(os.path.join(output_dir, "vocab.list"))
     with pytest.warns(UserWarning):
         train_disenQNet(
             deepcopy(disen_train_data[:100]),
+            tokenizer,
             output_dir,
             output_dir,
             train_params=train_params,
@@ -37,6 +45,7 @@ def test_dataset(disen_train_data, disen_test_data, tmpdir):
 
 def test_disen_train(disen_train_data, disen_test_data, tmpdir):
     output_dir = str(tmpdir.mkdir('disenq'))
+    tokenizer = DisenQTokenizer(max_length=250, tokenize_method="space")
     train_params = {
         'epoch': 2,
         'batch': 16,
@@ -45,6 +54,7 @@ def test_disen_train(disen_train_data, disen_test_data, tmpdir):
 
     train_disenQNet(
         disen_train_data[-100:],
+        tokenizer,
         output_dir,
         output_dir,
         train_params=train_params,

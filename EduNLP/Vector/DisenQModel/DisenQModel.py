@@ -18,9 +18,10 @@ class DisenQModel(object):
         """
         self.device = device
         self.model = DisenQNet.from_pretrained(pretrained_dir)
+        self.model.to(self.device)
 
     def __call__(self, items: dict):
-        embed, k_hidden, i_hidden = self.model.inference(items, device=self.device)
+        embed, k_hidden, i_hidden = self.model.inference(items)
         return embed, k_hidden, i_hidden
 
     def infer_vector(self, items: dict, vector_type=None) -> torch.Tensor:

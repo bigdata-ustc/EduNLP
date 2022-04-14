@@ -60,7 +60,7 @@ def list_to_onehot(item_list, item2index):
 
 def load_list(path):
     with open(path, "rt", encoding="utf-8") as file:
-        items = file.read().strip().split('\n')
+        items = file.read().split('\n')
     item2index = {item: index for index, item in enumerate(items)}
     return item2index
 
@@ -111,7 +111,6 @@ class DisenQTokenizer(object):
         self.max_length = max_length
         if vocab_path is not None:
             self.load_vocab(vocab_path)
-            self.secure = True
         else:
             self.secure = False
 
@@ -200,6 +199,7 @@ class DisenQTokenizer(object):
         with open(path, "rt", encoding="utf-8") as file:
             self.words = file.read().strip().split('\n')
             self.word2index = {word: index for index, word in enumerate(self.words)}
+        self.secure = True
 
     def set_vocab(self, items: list, key=lambda x: x, trim_min_count=50, silent=True):
         """
@@ -279,7 +279,8 @@ class QuestionDataset(Dataset):
     """
     Question dataset including text, length, concept Tensors
     """
-    def __init__(self, items, predata_dir, max_length, dataset_type, silent=False, embed_dim=128, trim_min_count=50):
+    def __init__(self, items, disen_tokenizer, predata_dir, dataset_type,
+                 silent=False, embed_dim=128, trim_min_count=50, data_formation=None):
         """
         Parameters
         ----------
@@ -287,39 +288,44 @@ class QuestionDataset(Dataset):
             the raw question in json format
         predata_dir: str
             the dir to save or load the predata (include wv.th, vocab.list, concept.list )
-        max_length: int
-            the max length for text truncation
         """
         super(QuestionDataset, self).__init__()
         self.silent = silent
+        default_data_formation = {
+            "content": "content",
+            "knowledge": "knowledge"
+        }
+        if data_formation is not None:
+            default_data_formation.update(data_formation)
+        self.data_formation = default_data_formation
+
         self.dataset_type = dataset_type
         self.wv_path = os.path.join(predata_dir, "wv.th")
-        self.word_list_path = os.path.join(predata_dir, "vocab.list")
+        self.vocab_path = os.path.join(predata_dir, "vocab.list")
         self.concept_list_path = os.path.join(predata_dir, "concept.list")
-
-        file_num = sum(map(lambda x: os.path.exists(x), [self.wv_path, self.word_list_path, self.concept_list_path]))
+        self.disen_tokenizer = disen_tokenizer
+        file_num = sum(map(lambda x: os.path.exists(x), [self.wv_path, self.vocab_path, self.concept_list_path]))
         if file_num > 0 and file_num < 3:
             warnings.warn("Some files are missed in predata_dir(which including wv.th, vocab.list, and concept.list)",
                           UserWarning)
         init = file_num != 3
         if not init:
             # load word, concept list
-            self.word2index = load_list(self.word_list_path)
+            self.word2index = load_list(self.vocab_path)
             self.concept2index = load_list(self.concept_list_path)
             self.word2vec = torch.load(self.wv_path)
 
-            self.disen_tokenizer = DisenQTokenizer(vocab_path=self.word_list_path, max_length=max_length)
+            self.disen_tokenizer.load_vocab(self.vocab_path)
             if not silent:
-                print(f"load vocab from {self.word_list_path}")
+                print(f"load vocab from {self.vocab_path}")
                 print(f"load concept from {self.concept_list_path}")
                 print(f"load word2vec from {self.wv_path}")
         else:
-            self.disen_tokenizer = DisenQTokenizer(max_length=max_length)
-            self.disen_tokenizer.set_vocab(items, key=lambda x: x["content"],
+            self.disen_tokenizer.set_vocab(items, key=lambda x: x[self.data_formation["content"]],
                                            trim_min_count=trim_min_count)
             self.disen_tokenizer.save_pretrained(predata_dir)
             if not silent:
-                print(f"save vocab to {self.word_list_path}")
+                print(f"save vocab to {self.vocab_path}")
             self.word2index = self.disen_tokenizer.word2index
 
         self.num_token = self.disen_tokenizer.num_token  # "<num>"
@@ -343,10 +349,11 @@ class QuestionDataset(Dataset):
             print(f"concept size: {self.concept_size}")
         return
 
-    def process_dataset(self, items, trim_min_count, embed_dim, init=False, text_key=lambda x: x["content"]):
+    def process_dataset(self, items, trim_min_count, embed_dim, init=False):
         # make items in standard format
         for i, item in enumerate(items):
-            token_data = self.disen_tokenizer(item, key=text_key, return_tensors=False, return_text=True, padding=False)
+            token_data = self.disen_tokenizer(item, key=lambda x: x[self.data_formation["content"]],
+                                              return_tensors=False, return_text=True, padding=False)
             items[i]["content_idx"] = token_data["content_idx"][0]
             items[i]["content_len"] = token_data["content_len"][0]
             items[i]["content"] = token_data["content"][0]
@@ -356,7 +363,7 @@ class QuestionDataset(Dataset):
             if not os.path.exists(self.concept_list_path):
                 concepts = set()
                 for data in items:
-                    concept = data["knowledge"]
+                    concept = data[self.data_formation["knowledge"]]
                     for c in concept:
                         if c not in concepts:
                             concepts.add(c)
@@ -394,7 +401,7 @@ class QuestionDataset(Dataset):
         data = self.dataset[index]
         text = data["content_idx"]
         length = data["content_len"]
-        concept = list_to_onehot(data["knowledge"], self.concept2index)
+        concept = list_to_onehot(data[self.data_formation["knowledge"]], self.concept2index)
         return text, length, concept
 
     def collate_data(self, batch_data):
@@ -408,32 +415,40 @@ class QuestionDataset(Dataset):
         return text, length, concept
 
 
-def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, test_items=None, silent=False):
+def train_disenQNet(train_items, disen_tokenizer, output_dir, predata_dir,
+                    train_params=None, test_items=None, silent=False, data_formation=None):
     """
     Parameters
     ----------
     train_items: list
         the raw train question list
+    disen_tokenizer: DisenQTokenizer
+        the initial DisenQTokenizer use for training.
     output_dir: str
         the path to save the model
     predata_dir: str
-        the dirname of predata_dir(include )
-    train_params: dict
+        the dirname to load or save predata (including wv.th, vocab.list and concept.list)
+    train_params: dict, defaults to None
         the training parameters
-    test_items: list or None
+    test_items: list, defaults to None
         the raw test question list, default is None
+    silent: bool, defaults to False
+        whether to print processing inforamtion
+    data_formation: dict, defaults to None
+        Mapping "content" and "knowledge" for the item formation.
+        For example, {"content": "ques_content", "knowledge": "know_name"}
 
     Examples
     ----------
     >>> train_data = load_items("tests/test_vec/test_data/disenq_train.json")[:100]
     >>> test_data = load_items("tests/test_vec/test_data/disenq_test.json")[:100]
-    >>> train_disenQNet(train_data,
+    >>> tokenizer = DisenQTokenizer(max_length=250, tokenize_method="space")
+    >>> train_disenQNet(train_data, tokenizer,
     ... "examples/test_model/data/disenq","examples/test_model/data/disenq", silent=True)  # doctest: +SKIP
     """
     # dataset
     default_train_params = {
         "trim_min": 2,
-        "max_len": 250,
 
         "hidden": 128,
         "dropout": 0.2,
@@ -456,13 +471,17 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
         default_train_params.update(train_params)
     train_params = default_train_params
 
-    train_dataset = QuestionDataset(train_items, predata_dir, train_params["max_len"], "train", silent=silent,
-                                    embed_dim=train_params["hidden"], trim_min_count=train_params["trim_min"])
+    train_dataset = QuestionDataset(train_items, disen_tokenizer, predata_dir, "train",
+                                    silent=silent, embed_dim=train_params["hidden"],
+                                    trim_min_count=train_params["trim_min"],
+                                    data_formation=data_formation)
     train_dataloader = DataLoader(train_dataset, batch_size=train_params["batch"],
                                   shuffle=True, collate_fn=train_dataset.collate_data)
     if test_items is not None:
-        test_dataset = QuestionDataset(test_items, predata_dir, train_params["max_len"], "test", silent=silent,
-                                       embed_dim=train_params["hidden"], trim_min_count=train_params["trim_min"])
+        test_dataset = QuestionDataset(test_items, disen_tokenizer, predata_dir, "test",
+                                       silent=silent, embed_dim=train_params["hidden"],
+                                       trim_min_count=train_params["trim_min"],
+                                       data_formation=data_formation)
         test_dataloader = DataLoader(test_dataset, batch_size=train_params["batch"],
                                      shuffle=False, collate_fn=test_dataset.collate_data)
     else:
@@ -473,10 +492,10 @@ def train_disenQNet(train_items, output_dir, predata_dir, train_params=None, tes
 
     # model
     disen_q_net = DisenQNet(vocab_size, concept_size, train_params["hidden"], train_params["dropout"],
-                            train_params["pos_weight"], train_params["cp"], train_params["mi"], train_params["dis"], wv)
+                            train_params["pos_weight"], train_params["cp"], train_params["mi"], train_params["dis"],
+                            wv=wv, device=train_params["device"])
 
-    disen_q_net.train(train_dataloader, test_dataloader, train_params["device"], train_params["epoch"],
+    disen_q_net.train(train_dataloader, test_dataloader, train_params["epoch"],
                       train_params["lr"], train_params["step"], train_params["gamma"],
                       train_params["warm_up"], train_params["adv"], silent=silent)
-    disen_q_net_path = os.path.join(output_dir, "disen_q_net.th")
-    disen_q_net.save(disen_q_net_path)
+    disen_q_net.save_pretrained(output_dir)
