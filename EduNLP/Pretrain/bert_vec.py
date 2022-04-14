@@ -1,10 +1,8 @@
+import os
+import json
 from EduNLP import logger
-import multiprocessing
-import transformers
-from EduNLP.Tokenizer import PureTextTokenizer
-from copy import deepcopy
+from EduNLP.Tokenizer import PureTextTokenizer, TOKENIZER
 from typing import Optional, Union
-import itertools as it
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer, TrainingArguments
@@ -46,8 +44,9 @@ class BertTokenizer(object):
     2
     """
 
-    def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False):
+    def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False, text_tokenizer=None):
         self.tokenizer = AutoTokenizer.from_pretrained(pretrain_model)
+        self.add_special_tokens = add_special_tokens
         if add_special_tokens:
             customize_tokens = []
             for i in [FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL]:
@@ -55,25 +54,52 @@ class BertTokenizer(object):
                     customize_tokens.append(Symbol(i))
             if customize_tokens:
                 self.tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
-        self.pure_text_tokenizer = PureTextTokenizer()
-
-    def __call__(self, item: (list, str), return_tensors: Optional[Union[str, TensorType]] = None, *args, **kwargs):
-        if isinstance(item, str):
-            item = ''.join(next(self.pure_text_tokenizer([item])))
+        if text_tokenizer:
+            assert text_tokenizer in TOKENIZER, f"text_tokenizer should be one of {list(TOKENIZER.keys())}"
+            self.text_tokenizer = TOKENIZER[text_tokenizer]()
+            self.text_tokenizer_name = text_tokenizer
         else:
-            token_generation = self.pure_text_tokenizer(item)
+            self.text_tokenizer = PureTextTokenizer()
+            self.text_tokenizer_name = 'pure_text'
+
+    def __call__(self, item: Union[list, str], return_tensors: Optional[Union[str, TensorType]] = None,
+                 *args, **kwargs):
+        if isinstance(item, str):
+            item = ''.join(next(self.text_tokenizer([item])))
+        else:
+            token_generation = self.text_tokenizer(item)
             item = [''.join(next(token_generation)) for i in range(len(item))]
         return self.tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
 
-    def tokenize(self, item: (list, str), *args, **kwargs):
+    def tokenize(self, item: Union[list, str], *args, **kwargs):
         if isinstance(item, str):
-            item = ''.join(next(self.pure_text_tokenizer([item])))
+            item = ''.join(next(self.text_tokenizer([item])))
             return self.tokenizer.tokenize(item)
         else:
-            token_generation = self.pure_text_tokenizer(item)
+            token_generation = self.text_tokenizer(item)
             item = [''.join(next(token_generation)) for i in range(len(item))]
             item = [self.tokenizer.tokenize(i) for i in item]
             return item
+
+    def save_pretrained(self, tokenizer_config_dir):
+        self.tokenizer.save_pretrained(tokenizer_config_dir)
+        custom_config = {
+            'add_special_tokens': self.add_special_tokens,
+            'text_tokenizer': self.text_tokenizer_name
+        }
+        with open(os.path.join(tokenizer_config_dir, 'custom_config.json'), 'w') as f:
+            json.dump(custom_config, f, indent=2)
+
+    @classmethod
+    def from_pretrained(cls, tokenizer_config_dir):
+        custom_config_dir = os.path.join(tokenizer_config_dir, 'custom_config.json')
+        if os.path.exists(custom_config_dir):
+            with open(custom_config_dir, 'r') as f:
+                custom_config = json.load(f)
+            return cls(tokenizer_config_dir, custom_config['add_special_tokens'],
+                       custom_config['text_tokenizer'])
+        else:
+            return cls(tokenizer_config_dir)
 
 
 class FinetuneDataset(Dataset):
@@ -164,3 +190,4 @@ def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_p
     )
     trainer.train()
     trainer.save_model(output_dir)
+    tokenizer.save_pretrained(output_dir)

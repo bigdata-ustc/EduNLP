@@ -31,7 +31,7 @@ def test_bert_without_param(stem_data_bert, tmpdir):
         stem_data_bert,
         output_dir
     )
-    tokenizer = BertTokenizer(output_dir)
+    tokenizer = BertTokenizer.from_pretrained(output_dir)
     model = BertModel(output_dir)
     item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
             若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
@@ -104,3 +104,11 @@ def test_luna_pub_bert(stem_data_bert, tmpdir):
 
     t_vec = i2v.infer_token_vector([item['stem'], item['stem']])
     assert len(t_vec[0][0]) == i2v.vector_size
+
+
+def test_bert_tokenizer(stem_data_bert, tmpdir):
+    output_dir = str(tmpdir.mkdir('test_bert_tokenizer'))
+    tokenizer = BertTokenizer(add_special_tokens=True, text_tokenizer='pure_text')
+    tokenizer.save_pretrained(output_dir)
+    tokenizer = BertTokenizer.from_pretrained(output_dir)
+    tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
