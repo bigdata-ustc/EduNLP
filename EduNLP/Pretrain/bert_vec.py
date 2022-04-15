@@ -22,6 +22,9 @@ class BertTokenizer(object):
         used pretrained model
     add_special_tokens:
         Whether to add tokens like [FIGURE], [TAG], etc.
+    text_tokenizer:
+        Which text tokenizer to use.
+        Must be consistent with TOKENIZER dictionary.
 
     Returns
     ----------
@@ -42,6 +45,8 @@ class BertTokenizer(object):
     torch.Size([2, 27])
     >>> print(len(tokenizer.tokenize(items)))
     2
+    >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
+    >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
 
     def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False, text_tokenizer=None):

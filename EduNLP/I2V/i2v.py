@@ -60,7 +60,7 @@ class I2V(object):
         else:
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
-            self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+            self.tokenizer = BertTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer,
                                                       **tokenizer_kwargs if tokenizer_kwargs is not None else {})
@@ -316,7 +316,7 @@ class Bert(I2V):
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
-        tokenizer_kwargs = {"pretrain_model": model_path}
+        tokenizer_kwargs = {"tokenizer_config_dir": model_path}
         return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
 
