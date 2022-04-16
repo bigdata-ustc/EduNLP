@@ -156,11 +156,11 @@ class BiHRNN(FeatureExtractor):
             ans_input.append([0] + q.answer)
             ans_output.append(q.answer + [0])
 
-        lembs = SeqBatch(lembs)
-        rembs = SeqBatch(rembs)
-        embs = SeqBatch(embs)
-        ans_input = SeqBatch(ans_input)
-        ans_output = SeqBatch(ans_output)
+        lembs = SeqBatch(lembs, device=device)
+        rembs = SeqBatch(rembs, device=device)
+        embs = SeqBatch(embs, device=device)
+        ans_input = SeqBatch(ans_input, device=device)
+        ans_output = SeqBatch(ans_output, device=device)
 
         length = sum(lembs.lens)
         words = []
@@ -287,9 +287,9 @@ class BiHRNN(FeatureExtractor):
         size = list(self.h0.size())
         size[1] = batch_size
         if self.config['rnn'] == 'GRU':
-            return self.h0.expand(size)
+            return self.h0.expand(size).contiguous()
         else:
-            return self.h0.expand(size), self.c0.expand(size)
+            return self.h0.expand(size).contiguous(), self.c0.expand(size).contiguous()
 
     @classmethod
     def from_pretrained(cls, pretrained_dir, tokenizer):

@@ -736,7 +736,4 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
 
         except KeyboardInterrupt:
             raise
-
-        except KeyboardInterrupt:
-            raise
-    model.save(os.path.join(output_dir, 'QuesNet'))
+    model.save(os.path.join(output_dir))
