@@ -7,9 +7,9 @@ class FeatureExtractor(nn.Module):
         super(FeatureExtractor, self).__init__()
         self.feat_size = feat_size
 
-    def make_batch(self, data, pretrain=False):
+    def make_batch(self, data, device, pretrain=False):
         """Make batch from input data (python data / np arrays -> tensors)"""
-        return torch.tensor(data)
+        return torch.tensor(data).to(device)
 
     def load_emb(self, emb):
         pass
@@ -25,11 +25,11 @@ class FeatureExtractor(nn.Module):
 class AE(nn.Module):
     factor = 1
 
-    def enc(self, item):
-        return self.encoder(item)
+    def enc(self, item, *args, **kwargs):
+        return self.encoder(item, *args, **kwargs)
 
-    def dec(self, item):
-        return self.decoder(item)
+    def dec(self, item, *args, **kwargs):
+        return self.decoder(item, *args, **kwargs)
 
     def loss(self, item, emb=None):
         if emb is None:
@@ -47,6 +47,7 @@ class AE(nn.Module):
 class ImageAE(AE):
     def __init__(self, emb_size):
         super().__init__()
+        self.emb_size = emb_size
         self.recons_loss = nn.MSELoss()
         self._encoder = nn.Sequential(
             nn.Conv2d(1, 16, 3, stride=3),
@@ -68,17 +69,19 @@ class ImageAE(AE):
             nn.Sigmoid()
         )
 
-    def encoder(self, item):
-        return self._encoder(item).view(item.size(0), -1)
+    def encoder(self, item, detach_tensor=False):
+        return self._encoder(item).detach().view(item.size(0), -1) if detach_tensor else self._encoder(item).view(
+            item.size(0), -1)
 
-    def decoder(self, emb):
-        return self._decoder(emb[:, :, None, None])
+    def decoder(self, emb, detach_tensor=False):
+        return self._decoder(emb[:, :, None, None]).detach() if detach_tensor else self._decoder(emb[:, :, None, None])
 
 
 class MetaAE(AE):
     def __init__(self, meta_size, emb_size):
         super().__init__()
         self.emb_size = emb_size
+        self.meta_size = meta_size
         self.recons_loss = nn.BCEWithLogitsLoss()
         self.encoder = nn.Sequential(nn.Linear(meta_size, emb_size),
                                      nn.ReLU(True))

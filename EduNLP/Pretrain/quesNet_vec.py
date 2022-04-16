@@ -3,7 +3,10 @@ level vectors."""
 
 import os
 import logging
+
+import numpy as np
 import torch
+from torch.utils.data import DataLoader, Dataset
 import signal
 import threading
 from tqdm import tqdm
@@ -18,12 +21,14 @@ import random
 from typing import Union, Optional
 from PIL import Image
 from torchvision.transforms.functional import to_grayscale
+from torchvision.transforms.functional import to_tensor
+from gensim.models import Word2Vec
 from ..SIF.segment.segment import FigureSegment
 
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
-from ..ModelZoo.QuesNet import QuesNet
-
+from ..ModelZoo.QuesNet import QuesNet, AE
+from EduNLP import logger
 import linecache
 import subprocess
 
@@ -52,6 +57,7 @@ class QuesNetTokenizer(object):
     >>> print(token_items[0].keys())
     dict_keys(['content_idx', 'meta_idx'])
     """
+
     def __init__(self, img_dir=None, vocab_path=None, max_length=250, meta=['know_name'],
                  img_token='<img>', unk_token="<unk>", pad_token="<pad>", *args, **argv):
         """
@@ -63,7 +69,7 @@ class QuesNetTokenizer(object):
             path of vacab file, by default None
         max_length : int, optional
             by default 250
-        meta : str, optional
+        meta : list, optional
             the name of meta (side information), by default 'knowledge'
         img_token : str, optional
             by default '<img>'
@@ -178,13 +184,13 @@ class QuesNetTokenizer(object):
         with open(os.path.join(path, 'word.txt'), "rt", encoding="utf-8") as f:
             words = f.read().strip().split('\n')
             self.stoi['word'] = {word: index for index, word in enumerate(words)}
-            self.itos['word'] = {i: s for i, s in self.stoi['word'].items()}
+            self.itos['word'] = {i: s for s, i in self.stoi['word'].items()}
         for m in self.meta:
             try:
                 with open(os.path.join(path, f'meta_{m}.txt'), "rt", encoding="utf-8") as f:
                     meta = f.read().strip().split('\n')
                     self.stoi[m] = {word: index for index, word in enumerate(meta)}
-                    self.itos[m] = {i: s for i, s in self.stoi[m].items()}
+                    self.itos[m] = {i: s for s, i in self.stoi[m].items()}
             except Exception:
                 self.stoi[m] = None
                 self.itos[m] = None
@@ -197,6 +203,8 @@ class QuesNetTokenizer(object):
             can be the list of str, or list of dict
         key: function
             determine how to get the text of each item
+        trim_min_count
+        silent
         """
         self.secure = True
         # word
@@ -211,12 +219,12 @@ class QuesNetTokenizer(object):
         if not silent:
             keep_word_cnts = sum(word2cnt[w] for w in words)
             all_word_cnts = sum(word2cnt.values())
-            print(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words)/len(word2cnt):.4f}\
-                  with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts/all_word_cnts:.4f}")
+            print(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words) / len(word2cnt):.4f}\
+                  with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts / all_word_cnts:.4f}")
 
         vocab = ctrl_tokens + sorted(words)
         self.stoi['word'] = {word: index for index, word in enumerate(vocab)}
-        self.itos['word'] = {i: s for i, s in self.stoi['word'].items()}
+        self.itos['word'] = {i: s for s, i in self.stoi['word'].items()}
 
         # meta
         for m in self.meta:
@@ -237,7 +245,7 @@ class QuesNetTokenizer(object):
             if not silent:
                 print(f"save meta information {m}: {len(meta)}")
             self.stoi[m] = {word: index for index, word in enumerate(meta)}
-            self.itos[m] = {i: s for i, s in self.stoi[m].items()}
+            self.itos[m] = {i: s for s, i in self.stoi[m].items()}
 
     def save_vocab(self, save_vocab_path):
         """
@@ -364,7 +372,11 @@ class lines:
 class QuestionLoader:
     def __init__(self, ques_file, tokenizer: QuesNetTokenizer,
                  pipeline=None, range=None, meta: Optional[list] = None,
-                 content_key=lambda x: x['ques_content']):
+                 content_key=lambda x: x['ques_content'],
+                 meta_key=lambda x: x['know_name'],
+                 answer_key=lambda x: x['ques_answer'],
+                 option_key=lambda x: x['ques_options']
+                 ):
         """ Read question file as data list. Same behavior on same file.
 
         Parameters
@@ -377,9 +389,9 @@ class QuestionLoader:
         range : _type_, optional
             _description_, by default None
         content_key : function, optional
-            by default lambdax:x['ques_content']
+            by default lambda x:x['ques_content']
         meta_key : function, optional
-            by default lambdax:x['know_name']
+            by default lambda x:x['know_name']
         """
         self.range = None
         self.ques = lines(ques_file, skip=1)
@@ -391,6 +403,7 @@ class QuestionLoader:
 
         self.content_key = content_key
         self.meta = meta if meta else tokenizer.meta
+        self.meta_key = meta_key
 
         self.pipeline = pipeline
 
@@ -413,7 +426,8 @@ class QuestionLoader:
             item = slice(x.start + self.range.start,
                          x.stop + self.range.start, 1)
         qs = []
-
+        if item.start > len(self):
+            raise IndexError
         for line in self.ques[item]:
             q = json.loads(line)
             qid = q['ques_id']
@@ -422,7 +436,16 @@ class QuestionLoader:
             meta = token['meta_idx']
             # TODO: answer
             # TODO: false_options
-            qs.append(Question(qid, content, [0], [0], meta))
+            if q['ques_answer'].isalpha() and len(q['ques_answer']) == 1 and len(q['ques_options']) > 0:
+                answer_idx = ord(q['ques_answer'].upper()) - ord('A')
+                options = eval(q['ques_options'])
+                answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)
+                answer = answer['content_idx']
+                false_options = [(self.tokenizer(option, meta=self.meta))['content_idx'] for option in options]
+                qs.append(Question(qid, content, answer, false_options, meta))
+            else:
+                answer = (self.tokenizer(q['ques_answer'], meta=self.meta))['content_idx']
+                qs.append(Question(qid, content, answer, [[0]], meta))
 
         if callable(self.pipeline):
             qs = self.pipeline(qs)
@@ -506,6 +529,23 @@ class PrefetchIter:
                 return
 
 
+class EmbeddingDataset(Dataset):
+    def __init__(self, data, data_type='image'):
+        self.data = data
+        self.data_type = data_type
+        if self.data_type not in ['image', 'meta']:
+            raise TypeError
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        if self.data_type == 'image':
+            return to_tensor(self.data[idx])
+        elif self.data_type == 'meta':
+            return torch.tensor(self.data[idx])
+
+
 def pretrain_iter(ques, batch_size):
     _cur_iter = PrefetchIter(ques, batch_size=batch_size)
     return _cur_iter
@@ -534,6 +574,24 @@ def critical(f):
             break
 
 
+def pretrain_embedding_layer(dataset: EmbeddingDataset, ae: AE, lr: float = 1e-3, log_step: int = 1, epochs: int = 3,
+                             batch_size: int = 4, device=torch.device('cpu')):
+    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    optim = torch.optim.Adam(ae.parameters(), lr=lr)
+    ae.train()
+    ae.to(device)
+    train_type = dataset.data_type
+    for i in range(epochs):
+        for batch, item in tqdm(enumerate(train_dataloader)):
+            loss = ae.loss(item)
+            optim.zero_grad()
+            loss.backward()
+            optim.step()
+            if batch % log_step == 0:
+                logger.info(f"[Epoch{i}][Batch{batch}]Training {train_type} Embedding layer, loss:{loss}")
+    return ae
+
+
 def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     """ pretrain QuesNet
 
@@ -542,7 +600,7 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     path : str
         path of question file
     output_dir : str
-        output path
+        output path·
     tokenizer : QuesNetTokenizer
         QuesNet tokenizer
     train_params : dict, optional
@@ -560,14 +618,15 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     """
     default_train_params = {
         # train params
-        "n_epochs": 1,
-        "batch_size": 4,
+        "n_epochs": 2,
+        "batch_size": 6,
         "lr": 1e-3,
-        'save_every': 1,
-        'log_steps': 1,
+        'save_every': 0,
+        'log_steps': 10,
         'device': 'cpu',
         'max_steps': 0,
         # model params
+        'emb_size': 256,
         'feat_size': 256,
     }
     if train_params is not None:
@@ -579,22 +638,75 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     device = torch.device(train_params['device'])
 
     ques_dl = QuestionLoader(path, tokenizer)
-    model = QuesNet(_stoi=tokenizer.stoi, feat_size=train_params['feat_size']).to(device)
-
+    model = QuesNet(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
+                    emb_size=train_params['emb_size']).to(
+        device)
     # TODO: pretrain embedding layers: MetaAE, ImageAE, word2vec
+    emb_dict = tokenizer.stoi['word']
+    emb_dict_rev = tokenizer.itos['word']
+    emb_size = train_params['emb_size']
+    meta_size = model.meta_size
+    w2v_corpus = []
+    img_corpus = []
+    meta_corpus = []
+    for i, qs in enumerate(tqdm(ques_dl)):
+        text_content = []
+        for c in qs.content:
+            if isinstance(c, int):
+                text_content.append(emb_dict_rev[c])
+            else:
+                img_corpus.append(c)
+        for a in qs.answer:
+            if isinstance(a, int):
+                text_content.append(emb_dict_rev[a])
+            else:
+                img_corpus.append(a)
+        w2v_corpus.append(text_content)
+        meta_vector = torch.zeros(meta_size, dtype=torch.float)
+        for m in qs.labels[model.meta]:
+            meta_vector.add_(
+                torch.nn.functional.one_hot(torch.tensor(m, dtype=torch.int64), model.meta_size).to(torch.float))
+        meta_corpus.append(meta_vector)
 
+    # train word2vec for text embedding
+    gensim_w2v = Word2Vec(sentences=[[item] for item in emb_dict.keys()], min_count=1,
+                          vector_size=emb_size)
+    gensim_w2v.init_weights()
+    gensim_w2v.train(corpus_iterable=w2v_corpus, total_examples=len(w2v_corpus), epochs=train_params['n_epochs'])
+    w2v_emb = gensim_w2v.syn1neg
+    emb_weights = []
+    for key, item in emb_dict.items():
+        w2v_index = gensim_w2v.wv.key_to_index[key]
+        emb_weights.append(w2v_emb[w2v_index])
+    emb_weights = np.array(emb_weights)
+    model.load_emb(emb_weights)
+    logger.info('QuesNet Word Embedding loaded')
+
+    # train auto-encoder loss for image embedding
+    img_dataset = EmbeddingDataset(data=img_corpus, data_type='image')
+    trained_ie = pretrain_embedding_layer(dataset=img_dataset, ae=model.ie, lr=train_params['lr'],
+                                          log_step=train_params['log_steps'], batch_size=train_params['batch_size'],
+                                          epochs=train_params['n_epochs'], device=device)
+    model.load_img(trained_ie)
+    logger.info('QuesNet Image Embedding loaded')
+
+    # train auto-encoder loss for meta embedding
+    meta_dateset = EmbeddingDataset(data=meta_corpus, data_type='meta')
+    trained_me = pretrain_embedding_layer(dataset=meta_dateset, ae=model.me, lr=train_params['lr'],
+                                          log_step=train_params['log_steps'], batch_size=train_params['batch_size'],
+                                          epochs=train_params['n_epochs'], device=device)
+    model.load_meta(trained_me)
+    logger.info('QuesNet Meta Embedding loaded')
+
+    logger.info("QuesNet Word, Image and Meta Embeddings training is done")
+
+    # HLM and DOO training
     ques_dl.pipeline = partial(model.make_batch, device=device, pretrain=True)
-
     model.train()
     optim = optimizer(model, lr=train_params['lr'])
     n_batches = 0
-    stop_flag = False
-
     for epoch in range(0, train_params['n_epochs']):
         train_iter = pretrain_iter(ques_dl, train_params['batch_size'])
-        if stop_flag:
-            break
-
         try:
             bar = enumerate(tqdm(train_iter, initial=train_iter.pos),
                             train_iter.pos)
@@ -615,13 +727,15 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
                     model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
 
                 if train_params['log_steps'] > 0 and i % train_params['log_steps'] == 0:
-                    print(f"{epoch}.{i}---loss: {loss.item()}")
+                    logger.info(f"{epoch}.{i}---loss: {loss.item()}")
 
                 if train_params['max_steps'] > 0 and n_batches % train_params['max_steps'] == 0:
-                    stop_flag = True
                     break
 
-            model.save(output_dir)
+            model.save(os.path.join(output_dir, f'QuesNet_{epoch}'))
+
+        except KeyboardInterrupt:
+            raise
 
         except KeyboardInterrupt:
             raise

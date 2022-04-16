@@ -29,7 +29,7 @@ class SeqBatch:
     def packed(self):
         ind = torch.tensor(self.ind, dtype=torch.long, device=self.device)
         padded = self.padded()[0].index_select(1, ind)
-        return pack_padded_sequence(padded, self.lens)
+        return pack_padded_sequence(padded, torch.tensor(self.lens))
 
     def padded(self, max_len=None, batch_first=False):
         seqs = [torch.tensor(s, dtype=self.dtype, device=self.device)

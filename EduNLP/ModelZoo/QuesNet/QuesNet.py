@@ -7,14 +7,16 @@ import json
 import os
 from pathlib import Path
 import torch.nn.functional as F
-from torch.nn.utils.rnn import pad_packed_sequence
+from torch.nn.utils.rnn import pad_packed_sequence, PackedSequence
 from torchvision.transforms.functional import to_tensor
 
 
 class BiHRNN(FeatureExtractor):
     """Sequence-to-sequence feature extractor based on RNN. Supports different
     input forms and different RNN types (LSTM/GRU), """
-    def __init__(self, _stoi, embs=None,
+
+    def __init__(self, _stoi, embs: np.ndarray = None, pretrained_image: nn.Module = None,
+                 pretrained_meta: nn.Module = None,
                  meta='know_name',
                  emb_size=256,
                  rnn='LSTM',
@@ -46,7 +48,12 @@ class BiHRNN(FeatureExtractor):
 
         self.ie = ImageAE(emb_size)
         self.meta = meta
-        self.me = MetaAE(len(_stoi[self.meta]), emb_size)
+        self.meta_size = len(_stoi[self.meta])
+        self.me = MetaAE(self.meta_size, emb_size)
+        if pretrained_image is not None:
+            self.load_img(pretrained_image)
+        if pretrained_meta is not None:
+            self.load_meta(pretrained_meta)
         # TODO:load pretrained ImageAE, MetaAE
 
         self.lambda_input = lambda_input
@@ -87,7 +94,19 @@ class BiHRNN(FeatureExtractor):
         self.drop = nn.Dropout(0.2)
 
     def load_emb(self, emb):
-        self.we.weight.data.copy_(torch.from_numpy(emb))
+        self.we.weight.detach().copy_(torch.from_numpy(emb))
+
+    def load_img(self, img_layer: nn.Module):
+        if self.config['emb_size'] != img_layer.emb_size:
+            raise ValueError("Unmatched pre-trained ImageAE and embedding size")
+        else:
+            self.ie.load_state_dict(img_layer.state_dict())
+
+    def load_meta(self, meta_layer: nn.Module):
+        if self.config['emb_size'] != meta_layer.emb_size or self.meta_size != meta_layer.meta_size:
+            raise ValueError("Unmatched pre-trained MetaAE and embedding size or meta size")
+        else:
+            self.me.load_state_dict(meta_layer.state_dict())
 
     def make_batch(self, data, device, pretrain=False):
         """Returns embeddings"""
@@ -118,7 +137,7 @@ class BiHRNN(FeatureExtractor):
                     _gt.append(word)
                 else:
                     im = to_tensor(w).to(device)
-                    item = self.ie.enc(im.unsqueeze(0)) * self.lambda_input[1]
+                    item = self.ie.enc(im.unsqueeze(0), detach_tensor=True) * self.lambda_input[1]
                     _lembs.append(item)
                     _rembs.append(item)
                     _embs.append(item)
@@ -171,7 +190,6 @@ class BiHRNN(FeatureExtractor):
         words = torch.cat(words, dim=0) if words else None
         ims = torch.cat(ims, dim=0) if ims else None
         metas = torch.cat(metas, dim=0) if metas else None
-
         if pretrain:
             return (
                 lembs, rembs, words, ims, metas, wmask, imask, mmask,
@@ -205,15 +223,15 @@ class BiHRNN(FeatureExtractor):
 
     def pretrain_loss(self, batch):
         left, right, words, ims, metas, wmask, imask, mmask, \
-            inputs, ans_input, ans_output = batch
+        inputs, ans_input, ans_output = batch
 
         # TODO: high-level loss
-        # _, h = self(inputs)
-        # x = ans_input.packed()
-        # y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
-        #                        h.unsqueeze(0))
-        # floss = F.cross_entropy(self.ans_output(y.data),
-        #                         ans_output.packed().data)
+        _, h, _ = self(inputs)
+        x = ans_input.packed()
+        y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
+                               h.detach().repeat(self.config['layers'], 1, 1))
+        floss = F.cross_entropy(self.ans_output(y.data),
+                                ans_output.packed().data)
 
         # low-level loss
         left_hid = self(left)[0].data[:, :self.rnn_size]
@@ -259,7 +277,7 @@ class BiHRNN(FeatureExtractor):
 
         return {
             # TODO: high-level loss
-            # 'field_loss': floss * self.lambda_loss[1],
+            'field_loss': floss * self.lambda_loss[1],
             'word_loss': wloss,
             'image_loss': iloss,
             'meta_loss': mloss
