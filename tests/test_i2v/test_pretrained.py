@@ -26,7 +26,7 @@ def test_pretrained_i2v(tmp_path):
 
     get_pretrained_i2v("luna_bert", d)
 
-    get_pretrained_i2v("quesnet_pub_256", d)
+    get_pretrained_i2v("quesnet_test", d)
 
     with pytest.raises(KeyError):
         get_pretrained_i2v("error")

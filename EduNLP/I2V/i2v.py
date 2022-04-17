@@ -10,7 +10,6 @@ from ..Tokenizer import Tokenizer, get_tokenizer
 from EduNLP.Pretrain import BertTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
-
 __all__ = ["I2V", "D2V", "W2V", "Bert", "QuesNet", "get_pretrained_i2v"]
 
 
@@ -53,6 +52,7 @@ class I2V(object):
     -------
     i2v model: I2V
     """
+
     def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
@@ -62,11 +62,11 @@ class I2V(object):
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'quesnet':
-            self.tokenizer = QuesNetTokenizer.from_pretrained(**tokenizer_kwargs
-                                                              if tokenizer_kwargs is not None else {})
+            self.tokenizer = QuesNetTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
-            self.tokenizer: Tokenizer = get_tokenizer(tokenizer, **tokenizer_kwargs
-                                                      if tokenizer_kwargs is not None else {})
+            self.tokenizer: Tokenizer = get_tokenizer(tokenizer,
+                                                      **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         self.params = {
             "tokenizer": tokenizer,
             "tokenizer_kwargs": tokenizer_kwargs,
@@ -156,6 +156,7 @@ class D2V(I2V):
     -------
     i2v model: I2V
     """
+
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
@@ -225,6 +226,7 @@ class W2V(I2V):
     i2v model: W2V
 
     """
+
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
@@ -286,6 +288,7 @@ class Bert(I2V):
     -------
     i2v model: Bert
     """
+
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
         '''
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
@@ -329,6 +332,7 @@ class QuesNet(I2V):
     -------
     I2V
     """
+
     def infer_vector(self, item, tokenize=True, key=lambda x: x, meta=['know_name'], *args, **kwargs):
         """ It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
@@ -364,7 +368,7 @@ class QuesNet(I2V):
             qs = Question(item['ques_id'], content, answer, false_options, meta_idx)
         else:
             answer = (self.tokenizer(item['ques_answer'], meta=meta))['content_idx']
-            qs = Question(item['ques_id'], content, answer, [[0]], meta_idx)
+            qs = Question(item['ques_id'], content, answer, [[0], [0], [0]], meta_idx)
         return self.t2v.infer_vector(qs), self.t2v.infer_tokens(qs)
 
     @classmethod
@@ -389,7 +393,7 @@ MODELS = {
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
-    "quesnet_pub_256": [QuesNet, "quesnet_pub_256"]
+    "quesnet_test": [QuesNet, "quesnet_test"]
 }
 
 

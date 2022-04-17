@@ -443,7 +443,7 @@ class QuestionLoader:
                 qs.append(Question(qid, content, answer, false_options, meta))
             else:
                 answer = (self.tokenizer(q['ques_answer'], meta=self.meta))['content_idx']
-                qs.append(Question(qid, content, answer, [[0]], meta))
+                qs.append(Question(qid, content, answer, [[0], [0], [0]], meta))
 
         if callable(self.pipeline):
             qs = self.pipeline(qs)

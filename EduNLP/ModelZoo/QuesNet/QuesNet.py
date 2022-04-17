@@ -89,8 +89,8 @@ class BiHRNN(FeatureExtractor):
         self.ans_decode = nn.GRU(emb_size, feat_size, layers,
                                  batch_first=True)
         self.ans_output = nn.Linear(feat_size, vocab_size)
-
-        self.drop = nn.Dropout(0.2)
+        self.ans_judge = nn.Linear(feat_size, 1)
+        self.dropout = nn.Dropout(0.2)
 
     def load_emb(self, emb):
         self.we.weight.detach().copy_(torch.from_numpy(emb))
@@ -115,6 +115,7 @@ class BiHRNN(FeatureExtractor):
         gt = []
         ans_input = []
         ans_output = []
+        false_options = [[] for i in range(3)]
         for q in data:
             meta = torch.zeros(len(self.stoi[self.meta])).to(device)
             meta[q.labels.get(self.meta) or []] = 1
@@ -155,11 +156,15 @@ class BiHRNN(FeatureExtractor):
             ans_input.append([0] + q.answer)
             ans_output.append(q.answer + [0])
 
+            for i, fo in enumerate(q.false_options):
+                false_options[i].append([0] + fo)
+
         lembs = SeqBatch(lembs, device=device)
         rembs = SeqBatch(rembs, device=device)
         embs = SeqBatch(embs, device=device)
         ans_input = SeqBatch(ans_input, device=device)
         ans_output = SeqBatch(ans_output, device=device)
+        false_opt_input = [SeqBatch(foi, device=device) for foi in false_options]
 
         length = sum(lembs.lens)
         words = []
@@ -192,7 +197,7 @@ class BiHRNN(FeatureExtractor):
         if pretrain:
             return (
                 lembs, rembs, words, ims, metas, wmask, imask, mmask,
-                embs, ans_input, ans_output
+                embs, ans_input, ans_output, false_opt_input
             )
         else:
             return embs
@@ -215,21 +220,29 @@ class BiHRNN(FeatureExtractor):
         if mask is not None:
             mask = mask.float()
             scores -= 1e9 * (1.0 - mask.unsqueeze(1))
-        scores = self.drop(F.softmax(scores, dim=-1))  # (B, S, S)
+        scores = self.dropout(F.softmax(scores, dim=-1))  # (B, S, S)
         h = (scores @ v).max(1)[0]  # (B, D)
 
         return y, batch.invert(h, 0), hs
 
     def pretrain_loss(self, batch):
-        left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output = batch
+        left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output, false_opt_input = batch
 
+        # high-level loss
         _, h, _ = self(inputs)
         x = ans_input.packed()
         y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
                                h.detach().repeat(self.config['layers'], 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),
                                 ans_output.packed().data)
-
+        floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
+                                                    torch.ones_like(self.ans_judge(y.data)))
+        for false_opt in false_opt_input:
+            x = false_opt.packed()
+            y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
+                                   h.detach().repeat(self.config['layers'], 1, 1))
+            floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
+                                                        torch.zeros_like(self.ans_judge(y.data)))
         # low-level loss
         left_hid = self(left)[0].data[:, :self.rnn_size]
         right_hid = self(right)[0].data[:, self.rnn_size:]
