@@ -232,7 +232,7 @@ class BiHRNN(FeatureExtractor):
         _, h, _ = self(inputs)
         x = ans_input.packed()
         y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
-                               h.detach().repeat(self.config['layers'], 1, 1))
+                               h.repeat(self.config['layers'], 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),
                                 ans_output.packed().data)
         floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
@@ -240,7 +240,7 @@ class BiHRNN(FeatureExtractor):
         for false_opt in false_opt_input:
             x = false_opt.packed()
             y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
-                                   h.detach().repeat(self.config['layers'], 1, 1))
+                                   h.repeat(self.config['layers'], 1, 1))
             floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
                                                         torch.zeros_like(self.ans_judge(y.data)))
         # low-level loss
