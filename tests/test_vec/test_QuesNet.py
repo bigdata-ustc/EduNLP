@@ -48,6 +48,6 @@ def test_quesnet_pretrain(quesnet_data, tmpdir):
     t_vec = i2v.infer_token_vector(quesnet_data[0], key=lambda x: x["ques_content"])
     i_vec = i2v.infer_item_vector(quesnet_data[0], key=lambda x: x["ques_content"])
     assert t_vec.shape[-1] == 256
-    assert i_vec.shape == torch.Size([1, 256])
+    assert i_vec.shape == torch.Size([256])
 
     assert i2v.vector_size == 256

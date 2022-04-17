@@ -434,8 +434,6 @@ class QuestionLoader:
             token = self.tokenizer(q, key=self.content_key, meta=self.meta)
             content = token['content_idx']
             meta = token['meta_idx']
-            # TODO: answer
-            # TODO: false_options
             if q['ques_answer'].isalpha() and len(q['ques_answer']) == 1 and len(q['ques_options']) > 0:
                 answer_idx = ord(q['ques_answer'].upper()) - ord('A')
                 options = eval(q['ques_options'])
@@ -618,7 +616,7 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     """
     default_train_params = {
         # train params
-        "n_epochs": 2,
+        "n_epochs": 1,
         "batch_size": 6,
         "lr": 1e-3,
         'save_every': 0,
@@ -641,7 +639,6 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     model = QuesNet(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
                     emb_size=train_params['emb_size']).to(
         device)
-    # TODO: pretrain embedding layers: MetaAE, ImageAE, word2vec
     emb_dict = tokenizer.stoi['word']
     emb_dict_rev = tokenizer.itos['word']
     emb_size = train_params['emb_size']
@@ -732,8 +729,7 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
                 if train_params['max_steps'] > 0 and n_batches % train_params['max_steps'] == 0:
                     break
 
-            model.save(os.path.join(output_dir, f'QuesNet_{epoch}'))
-
+            model.save(output_dir)
+            tokenizer.save_pretrained(output_dir)
         except KeyboardInterrupt:
             raise
-    model.save(os.path.join(output_dir))

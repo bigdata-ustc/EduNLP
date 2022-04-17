@@ -354,19 +354,17 @@ class QuesNet(I2V):
         """
         input = self.tokenize(item, key=key, meta=meta, *args, **kwargs) if tokenize is True else item
         content = input['content_idx']
-        meta = input['meta_idx']
-        # TODO: answer
-        # TODO: false_options
+        meta_idx = input['meta_idx']
         if item['ques_answer'].isalpha() and len(item['ques_answer']) == 1 and len(item['ques_options']) > 0:
             answer_idx = ord(item['ques_answer'].upper()) - ord('A')
             options = eval(item['ques_options'])
-            answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)
+            answer = self.tokenizer(options.pop(answer_idx), meta=meta)
             answer = answer['content_idx']
-            false_options = [(self.tokenizer(option, meta=self.meta))['content_idx'] for option in options]
-            qs = Question(item['ques_id'], content, answer, false_options, meta)
+            false_options = [(self.tokenizer(option, meta=meta))['content_idx'] for option in options]
+            qs = Question(item['ques_id'], content, answer, false_options, meta_idx)
         else:
-            answer = (self.tokenizer(item['ques_answer'], meta=self.meta))['content_idx']
-            qs = Question(item['ques_id'], content, answer, [[0]], meta)
+            answer = (self.tokenizer(item['ques_answer'], meta=meta))['content_idx']
+            qs = Question(item['ques_id'], content, answer, [[0]], meta_idx)
         return self.t2v.infer_vector(qs), self.t2v.infer_tokens(qs)
 
     @classmethod

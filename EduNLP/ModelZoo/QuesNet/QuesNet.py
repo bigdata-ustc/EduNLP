@@ -54,7 +54,6 @@ class BiHRNN(FeatureExtractor):
             self.load_img(pretrained_image)
         if pretrained_meta is not None:
             self.load_meta(pretrained_meta)
-        # TODO:load pretrained ImageAE, MetaAE
 
         self.lambda_input = lambda_input
         self.lambda_loss = lambda_loss
@@ -222,10 +221,8 @@ class BiHRNN(FeatureExtractor):
         return y, batch.invert(h, 0), hs
 
     def pretrain_loss(self, batch):
-        left, right, words, ims, metas, wmask, imask, mmask, \
-        inputs, ans_input, ans_output = batch
+        left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output = batch
 
-        # TODO: high-level loss
         _, h, _ = self(inputs)
         x = ans_input.packed()
         y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
@@ -276,7 +273,6 @@ class BiHRNN(FeatureExtractor):
             mloss *= self.lambda_loss[0]
 
         return {
-            # TODO: high-level loss
             'field_loss': floss * self.lambda_loss[1],
             'word_loss': wloss,
             'image_loss': iloss,
