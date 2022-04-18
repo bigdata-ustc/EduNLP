@@ -531,8 +531,7 @@ class EmbeddingDataset(Dataset):
     def __init__(self, data, data_type='image'):
         self.data = data
         self.data_type = data_type
-        if self.data_type not in ['image', 'meta']:
-            raise TypeError
+        assert self.data_type in ['image', 'meta']
 
     def __len__(self):
         return len(self.data)
@@ -590,7 +589,7 @@ def pretrain_embedding_layer(dataset: EmbeddingDataset, ae: AE, lr: float = 1e-3
     return ae
 
 
-def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
+def pretrain_QuesNet(path, output_dir, tokenizer, save_embs=False, train_params=None):
     """ pretrain QuesNet
 
     Parameters
@@ -601,6 +600,8 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
         output path·
     tokenizer : QuesNetTokenizer
         QuesNet tokenizer
+    save_embs : bool, optional
+        whether to save pretrained word/image/meta embeddings seperately
     train_params : dict, optional
         the training parameters and model parameters, by default None
 
@@ -678,6 +679,8 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     emb_weights = np.array(emb_weights)
     model.load_emb(emb_weights)
     logger.info('QuesNet Word Embedding loaded')
+    if save_embs:
+        np.save(os.path.join(output_dir, 'w2v_embs.npy'), emb_weights)
 
     # train auto-encoder loss for image embedding
     img_dataset = EmbeddingDataset(data=img_corpus, data_type='image')
@@ -686,6 +689,8 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
                                           epochs=train_params['n_epochs'], device=device)
     model.load_img(trained_ie)
     logger.info('QuesNet Image Embedding loaded')
+    if save_embs:
+        torch.save(trained_ie.state_dict(), os.path.join(output_dir, 'trained_ie.pt'))
 
     # train auto-encoder loss for meta embedding
     meta_dateset = EmbeddingDataset(data=meta_corpus, data_type='meta')
@@ -694,6 +699,8 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
                                           epochs=train_params['n_epochs'], device=device)
     model.load_meta(trained_me)
     logger.info('QuesNet Meta Embedding loaded')
+    if save_embs:
+        torch.save(trained_me.state_dict(), os.path.join(output_dir, 'trained_me.pt'))
 
     logger.info("QuesNet Word, Image and Meta Embeddings training is done")
 
@@ -704,32 +711,31 @@ def pretrain_QuesNet(path, output_dir, tokenizer, train_params=None):
     n_batches = 0
     for epoch in range(0, train_params['n_epochs']):
         train_iter = pretrain_iter(ques_dl, train_params['batch_size'])
-        try:
-            bar = enumerate(tqdm(train_iter, initial=train_iter.pos),
-                            train_iter.pos)
-            for i, batch in critical(bar):
-                n_batches += 1
-                loss = model.pretrain_loss(batch)
-                if isinstance(loss, dict):
-                    total_loss = 0.
-                    for k, v in loss.items():
-                        if v is not None:
-                            total_loss += v
-                    loss = total_loss
-                optim.zero_grad()
-                loss.backward()
-                optim.step()
+        bar = enumerate(tqdm(train_iter, initial=train_iter.pos),
+                        train_iter.pos)
+        for i, batch in critical(bar):
+            n_batches += 1
+            loss = model.pretrain_loss(batch)
+            if isinstance(loss, dict):
+                total_loss = 0.
+                for k, v in loss.items():
+                    if v is not None:
+                        total_loss += v
+                loss = total_loss
+            optim.zero_grad()
+            loss.backward()
+            optim.step()
 
-                if train_params['save_every'] > 0 and i % train_params['save_every'] == 0:
-                    model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
+            if train_params['save_every'] > 0 and i % train_params['save_every'] == 0:
+                model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
 
-                if train_params['log_steps'] > 0 and i % train_params['log_steps'] == 0:
-                    logger.info(f"{epoch}.{i}---loss: {loss.item()}")
+            if train_params['log_steps'] > 0 and i % train_params['log_steps'] == 0:
+                logger.info(f"{epoch}.{i}---loss: {loss.item()}")
 
-                if train_params['max_steps'] > 0 and n_batches % train_params['max_steps'] == 0:
-                    break
+            if train_params['max_steps'] > 0 and n_batches % train_params['max_steps'] == 0:
+                break
 
-            model.save(output_dir)
-            tokenizer.save_pretrained(output_dir)
-        except KeyboardInterrupt:
-            raise
+        model.save(os.path.join(output_dir, f'QuesNet_{epoch}'))
+
+    model.save(output_dir)
+    tokenizer.save_pretrained(output_dir)

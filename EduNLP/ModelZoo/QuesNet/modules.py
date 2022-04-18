@@ -9,7 +9,7 @@ class FeatureExtractor(nn.Module):
 
     def make_batch(self, data, device, pretrain=False):
         """Make batch from input data (python data / np arrays -> tensors)"""
-        return torch.tensor(data).to(device)
+        raise NotImplementedError
 
     def load_emb(self, emb):
         pass

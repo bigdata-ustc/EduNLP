@@ -3,19 +3,44 @@ import torch
 from EduNLP.Pretrain import QuesNetTokenizer, pretrain_QuesNet
 from EduNLP.I2V import QuesNet
 from EduNLP.utils import abs_current_dir, path_append
+from EduNLP.ModelZoo.QuesNet import QuesNet as _QuesNet, ImageAE, MetaAE
+import numpy as np
+import os
 
 
 def test_quesnet_tokenizer(quesnet_data, tmpdir):
-    tokenizer = QuesNetTokenizer(meta=['know_name'],
+    tokenizer = QuesNetTokenizer(meta=['know_name'], max_length=10,
                                  img_dir=path_append(abs_current_dir(__file__),
                                                      "test_data/quesnet_img", to_str=True))
     with pytest.raises(Exception):
         tokenizer.tokenize(quesnet_data[0], key=lambda x: x['ques_content'])
 
+    # set_vocab
+    tokenizer.set_vocab([{"ques_content": "已知", "know_name": ['立体几何', '空间几何体']}],
+                        key=lambda x: x['ques_content'], trim_min_count=1)
+    with pytest.raises(Exception):
+        tokenizer.set_vocab([{"ques_content": "已知", "know_name": 1}],
+                            key=lambda x: x['ques_content'], trim_min_count=1)
+
     tokenizer.set_vocab(quesnet_data[:100], key=lambda x: x['ques_content'],
                         trim_min_count=2, silent=False)
 
+    # vocab_size, set_img_dir
+    assert isinstance(tokenizer.vocab_size, int)
+    tokenizer.set_img_dir(None)
+
+    # tokenize
     tokenizer.tokenize({"ques_content": "已知"}, key=lambda x: x['ques_content'])
+    tokenizer.tokenize({"ques_content": ""}, key=lambda x: x['ques_content'])
+    tokenizer.tokenize(quesnet_data[0], key=lambda x: x['ques_content'])
+
+    # __call__
+    ret = tokenizer({"ques_content": "已知", "know_name": ['立体几何', '空间几何体']},
+                    key=lambda x: x['ques_content'], return_text=True, padding=True)
+    assert 'content' in ret
+    assert 'meta' in ret
+    with pytest.raises(Exception):
+        tokenizer({"ques_content": "已知", "know_name": 3}, key=lambda x: x['ques_content'])
 
 
 def test_quesnet_pretrain(quesnet_data, tmpdir):
@@ -34,11 +59,13 @@ def test_quesnet_pretrain(quesnet_data, tmpdir):
                                                                      "test_data/quesnet_img", to_str=True))
     train_params = {
         'max_steps': 2,
-        'feat_size': 256
+        'feat_size': 256,
+        'save_every': 1,
+        'emb_size': 256
     }
     pretrain_QuesNet(path_append(abs_current_dir(__file__),
                                  "test_data/quesnet_data.json", to_str=True),
-                     output_dir, tokenizer, train_params)
+                     output_dir, tokenizer, True, train_params)
 
     tokenizer_kwargs = {
         'tokenizer_config_dir': output_dir,
@@ -51,3 +78,21 @@ def test_quesnet_pretrain(quesnet_data, tmpdir):
     assert i_vec.shape == torch.Size([256])
 
     assert i2v.vector_size == 256
+
+    # test pretrained embeddings
+    ie = ImageAE(train_params['emb_size'])
+    meta_size = len(tokenizer.stoi['know_name'])
+    me = MetaAE(meta_size, train_params['emb_size'])
+    ie.load_state_dict(torch.load(os.path.join(output_dir, 'trained_ie.pt')))
+    me.load_state_dict(torch.load(os.path.join(output_dir, 'trained_me.pt')))
+    _QuesNet(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
+             emb_size=train_params['emb_size'],
+             rnn='GRU',
+             embs=np.load(os.path.join(output_dir, 'w2v_embs.npy')),
+             pretrained_meta=me, pretrained_image=ie)
+    with pytest.raises(ValueError):
+        _QuesNet(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
+                 emb_size=train_params['emb_size'],
+                 rnn='wrong_rnn',
+                 embs=np.load(os.path.join(output_dir, 'w2v_embs.npy')),
+                 pretrained_meta=me, pretrained_image=ie)
