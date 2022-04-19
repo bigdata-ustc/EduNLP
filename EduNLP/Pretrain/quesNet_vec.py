@@ -12,7 +12,6 @@ import threading
 from tqdm import tqdm
 from functools import partial
 from collections import namedtuple
-from pathlib import Path
 from copy import copy
 import json
 import math
@@ -50,12 +49,16 @@ class QuesNetTokenizer(object):
     --------
     >>> tokenizer = QuesNetTokenizer(meta=['knowledge'])
     >>> test_items = [{"ques_content": "$\\triangle A B C$ 的内角为 $A, \\quad B, $\\FigureID{test_id}$",
+    ... "knowledge": "['*', '-', '/']"}, {"ques_content": "$\\triangle A B C$ 的内角为 $A, \\quad B",
     ... "knowledge": "['*', '-', '/']"}]
     >>> tokenizer.set_vocab(test_items,
     ... trim_min_count=1, key=lambda x: x["ques_content"], silent=True)
     >>> token_items = [tokenizer(i, key=lambda x: x["ques_content"]) for i in test_items]
     >>> print(token_items[0].keys())
     dict_keys(['content_idx', 'meta_idx'])
+    >>> token_items = tokenizer(test_items, key=lambda x: x["ques_content"])
+    >>> print(len(token_items["content_idx"]))
+    2
     """
 
     def __init__(self, img_dir=None, vocab_path=None, max_length=250, meta=['know_name'],
@@ -101,19 +104,27 @@ class QuesNetTokenizer(object):
             }
         }
 
-    def tokenize(self, item: Union[str, dict], key=lambda x: x, *args, **kwargs):
+    def tokenize(self, item: Union[str, dict, list], key=lambda x: x, *args, **kwargs):
         if not self.secure:
             raise Exception("Must set the vocab first before tokenize item (either set_vocab() or load_vocab() )")
+        # img保留为\FigureID{}的格式，在__call__中处理为图片
+        if isinstance(item, list):
+            token_text = []
+            for i in item:
+                token_text.append(self._tokenize(item, key, *args, **kwargs))
+        else:
+            token_text = self._tokenize(item, key, *args, **kwargs)
+        return token_text
 
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, *args, **kwargs):
         token_text = tokenize(seg(key(item), symbol="mas"), **self.tokenization_params).tokens
         if len(token_text) == 0:
             token_text = [self.unk_token]
         if len(token_text) > self.max_length:
             token_text = token_text[:self.max_length]
-        # img保留为\FigureID{}的格式，在__call__中处理为图片
         return token_text
 
-    def __call__(self, item: Union[str, dict], key=lambda x: x,
+    def __call__(self, item: Union[str, dict, list], key=lambda x: x,
                  meta: Optional[list] = None,
                  padding=False, return_text=False, *args, **kwargs):
         """
@@ -126,6 +137,29 @@ class QuesNetTokenizer(object):
         return_text: bool
             whether to return text tokens
         """
+        if isinstance(item, list):
+            ret = {
+                "content_idx": [],
+                "meta_idx": []
+            }
+            if return_text:
+                ret["content"] = []
+                ret["meta"] = []
+            for i in item:
+                r = self._convert_to_ids(i, key, meta, padding, return_text, *args, **kwargs)
+                ret["content_idx"].append(r["content_idx"])
+                ret["meta_idx"].append(r["meta_idx"])
+                if return_text:
+                    ret["content"].append(r["content"])
+                    ret["meta"].append(r["meta"])
+        else:
+            ret = self._convert_to_ids(item, key, meta, padding, return_text, * args, **kwargs)
+
+        return ret
+
+    def _convert_to_ids(self, item: Union[str, dict, list], key=lambda x: x,
+                        meta: Optional[list] = None,
+                        padding=False, return_text=False, *args, **kwargs):
         token_item = self.tokenize(item, key)
         token_idx = []
         for _, w in enumerate(token_item):
@@ -169,7 +203,6 @@ class QuesNetTokenizer(object):
         if return_text:
             ret["content"] = token_item
             ret["meta"] = meta_items
-
         return ret
 
     def load_vocab(self, path):
@@ -392,6 +425,10 @@ class QuestionLoader:
             by default lambda x:x['ques_content']
         meta_key : function, optional
             by default lambda x:x['know_name']
+        answer_key: function, optional
+            by default lambda x:x['ques_answer']
+        option_key: function, optional
+            by default lambda x:x['ques_options']
         """
         self.range = None
         self.ques = lines(ques_file, skip=1)
@@ -404,6 +441,8 @@ class QuestionLoader:
         self.content_key = content_key
         self.meta = meta if meta else tokenizer.meta
         self.meta_key = meta_key
+        self.answer_key = answer_key
+        self.option_key = option_key
 
         self.pipeline = pipeline
 
@@ -434,15 +473,15 @@ class QuestionLoader:
             token = self.tokenizer(q, key=self.content_key, meta=self.meta)
             content = token['content_idx']
             meta = token['meta_idx']
-            if q['ques_answer'].isalpha() and len(q['ques_answer']) == 1 and len(q['ques_options']) > 0:
-                answer_idx = ord(q['ques_answer'].upper()) - ord('A')
-                options = eval(q['ques_options'])
+            if self.answer_key(q).isalpha() and len(self.answer_key(q)) == 1 and len(self.option_key(q)) > 0:
+                answer_idx = ord(self.answer_key(q).upper()) - ord('A')
+                options = eval(self.option_key(q))
                 answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)
                 answer = answer['content_idx']
                 false_options = [(self.tokenizer(option, meta=self.meta))['content_idx'] for option in options]
                 qs.append(Question(qid, content, answer, false_options, meta))
             else:
-                answer = (self.tokenizer(q['ques_answer'], meta=self.meta))['content_idx']
+                answer = (self.tokenizer(self.answer_key(q), meta=self.meta))['content_idx']
                 qs.append(Question(qid, content, answer, [[0], [0], [0]], meta))
 
         if callable(self.pipeline):

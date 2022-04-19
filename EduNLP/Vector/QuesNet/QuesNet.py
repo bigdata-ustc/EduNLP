@@ -1,5 +1,5 @@
 import torch
-from ..meta import Vector
+from typing import Union
 from EduNLP.ModelZoo.QuesNet import QuesNet
 from EduNLP.Pretrain import Question, QuesNetTokenizer
 
@@ -21,7 +21,7 @@ class QuesNetModel(object):
             tokenizer = QuesNetTokenizer.from_pretrained(pretrained_dir)
         self.model = QuesNet.from_pretrained(pretrained_dir, tokenizer).to(device)
 
-    def infer_vector(self, items: (Question, list)) -> torch.Tensor:
+    def infer_vector(self, items: Union[Question, list]) -> torch.Tensor:
         """ get question embedding with QuesNet
 
         Parameters
@@ -34,7 +34,7 @@ class QuesNetModel(object):
         vector = self.model(self.model.make_batch(inputs, device=self.device))[1]
         return vector[0] if isinstance(items, Question) else vector
 
-    def infer_tokens(self, items: (Question, list)) -> torch.Tensor:
+    def infer_tokens(self, items: Union[Question, list]) -> torch.Tensor:
         """ get token embeddings with QuesNet
 
         Parameters

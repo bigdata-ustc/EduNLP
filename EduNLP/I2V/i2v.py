@@ -338,8 +338,8 @@ class QuesNet(I2V):
 
         Parameters
         ----------
-        item : str or dict
-            the item of question
+        item : str or dict or list
+            the item of question, or question list
         tokenize : bool, optional
             True: tokenize the item
         key : _type_, optional
@@ -359,7 +359,10 @@ class QuesNet(I2V):
         input = self.tokenize(item, key=key, meta=meta, *args, **kwargs) if tokenize is True else item
         content = input['content_idx']
         meta_idx = input['meta_idx']
-        qs = Question("", content, [0], [[0], [0], [0]], meta_idx)
+        if isinstance(item, list):
+            qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(item))]
+        else:
+            qs = Question("", content, [0], [[0], [0], [0]], meta_idx)
         return self.t2v.infer_vector(qs), self.t2v.infer_tokens(qs)
 
     @classmethod
