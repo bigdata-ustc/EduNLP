@@ -15,7 +15,7 @@ class LM(nn.Module):
     Parameters
     ----------
     rnn_type：str
-        Legal types including RNN, LSTM, GRU, BILM
+        Legal types including RNN, LSTM, GRU, BiLSTM
     vocab_size: int
     embedding_dim: int
     hidden_size: int
@@ -63,7 +63,7 @@ class LM(nn.Module):
             self.rnn = torch.nn.GRU(
                 embedding_dim, hidden_size, num_layers, bidirectional=bidirectional, **kwargs
             )
-        elif rnn_type == "BILM":
+        elif rnn_type == "BiLSTM":
             bidirectional = True
             self.rnn = torch.nn.LSTM(
                 embedding_dim, hidden_size, num_layers, bidirectional=bidirectional, **kwargs
@@ -110,7 +110,7 @@ class ElmoLM(nn.Module):
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True):
         super(ElmoLM, self).__init__()
-        self.LM_layer = LM("BILM", vocab_size, embedding_dim, hidden_size, num_layers=2, batch_first=batch_first)
+        self.LM_layer = LM("BiLSTM", vocab_size, embedding_dim, hidden_size, num_layers=2, batch_first=batch_first)
         self.pred_layer = nn.Linear(hidden_size, vocab_size)
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
