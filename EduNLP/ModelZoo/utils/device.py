@@ -12,7 +12,7 @@ def set_device(_net, ctx, *args, **kwargs):  # pragma: no cover
     elif any(map(lambda x: x in ctx, ["cuda", "gpu"])):
         if not torch.cuda.is_available():
             try:
-                torch.ones((1,), device=torch.device("cuda: 0"))
+                torch.ones((1,), device=torch.device("cuda:0"))
             except AssertionError as e:
                 raise TypeError("no cuda detected, noly cpu is supported, the detailed error msg:%s" % str(e))
         if torch.cuda.device_count() >= 1:
