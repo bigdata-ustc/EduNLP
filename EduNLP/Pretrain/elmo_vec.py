@@ -45,19 +45,35 @@ class ElmoTokenizer(object):
         else:
             self.load_vocab(path)
 
-    def __call__(self, item, freeze_vocab=False, pad_to_max_length=False, *args, **kwargs):
-        return self.to_index(item=self.tokenize(item=item, freeze_vocab=freeze_vocab),
-                             pad_to_max_length=pad_to_max_length)
+    def __call__(self, item: (str, list), freeze_vocab=False, pad_to_max_length=False, *args, **kwargs):
+        tokens, lengths = self.tokenize(item=item, freeze_vocab=freeze_vocab, return_length=True)
+        if isinstance(item, str):
+            return self.to_index(item=tokens, pad_to_max_length=pad_to_max_length), lengths
+        else:
+            ret = []
+            for ts in tokens:
+                ret.append(self.to_index(item=ts, pad_to_max_length=pad_to_max_length))
+            return ret, lengths
 
     def __len__(self):
         return len(self.t2id)
 
-    def tokenize(self, item: str, freeze_vocab=False):
-        tokens = next(self.pure_tokenizer([item]))
-        if not freeze_vocab:
-            for token in tokens:
-                self.append(token)
-        return tokens
+    def tokenize(self, item: (str, list), freeze_vocab=False, return_length=False):
+        items = [item] if isinstance(item, str) else item
+        lengths = []
+        tokens = []
+        for i in self.pure_tokenizer(items):
+            tokens.append(i)
+            lengths.append(len(i))
+            if not freeze_vocab:
+                for t in i:
+                    self.append(t)
+        tokens = tokens[0] if isinstance(item, str) else tokens
+        lengths = lengths[0] if isinstance(item, str) else lengths
+        if return_length:
+            return tokens, lengths
+        else:
+            return tokens
 
     def to_index(self, item: list, max_length=128, pad_to_max_length=False):
         ret = [self.t2id[UNK_SYMBOL] if token not in self.t2id else self.t2id[token] for token in item]

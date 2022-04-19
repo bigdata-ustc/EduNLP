@@ -63,7 +63,7 @@ class LM(nn.Module):
             self.rnn = torch.nn.GRU(
                 embedding_dim, hidden_size, num_layers, bidirectional=bidirectional, **kwargs
             )
-        elif rnn_type == "BiLSTM":
+        elif rnn_type == "BILSTM":
             bidirectional = True
             self.rnn = torch.nn.LSTM(
                 embedding_dim, hidden_size, num_layers, bidirectional=bidirectional, **kwargs

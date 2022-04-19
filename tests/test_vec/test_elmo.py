@@ -32,7 +32,7 @@ def test_elmo_without_param(stem_data_elmo, tmpdir):
     model = ElmoModel(output_dir)
     item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                 若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
-    inputs = tokenizer(item=item['stem'], freeze_vocab=True)
+    inputs, length = tokenizer(item=item['stem'], freeze_vocab=True, pad_to_max_length=False)
     output = model(inputs)
     assert model.vector_size > 0
     assert output.shape[-1] == model.vector_size
@@ -57,6 +57,10 @@ def test_elmo_i2v(stem_data_elmo, tmpdir):
     assert len(i_vec) == i2v.vector_size
     t_vec = i2v.infer_token_vector(item['stem'])
     assert len(t_vec[0]) == i2v.vector_size
+
+    i_vec, t_vec = i2v([item['stem'], item['stem'], item['stem']])
+    assert len(i_vec[0]) == i2v.vector_size
+    assert len(t_vec[0][0]) == i2v.vector_size
 
 
 def test_pretrained_elmo_i2v(stem_data_elmo, tmpdir):

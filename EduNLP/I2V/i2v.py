@@ -161,7 +161,7 @@ class D2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
-        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
         -----------
@@ -231,7 +231,7 @@ class W2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
-        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
         -----------
@@ -292,7 +292,7 @@ class Bert(I2V):
 
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
         '''
-        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
         -----------
@@ -356,7 +356,7 @@ class Elmo(I2V):
 
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
         """
-        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
         -----------
@@ -375,9 +375,24 @@ class Elmo(I2V):
         --------
         vector:list
         """
-        inputs = self.tokenize(items, freeze_vocab=True, return_tensors=return_tensors,
-                               pad_to_max_length=False) if tokenize is True else items
-        return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+        is_batch = (tokenize and isinstance(items, list)) or (not tokenize and isinstance(items[0], list))
+        if tokenize:
+            tokens, lengths = self.tokenize(items, freeze_vocab=True, return_tensors=return_tensors,
+                                            pad_to_max_length=False)
+        else:
+            tokens = items
+            lengths = [len(i) for i in tokens] if is_batch else len(tokens)
+        if is_batch:
+            return self.t2v.infer_vector(
+                tokens, lengths=lengths, *args, **kwargs), self.t2v.infer_tokens(tokens,
+                                                                                 lengths=lengths, *args, **kwargs)
+        else:
+            tokens = [tokens]
+            lengths = [lengths]
+            i_v, i_t = self.t2v.infer_vector(
+                tokens, lengths=lengths, *args, **kwargs), self.t2v.infer_tokens(tokens,
+                                                                                 lengths=lengths, *args, **kwargs)
+            return i_v[0], i_t[0]
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):

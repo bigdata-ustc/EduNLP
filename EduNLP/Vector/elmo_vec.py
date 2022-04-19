@@ -31,20 +31,27 @@ class ElmoModel(Vector):
     def __call__(self, *args, **kwargs):
         return self.infer_vector(*args, **kwargs)
 
-    def get_contextual_emb(self, item_indices: list, token_idx: int, scale: int = 1):
-        return self.model.get_contextual_emb(item_indices, token_idx, scale)
-
-    def infer_vector(self, item, *args, **kwargs) -> torch.Tensor:
-        pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor([item]),
-                                                                                    torch.tensor([len(item)]))
-        ret = torch.cat((forward_hiddens[0, -1, :], backward_hiddens[0, 0, :]), dim=-1)
+    def infer_vector(self, items, *args, **kwargs) -> torch.Tensor:
+        is_batch = isinstance(items[0], list)
+        items = items if is_batch else [items]
+        lengths = kwargs.get('length', [len(i) for i in items])
+        pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor(items),
+                                                                                    torch.tensor(lengths,
+                                                                                                 dtype=torch.int64))
+        ret = torch.cat((forward_hiddens[:, -1, :], backward_hiddens[:, 0, :]), dim=-1) if is_batch else torch.cat(
+            (forward_hiddens[0, -1, :], backward_hiddens[0, 0, :]), dim=-1)
         return ret
 
-    def infer_tokens(self, item, *args, **kwargs) -> torch.Tensor:
-        pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor([item]),
-                                                                                    torch.tensor([len(item)]))
+    def infer_tokens(self, items, *args, **kwargs) -> torch.Tensor:
+        is_batch = isinstance(items[0], list)
+        items = items if is_batch else [items]
+        lengths = kwargs.get('length', [len(i) for i in items])
+        pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor(items),
+                                                                                    torch.tensor(lengths,
+                                                                                                 dtype=torch.int64))
 
-        ret = torch.cat((forward_hiddens[0], torch.flip(backward_hiddens, [1])[0]), dim=-1)
+        ret = torch.cat((forward_hiddens[:], torch.flip(backward_hiddens, [1])[:]), dim=-1) if is_batch else torch.cat(
+            (forward_hiddens[0], torch.flip(backward_hiddens, [1])[0]), dim=-1)
         return ret
 
     @property
