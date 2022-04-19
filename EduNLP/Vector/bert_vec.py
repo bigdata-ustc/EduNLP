@@ -39,9 +39,9 @@ class BertModel(Vector):
         tokens = self.model(**items).last_hidden_state
         return tokens
 
-    def infer_vector(self, items: dict, pooling_strategy='CLS token') -> torch.Tensor:
+    def infer_vector(self, items: dict, pooling_strategy='CLS') -> torch.Tensor:
         vector = self(items)
-        if pooling_strategy == 'CLS token':
+        if pooling_strategy == 'CLS':
             return vector[:, 0, :]
         elif pooling_strategy == 'average':
             # the average of word embedding of the last layer
