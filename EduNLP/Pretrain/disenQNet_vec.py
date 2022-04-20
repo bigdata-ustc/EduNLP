@@ -280,7 +280,7 @@ class QuestionDataset(Dataset):
     Question dataset including text, length, concept Tensors
     """
     def __init__(self, items, disen_tokenizer, predata_dir, dataset_type,
-                 silent=False, embed_dim=128, trim_min_count=50, data_formation=None):
+                 silent=False, embed_dim=128, trim_min_count=50, data_formation=None, w2v_workers=1):
         """
         Parameters
         ----------
@@ -298,6 +298,7 @@ class QuestionDataset(Dataset):
         if data_formation is not None:
             default_data_formation.update(data_formation)
         self.data_formation = default_data_formation
+        self.w2v_workers = w2v_workers
 
         self.dataset_type = dataset_type
         self.wv_path = os.path.join(predata_dir, "wv.th")
@@ -382,7 +383,7 @@ class QuestionDataset(Dataset):
                 for data in items:
                     text = [w if w in word_set else self.unk_token for w in data["content"]]
                     corpus.append(text)
-                wv = Word2Vec(corpus, vector_size=embed_dim, min_count=trim_min_count).wv
+                wv = Word2Vec(corpus, vector_size=embed_dim, min_count=trim_min_count, workers=self.w2v_workers).wv
                 # 按照 vocab 中的词序 来保存
                 wv_list = [wv[w] if w in wv.key_to_index else np.random.rand(embed_dim) for w in words]
                 self.word2vec = torch.tensor(wv_list)
@@ -466,6 +467,7 @@ def train_disenQNet(train_items, disen_tokenizer, output_dir, predata_dir,
         "warm_up": 1,
         "adv": 10,
         "device": "cpu",
+        "w2v_workers": 1
     }
     if train_params is not None:
         default_train_params.update(train_params)
@@ -474,14 +476,14 @@ def train_disenQNet(train_items, disen_tokenizer, output_dir, predata_dir,
     train_dataset = QuestionDataset(train_items, disen_tokenizer, predata_dir, "train",
                                     silent=silent, embed_dim=train_params["hidden"],
                                     trim_min_count=train_params["trim_min"],
-                                    data_formation=data_formation)
+                                    data_formation=data_formation, w2v_workers=train_params["w2v_workers"])
     train_dataloader = DataLoader(train_dataset, batch_size=train_params["batch"],
                                   shuffle=True, collate_fn=train_dataset.collate_data)
     if test_items is not None:
         test_dataset = QuestionDataset(test_items, disen_tokenizer, predata_dir, "test",
                                        silent=silent, embed_dim=train_params["hidden"],
                                        trim_min_count=train_params["trim_min"],
-                                       data_formation=data_formation)
+                                       data_formation=data_formation, w2v_workers=train_params["w2v_workers"])
         test_dataloader = DataLoader(test_dataset, batch_size=train_params["batch"],
                                      shuffle=False, collate_fn=test_dataset.collate_data)
     else:
