@@ -96,9 +96,9 @@ class LM(nn.Module):
         """
         seq = self.embedding(seq_idx)
         pack = pack_padded_sequence(seq, seq_len, batch_first=True)
-        h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
+        h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size).to(seq_idx.device)
         if self.c is True:
-            c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size)
+            c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size).to(seq_idx.device)
             output, (hn, _) = self.rnn(pack, (h0, c0))
         else:
             output, hn = self.rnn(pack, h0)

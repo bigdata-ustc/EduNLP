@@ -8,8 +8,6 @@ from torch.nn import DataParallel
 def set_device(_net, ctx, *args, **kwargs):  # pragma: no cover
     """code from longling v1.3.26"""
     if ctx == "cpu":
-        # if not isinstance(_net, DataParallel):
-        #     _net = DataParallel(_net)
         return _net.cpu()
     elif any(map(lambda x: x in ctx, ["cuda", "gpu"])):
         if not torch.cuda.is_available():
