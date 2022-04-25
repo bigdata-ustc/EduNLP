@@ -115,7 +115,7 @@ class DisenQTokenizer(object):
             self.secure = False
 
     def __call__(self, items: (list, str, dict), key=lambda x: x, padding=True,
-                 return_tensors=True, return_text=False, *args, **kwargs):
+                 return_tensors=True, return_text=False, **kwargs):
         """
         Parameters
         ----------
@@ -157,7 +157,7 @@ class DisenQTokenizer(object):
     def _indexing(self, token_item):
         return [self.word2index.get(w, self.word2index[self.unk_token]) for w in token_item]
 
-    def tokenize(self, items: (list, str, dict), key=lambda x: x, *args, **kwargs):
+    def tokenize(self, items: (list, str, dict), key=lambda x: x, **kwargs):
         """
         Parameters
         ----------
@@ -416,7 +416,7 @@ class QuestionDataset(Dataset):
         return text, length, concept
 
 
-def train_disenQNet(train_items, disen_tokenizer, output_dir, predata_dir,
+def train_disenqnet(train_items, disen_tokenizer, output_dir, predata_dir,
                     train_params=None, test_items=None, silent=False, data_formation=None):
     """
     Parameters
@@ -444,7 +444,7 @@ def train_disenQNet(train_items, disen_tokenizer, output_dir, predata_dir,
     >>> train_data = load_items("tests/test_vec/test_data/disenq_train.json")[:100]
     >>> test_data = load_items("tests/test_vec/test_data/disenq_test.json")[:100]
     >>> tokenizer = DisenQTokenizer(max_length=250, tokenize_method="space")
-    >>> train_disenQNet(train_data, tokenizer,
+    >>> train_disenqnet(train_data, tokenizer,
     ... "examples/test_model/data/disenq","examples/test_model/data/disenq", silent=True)  # doctest: +SKIP
     """
     # dataset

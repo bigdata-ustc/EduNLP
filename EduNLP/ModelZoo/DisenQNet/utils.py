@@ -26,24 +26,24 @@ def shuffle(real):
     return shuffled
 
 
-def spectral_norm(W, n_iteration=5):
-    device = W.device
+def spectral_norm(w, n_iteration=5):
+    device = w.device
     # (o, i)
     # bias: (O) -> (o, 1)
-    if W.dim() == 1:
-        W = W.unsqueeze(-1)
-    out_dim, in_dim = W.size()
+    if w.dim() == 1:
+        w = w.unsqueeze(-1)
+    out_dim, in_dim = w.size()
     # (i, o)
-    Wt = W.transpose(0, 1)
+    wt = w.transpose(0, 1)
     # (1, i)
     u = torch.ones(1, in_dim).to(device)
     for _ in range(n_iteration):
         # (1, i) * (i, o) -> (1, o)
-        v = torch.mm(u, Wt)
+        v = torch.mm(u, wt)
         v = v / v.norm(p=2)
         # (1, o) * (o, i) -> (1, i)
-        u = torch.mm(v, W)
+        u = torch.mm(v, w)
         u = u / u.norm(p=2)
     # (1, i) * (i, o) * (o, 1) -> (1, 1)
-    sn = torch.mm(torch.mm(u, Wt), v.transpose(0, 1)).sum() ** 0.5
+    sn = torch.mm(torch.mm(u, wt), v.transpose(0, 1)).sum() ** 0.5
     return sn

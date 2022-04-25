@@ -20,11 +20,11 @@ class DisenQModel(object):
         self.model = DisenQNet.from_pretrained(pretrained_dir)
         self.model.to(self.device)
 
-    def __call__(self, items: dict):
+    def __call__(self, items: dict, **kwargs):
         embed, k_hidden, i_hidden = self.model.inference(items)
         return embed, k_hidden, i_hidden
 
-    def infer_vector(self, items: dict, vector_type=None) -> torch.Tensor:
+    def infer_vector(self, items: dict, vector_type=None, **kwargs) -> torch.Tensor:
         """
         Parameters
         ----------
@@ -44,7 +44,7 @@ class DisenQModel(object):
         else:
             raise KeyError("vector_type must be one of (None, 'k', 'i') ")
 
-    def infer_tokens(self, items: dict) -> torch.Tensor:
+    def infer_tokens(self, items: dict, **kwargs) -> torch.Tensor:
         embed, _, _ = self(items)
         return embed
 

@@ -326,7 +326,7 @@ class DisenQ(I2V):
     """
 
     def infer_vector(self, items: (dict, list), tokenize=True,
-                     key=lambda x: x, vector_type=None, *args, **kwargs) -> tuple:
+                     key=lambda x: x, vector_type=None, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
@@ -347,9 +347,9 @@ class DisenQ(I2V):
         --------
         vector:list
         """
-        inputs = self.tokenize(items, key=key, *args, **kwargs) if tokenize is True else items
-        i_vec = self.t2v.infer_vector(inputs, vector_type=vector_type, *args, **kwargs)
-        t_vec = self.t2v.infer_tokens(inputs, *args, **kwargs)
+        inputs = self.tokenize(items, key=key, **kwargs) if tokenize is True else items
+        i_vec = self.t2v.infer_vector(inputs, vector_type=vector_type, **kwargs)
+        t_vec = self.t2v.infer_tokens(inputs, **kwargs)
         return i_vec, t_vec
 
     @classmethod

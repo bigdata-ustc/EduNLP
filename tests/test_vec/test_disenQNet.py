@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import pytest
 import os
-from EduNLP.Pretrain import DisenQTokenizer, train_disenQNet
+from EduNLP.Pretrain import DisenQTokenizer, train_disenqnet
 from EduNLP.Vector import DisenQModel, T2V
 from EduNLP.I2V import DisenQ, get_pretrained_i2v
 import warnings
@@ -21,7 +21,7 @@ def test_dataset(disen_train_data, disen_test_data, tmpdir):
         "content": "content",
         "knowledge": "knowledge"
     }
-    train_disenQNet(
+    train_disenqnet(
         deepcopy(disen_train_data[:100]),
         tokenizer,
         output_dir,
@@ -33,7 +33,7 @@ def test_dataset(disen_train_data, disen_test_data, tmpdir):
     # for test Datasets
     os.remove(os.path.join(output_dir, "vocab.list"))
     with pytest.warns(UserWarning):
-        train_disenQNet(
+        train_disenqnet(
             deepcopy(disen_train_data[:100]),
             tokenizer,
             output_dir,
@@ -52,7 +52,7 @@ def test_disen_train(disen_train_data, disen_test_data, tmpdir):
         'trim_min': 5,
     }
 
-    train_disenQNet(
+    train_disenqnet(
         disen_train_data[-100:],
         tokenizer,
         output_dir,
