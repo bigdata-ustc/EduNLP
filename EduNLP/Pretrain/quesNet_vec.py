@@ -475,7 +475,7 @@ class QuestionLoader:
             meta = token['meta_idx']
             if self.answer_key(q).isalpha() and len(self.answer_key(q)) == 1 and len(self.option_key(q)) > 0:
                 answer_idx = ord(self.answer_key(q).upper()) - ord('A')
-                options = eval(self.option_key(q))
+                options = self.option_key(q)
                 answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)
                 answer = answer['content_idx']
                 false_options = [(self.tokenizer(option, meta=self.meta))['content_idx'] for option in options]
