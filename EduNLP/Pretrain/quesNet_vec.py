@@ -111,7 +111,7 @@ class QuesNetTokenizer(object):
         if isinstance(item, list):
             token_text = []
             for i in item:
-                token_text.append(self._tokenize(item, key, *args, **kwargs))
+                token_text.append(self._tokenize(i, key, *args, **kwargs))
         else:
             token_text = self._tokenize(item, key, *args, **kwargs)
         return token_text

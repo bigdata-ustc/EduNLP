@@ -32,7 +32,7 @@ class QuesNetModel(object):
         """
         inputs = [items] if isinstance(items, Question) else items
         vector = self.model(self.model.make_batch(inputs, device=self.device))[1]
-        return vector[0] if isinstance(items, Question) else vector
+        return vector
 
     def infer_tokens(self, items: Union[Question, list]) -> torch.Tensor:
         """ get token embeddings with QuesNet
@@ -49,7 +49,7 @@ class QuesNetModel(object):
         """
         inputs = [items] if isinstance(items, Question) else items
         vector = self.model(self.model.make_batch(inputs, device=self.device))[2]
-        return vector[0][2:-2, :] if isinstance(items, Question) else vector[:, 2:-2, :]
+        return vector[:, 2:-2, :]
 
     @property
     def vector_size(self):

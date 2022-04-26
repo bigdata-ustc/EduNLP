@@ -32,7 +32,7 @@ def test_quesnet_tokenizer(quesnet_data, tmpdir):
     # tokenize
     tokenizer.tokenize({"ques_content": "已知"}, key=lambda x: x['ques_content'])
     tokenizer.tokenize({"ques_content": ""}, key=lambda x: x['ques_content'])
-    tokenizer.tokenize(quesnet_data[0], key=lambda x: x['ques_content'])
+    tokenizer.tokenize(quesnet_data[:2], key=lambda x: x['ques_content'])
 
     # __call__
     ret = tokenizer({"ques_content": "已知", "know_name": ['立体几何', '空间几何体']},
@@ -75,7 +75,7 @@ def test_quesnet_pretrain(quesnet_data, tmpdir):
     t_vec = i2v.infer_token_vector(quesnet_data[0], key=lambda x: x["ques_content"])
     i_vec = i2v.infer_item_vector(quesnet_data[0], key=lambda x: x["ques_content"])
     assert t_vec.shape[-1] == 256
-    assert i_vec.shape == torch.Size([256])
+    assert i_vec.shape == torch.Size([1, 256])
     t_vec = i2v.infer_token_vector(quesnet_data[:2], key=lambda x: x["ques_content"])
     i_vec = i2v.infer_item_vector(quesnet_data[:2], key=lambda x: x["ques_content"])
     assert t_vec.shape[0] == 2, t_vec.shape
