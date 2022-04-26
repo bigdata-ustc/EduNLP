@@ -62,7 +62,7 @@ class I2V(object):
         else:
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
-            self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+            self.tokenizer = BertTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'elmo':
             self.tokenizer = ElmoTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
@@ -291,7 +291,7 @@ class Bert(I2V):
     """
 
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
-        '''
+        """
         It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
@@ -310,7 +310,7 @@ class Bert(I2V):
         Returns
         --------
         vector:list
-        '''
+        """
         inputs = self.tokenize(items, return_tensors=return_tensors) if tokenize is True else items
         return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
@@ -320,7 +320,7 @@ class Bert(I2V):
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
-        tokenizer_kwargs = {"pretrain_model": model_path}
+        tokenizer_kwargs = {"tokenizer_config_dir": model_path}
         return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
 
@@ -417,6 +417,8 @@ MODELS = {
     'luna_bert': [Bert, 'luna_bert'],
     "elmo_pub_math": [Elmo, "elmo_pub_math"],
     'elmo_test': [Elmo, "elmo_test"],
+    "tal_edu_bert": [Bert, "tal_edu_bert"],
+    "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"]
 }
 
 

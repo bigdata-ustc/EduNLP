@@ -10,7 +10,6 @@ from .bert_vec import BertModel
 from .elmo_vec import ElmoModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
-from EduNLP import logger
 
 MODELS = {
     "w2v": W2V,
@@ -80,6 +79,9 @@ PRETRAINED_MODELS = {
                       'elmo'],
     "elmo_test": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo_pub/1/elmo_test.zip",
                   "elmo"],
+    "tal_edu_bert": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/tal_edu_bert.zip", "bert"],
+    "luna_pub_bert_math_base": [
+        "http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/luna_pub_bert_math_base.zip", "bert"],
 }
 
 
