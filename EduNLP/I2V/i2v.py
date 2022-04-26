@@ -57,7 +57,7 @@ class I2V(object):
         else:
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
-            self.tokenizer = BertTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+            self.tokenizer = BertTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'disenq':
             self.tokenizer = DisenQTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
@@ -380,12 +380,9 @@ MODELS = {
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
-<<<<<<< HEAD
-    'disenq_pub_128': [DisenQ, 'disenq_pub_128']
-=======
     "tal_edu_bert": [Bert, "tal_edu_bert"],
-    "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"]
->>>>>>> upstream/dev
+    "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"],
+    'disenq_pub_128': [DisenQ, 'disenq_pub_128'],
 }
 
 
