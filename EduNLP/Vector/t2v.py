@@ -76,6 +76,9 @@ PRETRAINED_MODELS = {
     "test_w2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"],
     "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"],
     "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"],
+    "tal_edu_bert": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/tal_edu_bert.zip", "bert"],
+    "luna_pub_bert_math_base": [
+        "http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/luna_pub_bert_math_base.zip", "bert"],
     "quesnet_test": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/quesnet_pub_256/1/quesnet_test.zip",
                      "quesnet"]
 }
