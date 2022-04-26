@@ -102,8 +102,7 @@ class DisenQTokenizer(object):
             when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
         """
         super(DisenQTokenizer, self).__init__(*args)
-        self.tokenize_method = tokenize_method
-        self.text_tokenizer = get_tokenizer(tokenize_method) if tokenize_method != "space" else self._space_tokenizer
+        self.set_text_tokenizer(tokenize_method)
 
         self.num_token = num_token
         self.unk_token = unk_token
@@ -157,6 +156,10 @@ class DisenQTokenizer(object):
     def _indexing(self, token_item):
         return [self.word2index.get(w, self.word2index[self.unk_token]) for w in token_item]
 
+    def set_text_tokenizer(self, tokenize_method):
+        self.tokenize_method = tokenize_method
+        self.text_tokenizer = get_tokenizer(tokenize_method) if tokenize_method != "space" else self._space_tokenizer
+
     def tokenize(self, items: (list, str, dict), key=lambda x: x, **kwargs):
         """
         Parameters
@@ -201,7 +204,7 @@ class DisenQTokenizer(object):
             self.word2index = {word: index for index, word in enumerate(self.words)}
         self.secure = True
 
-    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=50, silent=True):
+    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=1, silent=True):
         """
         Parameters
         -----------
@@ -224,7 +227,7 @@ class DisenQTokenizer(object):
         if not silent:
             keep_word_cnts = sum(word2cnt[w] for w in words)
             all_word_cnts = sum(word2cnt.values())
-            print(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words)/len(word2cnt):.4f}\
+            print(f"save words(trim_min_count={trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words)/len(word2cnt):.4f}\
                   with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts/all_word_cnts:.4f}")
 
         self.words = ctrl_tokens + sorted(words)
