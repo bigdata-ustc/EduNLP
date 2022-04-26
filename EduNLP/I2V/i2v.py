@@ -378,9 +378,9 @@ class Elmo(I2V):
         is_batch = (tokenize and isinstance(items, list)) or (not tokenize and isinstance(items[0], list))
         if tokenize:
             tokens, lengths = self.tokenize(items, freeze_vocab=True, return_tensors=return_tensors,
-                                            pad_to_max_length=False)
+                                            pad_to_max_length=True)
         else:
-            tokens = items
+            tokens = []
             lengths = [len(i) for i in tokens] if is_batch else len(tokens)
         if is_batch:
             return self.t2v.infer_vector(
