@@ -119,9 +119,9 @@ I2V向量化容器 使用示例
     :glob:
     
     W2V向量化  <../../build/blitz/i2v/i2v_w2v.ipynb>
-
+    
     D2V向量化  <../../build/blitz/i2v/i2v_d2v.ipynb>
-
+    
     Emlo向量化  <../../build/blitz/i2v/i2v_elmo.ipynb>
 
 

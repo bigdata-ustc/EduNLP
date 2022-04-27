@@ -1,3 +1,4 @@
+=======
 预训练
 =======
 
@@ -20,9 +21,10 @@
 
 以训练word2vec为例说明：
 
-1. 确定模型的类型，选择适合的Tokenizer（如GensimWordTokenizer、PureTextTokenizer等），使之令牌化；
+- 确定模型的类型，选择适合的Tokenizer（如GensimWordTokenizer、PureTextTokenizer等），使之令牌化；
 
-2. 调用train_vector函数，即可得到所需的预训练模型。
+- 调用train_vector函数，即可得到所需的预训练模型。
+
 
 Examples：
 
