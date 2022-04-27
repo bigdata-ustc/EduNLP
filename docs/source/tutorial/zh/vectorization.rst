@@ -17,7 +17,7 @@ I2V 向量化容器
 - 使用开源预训练模型
 - 使用本地预训练模型
 
-输入
+输入数据
 ---------------------------------------------------
 
 输入原始的题目列表，题目内容以文本或字典的形式给出
@@ -64,7 +64,7 @@ I2V 向量化容器
 
    from EduNLP import get_pretrained_i2v
 
-   i2v = get_pretrained_i2v("d2v_sci_256")
+   i2v = get_pretrained_i2v("w2v_eng_300")
    item_vector, token_vector = i2v(items)
 
 
@@ -100,17 +100,26 @@ I2V 向量化容器
 ::
 
    from EduNLP.I2V import W2V
-
-   pretrained_path = os.path.join(model_dir, "w2v/test_w2v_256/test_w2v_256.kv")
+   
+   # 加载向量化容器
+   pretrained_path = "path/to/model"
+   i2v = W2V("pure_text", "w2v", pretrained_path)
+   
+   # 向量化
    item_vector, token_vector = i2v(items)
+   # or
+   item_vector, token_vector = i2v.infer_vector(items)
+   # or
+   item_vector = i2v.infer_item_vector(items)
+   token_vector = i2v.infer_token_vector(items)
 
 
 .. note::
 
-   不容模型的I2V容器，在使用时略有差别，在必要时建议查看对应的API文档或用法样例。
+   不同模型的I2V容器在使用时略有差别，建议使用时查看对应的API文档或用法样例。
 
 
-I2V向量化容器 使用示例
+更多I2V容器使用示例
 ------------------------------------
 
 .. nbgallery::
@@ -151,7 +160,7 @@ T2V 向量化容器
 - 使用开源预训练模型
 - 使用本地预训练模型
 
-输入
+输入数据
 ------------------------------------
 
 `T2V` 向量化容器的输入为题目的令牌化序列。因此，在调用 `T2V` 向量化容器之前，必须先使用 `Tokenizer` 令牌化容器获取 令牌序列列（token）。
@@ -170,13 +179,13 @@ T2V 向量化容器
    token_items = [t for t in tokenizer(raw_items)]
 
 
-加载T2V向量化容器
+使用开源预训练模型
 --------------------------------------------
 
+.. note::
 
+   开源模型列表同I2V部分
 
-加载开源预训练模型
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 加载源预训练模型到T2V容器中：
 
@@ -194,7 +203,7 @@ T2V 向量化容器
 
 
 使用本地预训练模型
-^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------
 
 提供的T2V容器：
 
@@ -227,7 +236,12 @@ T2V 向量化容器
    # [[array(), ..., array()], [...], [...]]
 
 
-T2V向量化容器 使用示例
+.. note::
+
+   不同模型的T2V容器在使用时略有差别，建议使用时查看对应的API文档或用法样例。
+
+
+更多T2V容器使用示例
 ------------------------------------
 
 .. nbgallery::

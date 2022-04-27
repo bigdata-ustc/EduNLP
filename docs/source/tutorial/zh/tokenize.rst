@@ -1,172 +1,292 @@
-令牌化
-=======
+语法解析
+=========
 
-令牌化是自然语言处理中一项基本但是非常重要的步骤，它更令人为所熟知的名字是分句和分词。
-在EduNLP中我们将令牌化分为不同的粒度，为避免歧义，我们定义如下：
+在教育资源中，文本、公式都具有内在的隐式或显式的语法结构，提取这种结构对后续进一步的处理是大有裨益的：
 
-* 词/字级别：分词
+* 文本语法结构解析
 
-* 句级别：分句
+* 公式语法结构解析
 
-* 资源级别：令牌化
+其目的是：
 
-本模块提供题目文本的令牌化解析（Tokenization），将题目转换成令牌序列，方便后续向量化表征试题。
 
-在进入此模块前需要先后将item经过 `语法解析 <parse.rst>`_ 和 `成分分解 <seg.rst>`_ 处理，之后对切片后的item中的各个元素进行分词，提供深度选项，可以按照需求选择所有地方切分或者在部分标签处切分（比如\SIFSep、\SIFTag处）；对标签添加的位置也可以进行选择，可以在头尾处添加或仅在头或尾处添加。
+1、将选择题中的括号，填空题中的下划线用特殊标识替换掉，并将字符、公式用$$包裹起来，使item能通过$符号准确的按照类型切割开；
 
-具有两种模式，一种是linear模式，用于对文本进行处理（使用jieba库进行分词）；一种是ast模式，用于对公式进行解析。
+2、判断当前item是否合法，并报出错误类型。
 
-分词
--------
+具体处理内容
+--------------------
 
-词解析（text-tokenization）：一个句子（不含公式）是由若干“词”按顺序构成的，将一个句子切分为若干词的过程称为“词解析”。根据词的粒度大小，又可细分为“词组解析”和"单字解析"。
+1.匹配公式之外的英文字母、数字，只对两个汉字之间的字母、数字做修正，其余匹配到的情况视为不合 latex 语法录入的公式
 
-::
+2.匹配“（  ）”型括号（包含英文格式和中文格式），即括号内无内容或为空格的括号，将括号替换 ``$\\SIFChoice$`` 
 
-   - 词组解析 (word-tokenization)：每一个词组为一个“令牌”（token）。
-   
-   - 单字解析 (char-tokenization)：单个字符即为一个“令牌”（token）。
-    
+3.匹配下划线，替换连续的下划线或下划线中夹杂空格的情况，将其替换为 ``$\\SIFBlank$`` 
 
-词解析分为两个主要步骤：
+4.匹配latex公式，主要检查latex公式的完整性和可解析性，对latex 中出现中文字符发出警告
 
-1. 分词：  
+公式语法结构解析
+--------------------
 
-   - 词组解析：使用分词工具切分并提取题目文本中的词。本项目目前支持的分词工具有：`jieba`
+本功能主要由EduNLP.Formula模块实现，具有检查传入的公式是否合法，并将合法的公式转换为art树的形式。从实际使用的角度，本模块常作为中间处理过程，调用相应的模型即可自动选择本模块的相关参数，故一般不需要特别关注。
 
-   - 单字解析：按字符划分。
+主要内容介绍
++++++++++++++++
 
-2. 筛选：过滤指定的停用词。   
+1.Formula:对传入的单个公式进行判断，判断传入的公式是否为str形式，如果是则使用ast的方法进行处理，否则进行报错。此外，提供了variable_standardization参数，当此参数为True时，使用变量标准化方法，即同一变量拥有相同的变量编号。
 
-   本项目默认使用的停用词表：`[stopwords] <https://github.com/bigdata-ustc/EduNLP/blob/master/EduNLP/meta_data/sif_stopwords.txt>`_  
-   你也可以使用自己的停用词表，具体使用方法见下面的示例。
+2.FormulaGroup:如果需要传入公式集则可调用此接口，最终将形成ast森林，森林中树的结构同Formula。
 
-Examples：
+Formula
+>>>>>>>>>>>>
 
-::
+Formula 首先在分词功能中对原始文本的公式做切分处理，另外提供 ``公式解析树`` 功能，可以将数学公式的抽象语法分析树用文本或图片的形式表示出来。  
 
-   from EduNLP.SIF.tokenization.text import tokenize 
-   >>> text = "三角函数是基本初等函数之一"
-   >>> tokenize(text, granularity="word")
-   ['三角函数', '初等', '函数']
-   
-   >>> tokenize(text, granularity="char")
-   ['三', '角', '函', '数', '基', '初', '函', '数']
-    
-分句
--------
+本模块另提供公式变量标准化的功能，如判断几个子公式内的‘x’为同一变量。
 
-将较长的文档切分成若干句子的过程称为“分句”。每个句子为一个“令牌”（token）（待实现）。
-
-令牌化
--------
-即综合解析，将带公式的句子切分为若干标记的过程。每个标记为一个“令牌”（token）。
-
-此功能对应的实现函数为tokenize，将已经经过结构成分分解后的item传入其中即可得到所需结果。
+调用库
++++++++++
 
 ::
 
-   from EduNLP.Tokenizer import get_tokenizer
-   >>> items = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
-   >>> tokenize(SegmentList(items))
-   ['如图所示', '三角形', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]
-   >>> tokenize(SegmentList(items),formula_params={"method": "ast"})
-   ['如图所示', '三角形', <Formula: ABC>, '面积', '\\\\SIFBlank', \\FigureID{1}]
+   import matplotlib.pyplot as plt
+   from EduNLP.Formula import Formula
+   from EduNLP.Formula.viz import ForestPlotter
 
+初始化
++++++++++
 
+传入参数：item 
 
-我们提供了多种已经封装好的令牌化器供用户便捷调用，通过查看 ``./EduNLP/Tokenizer/tokenizer.py`` 及 ``./EduNLP/Pretrain/gensim_vec.py`` 可以查看更多令牌化器，下面是一个完整的令牌化器列表:
-
-- TextTokenizer
-
-- PureTextTokenizer
-
-- GensimSegTokenizer
-
-- GensimWordTokenizer
-
-
-TextTokenizer
-+++++++++++++++++++++
-
-即文本令牌解析器，在默认情况下对传入的item中的图片、标签、分隔符、题目空缺符等部分则转换成特殊字符进行保护，从而对文本、公式进行令牌化操作。此外，此令牌解析器对文本、公式均采用线性的分析方法，并提供的key参数用于对传入的item进行预处理，待未来根据需求进行开发。
+item为str 或 List[Dict]类型，具体内容为latex 公式 或 公式经解析后产生的抽象语法分析树。
 
 ::
 
-   >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
-   >>> tokenizer = TextTokenizer()
-   >>> tokens = tokenizer(items)
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
-   >>> items = [{
-   ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
-   ... "options": ["1", "2"]
-   ... }]
-   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
+   >>> f=Formula("x^2 + x+1 = y")
+   >>> f
+   <Formula: x^2 + x+1 = y>
 
-PureTextTokenizer
-+++++++++++++++++++++
+查看公式切分后的具体内容
+++++++++++++++++++++++++++++
 
-即纯净型文本令牌解析器，在默认情况下对传入的item中的图片、标签、分隔符、题目空缺符等部分则转换成特殊字符进行保护，并对特殊公式(例如：$\\FormFigureID{...}$， $\\FormFigureBase64{...}$)进行筛除，从而对文本、纯文本公式进行令牌化操作。此外，此令牌解析器对文本、公式均采用线性的分析方法，并提供的key参数用于对传入的item进行预处理，待未来根据需求进行开发。
-
+- 查看公式切分后的结点元素
 
 ::
 
-   >>> tokenizer = PureTextTokenizer()
-   >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-   ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
-   >>> tokens = tokenizer(items)
-   >>> next(tokens)[:10]
-   ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z']
-   >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
-   >>> tokens = tokenizer(items)
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
-   >>> items = [{
-   ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
-   ... "options": ["1", "2"]
-   ... }]
-   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
+   >>> f.elements
+   [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   {'id': 3, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 4, 'type': 'mathord', 'text': 'x', 'role': None},
+   {'id': 5, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 6, 'type': 'textord', 'text': '1', 'role': None},
+   {'id': 7, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 8, 'type': 'mathord', 'text': 'y', 'role': None}]
 
-GensimWordTokenizer
-+++++++++++++++++++++++
+- 查看公式的抽象语法分析树
 
-此令牌解析器在默认情况下对传入的item中的图片、题目空缺符等部分转换成特殊字符进行保护，从而对文本、公式、标签、分隔符进行令牌化操作。此外，从令牌化方法而言，此令牌解析器对文本均采用线性的分析方法，而对公式采用抽象语法树的分析方法，提供了general参数可供使用者选择：当general为true的时候则代表着传入的item并非标准格式，此时对公式也使用线性的分析方法；当general为false时则代表使用抽象语法树的方法对公式进行解析。
-
-GensimSegTokenizer
-++++++++++++++++++++
-
-此令牌解析器在默认情况下对传入的item中的图片、分隔符、题目空缺符等部分则转换成特殊字符进行保护，从而对文本、公式、标签进行令牌化操作。此外，从令牌化方法而言，此令牌解析器对文本均采用线性的分析方法，而对公式采用抽象语法树的分析方法。
-
-与GensimWordTokenizer相比，GensimSegTokenizer解析器主要区别是：
-
-* 提供了切分深度的选项，即可以在sep标签或者tag标签处进行切割
-* 默认在item组分（如text、formula）的头部插入开始标签
-
-Examples
-----------
-        
 ::
 
-   >>> tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
-   >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-   ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
-   >>> print(token_item.tokens[:10])
-   ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
-   >>> tokenizer = GensimWordTokenizer(symbol="fgmas", general=False)
-   >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-   ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
-   >>> print(token_item.tokens[:10])
-   ['公式', '[FORMULA]', '如图', '[FIGURE]', '[FORMULA]', '约束条件', '公式', '[FORMULA]', '[SEP]', '[FORMULA]']
+   >>> f.ast
+   [{'val': {'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   'structure': {'bro': [None, 3],'child': [1, 2],'father': None,'forest': None}},
+   {'val': {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   'structure': {'bro': [None, 2], 'child': None, 'father': 0, 'forest': None}},
+   {'val': {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   'structure': {'bro': [1, None], 'child': None, 'father': 0, 'forest': None}},
+   {'val': {'id': 3, 'type': 'bin', 'text': '+', 'role': None},
+   'structure': {'bro': [0, 4], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 4, 'type': 'mathord', 'text': 'x', 'role': None},
+   'structure': {'bro': [3, 5], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 5, 'type': 'bin', 'text': '+', 'role': None},
+   'structure': {'bro': [4, 6], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 6, 'type': 'textord', 'text': '1', 'role': None},
+   'structure': {'bro': [5, 7], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 7, 'type': 'rel', 'text': '=', 'role': None},
+   'structure': {'bro': [6, 8], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 8, 'type': 'mathord', 'text': 'y', 'role': None},
+   'structure': {'bro': [7, None],'child': None,'father': None,'forest': None}}]
+
+   >>> print('nodes: ',f.ast_graph.nodes)
+   nodes:  [0, 1, 2, 3, 4, 5, 6, 7, 8]
+   >>> print('edges: ' ,f.ast_graph.edges)
+   edges:  [(0, 1), (0, 2)]
+
+- 将抽象语法分析树用图片表示
+
+::
+
+   >>> ForestPlotter().export(f.ast_graph, root_list=[node["val"]["id"] for node in f.ast if node["structure"]["father"] is None],)
+   >>> plt.show()
+
+
+.. figure:: ../../_static/formula.png
+
+
+变量标准化
++++++++++++
+
+此参数使得同一变量拥有相同的变量编号。
+
+如：``x`` 变量的编号为 ``0``， ``y`` 变量的编号为 ``1``。
+
+::
+
+   >>> f.variable_standardization().elements
+   [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base', 'var': 0},
+   {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   {'id': 3, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 4, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0},
+   {'id': 5, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 6, 'type': 'textord', 'text': '1', 'role': None},
+   {'id': 7, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 8, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}]
+
+FormulaGroup
+>>>>>>>>>>>>>>>
+
+调用 ``FormulaGroup`` 类解析公式方程组，相关的属性和函数方法同上。
+
+::
+
+   import matplotlib.pyplot as plt
+   from EduNLP.Formula import Formula
+   from EduNLP.Formula import FormulaGroup
+   from EduNLP.Formula.viz import ForestPlotter
+   >>> fs = FormulaGroup(["x^2 = y", "x^3 = y^2", "x + y = \pi"])
+   >>> fs
+   <FormulaGroup: <Formula: x^2 = y>;<Formula: x^3 = y^2>;<Formula: x + y = \pi>>
+   >>> fs.elements
+   [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   {'id': 3, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 4, 'type': 'mathord', 'text': 'y', 'role': None},
+   {'id': 5, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 6, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   {'id': 7, 'type': 'textord', 'text': '3', 'role': 'sup'},
+   {'id': 8, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 9, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 10, 'type': 'mathord', 'text': 'y', 'role': 'base'},
+   {'id': 11, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   {'id': 12, 'type': 'mathord', 'text': 'x', 'role': None},
+   {'id': 13, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 14, 'type': 'mathord', 'text': 'y', 'role': None},
+   {'id': 15, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 16, 'type': 'mathord', 'text': '\\pi', 'role': None}]
+   >>> fs.ast
+   [{'val': {'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   'structure': {'bro': [None, 3],
+      'child': [1, 2],
+      'father': None,
+      'forest': None}},
+   {'val': {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   'structure': {'bro': [None, 2],
+      'child': None,
+      'father': 0,
+      'forest': [6, 12]}},
+   {'val': {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   'structure': {'bro': [1, None], 'child': None, 'father': 0, 'forest': None}},
+   {'val': {'id': 3, 'type': 'rel', 'text': '=', 'role': None},
+   'structure': {'bro': [0, 4], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 4, 'type': 'mathord', 'text': 'y', 'role': None},
+   'structure': {'bro': [3, None],
+      'child': None,
+      'father': None,
+      'forest': [10, 14]}},
+   {'val': {'id': 5, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   'structure': {'bro': [None, 8],
+      'child': [6, 7],
+      'father': None,
+      'forest': None}},
+   {'val': {'id': 6, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   show more (open the raw output data in a text editor) ...
+   >>> fs.variable_standardization()[0]
+   [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base', 'var': 0}, {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'}, {'id': 3, 'type': 'rel', 'text': '=', 'role': None}, {'id': 4, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}]
+   >>> ForestPlotter().export(fs.ast_graph, root_list=[node["val"]["id"] for node in fs.ast if node["structure"]["father"] is None],)
+
+.. figure:: ../../_static/formulagroup.png
+
+
+文本语法结构解析
+--------------------
+
+本部分主要由EduNLP.SIF.Parse模块实现，主要功能为将文本中的字母、数字等进行提取，将其转换为标准格式。
+
+此模块主要作为 *中间模块* 来对输入的生文本进行解析处理，用户一般不直接调用此模块。
+
+主要流程介绍
++++++++++++++++
+
+1.按照以下顺序，先后对传入的文本进行判断类型
+
+* is_chinese：用于匹配中文字符 [\u4e00-\u9fa5]
+ 
+* is_alphabet：匹配公式之外的英文字母，将匹配到的只对两个汉字之间的字母做修正（使用$$包裹起来），其余匹配到的情况视为不合 latex 语法录入的公式
+ 
+* is_number：匹配公式之外的数字，只对两个汉字之间的数字做修正（使用$$包裹起来），其余匹配到的情况视为不合 latex 语法录入的公式
+ 
+2.匹配 latex 公式
+
+* latex 中出现中文字符，打印且只打印一次 warning
+ 
+* 使用_is_formula_legal函数，检查latex公式的完整性和可解析性，对于不合法公式报错
+
+调用库
+>>>>>>>>>>>>
+
+::
+
+   from EduNLP.SIF.Parser import Parser
+
+输入
+>>>>>>>
+
+类型：str  
+
+内容：题目文本 （text）
+
+::
+
+   >>> text1 = '生产某种零件的A工厂25名工人的日加工零件数_   _'
+   >>> text2 = 'X的分布列为(   )'
+   >>> text3 = '① AB是⊙O的直径，AC是⊙O的切线，BC交⊙O于点E．AC的中点为D'
+   >>> text4 = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
+
+进行解析
+>>>>>>>>>>>>>>>>>>>>
+
+::
+
+   >>> text_parser1 = Parser(text1)
+   >>> text_parser2 = Parser(text2)
+   >>> text_parser3 = Parser(text3)
+   >>> text_parser4 = Parser(text4)
+
+相关描述参数
+>>>>>>>>>>>>
+
+- 尝试转换为标准形式
+
+::
+
+   >>> text_parser1.description_list()
+   >>> print('text_parser1.text:',text_parser1.text)
+   text_parser1.text: 生产某种零件的$A$工厂$25$名工人的日加工零件数$\SIFBlank$
+   >>> text_parser2.description_list()
+   >>> print('text_parser2.text:',text_parser2.text)
+   text_parser2.text: $X$的分布列为$\SIFChoice$
+
+- 判断是否有语法问题
+
+::
+
+   >>> text_parser3.description_list()
+   >>> print('text_parser3.error_flag: ',text_parser3.error_flag)
+   text_parser3.error_flag:  1
+   >>> text_parser4.description_list()
+   >>> print('text_parser4.fomula_illegal_flag: ',text_parser4.fomula_illegal_flag)
+   text_parser4.fomula_illegal_flag:  1
+

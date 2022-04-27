@@ -10,7 +10,7 @@ At the same time, it may also contain different components semantically, such as
 Main Processing Contents
 ---------------------------
 
-1. Convert multiple-choice questions in the form of dict to qualified item by `Syntax parsing <parse.rst>`_;
+1. Convert multiple-choice questions in the form of dict to qualified item by `Syntax parsing <tokenize.rst>`_;
 
 2. The input items are segmented and grouped according to the element type.
 

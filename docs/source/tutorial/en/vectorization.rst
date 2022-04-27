@@ -10,11 +10,11 @@ This section provides a simple interface to convert the incoming items into vect
 Overview Flow
 ---------------------------
 
-1.Perform `syntax parsing <parse.rst>`_ on incoming items to get items in SIF format；
+1.Perform `syntax parsing <tokenize.rst>`_ on incoming items to get items in SIF format；
 
 2.Perform `component segmentation <seg.rst>`_ on sif_items;
 
-3.Perform `tokenization <tokenize.rst>`_ on segmented items;
+3.Perform `tokenization <tokenization.rst>`_ on segmented items;
 
 4.Use the existing or pre-trained model we provided to convert the tokenized items into vectors.
 

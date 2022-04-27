@@ -3,11 +3,11 @@ Get Started
 
 *  `Standard Item Format <sif.rst>`_
 
-*  `Syntax Parsing <parse.rst>`_
+*  `Syntax Parsing <tokenize.rst>`_
 
 *  `Component Segmentation <seg.rst>`_
 
-*  `Tokenization <tokenize.rst>`_
+*  `Tokenization <tokenization.rst>`_
 
 *  `Pre-training <pretrain.rst>`_
 
@@ -18,11 +18,11 @@ Main process
 
 .. figure:: ../../_static/new_flow.png
 
-* `Syntax Parsing <parse.rst>`_ : Its function is to convert the incoming item into SIF format, which means letters and numbers should be between ``$...$`` and the brackets and underlines of the choice questions should be converted to special symbols we defined in SIF)
+* `Syntax Parsing <tokenize.rst>`_ : Its function is to convert the incoming item into SIF format, which means letters and numbers should be between ``$...$`` and the brackets and underlines of the choice questions should be converted to special symbols we defined in SIF)
 
 * `Component Segmentation <seg.rst>`_ : Its function is to segment items in SIF format according to the types of items, so as to serve the later tokenization module.(that is, elements in different types can be tokenized using their corresponding methods)。
 
-* `Tokenization <tokenize.rst>`_: Its function is to tokenize segmented items, so as to serve the later tokenization module.
+* `Tokenization <tokenization.rst>`_: Its function is to tokenize segmented items, so as to serve the later tokenization module.
   Generally, the tokenization method in the text form can be used directly. For formulas, the ast method can also be used for parsing(call the formula module).
 
 * `Vectorization <vectorization.rst>`_: This part mainly calls I2V class and its subclasses. Its function is to vectorize the list of tokenized items, so as to get the corresponding static vectors.
@@ -40,8 +40,7 @@ To help you quickly understand the functions of this project, this section only 
     :name: tokenize_gallery
     :glob:
     
-    Tokenization  <../../build/blitz/tokenizer/tokenizer.ipynb>
-
+    Tokenization  <../../build/blitz/tokenizer/tokenization.ipynb>
 
 
 .. nbgallery::
