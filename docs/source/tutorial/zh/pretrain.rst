@@ -8,88 +8,63 @@
 * 如何加载预训练模型
 * 公开的预训练模型
 
-导入模块
-----------
-
-::
-
-   from EduNLP.I2V import get_pretrained_i2v
-   from EduNLP.Vector import get_pretrained_t2v
 
 训练模型
-------------
+-----------------------
 
-如需训练模型则可直接train_vector函数接口，来使使训练模型更加方便。模块调用gensim库中的相关训练模型，目前提供了"sg"、 "cbow"、 "fastext"、 "d2v"、 "bow"、 "tfidf"的训练方法，并提供了embedding_dim参数，使之可以按照需求确定向量的维度。
+模型模块的接口定义在 `EduNLP.Pretrain` 中，包含令牌化容器、数据处理、模型定义、模型训练等功能。
 
-基本步骤
-##################
 
-1.确定模型的类型，选择适合的Tokenizer（GensimWordTokenizer、 GensimSegTokenizer），使之令牌化；
+基本步骤：
+#######################################
 
-2.调用train_vector函数，即可得到所需的预训练模型。
+以训练word2vec为例说明：
+
+1. 确定模型的类型，选择适合的Tokenizer（如GensimWordTokenizer、PureTextTokenizer等），使之令牌化；
+
+2. 调用train_vector函数，即可得到所需的预训练模型。
 
 Examples：
 
 ::
+   
+   from EduNLP.Tokenizer import PureTextTokenizer
+   from EduNLP.Pretrain import train_vector
 
-   >>> tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
-   >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-   ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
-   >>> print(token_item.tokens[:10])
-   ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
+   items = [
+      r"题目一：如图几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$",
+      r"题目二: 如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"
+   ]
+
+   tokenizer = PureTextTokenizer()
+   token_items = [t for t in tokenizer(raw_items)]
+   
+   print(token_items[0[:10])
+   # ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
    
    # 10 dimension with fasstext method
    train_vector(sif_items, "../../../data/w2v/gensim_luna_stem_tf_", 10, method="d2v")
 
 
 装载模型
---------
+-----------------------
 
-将所得到的模型传入I2V模块即可装载模型
+将所得到的模型传入I2V模块即可装载模型，通过向量化获取题目表征。
  
 Examples：
 
 ::
 
-   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
-   >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-
-公开模型一览
-------------
-
-版本说明
-##################
-
-一级版本
-
-* 公开版本1（luna_pub）：高考
-* 公开版本2（ luna_pub_large）：高考 + 地区试题
-
-二级版本：
-
-* 小科（Chinese,Math,English,History,Geography,Politics,Biology,Physics,Chemistry）
-* 大科（理科science、文科literal、全科all）
-
-三级版本：【待完成】
-
-* 不使用第三方初始化词表
-* 使用第三方初始化词表 
-
-模型训练数据说明
-##################
-
-* 当前【词向量w2v】【句向量d2v】模型所用的数据均为 【高中学段】 的题目
-* 测试数据：`[OpenLUNA.json] <http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_
-
-当前提供以下模型，更多分学科、分题型模型正在训练中，敬请期待
-    "d2v_all_256"(全科)，"d2v_sci_256"(理科)，"d2v_eng_256"（英语），"d2v_lit_256"(文科)
+   model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+   i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
 
 
-模型训练案例
-------------
+
+更多模型训练案例
+-----------------------
 
 获得数据集
-####################
+########################################
 
 .. toctree::
    :maxdepth: 1
@@ -98,7 +73,7 @@ Examples：
    prepare_dataset  <../../build/blitz/pretrain/prepare_dataset.ipynb>
 
 gensim模型d2v例子
-####################
+########################################
 
 .. toctree::
    :maxdepth: 1
@@ -109,7 +84,7 @@ gensim模型d2v例子
    d2v_stem_tf  <../../build/blitz/pretrain/gensim/d2v_stem_tf.ipynb>
 
 gensim模型w2v例子
-####################
+########################################
 
 .. toctree::
    :maxdepth: 1
@@ -118,13 +93,25 @@ gensim模型w2v例子
    w2v_stem_text  <../../build/blitz/pretrain/gensim/w2v_stem_text.ipynb>
    w2v_stem_tf  <../../build/blitz/pretrain/gensim/w2v_stem_tf.ipynb>
 
-seg_token例子
-####################
 
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
+进阶表征模型示例
+########################################
 
-   d2v.ipynb  <../../build/blitz/pretrain/seg_token/d2v.ipynb>
-   d2v_d1  <../../build/blitz/pretrain/seg_token/d2v_d1.ipynb>
-   d2v_d2  <../../build/blitz/pretrain/seg_token/d2v_d2.ipynb>
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: pretrain_gallery1
+    :glob:
+
+    Emlo预训练  <../../build/blitz/pretrain/elmo.ipynb>
+
+    Bert预训练  <../../build/blitz/pretrain/bert.ipynb>
+
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: pretrain_gallery2
+    :glob:
+
+    DisenQNet预训练  <../../build/blitz/pretrain/disenq.ipynb>
+    
+    QuesNet预训练  <../../build/blitz/pretrain/quesnet.ipynb>

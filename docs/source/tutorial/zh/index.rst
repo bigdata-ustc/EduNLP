@@ -50,4 +50,4 @@
     :name: vectorization_gallery
     :glob:
     
-    向量化  <../../build/blitz/vectorization/total_vector.ipynb>
+    向量化  <../../build/blitz/i2v/get_pretrained_i2v.ipynb>

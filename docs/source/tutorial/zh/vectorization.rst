@@ -1,37 +1,44 @@
+=========
 向量化
 =========
 
-此部分提供了简便的接口，可以直接将传入的items经过转化得到向量。当前提供了是否使用预训练模型的选项，可根据需要进行选择，如不使用预训练模型则可直接调用D2V函数，使用预训练模型则调用get_pretrained_i2v函数。
+向量化过程是将原始题目（item）转成向量（vector）的过程，它包括两个步骤：
 
-- 不使用预训练模型
-
-- 使用预训练模型
-
-总体流程
----------------------------
-
-1.对传入的item进行 `语法解析 <parse.rst>`_ ，得到SIF格式；
-
-2.对sif_item进行 `成分分解 <seg.rst>`_ ；
-
-3.对经过成分分解的item进行 `令牌化 <tokenize.rst>`_；
-
-4.使用已有或者使用提供的预训练模型，将令牌化后的item转换为向量。
+- 使用 `Tokenizer` 令牌化容器 将原始题目（item）转化为令牌化序列（tokens）;
+- 使用 `T2V` 向量化容器 将令牌化序列（tokens）转成向量（vector）。
 
 
-使用开源预训练模型：调用get_pretrained_i2v使用开源模型
----------------------------------------------
+I2V 向量化容器
+==================
+为了使用户能直接使用本地的（或公开的）预训练模型，我们提供了`I2V向量化容器`, 将令牌化、向量化操作同时封装起来。
 
-使用 EduNLP 项目组给定的预训练模型将给定的题目文本转成向量。
+`I2V` 模块提供两种向量化方法：
 
-* 优点：简单方便。
+- 使用开源预训练模型
+- 使用本地预训练模型
 
-* 缺点：只能使用项目中给定的模型，局限性较大。
+输入
+---------------------------------------------------
 
-* 调用此函数即可获得相应的预训练模型，目前提供以下的预训练模型：d2v_all_256、d2v_sci_256、d2v_eng_256、d2v_lit_256
+输入原始的题目列表，题目内容以文本或字典的形式给出
+
+::
+
+   items = [
+      r"题目一：如图几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$",
+      r"题目二: 如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"
+   ]
+
+
+使用开源预训练模型
+---------------------------------------------------
+调用`get_pretrained_i2v`加载开源模型，并获取对应的I2V向量化容器将给定的题目转成向量。
+
+- 优点：用户不需要研究令牌化和模型加载的细节。令牌化和向量化的参数已由预训练模型的参数文件定义好。
+- 缺点：不适合修改预训练的模型参数或令牌化容器参数
 
 模型选择与使用
-##################
+^^^^^^^^^^^^^^^^^^^^^^
 
 根据题目所属学科选择预训练模型：(以下为部分开源模型示例)
 
@@ -50,97 +57,198 @@
 +--------------------+------------------------+
 
 
-处理的具体流程
-##################
-
-1. 下载相应的预处理模型
-
-2. 将所得到的模型传入I2V，使用I2V进行处理
-
-Examples：
+具体用法
+^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-  >>> i2v = get_pretrained_i2v("d2v_sci_256")
-  >>> i2v(item)
+   from EduNLP import get_pretrained_i2v
+
+   i2v = get_pretrained_i2v("d2v_sci_256")
+   item_vector, token_vector = i2v(items)
 
 
-使用本地模型: 调用本地已有的预训练模型
+
+使用本地预训练模型
 ------------------------------------
 
 使用自己提供的任一预训练模型（给出模型存放路径即可）将给定的题目文本转成向量。
 
 * 优点：可以使用自己的模型，另可调整训练参数，灵活性强。
 
-导入模块
-++++++++++
+
+提供的I2V容器
+^^^^^^^^^^^^^^^^^^^^^^
+
++--------+---------+
+| 名称   | I2V容器 |
++========+=========+
+| w2v    | W2V     |
++--------+---------+
+| d2v    | D2V     |
++--------+---------+
+| elmo   | Emlo    |
++--------+---------+
+| bert   | Bert    |
++--------+---------+
+| disenq | DsienQ  |
++--------+---------+
+
+具体用法
+^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-   from EduNLP.I2V import D2V, W2V, get_pretrained_i2v
-   from EduNLP.Vector import T2V, get_pretrained_t2v
+   from EduNLP.I2V import W2V
 
-提供的模型类型
-++++++++++++++++++++
-- I2V
-- W2V
-- D2V
-- Emlo
-- Bert
-- DisenQ
+   pretrained_path = os.path.join(model_dir, "w2v/test_w2v_256/test_w2v_256.kv")
+   item_vector, token_vector = i2v(items)
 
-W2V
-<<<<<<<<<
 
-此模型方法直接使用 `gensim` 库中的 `Word2vec` 相关模型接口，将句子转换为词向量序列，当前提供一下四种方法：
+.. note::
 
-::
+   不容模型的I2V容器，在使用时略有差别，在必要时建议查看对应的API文档或用法样例。
 
-   >>> i2v = get_pretrained_i2v("test_w2v", "examples/test_model/data/w2v") # doctest: +ELLIPSIS
-   >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
-   >>> item_vector # doctest: +ELLIPSIS
-   array([[...]], dtype=float32)
 
-D2V
-<<<<<<<<<<<<
+I2V向量化容器 使用示例
+------------------------------------
 
-此模型方法可以将句子转换为句向量，当前提供以下方法：
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: i2v_gallery1
+    :glob:
+    
+    W2V向量化  <../../build/blitz/i2v/i2v_w2v.ipynb>
 
-::
+    D2V向量化  <../../build/blitz/i2v/i2v_d2v.ipynb>
 
-   >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"}
-   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
-   >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-   >>> i2v(item)
-   ([array([ 4.76559885e-02, -1.60574958e-01,  1.94614579e-03,  2.40295693e-01,
-   2.24517003e-01, -3.24351490e-02,  4.35789041e-02, -1.65670961e-02,...
+    Emlo向量化  <../../build/blitz/i2v/i2v_elmo.ipynb>
 
-I2V
-<<<<<<<<<<
 
-使用自己提供的任一预训练模型（给出模型存放路径即可）将一组题目的切分序列表征为向量。
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: i2v_gallery2
+    :glob:
+    
+    Bert向量化  <../../build/blitz/i2v/i2v_bert.ipynb>
+    
+    DisenQNet向量化  <../../build/blitz/i2v/i2v_disenq.ipynb>
+    
+    QuesNet向量化  <../../build/blitz/i2v/i2v_quesnet.ipynb>
 
-- 优点：模型及其参数可自主调整，灵活性强。
+
+
+
+T2V 向量化容器
+==================
+
+`T2V` 向量化容器能将题目的令牌序列（tokens）转成向量（vector）。
+
+- 优点：此容器与令牌化容器相互分离，用户可以自主调整令牌化容器和向量化容器的参数，可用于个性化的需求。
+
+`I2V` 模块提供两种向量化方法：
+
+- 使用开源预训练模型
+- 使用本地预训练模型
 
 输入
-^^^^^^^^^^
+------------------------------------
 
-类型：list  
-内容：一个题组中每个题目切分序列的组合。
-> 使用 ``GensimWordTokenizer`` 模型即可将题目文本（`str` 类型）转换成 tokens。
+`T2V` 向量化容器的输入为题目的令牌化序列。因此，在调用 `T2V` 向量化容器之前，必须先使用 `Tokenizer` 令牌化容器获取 令牌序列列（token）。
+
+
+::
+   
+   from EduNLP.Tokenizer import PureTextTokenize
+
+   raw_items = [
+      r"题目一：如图几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$",
+      r"题目二: 如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"
+   ]
+
+   tokenizer = PureTextTokenizer()
+   token_items = [t for t in tokenizer(raw_items)]
+
+
+加载T2V向量化容器
+--------------------------------------------
+
+
+
+加载开源预训练模型
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+加载源预训练模型到T2V容器中：
 
 ::
 
-   >>> token_items=['公式','[FORMULA]','公式','[FORMULA]','如图','[FIGURE]','x',',','y','约束条件','[SEP]','z','=','x','+','7','y','最大值','[MARK]']
-   >>> path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
-   >>> t2v = T2V('d2v',filepath=path)
-   >>> t2v(token_items)
-   [array([ 0.0256574 ,  0.06061139, -0.00121044, -0.0167674 , -0.0111706 ,
-   0.05325712, -0.02097339, -0.01613594,  0.02904145,  0.0185046 ,...
+   from EduNLP.Vector import get_pretrained_t2v
 
-处理的具体流程
-++++++++++++++++++++
+   model_dir = "path/to/save/model"
+   t2v = get_pretrained_t2v("test_w2v", model_dir=model_dir)
 
-1.调用get_tokenizer函数，得到经过分词后的结果；
+   tem_vector = t2v.infer_vector(token_items)
+   # [array(), ..., array()]
+   token_vector = t2v.infer_tokens(token_items)
+   # [[array(), ..., array()], [...], [...]]
 
-2.根据使用的模型，选择提供的模型类型，进行向量化处理。
+
+使用本地预训练模型
+^^^^^^^^^^^^^^^^^^^^^^
+
+提供的T2V容器：
+
++------+-----------+
+| 名称 | T2V容器   |
++======+===========+
+| w2v  | W2V       |
++------+-----------+
+| d2v  | D2V       |
++------+-----------+
+| elmo | RNNModel  |
++------+-----------+
+| bert | BertModel |
++------+-----------+
+
+加载本地模型到T2V容器中：
+
+::
+
+   from EduNLP.Vector import T2V, W2V
+
+   path = "path_to_model"
+   t2v = T2V('w2v', filepath=path)
+   # 或
+   # t2v = W2V(path)
+
+   tem_vector = t2v.infer_vector(token_items)
+   # [array(), ..., array()]
+   token_vector = t2v.infer_tokens(token_items)
+   # [[array(), ..., array()], [...], [...]]
+
+
+T2V向量化容器 使用示例
+------------------------------------
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: t2v_gallery1
+    :glob:
+    
+    W2V向量化  <../../build/blitz/t2v/t2v_w2v.ipynb>
+
+    D2V向量化  <../../build/blitz/t2v/t2v_d2v.ipynb>
+
+    Emlo向量化  <../../build/blitz/t2v/t2v_elmo.ipynb>
+
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: t2v_gallery2
+    :glob:
+    
+    Bert向量化  <../../build/blitz/t2v/t2v_bert.ipynb>
+    
+    DisenQNet向量化  <../../build/blitz/t2v/t2v_disenq.ipynb>
+    
+    QuesNet向量化  <../../build/blitz/t2v/t2v_quesnet.ipynb>

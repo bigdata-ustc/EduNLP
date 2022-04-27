@@ -49,4 +49,4 @@ To help you quickly understand the functions of this project, this section only 
     :name: vectorization_gallery
     :glob:
     
-    Vectorization  <../../build/blitz/vectorization/total_vector.ipynb>
+    Vectorization  <../../build/blitz/i2v/get_pretrained_i2v.ipynb>
