@@ -153,7 +153,7 @@ class QuesNetTokenizer(object):
                     ret["content"].append(r["content"])
                     ret["meta"].append(r["meta"])
         else:
-            ret = self._convert_to_ids(item, key, meta, padding, return_text, * args, **kwargs)
+            ret = self._convert_to_ids(item, key, meta, padding, return_text, *args, **kwargs)
 
         return ret
 
@@ -473,7 +473,8 @@ class QuestionLoader:
             token = self.tokenizer(q, key=self.content_key, meta=self.meta)
             content = token['content_idx']
             meta = token['meta_idx']
-            if self.answer_key(q).isalpha() and len(self.answer_key(q)) == 1 and len(self.option_key(q)) > 0:
+            if self.answer_key(q).isalpha() and len(self.answer_key(q)) == 1 and ord(self.answer_key(q)) < 128 and len(
+                    self.option_key(q)) > 0:
                 answer_idx = ord(self.answer_key(q).upper()) - ord('A')
                 options = self.option_key(q)
                 answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)
@@ -619,7 +620,7 @@ def pretrain_embedding_layer(dataset: EmbeddingDataset, ae: AE, lr: float = 1e-3
     train_type = dataset.data_type
     for i in range(epochs):
         for batch, item in tqdm(enumerate(train_dataloader)):
-            loss = ae.loss(item)
+            loss = ae.loss(item.to(device))
             optim.zero_grad()
             loss.backward()
             optim.step()
