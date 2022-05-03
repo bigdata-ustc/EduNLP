@@ -16,7 +16,7 @@ Get Started
 Main process
 ---------------
 
-.. figure:: ../../_static/new_flow.png
+.. figure:: ../../_static/pipeline.png
 
 * `Syntax Parsing <tokenize.rst>`_ : Its function is to convert the incoming item into SIF format, which means letters and numbers should be between ``$...$`` and the brackets and underlines of the choice questions should be converted to special symbols we defined in SIF)
 
@@ -37,10 +37,10 @@ To help you quickly understand the functions of this project, this section only 
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: tokenize_gallery
+    :name: tokenization_gallery
     :glob:
     
-    Tokenization  <../../build/blitz/tokenizer/tokenization.ipynb>
+    Tokenization  <../../build/blitz/tokenizer/sif4sci.ipynb>
 
 
 .. nbgallery::

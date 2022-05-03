@@ -1,6 +1,5 @@
 令牌化
-==============
-
+============================
 
 本模块提供题目的令牌化解析，将带公式、图片的句子切分为若干标记的过程。每个标记为一个“令牌”（token），方便后续向量化表征试题。
 
@@ -41,7 +40,7 @@
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: t2v_gallery1
+    :name: tokenization_gallery1
     :glob:
     
     令牌化  <../../build/blitz/tokenizer/sif4sci.ipynb>
@@ -187,7 +186,7 @@ GensimSegTokenizer
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: t2v_gallery1
+    :name: tokenization_gallery2
     :glob:
     
     令牌化  <../../build/blitz/tokenizer/Tokenizer.ipynb>

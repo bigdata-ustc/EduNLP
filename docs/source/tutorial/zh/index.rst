@@ -16,7 +16,7 @@
 主要流程
 ----------
 
-.. figure:: ../../_static/新流程图.png
+.. figure:: ../../_static/流程图.png
 
 * `成分分解 <seg.rst>`_ ：对符合SIF标准的试题进行分解，识别出题目中不同的成分（如文本、公式、图片等）。
 
@@ -37,7 +37,7 @@
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: tokenize_gallery
+    :name: tokenization_gallery
     :glob:
     
     令牌化  <../../build/blitz/tokenizer/sif4sci.ipynb>
