@@ -80,7 +80,9 @@ PRETRAINED_MODELS = {
     "luna_pub_bert_math_base": [
         "http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/luna_pub_bert_math_base.zip", "bert"],
     "quesnet_test": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/quesnet_pub_256/1/quesnet_test.zip",
-                     "quesnet"]
+                     "quesnet"],
+    "quesnet_pub_math": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/quesnet_pub_256/1/quesnet_pub_math.zip",
+                         "quesnet"]
 }
 
 

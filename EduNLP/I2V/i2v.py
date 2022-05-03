@@ -389,7 +389,8 @@ MODELS = {
     'luna_bert': [Bert, 'luna_bert'],
     "tal_edu_bert": [Bert, "tal_edu_bert"],
     "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"],
-    "quesnet_test": [QuesNet, "quesnet_test"]
+    "quesnet_test": [QuesNet, "quesnet_test"],
+    "quesnet_pub_math": [QuesNet, "quesnet_pub_math"]
 }
 
 
