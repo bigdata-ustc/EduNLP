@@ -1,11 +1,5 @@
-语法解析
-=========
-
-在教育资源中，文本、公式都具有内在的隐式或显式的语法结构，提取这种结构对后续进一步的处理是大有裨益的：
-
-* 文本语法结构解析
-
-* 公式语法结构解析
+公式语法结构解析
+===========================
 
 
 公式语法结构解析
@@ -198,21 +192,4 @@ FormulaGroup
    >>> ForestPlotter().export(fs.ast_graph, root_list=[node["val"]["id"] for node in fs.ast if node["structure"]["father"] is None],)
 
 .. figure:: ../../_static/formulagroup.png
-
-
-文本语法结构解析
---------------------
-
-根据题目文本切分粒度的大小，文本解析又分为 **“句解析”** 和 **“词解析”**。
-
-
-（1） 句解析（sentence-tokenization）：将较长的文档切分成若干句子的过程称为“分句”。每个句子为一个“令牌”（token）。（待实现）    
-  
-
-（2） 词解析（text-tokenization）：一个句子（不含公式）是由若干“词”按顺序构成的，将一个句子切分为若干词的过程称为“词解析”。根据词的粒度大小，又可细分为“词组解析”和"单字解析"。
-- 词组解析 (word-tokenization)：每一个词组为一个“令牌”（token）。
-- 单字解析 (char-tokenization)：单个字符即为一个“令牌”（token）。
-
-
-
 

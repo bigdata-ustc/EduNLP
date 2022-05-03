@@ -28,7 +28,7 @@ dict2str4sif 函数就是实现此功能的一个模块，该模块可以在保�
 
 ::
 
- from EduNLP.utils import dict2str4sif
+  from EduNLP.utils import dict2str4sif
 
 基础使用方法
 ++++++++++++++++++
