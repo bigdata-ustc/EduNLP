@@ -61,7 +61,7 @@ class QuesNetTokenizer(object):
     2
     """
 
-    def __init__(self, img_dir=None, vocab_path=None, max_length=250, meta=['know_name'],
+    def __init__(self, img_dir=None, vocab_path=None, max_length=250, meta=None,
                  img_token='<img>', unk_token="<unk>", pad_token="<pad>", *args, **argv):
         """
         Parameters
@@ -82,6 +82,8 @@ class QuesNetTokenizer(object):
             by default "<pad>"
         """
 
+        if meta is None:
+            meta = ['know_name']
         self.img_dir = img_dir
         self.img_token = img_token
         self.unk_token = unk_token
@@ -93,7 +95,6 @@ class QuesNetTokenizer(object):
         self.itos = dict()
         if vocab_path is not None:
             self.load_vocab(vocab_path)
-            self.secure = True
         else:
             self.secure = False
 
@@ -214,6 +215,7 @@ class QuesNetTokenizer(object):
             path of vocabulary files
             it must be a directory containing word.txt (meta.txt is optional)
         """
+        self.secure = True
         with open(os.path.join(path, 'word.txt'), "rt", encoding="utf-8") as f:
             words = f.read().strip().split('\n')
             self.stoi['word'] = {word: index for index, word in enumerate(words)}
@@ -353,7 +355,7 @@ def clip(v, low, high):
     return v
 
 
-class lines:
+class Lines:
     def __init__(self, filename, skip=0, preserve_newline=False):
         self.filename = filename
         with open(filename):
@@ -431,7 +433,7 @@ class QuestionLoader:
             by default lambda x:x['ques_options']
         """
         self.range = None
-        self.ques = lines(ques_file, skip=1)
+        self.ques = Lines(ques_file, skip=1)
         self.range = range or slice(0, len(self), 1)
         self.img_dir = tokenizer.img_dir
         self.labels = []
@@ -629,7 +631,7 @@ def pretrain_embedding_layer(dataset: EmbeddingDataset, ae: AE, lr: float = 1e-3
     return ae
 
 
-def pretrain_QuesNet(path, output_dir, tokenizer, save_embs=False, train_params=None):
+def pretrain_quesnet(path, output_dir, tokenizer, save_embs=False, train_params=None):
     """ pretrain QuesNet
 
     Parameters
@@ -644,6 +646,24 @@ def pretrain_QuesNet(path, output_dir, tokenizer, save_embs=False, train_params=
         whether to save pretrained word/image/meta embeddings seperately
     train_params : dict, optional
         the training parameters and model parameters, by default None
+        - "n_epochs": int, default = 1
+            train param, number of epochs
+        - "batch_size": int, default = 6
+            train param, batch size
+        - "lr": float, default = 1e-3
+            train param, learning rate
+        - "save_every": int, default = 0
+            train param, save steps interval
+        - "log_steps": int, default = 10
+            train param, log steps interval
+        - "device": str, default = 'cpu'
+            train param, 'cpu' or 'cuda'
+        - "max_steps": int, default = 0
+            train param, stop training when reach max steps
+        - "emb_size": int, default = 256
+            model param, the embedding size of word, figure, meta info
+        - "feat_size": int, default = 256
+            model param, the size of question infer vector
 
     Examples
     ----------
@@ -653,7 +673,7 @@ def pretrain_QuesNet(path, output_dir, tokenizer, save_embs=False, train_params=
     ... "know_name": "['代数', '集合', '集合的相等']"
     ... }]
     >>> tokenizer.set_vocab(items, key=lambda x: x['ques_content'], trim_min_count=1, silent=True)
-    >>> pretrain_QuesNet('./data/quesnet_data.json', './testQuesNet', tokenizer) # doctest: +SKIP
+    >>> pretrain_quesnet('./data/quesnet_data.json', './testQuesNet', tokenizer) # doctest: +SKIP
     """
     default_train_params = {
         # train params

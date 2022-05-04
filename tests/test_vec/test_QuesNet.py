@@ -1,6 +1,6 @@
 import pytest
 import torch
-from EduNLP.Pretrain import QuesNetTokenizer, pretrain_QuesNet
+from EduNLP.Pretrain import QuesNetTokenizer, pretrain_quesnet
 from EduNLP.I2V import QuesNet
 from EduNLP.utils import abs_current_dir, path_append
 from EduNLP.ModelZoo.QuesNet import QuesNet as _QuesNet, ImageAE, MetaAE
@@ -63,7 +63,7 @@ def test_quesnet_pretrain(quesnet_data, tmpdir):
         'save_every': 1,
         'emb_size': 256
     }
-    pretrain_QuesNet(path_append(abs_current_dir(__file__),
+    pretrain_quesnet(path_append(abs_current_dir(__file__),
                                  "test_data/quesnet_data.json", to_str=True),
                      output_dir, tokenizer, True, train_params)
 
