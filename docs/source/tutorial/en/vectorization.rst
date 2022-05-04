@@ -101,7 +101,7 @@ This model directly uses the relevant model methods in the gensim library to con
 
 ::
 
-   >>> i2v = get_pretrained_i2v("test_w2v", "examples/test_model/data/w2v") # doctest: +ELLIPSIS
+   >>> i2v = get_pretrained_i2v("test_w2v", "examples/test_model/w2v") # doctest: +ELLIPSIS
    >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
    >>> item_vector # doctest: +ELLIPSIS
    array([[...]], dtype=float32)
@@ -120,7 +120,7 @@ This model is a comprehensive processing method which can convert items into vec
 ::
 
    >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"}
-   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+   >>> model_path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
    >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
    >>> i2v(item)
    ([array([ 4.76559885e-02, -1.60574958e-01,  1.94614579e-03,  2.40295693e-01,
@@ -143,7 +143,7 @@ Contents: the combination of each question segmentation sequences in one questio
 ::
 
    >>> token_items=['公式','[FORMULA]','公式','[FORMULA]','如图','[FIGURE]','x',',','y','约束条件','[SEP]','z','=','x','+','7','y','最大值','[MARK]']
-   >>> path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+   >>> path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
    >>> t2v = T2V('d2v',filepath=path)
    >>> t2v(token_items)
    [array([ 0.0256574 ,  0.06061139, -0.00121044, -0.0167674 , -0.0111706 ,
