@@ -26,7 +26,7 @@ from ..SIF.segment.segment import FigureSegment
 
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
-from ..ModelZoo.QuesNet import QuesNet, AE
+from ..ModelZoo.quesnet import QuesNet, AE
 from EduNLP import logger
 import linecache
 import subprocess

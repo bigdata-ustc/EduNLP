@@ -1,6 +1,6 @@
 import torch
 from typing import Union
-from EduNLP.ModelZoo.QuesNet import QuesNet
+from EduNLP.ModelZoo.quesnet import QuesNet
 from EduNLP.Pretrain import Question, QuesNetTokenizer
 
 

@@ -3,7 +3,7 @@ import torch
 from EduNLP.Pretrain import QuesNetTokenizer, pretrain_quesnet
 from EduNLP.I2V import QuesNet
 from EduNLP.utils import abs_current_dir, path_append
-from EduNLP.ModelZoo.QuesNet import QuesNet as _QuesNet, ImageAE, MetaAE
+from EduNLP.ModelZoo.quesnet import QuesNet as _QuesNet, ImageAE, MetaAE
 import numpy as np
 import os
 

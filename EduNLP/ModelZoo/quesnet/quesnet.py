@@ -20,11 +20,15 @@ class BiHRNN(FeatureExtractor):
                  meta='know_name',
                  emb_size=256,
                  rnn='LSTM',
-                 lambda_input=[1., 1., 1.],
-                 lambda_loss=[1., 1.],
+                 lambda_input=None,
+                 lambda_loss=None,
                  layers=4, **kwargs):
         super(BiHRNN, self).__init__(**kwargs)
 
+        if lambda_loss is None:
+            lambda_loss = [1., 1.]
+        if lambda_input is None:
+            lambda_input = [1., 1., 1.]
         self.config = {
             'meta': meta,
             'emb_size': emb_size,
