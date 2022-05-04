@@ -420,7 +420,7 @@ class QuestionDataset(Dataset):
 
 
 def train_disenqnet(train_items, disen_tokenizer, output_dir, predata_dir,
-                    train_params=None, test_items=None, silent=False, data_formation=None):                  
+                    train_params=None, test_items=None, silent=False, data_formation=None):
     """
     Parameters
     ----------
