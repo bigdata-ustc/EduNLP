@@ -326,7 +326,7 @@ class Bert(I2V):
 
 class QuesNet(I2V):
     """
-    The model aims to transfer item and tokens to vector with QuesNet.
+    The model aims to transfer item and tokens to vector with quesnet.
 
     Bases
     -------

@@ -632,7 +632,7 @@ def pretrain_embedding_layer(dataset: EmbeddingDataset, ae: AE, lr: float = 1e-3
 
 
 def pretrain_quesnet(path, output_dir, tokenizer, save_embs=False, train_params=None):
-    """ pretrain QuesNet
+    """ pretrain quesnet
 
     Parameters
     ----------
@@ -641,7 +641,7 @@ def pretrain_quesnet(path, output_dir, tokenizer, save_embs=False, train_params=
     output_dir : str
         output path·
     tokenizer : QuesNetTokenizer
-        QuesNet tokenizer
+        quesnet tokenizer
     save_embs : bool, optional
         whether to save pretrained word/image/meta embeddings seperately
     train_params : dict, optional
@@ -738,7 +738,7 @@ def pretrain_quesnet(path, output_dir, tokenizer, save_embs=False, train_params=
         emb_weights.append(w2v_emb[w2v_index])
     emb_weights = np.array(emb_weights)
     model.load_emb(emb_weights)
-    logger.info('QuesNet Word Embedding loaded')
+    logger.info('quesnet Word Embedding loaded')
     if save_embs:
         np.save(os.path.join(output_dir, 'w2v_embs.npy'), emb_weights)
 
@@ -748,7 +748,7 @@ def pretrain_quesnet(path, output_dir, tokenizer, save_embs=False, train_params=
                                           log_step=train_params['log_steps'], batch_size=train_params['batch_size'],
                                           epochs=train_params['n_epochs'], device=device)
     model.load_img(trained_ie)
-    logger.info('QuesNet Image Embedding loaded')
+    logger.info('quesnet Image Embedding loaded')
     if save_embs:
         torch.save(trained_ie.state_dict(), os.path.join(output_dir, 'trained_ie.pt'))
 
@@ -758,11 +758,11 @@ def pretrain_quesnet(path, output_dir, tokenizer, save_embs=False, train_params=
                                           log_step=train_params['log_steps'], batch_size=train_params['batch_size'],
                                           epochs=train_params['n_epochs'], device=device)
     model.load_meta(trained_me)
-    logger.info('QuesNet Meta Embedding loaded')
+    logger.info('quesnet Meta Embedding loaded')
     if save_embs:
         torch.save(trained_me.state_dict(), os.path.join(output_dir, 'trained_me.pt'))
 
-    logger.info("QuesNet Word, Image and Meta Embeddings training is done")
+    logger.info("quesnet Word, Image and Meta Embeddings training is done")
 
     # HLM and DOO training
     ques_dl.pipeline = partial(model.make_batch, device=device, pretrain=True)

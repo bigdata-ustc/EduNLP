@@ -7,7 +7,7 @@ from EduData import get_data
 from .rnn import RNNModel
 from .gensim_vec import W2V, D2V
 from .bert_vec import BertModel
-from .QuesNet import QuesNetModel
+from .quesnet import QuesNetModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
 

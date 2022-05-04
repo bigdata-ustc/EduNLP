@@ -14,7 +14,7 @@ class QuesNetModel(object):
         device: str
             cpu or cuda, default is cpu
         tokenizer: QuesNetTokenizer
-            QuesNet  tokenzier
+            quesnet  tokenzier
         """
         self.device = torch.device(device)
         if tokenizer is None:
@@ -22,7 +22,7 @@ class QuesNetModel(object):
         self.model = QuesNet.from_pretrained(pretrained_dir, tokenizer).to(device)
 
     def infer_vector(self, items: Union[Question, list]) -> torch.Tensor:
-        """ get question embedding with QuesNet
+        """ get question embedding with quesnet
 
         Parameters
         ----------
@@ -35,7 +35,7 @@ class QuesNetModel(object):
         return vector
 
     def infer_tokens(self, items: Union[Question, list]) -> torch.Tensor:
-        """ get token embeddings with QuesNet
+        """ get token embeddings with quesnet
 
         Parameters
         ----------

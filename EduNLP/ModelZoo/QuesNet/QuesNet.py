@@ -68,7 +68,7 @@ class BiHRNN(FeatureExtractor):
             self.h0 = nn.Parameter(torch.rand(layers * 2, 1, rnn_size))
             self.c0 = nn.Parameter(torch.rand(layers * 2, 1, rnn_size))
         else:
-            raise ValueError('QuesNet only support GRU and LSTM now.')
+            raise ValueError('quesnet only support GRU and LSTM now.')
 
         self.proj_q = nn.Linear(feat_size, feat_size)
         self.proj_k = nn.Linear(feat_size, feat_size)
