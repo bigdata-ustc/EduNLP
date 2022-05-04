@@ -420,7 +420,7 @@ class QuestionDataset(Dataset):
 
 
 def train_disenqnet(train_items, disen_tokenizer, output_dir, predata_dir,
-                    train_params=None, test_items=None, silent=False, data_formation=None):
+                    train_params=None, test_items=None, silent=False, data_formation=None):                  
     """
     Parameters
     ----------
@@ -433,7 +433,39 @@ def train_disenqnet(train_items, disen_tokenizer, output_dir, predata_dir,
     predata_dir: str
         the dirname to load or save predata (including wv.th, vocab.list and concept.list)
     train_params: dict, defaults to None
-        the training parameters
+        the training parameters for data, model and trianer.
+        - "trim_min": int
+            data param, the trim_min_count for vocab and word2vec, by default 2
+        - "w2v_workers": int
+            data param, the number of workers for word2vec, by default 1
+        - "hidden": int
+            model param, by default 128
+        - "dropout": float
+            model param, dropout rate, by default 0.2
+        - "pos_weight": int
+            model param, positive sample weight in unbalanced multi-label concept classifier, by default 1
+        - "cp": float
+            model param, weight of concept loss, by default 1.5
+        - "mi": float
+            model param, weight of mutual information loss, by default 1.0
+        - "dis": float
+            model param, weight of disentangling loss, by default 2.0
+        - "epoch": int
+            train param, number of epoch, by default 1
+        - "batch": int
+            train param, batch size, by default 64
+        - "lr": float
+            train param, learning rate, by default 1e-3
+        - "step": int
+            train param, step_size for StepLR, by default 20
+        - "gamma": float
+            train param, gamma for StepLR, by default 0.5
+        - "warm_up": int
+            train param, number of epoch for warming up, by default 1
+        - "adv": int
+            train param, ratio of disc/enc training for adversarial process, by default 10
+        - "device": str
+            train param, 'cpu' or 'cuda', by default "cpu"
     test_items: list, defaults to None
         the raw test question list, default is None
     silent: bool, defaults to False
@@ -452,16 +484,17 @@ def train_disenqnet(train_items, disen_tokenizer, output_dir, predata_dir,
     """
     # dataset
     default_train_params = {
+        # data params
         "trim_min": 2,
-
+        "w2v_workers": 1,
+        # model params
         "hidden": 128,
         "dropout": 0.2,
         "pos_weight": 1,
-
         "cp": 1.5,
         "mi": 1.0,
         "dis": 2.0,
-
+        # training params
         "epoch": 1,
         "batch": 64,
         "lr": 1e-3,
@@ -469,8 +502,7 @@ def train_disenqnet(train_items, disen_tokenizer, output_dir, predata_dir,
         "gamma": 0.5,
         "warm_up": 1,
         "adv": 10,
-        "device": "cpu",
-        "w2v_workers": 1
+        "device": "cpu"
     }
     if train_params is not None:
         default_train_params.update(train_params)
