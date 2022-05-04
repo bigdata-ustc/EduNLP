@@ -3,7 +3,7 @@ from pickle import NONE
 import numpy as np
 from pathlib import PurePath
 import torch
-from EduNLP.ModelZoo.DisenQNet.DisenQNet import DisenQNet
+from EduNLP.ModelZoo.disenqnet.disenqnet import DisenQNet
 
 
 class DisenQModel(object):

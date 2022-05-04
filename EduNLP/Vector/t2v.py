@@ -9,7 +9,7 @@ from .gensim_vec import W2V, D2V
 from .bert_vec import BertModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
-from .DisenQModel import DisenQModel
+from .disenqnet import DisenQModel
 
 
 MODELS = {

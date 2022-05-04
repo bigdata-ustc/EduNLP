@@ -2,7 +2,7 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
-from ..ModelZoo.DisenQNet.DisenQNet import DisenQNet
+from ..ModelZoo.disenqnet.disenqnet import DisenQNet
 from ..Tokenizer import get_tokenizer
 from ..ModelZoo.utils import load_items, pad_sequence
 import json
@@ -87,6 +87,7 @@ class DisenQTokenizer(object):
     >>> print(token_items[0].keys())
     dict_keys(['content_idx', 'content_len'])
     """
+
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="space",
                  num_token="<num>", unk_token="<unk>", pad_token="<pad>", *args, **argv):
         """
