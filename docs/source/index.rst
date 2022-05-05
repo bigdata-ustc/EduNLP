@@ -145,7 +145,7 @@ If this repository is helpful for you, please cite our work
    tutorial/en/sif
    tutorial/en/seg
    tutorial/en/tokenize
-   tutorial/zh/tokenization
+   tutorial/en/tokenization
    tutorial/en/pretrain
    tutorial/en/vectorization
 

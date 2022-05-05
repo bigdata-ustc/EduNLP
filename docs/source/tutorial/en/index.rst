@@ -35,12 +35,14 @@ Examples
 
 To help you quickly understand the functions of this project, this section only shows the usages of common function interface. Intermediate function modules (such as parse, formula, segment, etc.) and more subdivided interface methods are not shown. For further study, please refer to relevant documents.
 
+------------------------------------------------------------
+
 .. nbgallery::
     :caption: This is a thumbnail gallery:
     :name: tokenization_gallery
     :glob:
     
-    Tokenization  <../../build/blitz/tokenizer/sif4sci.ipynb>
+    Tokenization  <../../build/blitz/sif/sif4sci.ipynb>
 
 
 .. nbgallery::

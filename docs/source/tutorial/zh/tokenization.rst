@@ -35,16 +35,15 @@
 ^^^^^^^^^^^^^^^^^^^^^^
 
 标准接口将标准化检验、成分分解、语法解析封装为一个整体，含有三个步骤的所有功能, 且提供多种参数以满足个性化使用需求。
-
 具体使用方法见示例：
+
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
     :name: tokenization_gallery1
     :glob:
     
-    令牌化  <../../build/blitz/tokenizer/sif4sci.ipynb>
-
+    令牌化标准接口  <../../build/blitz/sif/sif4sci.ipynb>
 
 
 令牌化容器
@@ -189,4 +188,4 @@ GensimSegTokenizer
     :name: tokenization_gallery2
     :glob:
     
-    令牌化  <../../build/blitz/tokenizer/Tokenizer.ipynb>
+    令牌化容器  <../../build/blitz/tokenizer/tokenizer.ipynb>

@@ -42,17 +42,6 @@ class Formula(object):
     >>> f.elements
     [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
 
-        Attributes
-    ------------
-    ast
-        show all ast details
-    elements
-        just show elements' id, type, text and role
-    ast_graph
-        draw a ast graph
-    to_str
-    resetable
-        return bool
     """
     def __init__(self, formula: (str, List[Dict]), variable_standardization=False, const_mathord=None,
                  init=True, *args, **kwargs):

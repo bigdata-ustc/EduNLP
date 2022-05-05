@@ -84,13 +84,8 @@ class SegmentList(object):
 
     Parameters
     ----------
-    item
-    figures:dict
-
-    Returns
-    ----------
-    list
-        tokenizated item
+    item: str
+    figures: dict
 
     Examples
     --------
@@ -98,22 +93,6 @@ class SegmentList(object):
     >>> SegmentList(test_item)
     ['如图所示，则三角形', 'ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
 
-    Attributes
-    ----------
-    segments
-        show all segments
-    text_segments
-        show text segments
-    formula_segments
-        show formula segments
-    figure_segments
-        show figure sements
-    ques_mark_segments
-        show question mark segments
-    tag_segments
-        show tag segments
-    describe
-        show number of each elements
     """
     def __init__(self, item, figures: dict = None):
         self._segments = []
@@ -299,9 +278,9 @@ def seg(item, figures=None, symbol=None):
 
     Parameters
     ----------
-    item
-    figures
-    symbol
+    item: str
+    figures: dict, optional
+    symbol: str, optional
 
     Returns
     -------
