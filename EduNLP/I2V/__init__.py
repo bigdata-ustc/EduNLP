@@ -2,4 +2,4 @@
 # 2021/8/1 @ tongshiwei
 
 from .i2v import I2V, get_pretrained_i2v
-from .i2v import D2V, W2V, Bert, DisenQ
+from .i2v import D2V, W2V, Elmo, Bert, DisenQ
