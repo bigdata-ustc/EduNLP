@@ -10,6 +10,8 @@ from .bert_vec import BertModel
 from .elmo_vec import ElmoModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
+from .disenqnet import DisenQModel
+
 
 MODELS = {
     "w2v": W2V,
@@ -19,6 +21,7 @@ MODELS = {
     "gru": RNNModel,
     "elmo": ElmoModel,
     'bert': BertModel,
+    "disenq": DisenQModel,
 }
 
 
@@ -82,6 +85,7 @@ PRETRAINED_MODELS = {
     "tal_edu_bert": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/tal_edu_bert.zip", "bert"],
     "luna_pub_bert_math_base": [
         "http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/luna_pub_bert_math_base.zip", "bert"],
+    "disenq_pub_128": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/disenq_public/1/disenq_pub_128.zip", "disenq"],
 }
 
 

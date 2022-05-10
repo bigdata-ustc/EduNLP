@@ -7,7 +7,6 @@ import numpy as np
 import json
 import os
 import time
-from EduNLP.Pretrain import BertTokenizer
 from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
 from EduNLP.Tokenizer import PureTextTokenizer
 from EduNLP.ModelZoo.rnn import ElmoLM
