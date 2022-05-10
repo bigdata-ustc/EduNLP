@@ -2,15 +2,17 @@
 # 2021/8/1 @ tongshiwei
 
 import json
+import os.path
+
 from EduNLP.constant import MODEL_DIR
 from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import PRETRAINED_MODELS
 from longling import path_append
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import BertTokenizer
+from EduNLP.Pretrain import BertTokenizer, ElmoTokenizer
 from EduNLP import logger
 
-__all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Bert", "get_pretrained_i2v", "Elmo"]
 
 
 class I2V(object):
@@ -61,6 +63,8 @@ class I2V(object):
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'elmo':
+            self.tokenizer = ElmoTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer,
                                                       **tokenizer_kwargs if tokenizer_kwargs is not None else {})
@@ -157,7 +161,7 @@ class D2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
-        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
         -----------
@@ -227,7 +231,7 @@ class W2V(I2V):
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
-        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
         -----------
@@ -288,7 +292,7 @@ class Bert(I2V):
 
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
         """
-        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
         -----------
@@ -321,6 +325,86 @@ class Bert(I2V):
                    tokenizer_kwargs=tokenizer_kwargs)
 
 
+class Elmo(I2V):
+    """
+    The model aims to transfer item and tokens to vector with Elmo.
+
+    Bases
+    -------
+    I2V
+
+    Parameters
+    -----------
+    tokenizer: str
+        the tokenizer name
+    t2v: str
+        the name of token2vector model
+    args:
+        the parameters passed to t2v
+    tokenizer_kwargs: dict
+        the parameters passed to tokenizer
+    pretrained_t2v: bool
+        True: use pretrained t2v model
+        False: use your own t2v model
+    kwargs:
+        the parameters passed to t2v
+
+    Returns
+    -------
+    i2v model: Elmo
+    """
+
+    def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
+        """
+        It is a function to switch item to vector. And before using the function, it is necessary to load model.
+
+        Parameters
+        -----------
+        items: str or list
+            the text of question
+        tokenize:bool
+            True: tokenize the item
+        return_tensors: str
+            tensor type used in tokenizer
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        """
+        is_batch = (tokenize and isinstance(items, list)) or (not tokenize and isinstance(items[0], list))
+        if tokenize:
+            tokens, lengths = self.tokenize(items, freeze_vocab=True, return_tensors=return_tensors,
+                                            pad_to_max_length=True)
+        else:
+            tokens = []
+            lengths = [len(i) for i in tokens] if is_batch else len(tokens)
+        if is_batch:
+            return self.t2v.infer_vector(
+                tokens, lengths=lengths, *args, **kwargs), self.t2v.infer_tokens(tokens,
+                                                                                 lengths=lengths, *args, **kwargs)
+        else:
+            tokens = [tokens]
+            lengths = [lengths]
+            i_v, i_t = self.t2v.infer_vector(
+                tokens, lengths=lengths, *args, **kwargs), self.t2v.infer_tokens(tokens,
+                                                                                 lengths=lengths, *args, **kwargs)
+            return i_v[0], i_t[0]
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_path: %s" % model_path)
+        tokenizer_kwargs = {"path": os.path.join(model_path, "vocab.json")}
+        return cls("elmo", name, pretrained_t2v=True, model_dir=model_dir,
+                   tokenizer_kwargs=tokenizer_kwargs)
+
+
 MODELS = {
     "d2v_all_256": [D2V, "d2v_all_256"],
     "d2v_sci_256": [D2V, "d2v_sci_256"],
@@ -331,6 +415,8 @@ MODELS = {
     "test_w2v": [W2V, "test_w2v"],
     "test_d2v": [D2V, "test_d2v"],
     'luna_bert': [Bert, 'luna_bert'],
+    "elmo_pub_math": [Elmo, "elmo_pub_math"],
+    'elmo_test': [Elmo, "elmo_test"],
     "tal_edu_bert": [Bert, "tal_edu_bert"],
     "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"]
 }
