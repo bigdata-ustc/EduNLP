@@ -112,8 +112,6 @@ class SegmentList(object):
         show question mark segments
     tag_segments
         show tag segments
-    describe
-        show number of each elements
     """
     def __init__(self, item, figures: dict = None):
         self._segments = []
