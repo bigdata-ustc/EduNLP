@@ -20,9 +20,9 @@ MODELS = {
     "rnn": RNNModel,
     "lstm": RNNModel,
     "gru": RNNModel,
-    "elmo": RNNModel,
+    "elmo": ElmoModel,
     'bert': BertModel,
-    'quesnet': QuesNetModel
+    'quesnet': QuesNetModel,
     "disenq": DisenQModel,
 }
 
@@ -90,7 +90,7 @@ PRETRAINED_MODELS = {
     "quesnet_test": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/quesnet_pub_256/1/quesnet_test.zip",
                      "quesnet"],
     "quesnet_pub_math": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/quesnet_pub_256/1/quesnet_pub_math.zip",
-                         "quesnet"]
+                         "quesnet"],
     "disenq_pub_128": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/disenq_public/1/disenq_pub_128.zip", "disenq"],
 }
 

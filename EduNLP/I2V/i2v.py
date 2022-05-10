@@ -9,8 +9,7 @@ from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import PRETRAINED_MODELS
 from longling import path_append
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer
-from EduNLP.Pretrain import BertTokenizer, QuesNetTokenizer, Question
+from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
 
@@ -536,7 +535,7 @@ MODELS = {
     "tal_edu_bert": [Bert, "tal_edu_bert"],
     "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"],
     "quesnet_test": [QuesNet, "quesnet_test"],
-    "quesnet_pub_math": [QuesNet, "quesnet_pub_math"]
+    "quesnet_pub_math": [QuesNet, "quesnet_pub_math"],
     'disenq_pub_128': [DisenQ, 'disenq_pub_128'],
 }
 
