@@ -7,8 +7,11 @@ from EduData import get_data
 from .rnn import RNNModel
 from .gensim_vec import W2V, D2V
 from .bert_vec import BertModel
+from .elmo_vec import ElmoModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
+from .disenqnet import DisenQModel
+
 
 MODELS = {
     "w2v": W2V,
@@ -16,8 +19,9 @@ MODELS = {
     "rnn": RNNModel,
     "lstm": RNNModel,
     "gru": RNNModel,
-    "elmo": RNNModel,
-    'bert': BertModel
+    "elmo": ElmoModel,
+    'bert': BertModel,
+    "disenq": DisenQModel,
 }
 
 
@@ -45,7 +49,7 @@ class T2V(object):
     def __init__(self, model: str, *args, **kwargs):
         model = model.lower()
         self.model_type = model
-        if model in {"rnn", "lstm", "gru", "elmo"}:
+        if model in {"rnn", "lstm", "gru"}:
             self.i2v: Vector = MODELS[model](model, *args, **kwargs)
         else:
             self.i2v: Vector = MODELS[model](*args, **kwargs)
@@ -74,9 +78,14 @@ PRETRAINED_MODELS = {
     "test_w2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"],
     "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"],
     "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"],
+    "elmo_pub_math": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo_pub/1/elmo_pub_math.zip",
+                      'elmo'],
+    "elmo_test": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo_pub/1/elmo_test.zip",
+                  "elmo"],
     "tal_edu_bert": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/tal_edu_bert.zip", "bert"],
     "luna_pub_bert_math_base": [
         "http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/luna_pub_bert_math_base.zip", "bert"],
+    "disenq_pub_128": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/disenq_public/1/disenq_pub_128.zip", "disenq"],
 }
 
 
