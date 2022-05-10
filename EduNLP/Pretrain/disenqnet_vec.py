@@ -477,8 +477,8 @@ def train_disenqnet(train_items, disen_tokenizer, output_dir, predata_dir,
 
     Examples
     ----------
-    >>> train_data = load_items("tests/test_vec/test_data/disenq_train.json")[:100]
-    >>> test_data = load_items("tests/test_vec/test_data/disenq_test.json")[:100]
+    >>> train_data = load_items("static/test_data/disenq_train.json")[:100]
+    >>> test_data = load_items("static/test_data/disenq_test.json")[:100]
     >>> tokenizer = DisenQTokenizer(max_length=250, tokenize_method="space")
     >>> train_disenqnet(train_data, tokenizer,
     ... "examples/test_model/data/disenq","examples/test_model/data/disenq", silent=True)  # doctest: +SKIP

@@ -48,7 +48,8 @@ def test_quesnet_pretrain(quesnet_data, tmpdir):
 
     tokenizer = QuesNetTokenizer(meta=['know_name'],
                                  img_dir=path_append(abs_current_dir(__file__),
-                                                     "test_data/quesnet_img", to_str=True))
+                                                     "../../static/test_data/quesnet_img",
+                                                     to_str=True))
 
     tokenizer.set_vocab(quesnet_data, key=lambda x: x['ques_content'],
                         trim_min_count=2, silent=False)
@@ -56,7 +57,8 @@ def test_quesnet_pretrain(quesnet_data, tmpdir):
 
     tokenizer = QuesNetTokenizer.from_pretrained(output_dir,
                                                  img_dir=path_append(abs_current_dir(__file__),
-                                                                     "test_data/quesnet_img", to_str=True))
+                                                                     "../../static/test_data/quesnet_img",
+                                                                     to_str=True))
     train_params = {
         'max_steps': 2,
         'feat_size': 256,
@@ -64,7 +66,7 @@ def test_quesnet_pretrain(quesnet_data, tmpdir):
         'emb_size': 256
     }
     pretrain_quesnet(path_append(abs_current_dir(__file__),
-                                 "test_data/quesnet_data.json", to_str=True),
+                                 "../../static/test_data/quesnet_data.json", to_str=True),
                      output_dir, tokenizer, True, train_params)
 
     tokenizer_kwargs = {
