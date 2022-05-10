@@ -53,7 +53,6 @@ class PureTextTokenizer(Tokenizer):
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']
     """
-
     def __init__(self, *args, **kwargs):
         self.tokenization_params = {
             "formula_params": {
@@ -97,7 +96,6 @@ class TextTokenizer(Tokenizer):
     >>> next(tokens)[:10]
     ['[TAG]', '复数', 'z', '=', '1', '+', '2', 'i', '+', 'i']
     """
-
     def __init__(self, *args, **kwargs):
         self.tokenization_params = {
             "formula_params": {
@@ -120,6 +118,7 @@ TOKENIZER = {
 def get_tokenizer(name, *args, **kwargs):
     r"""
     It is a total interface to use difference tokenizer.
+
     Parameters
     ----------
     name: str
@@ -128,9 +127,11 @@ def get_tokenizer(name, *args, **kwargs):
         the parameters passed to tokenizer
     kwargs:
         the parameters passed to tokenizer
+
     Returns
     -------
     tokenizer: Tokenizer
+
     Examples
     --------
     >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]

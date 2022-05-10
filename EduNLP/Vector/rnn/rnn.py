@@ -13,7 +13,7 @@ class RNNModel(Vector):
     """
     Examples
     --------
-    >>> model = RNNModel("BiLSTM", None, 2, vocab_size=4, embedding_dim=3)
+    >>> model = RNNModel("ELMO", None, 2, vocab_size=4, embedding_dim=3)
     >>> seq_idx = [[1, 2, 3], [1, 2, 0], [3, 0, 0]]
     >>> output, hn = model(seq_idx, indexing=False, padding=False)
     >>> seq_idx = [[1, 2, 3], [1, 2], [3]]

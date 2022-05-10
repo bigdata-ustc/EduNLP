@@ -146,8 +146,9 @@ def test_rnn(stem_tokens, tmpdir):
     with pytest.raises(TypeError):
         RNNModel("Error", w2v, 20)
 
-    for rnn_type in ["Rnn", "lstm", "GRU"]:
+    for rnn_type in ["ElMo", "Rnn", "lstm", "GRU"]:
         rnn = RNNModel(rnn_type, w2v, 20, device="cpu")
+
         tokens = rnn.infer_tokens(stem_tokens[:1])
         item = rnn.infer_vector(stem_tokens[:1])
         assert tokens.shape == (1, len(stem_tokens[0]), 20 * (2 if rnn.bidirectional else 1))
