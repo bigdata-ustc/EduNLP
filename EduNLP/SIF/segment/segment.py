@@ -92,7 +92,6 @@ class SegmentList(object):
     >>> test_item = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
     >>> SegmentList(test_item)
     ['如图所示，则三角形', 'ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
-
     """
     def __init__(self, item, figures: dict = None):
         self._segments = []

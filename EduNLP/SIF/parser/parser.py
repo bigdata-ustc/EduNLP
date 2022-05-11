@@ -4,7 +4,7 @@ import re
 
 class Parser:
     """
-    initial data and special variable
+    Parse the item to standard format.
     """
     def __init__(self, data, check_formula=True):
         self.lookahead = 0

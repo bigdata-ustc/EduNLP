@@ -41,7 +41,6 @@ class Formula(object):
     <Formula: x>
     >>> f.elements
     [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
-
     """
     def __init__(self, formula: (str, List[Dict]), variable_standardization=False, const_mathord=None,
                  init=True, *args, **kwargs):
