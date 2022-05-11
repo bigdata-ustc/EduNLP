@@ -21,7 +21,7 @@ class W2V(Vector):
     method: str
         fasttext
         other(Word2Vec)
-    binary
+    binary: bool
     """
     def __init__(self, filepath, method=None, binary=None):
         fp = PurePath(filepath)
@@ -65,7 +65,7 @@ class W2V(Vector):
         index = self.key_to_index(item)
         return self.wv[item] if index not in self.constants.values() else np.zeros((self.vector_size,))
 
-    def infer_vector(self, items, agg="mean", *args, **kwargs) -> np.ndarray:
+    def infer_vector(self, items, agg="mean", *args, **kwargs) -> list:
         token_vectors = self.infer_tokens(items, *args, **kwargs)
         return [eval("np.%s" % agg)(item, axis=0) for item in token_vectors]
 

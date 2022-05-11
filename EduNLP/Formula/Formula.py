@@ -42,7 +42,7 @@ class Formula(object):
     >>> f.elements
     [{'id': 0, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0}]
 
-        Attributes
+    Attributes
     ------------
     ast
         show all ast details

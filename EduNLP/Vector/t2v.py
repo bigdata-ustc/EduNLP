@@ -9,8 +9,12 @@ from EduData import get_data
 from .rnn import RNNModel
 from .gensim_vec import W2V, D2V
 from .bert_vec import BertModel
+from .quesnet import QuesNetModel
+from .elmo_vec import ElmoModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
+from .disenqnet import DisenQModel
+
 
 MODELS = {
     "w2v": W2V,
@@ -18,8 +22,10 @@ MODELS = {
     "rnn": RNNModel,
     "lstm": RNNModel,
     "gru": RNNModel,
-    "elmo": RNNModel,
-    'bert': BertModel
+    "elmo": ElmoModel,
+    'bert': BertModel,
+    'quesnet': QuesNetModel,
+    "disenq": DisenQModel,
 }
 
 
@@ -50,7 +56,7 @@ class T2V(object):
     def __init__(self, model: str, *args, **kwargs):
         model = model.lower()
         self.model_type = model
-        if model in {"rnn", "lstm", "gru", "elmo"}:
+        if model in {"rnn", "lstm", "gru"}:
             self.i2v: Vector = MODELS[model](model, *args, **kwargs)
         else:
             self.i2v: Vector = MODELS[model](*args, **kwargs)
