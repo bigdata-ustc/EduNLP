@@ -9,11 +9,11 @@ from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import PRETRAINED_MODELS
 from longling import path_append
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer
+from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
 
-__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "DisenQ", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "DisenQ", "QuesNet", "get_pretrained_i2v"]
 
 
 class I2V(object):
@@ -60,6 +60,9 @@ class I2V(object):
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'quesnet':
+            self.tokenizer = QuesNetTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'elmo':
             self.tokenizer = ElmoTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'disenq':
@@ -406,11 +409,9 @@ class Bert(I2V):
 class DisenQ(I2V):
     """
     The model aims to transfer item and tokens to vector with DisenQ.
-
     Bases
     -------
     I2V
-
     Parameters
     -----------
     tokenizer: str
@@ -426,7 +427,6 @@ class DisenQ(I2V):
         False: use your own t2v model
     kwargs:
         the parameters passed to t2v
-
     Returns
     -------
     i2v model: DisenQ
@@ -435,7 +435,6 @@ class DisenQ(I2V):
                      key=lambda x: x, vector_type=None, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
-
         Parameters
         -----------
         item: dict or list
@@ -448,7 +447,6 @@ class DisenQ(I2V):
             the parameters passed to t2v
         kwargs:
             the parameters passed to t2v
-
         Returns
         --------
         vector:list
@@ -472,6 +470,56 @@ class DisenQ(I2V):
                    tokenizer_kwargs=tokenizer_kwargs, **kwargs)
 
 
+class QuesNet(I2V):
+    """
+    The model aims to transfer item and tokens to vector with quesnet.
+    Bases
+    -------
+    I2V
+    """
+
+    def infer_vector(self, item, tokenize=True, key=lambda x: x, meta=['know_name'], *args, **kwargs):
+        """ It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        Parameters
+        ----------
+        item : str or dict or list
+            the item of question, or question list
+        tokenize : bool, optional
+            True: tokenize the item
+        key : _type_, optional
+            _description_, by default lambdax:x
+        meta : list, optional
+            meta information, by default ['know_name']
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+        Returns
+        -------
+        token embeddings
+        question embedding
+        """
+        input = self.tokenize(item, key=key, meta=meta, *args, **kwargs) if tokenize is True else item
+        content = input['content_idx']
+        meta_idx = input['meta_idx']
+        if isinstance(item, list):
+            qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(item))]
+        else:
+            qs = Question("", content, [0], [[0], [0], [0]], meta_idx)
+        return self.t2v.infer_vector(qs), self.t2v.infer_tokens(qs)
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_path: %s" % model_path)
+        tokenizer_kwargs = {
+            "tokenizer_config_dir": model_path}
+        return cls("quesnet", name, pretrained_t2v=True, model_dir=model_dir,
+                   tokenizer_kwargs=tokenizer_kwargs)
+
+
 MODELS = {
     "d2v_all_256": [D2V, "d2v_all_256"],
     "d2v_sci_256": [D2V, "d2v_sci_256"],
@@ -486,6 +534,8 @@ MODELS = {
     'elmo_test': [Elmo, "elmo_test"],
     "tal_edu_bert": [Bert, "tal_edu_bert"],
     "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"],
+    "quesnet_test": [QuesNet, "quesnet_test"],
+    "quesnet_pub_math": [QuesNet, "quesnet_pub_math"],
     'disenq_pub_128': [DisenQ, 'disenq_pub_128'],
 }
 

@@ -41,7 +41,8 @@ def test_bert_without_param(stem_data_bert, tmpdir):
     assert output.shape[-1] == model.vector_size
     t2v = T2V('bert', output_dir)
     assert t2v(inputs).shape[-1] == t2v.vector_size
-    assert t2v.infer_vector(inputs).shape[-1] == t2v.vector_size
+    assert t2v.infer_vector(inputs).shape == (1, t2v.vector_size)
+    assert t2v.infer_vector(inputs, pooling_strategy='average').shape == (1, t2v.vector_size)
     assert t2v.infer_tokens(inputs).shape[-1] == t2v.vector_size
 
 
