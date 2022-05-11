@@ -46,6 +46,7 @@ class I2V(object):
     >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
     >>> i2v(item)
     ([array([ ...dtype=float32)], None)
+
     Returns
     -------
     i2v model: I2V
