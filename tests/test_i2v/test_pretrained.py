@@ -26,5 +26,13 @@ def test_pretrained_i2v(tmp_path):
 
     get_pretrained_i2v("luna_bert", d)
 
+    get_pretrained_i2v("quesnet_test", d)
+
+    get_pretrained_i2v("luna_pub_bert_math_base", d)
+
+    get_pretrained_i2v("elmo_test", d)
+
+    get_pretrained_i2v("tal_edu_bert", d)
+
     with pytest.raises(KeyError):
         get_pretrained_i2v("error")
