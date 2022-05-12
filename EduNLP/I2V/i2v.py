@@ -333,7 +333,7 @@ class Elmo(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
@@ -459,7 +459,7 @@ class DisenQ(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, **kwargs):
-        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_dir: %s" % model_path)
@@ -511,7 +511,7 @@ class QuesNet(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
@@ -526,7 +526,8 @@ MODEL_MAP = {
     "d2v": D2V,
     "bert": Bert,
     "disenq": DisenQ,
-    "quesnet": QuesNet
+    "quesnet": QuesNet,
+    "elmo": Elmo
 }
 
 
