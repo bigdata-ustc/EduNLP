@@ -97,7 +97,7 @@ def test_disen_i2v(tmpdir):
     ]
 
     pretrained_dir = str(tmpdir.mkdir('pretrained'))
-    i2v = get_pretrained_i2v("disenq_pub_128", model_dir=pretrained_dir)
+    i2v = get_pretrained_i2v("disenq_test_128", model_dir=pretrained_dir)
     i_vec, t_vec = i2v(test_items[0], key=lambda x: x["content"])
     assert len(i_vec) == 2
     assert t_vec.shape[2] == i2v.vector_size
