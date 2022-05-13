@@ -59,12 +59,9 @@ nbsphinx_thumbnails = {
     'build/blitz/sif/sif': '_static/sif.png',
     'build/blitz/sif/sif_addition': '_static/sif_addition.png',
     'build/blitz/utils/data': '_static/data.png',
+    'build/blitz/sif/seg/seg': '_static/seg.png',
+    'build/blitz/sif/parse/parse': '_static/parse.png',
     'build/blitz/formula/formula': '_static/formula.png',
-    'build/blitz/seg/seg': '_static/seg.png',
-    'build/blitz/parse/parse': '_static/parse.png',
-    'build/blitz/formula/formula': '_static/formula.png',
-    'build/blitz/tokenizer/tokenizer': '_static/tokenizer.png',
-    'build/blitz/vectorization/i2v': '_static/i2v.png',
     'build/blitz/pretrain/prepare_dataset': '_static/prepare_dataset.jpg',
     'build/blitz/pretrain/gensim/d2v_bow_tfidf': '_static/d2v_bow_tfidf.png',
     'build/blitz/pretrain/gensim/d2v_general': '_static/d2v_general.png',
@@ -74,11 +71,9 @@ nbsphinx_thumbnails = {
     'build/blitz/pretrain/seg_token/d2v': '_static/d2v.png',
     'build/blitz/pretrain/seg_token/d2v_d1': '_static/d2v_d1.png',
     'build/blitz/pretrain/seg_token/d2v_d2': '_static/d2v_d2.png',
-    'build/blitz/tokenizer/tokenizier': '_static/tokenizer.png',
     'build/blitz/sif/sif4sci': '_static/tokenizer.png',
-    'build/blitz/vectorization/get_pretrained_i2v': '_static/i2v.png',
-    'build/blitz/tokenizer/total_tokenize': '_static/tokenizer.png',
-    'build/blitz/vectorization/total_vector': '_static/i2v.png',
+    'build/blitz/i2v/get_pretrained_i2v': '_static/i2v.png',
+    'build/blitz/i2v/get_pretrained_i2v': '_static/i2v.png',
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -114,3 +109,8 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static', 'build/asset/_static']
+
+autodoc_default_options = {
+    'member-order': 'bysource',
+    'undoc-members': True,
+}

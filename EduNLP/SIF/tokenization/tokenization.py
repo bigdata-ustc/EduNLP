@@ -24,19 +24,6 @@ class TokenList(object):
     text_params:dict
     formula_params:dict
     figure_params:dict
-
-    Attributes
-    -------------
-    tokens
-        show all tokens
-    text_tokens
-        show text tokens
-    formula_tokens
-        show formula tokens
-    figure_tokens
-        show figure tokens
-    ques_mark_tokens
-        show question mark tokens
     """
     def __init__(self, segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
         self._tokens = []
