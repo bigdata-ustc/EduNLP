@@ -358,10 +358,9 @@ def clip(v, low, high):
 class Lines:
     def __init__(self, filename, skip=0, preserve_newline=False):
         self.filename = filename
-        with open(filename):
-            pass
-        output = subprocess.check_output(('wc -l ' + filename).split())
-        self.length = int(output.split()[0]) - skip
+        with open(filename) as f:
+            self.length = len(f.readlines()) - skip
+        assert self.length > 0, f'{filename} is empty. Or file length is less than skip length.'
         self.skip = skip
         self.preserve_newline = preserve_newline
 
@@ -410,7 +409,8 @@ class QuestionLoader:
                  content_key=lambda x: x['ques_content'],
                  meta_key=lambda x: x['know_name'],
                  answer_key=lambda x: x['ques_answer'],
-                 option_key=lambda x: x['ques_options']
+                 option_key=lambda x: x['ques_options'],
+                 skip=0
                  ):
         """ Read question file as data list. Same behavior on same file.
 
@@ -431,10 +431,12 @@ class QuestionLoader:
             by default lambda x:x['ques_answer']
         option_key: function, optional
             by default lambda x:x['ques_options']
+        skip: int, optional
+            skip the first several lines, by default 0
         """
         self.range = None
         self.ques = Lines(ques_file, skip=1)
-        self.range = range or slice(0, len(self), 1)
+        self.range = range or slice(0, len(self), skip)
         self.img_dir = tokenizer.img_dir
         self.labels = []
         self.stoi = tokenizer.stoi
