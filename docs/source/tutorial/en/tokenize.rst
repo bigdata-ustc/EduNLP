@@ -1,173 +1,291 @@
-Tokenization
-==============
+Syntax Parsing
+=================
 
-Tokenization, known as word segmentation and sentence segmentation, is a basic but very important step in the field of NLP.
-In EduNLP, we divided Tokenization into different levels according to different granularity. To avoid ambiguity, we define as follows:
+In educational resources, texts and formulas have internal implicit or explicit syntax structures. It is of great benefit for further processing to extract these structures.
 
-* Word/char level: word segmentation
+* Text syntax structure parsing
 
-* Sentence level: sentence segmentation
+* Formula syntax structure parsing
 
-* Resource level: tokenization
-
-This module provides tokenization function of question text, converting questions into token sequences to facilitate the vectorization of questions. After that, each element in the sliced item needs word segmentation. In this step, there is a depth option. You can select all positions or some labels for segmentation according to your needs, such as \SIFSep and \SIFTag. You can also select where to add labels, either at the head and tail or only at the head or tail.
-
-There are two modes: one is linear mode, which is used for text processing (word segmentation using jieba library). The other one is ast mode, which is used to parse the formula.
-
-Word Segmentation
----------------------
-
-Text-tokenization: A sentence (without formulas) consists of several "words" in order. The process of dividing a sentence into several words is called "Text-tokenization". According to the granularity of "words", it can be subdivided into "Word-tokenization" and "Char-tokenization".
-
-::
-
-   - Word-tokenization: each phrase is a token.
-   
-   - Char-tokenization: each character is a token.
-    
-
-Text-tokenization is divided into two main steps:
-
-1. Text-tokenization:
-
-   - Word-tokenization: use the word segmentation tool to segment and extract words from the question text. Our project supports `jieba`.
-
-   - Char-tokenization: process text by character.
-
-2. Filter: filter the specified stopwords.
-
-   The default stopwords used in this project:`[stopwords] <https://github.com/bigdata-ustc/EduNLP/blob/master/EduNLP/meta_data/sif_stopwords.txt>`_
-   You can also use your own stopwords. The following example demonstrates how to use.
-
-Examples:
-
-::
-
-   from EduNLP.SIF.tokenization.text import tokenize 
-   >>> text = "三角函数是基本初等函数之一"
-   >>> tokenize(text, granularity="word")
-   ['三角函数', '初等', '函数']
-   
-   >>> tokenize(text, granularity="char")
-   ['三', '角', '函', '数', '基', '初', '函', '数']
-    
-Sentence Segmentation
-----------------------------
-
-During the process of sentence segmentation, a long document is divided into several sentences. Each sentence is a "token" (to be realized).
-
-Tokenization
---------------
-
-Tokenization is comprehensive analysis. In this process, sentences with formulas are segmented into several markers. Each marker is a "token".
-
-The implementation of this function is tokenize function. The required results can be obtained by passing in items after Structural Component Segmentation.
-
-::
-
-   from EduNLP.Tokenizer import get_tokenizer
-   >>> items = "如图所示，则三角形$ABC$的面积是$\\SIFBlank$。$\\FigureID{1}$"
-   >>> tokenize(SegmentList(items))
-   ['如图所示', '三角形', 'ABC', '面积', '\\\\SIFBlank', \\FigureID{1}]
-   >>> tokenize(SegmentList(items),formula_params={"method": "ast"})
-   ['如图所示', '三角形', <Formula: ABC>, '面积', '\\\\SIFBlank', \\FigureID{1}]
+The purpose is as follows:
 
 
+1. Represent underlines of blanks and brackets of choices with special identifiers. And the alphabets and formulas should be wrapped with $$, so that items of different types can be cut accurately through the symbol $.
+2. Determine whether the current item is legal and report the error type.
 
-You can view ``./EduNLP/Tokenizer/tokenizer.py`` and ``./EduNLP/Pretrain/gensim_vec.py`` for more tokenizers. We provide some encapsulated tokenizers for users to call them conveniently. Following is a complete list of tokenizers:
+Specific processing content
+--------------------------------
 
-- TextTokenizer
+1.Its function is to match alphabets and numbers other than formulas. Only the alphabets and numbers between two Chinese characters will be corrected, and the rest of the cases are regarded as formulas that do not conform to latex syntax.
 
-- PureTextTokenizer
+2.Match brackets like "( )" (both English format and Chinese format), that is, brackets with no content or spaces, which should be replaced with ``$\\SIFChoice$``
 
-- GensimSegTokenizer
+3.Match continuous underscores or underscores with spaces and replace them with ``$\\SIFBlank$``.
 
-- GensimWordTokenizer
+4.Match latex formulas，check the completeness and analyzability of latex formulas, and report an error for illegal formula.
 
+Formula syntax structure parsing
+-------------------------------------
 
-TextTokenizer
+This section is mainly realized by EduNLP. Formula modules, which can determine if the text has syntax errors and convert the syntax formula into the form of ast tree. In practice, this module is often used as part of an intermediate process, and the relevant parameters of this module can be automatically chosen by calling the corresponding model, so it generally does not need special attention.
+
+Introduction of Main Introduction
++++++++++++++++++++++++++++++++++++++++
+
+1.Formula: determine whether the single formula passed in is in str form. If so, use the ast method for processing, otherwise an error will be reported. In addition, parameter variable_standardization is given. If this parameter is true, the variable standardization method will be used to make sure the same variable has the same variable number.
+
+2.FormulaGroup: If you need to pass in a formula set, you can call this interface to get an ast forest. The tree structure in the forest is the same as that of Formula.
+
+Formula
+>>>>>>>>>>>>
+
+Formula: firstly, in the word segmentation function, the formula of the original text is segmented. In addition, ``Formula parse tree`` function is provided, which can represent the abstract syntax analysis tree of mathematical formula in the form of text or picture.
+
+This module also provides the function of formula variable standardization, such as determining whether 'x' in several sub formulas is the same variable.
+
+Import modules
 +++++++++++++++++++++
 
-By default, the pictures, labels, separators, blanks in the question text and other parts of the incoming item are converted into special characters for data security and tokenization of text and formulas. Also, the tokenizer uses linear analysis method for text and formulas, and the ``key`` parameter provided is used to preprocess the incoming item, which will be improved based on users' requirements in the future.
+::
+
+   import matplotlib.pyplot as plt
+   from EduNLP.Formula import Formula
+   from EduNLP.Formula.viz import ForestPlotter
+
+Initialization
++++++++++++++++
+
+Incoming parameters: item
+
+Item is the latex formula or the abstract syntax parse tree generated after the formula is parsed and its type is str or List[Dict].
 
 ::
 
-   >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
-   >>> tokenizer = TextTokenizer()
-   >>> tokens = tokenizer(items)
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
-   >>> items = [{
-   ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
-   ... "options": ["1", "2"]
-   ... }]
-   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
+   >>> f=Formula("x^2 + x+1 = y")
+   >>> f
+   <Formula: x^2 + x+1 = y>
 
-PureTextTokenizer
-+++++++++++++++++++++
+View the specific content after formula segmentation
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-By default, the pictures, labels, separators, blanks in the question text and other parts of the incoming item are converted into special characters for data security. At the same time, special formulas such as $\\FormFigureID{...}$ and $\\FormFigureBase64{...}$ are screened out to facilitate the tokenization of text and plain text formulas. Also, the tokenizer uses linear analysis method for text and formulas, and the ``key`` parameter provided is used to preprocess the incoming item, which will be improved based on users' requirements in the future.
+- View node elements after formula segmentation
 
 ::
 
-   >>> tokenizer = PureTextTokenizer()
-   >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-   ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
-   >>> tokens = tokenizer(items)
-   >>> next(tokens)[:10]
-   ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z']
-   >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
-   >>> tokens = tokenizer(items)
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
-   >>> items = [{
-   ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
-   ... "options": ["1", "2"]
-   ... }]
-   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
+   >>> f.elements
+   [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   {'id': 3, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 4, 'type': 'mathord', 'text': 'x', 'role': None},
+   {'id': 5, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 6, 'type': 'textord', 'text': '1', 'role': None},
+   {'id': 7, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 8, 'type': 'mathord', 'text': 'y', 'role': None}]
 
-GensimWordTokenizer
-+++++++++++++++++++++++
+- View the abstract parse tree of formulas
 
-By default, the pictures, blanks in the question text and other parts of the incoming item are converted into special characters for data security and the tokenization of text, formulas, labels and separators. Also, the tokenizer uses linear analysis method for text and abstract syntax tree method for formulas respectively. You can choose each of them by ``general`` parameter:
-
--true, it means that the incoming item conforms to SIF and the linear analysis method should be used.
--false, it means that the incoming item doesn't conform to SIF and the abstract syntax tree method should be used.
-
-GensimSegTokenizer
-++++++++++++++++++++
-
-By default, the pictures, separators, blanks in the question text and other parts of the incoming item are converted into special characters for data security and tokenization of text, formulas and labels. Also, the tokenizer uses linear analysis method for text and abstract analysis method of syntax tree for formulas.
-
-Compared to GensimWordTokenizer, the main differences are:
-
-* It provides the depth option for segmentation position, such as \SIFSep and \SIFTag.
-* By default, labels are inserted in the header of item components (such as text and formulas).
-
-Examples
-----------
-        
 ::
 
-   >>> tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
-   >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-   ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
-   >>> print(token_item.tokens[:10])
-   ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
-   >>> tokenizer = GensimWordTokenizer(symbol="fgmas", general=False)
-   >>> token_item = tokenizer("有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-   ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
-   >>> print(token_item.tokens[:10])
-   ['公式', '[FORMULA]', '如图', '[FIGURE]', '[FORMULA]', '约束条件', '公式', '[FORMULA]', '[SEP]', '[FORMULA]']
+   >>> f.ast
+   [{'val': {'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   'structure': {'bro': [None, 3],'child': [1, 2],'father': None,'forest': None}},
+   {'val': {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   'structure': {'bro': [None, 2], 'child': None, 'father': 0, 'forest': None}},
+   {'val': {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   'structure': {'bro': [1, None], 'child': None, 'father': 0, 'forest': None}},
+   {'val': {'id': 3, 'type': 'bin', 'text': '+', 'role': None},
+   'structure': {'bro': [0, 4], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 4, 'type': 'mathord', 'text': 'x', 'role': None},
+   'structure': {'bro': [3, 5], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 5, 'type': 'bin', 'text': '+', 'role': None},
+   'structure': {'bro': [4, 6], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 6, 'type': 'textord', 'text': '1', 'role': None},
+   'structure': {'bro': [5, 7], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 7, 'type': 'rel', 'text': '=', 'role': None},
+   'structure': {'bro': [6, 8], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 8, 'type': 'mathord', 'text': 'y', 'role': None},
+   'structure': {'bro': [7, None],'child': None,'father': None,'forest': None}}]
+
+   >>> print('nodes: ',f.ast_graph.nodes)
+   nodes:  [0, 1, 2, 3, 4, 5, 6, 7, 8]
+   >>> print('edges: ' ,f.ast_graph.edges)
+   edges:  [(0, 1), (0, 2)]
+
+- show the abstract parse tree by a picture
+
+::
+
+   >>> ForestPlotter().export(f.ast_graph, root_list=[node["val"]["id"] for node in f.ast if node["structure"]["father"] is None],)
+   >>> plt.show()
+
+
+.. figure:: ../../_static/formula.png
+
+
+Variable standardization
++++++++++++++++++++++++++++++
+
+This parameter makes the same variable have the same variable number.
+
+For example: the number of variable ``x`` is ``0`` and the number of variable ``y`` is ``1``.
+
+::
+
+   >>> f.variable_standardization().elements
+   [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base', 'var': 0},
+   {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   {'id': 3, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 4, 'type': 'mathord', 'text': 'x', 'role': None, 'var': 0},
+   {'id': 5, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 6, 'type': 'textord', 'text': '1', 'role': None},
+   {'id': 7, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 8, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}]
+
+FormulaGroup
+>>>>>>>>>>>>>>>
+
+Call ``FormulaGroup`` class to parse the equations. The related attributes and functions are the same as those above.
+
+::
+
+   import matplotlib.pyplot as plt
+   from EduNLP.Formula import Formula
+   from EduNLP.Formula import FormulaGroup
+   from EduNLP.Formula.viz import ForestPlotter
+   >>> fs = FormulaGroup(["x^2 = y", "x^3 = y^2", "x + y = \pi"])
+   >>> fs
+   <FormulaGroup: <Formula: x^2 = y>;<Formula: x^3 = y^2>;<Formula: x + y = \pi>>
+   >>> fs.elements
+   [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   {'id': 3, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 4, 'type': 'mathord', 'text': 'y', 'role': None},
+   {'id': 5, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 6, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   {'id': 7, 'type': 'textord', 'text': '3', 'role': 'sup'},
+   {'id': 8, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 9, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   {'id': 10, 'type': 'mathord', 'text': 'y', 'role': 'base'},
+   {'id': 11, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   {'id': 12, 'type': 'mathord', 'text': 'x', 'role': None},
+   {'id': 13, 'type': 'bin', 'text': '+', 'role': None},
+   {'id': 14, 'type': 'mathord', 'text': 'y', 'role': None},
+   {'id': 15, 'type': 'rel', 'text': '=', 'role': None},
+   {'id': 16, 'type': 'mathord', 'text': '\\pi', 'role': None}]
+   >>> fs.ast
+   [{'val': {'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   'structure': {'bro': [None, 3],
+      'child': [1, 2],
+      'father': None,
+      'forest': None}},
+   {'val': {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   'structure': {'bro': [None, 2],
+      'child': None,
+      'father': 0,
+      'forest': [6, 12]}},
+   {'val': {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'},
+   'structure': {'bro': [1, None], 'child': None, 'father': 0, 'forest': None}},
+   {'val': {'id': 3, 'type': 'rel', 'text': '=', 'role': None},
+   'structure': {'bro': [0, 4], 'child': None, 'father': None, 'forest': None}},
+   {'val': {'id': 4, 'type': 'mathord', 'text': 'y', 'role': None},
+   'structure': {'bro': [3, None],
+      'child': None,
+      'father': None,
+      'forest': [10, 14]}},
+   {'val': {'id': 5, 'type': 'supsub', 'text': '\\supsub', 'role': None},
+   'structure': {'bro': [None, 8],
+      'child': [6, 7],
+      'father': None,
+      'forest': None}},
+   {'val': {'id': 6, 'type': 'mathord', 'text': 'x', 'role': 'base'},
+   show more (open the raw output data in a text editor) ...
+   >>> fs.variable_standardization()[0]
+   [{'id': 0, 'type': 'supsub', 'text': '\\supsub', 'role': None}, {'id': 1, 'type': 'mathord', 'text': 'x', 'role': 'base', 'var': 0}, {'id': 2, 'type': 'textord', 'text': '2', 'role': 'sup'}, {'id': 3, 'type': 'rel', 'text': '=', 'role': None}, {'id': 4, 'type': 'mathord', 'text': 'y', 'role': None, 'var': 1}]
+   >>> ForestPlotter().export(fs.ast_graph, root_list=[node["val"]["id"] for node in fs.ast if node["structure"]["father"] is None],)
+
+.. figure:: ../../_static/formulagroup.png
+
+
+Text syntax structure parsing
+------------------------------------
+
+This section is mainly realized by EduNLP.SIF.Parse module. Its main function is to extract letters and numbers in the text and convert them into standard format.
+
+This module is mainly used as an *middle module* to parse the input text. In general, users do not call this module directly.
+
+Introduction of main content
++++++++++++++++++++++++++++++++++++
+
+1. Judge the type of the incoming text in the following order
+
+* is_chinese: its function is to match Chinese characters[\u4e00-\u9fa5].
+ 
+* is_alphabet: its function is to match alphabets other than formulas. Only the alphabets between two Chinese characters will be corrected (wrapped with $$), and the rest of the cases are regarded as formulas that do not conform to latex syntax.
+ 
+* is_number: its function is to match numbers other than formulas. Only the numbers between two Chinese characters will be corrected, and the rest of the cases are regarded as formulas that do not conform to latex syntax.
+ 
+2. Match latex formula
+
+* If Chinese characters appear in latex, print warning only once.
+ 
+* Use _is_formula_legal function, check the completeness and analyzability of latex formula, and report an error for formulas that do not conform to latex syntax.
+
+Import modules
+>>>>>>>>>>>>>>>>>>>
+
+::
+
+   from EduNLP.SIF.Parser import Parser
+
+Input
+>>>>>>>
+
+Types: str
+
+Content: question text
+
+::
+
+   >>> text1 = '生产某种零件的A工厂25名工人的日加工零件数_   _'
+   >>> text2 = 'X的分布列为(   )'
+   >>> text3 = '① AB是⊙O的直径，AC是⊙O的切线，BC交⊙O于点E．AC的中点为D'
+   >>> text4 = '支持公式如$\\frac{y}{x}$，$\\SIFBlank$，$\\FigureID{1}$，不支持公式如$\\frac{ \\dddot y}{x}$'
+
+Parsing
+>>>>>>>>>>>>>>>>>>>>
+
+::
+
+   >>> text_parser1 = Parser(text1)
+   >>> text_parser2 = Parser(text2)
+   >>> text_parser3 = Parser(text3)
+   >>> text_parser4 = Parser(text4)
+
+Related parameters description
+>>>>>>>>>>>>
+
+- Try to convert text to standard format
+
+::
+
+   >>> text_parser1.description_list()
+   >>> print('text_parser1.text:',text_parser1.text)
+   text_parser1.text: 生产某种零件的$A$工厂$25$名工人的日加工零件数$\SIFBlank$
+   >>> text_parser2.description_list()
+   >>> print('text_parser2.text:',text_parser2.text)
+   text_parser2.text: $X$的分布列为$\SIFChoice$
+
+- Determine if the text has syntax errors
+
+::
+
+   >>> text_parser3.description_list()
+   >>> print('text_parser3.error_flag: ',text_parser3.error_flag)
+   text_parser3.error_flag:  1
+   >>> text_parser4.description_list()
+   >>> print('text_parser4.fomula_illegal_flag: ',text_parser4.fomula_illegal_flag)
+   text_parser4.fomula_illegal_flag:  1
+

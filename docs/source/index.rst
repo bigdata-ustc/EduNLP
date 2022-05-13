@@ -143,9 +143,9 @@ If this repository is helpful for you, please cite our work
 
    tutorial/en/index
    tutorial/en/sif
-   tutorial/en/parse
    tutorial/en/seg
    tutorial/en/tokenize
+   tutorial/en/tokenization
    tutorial/en/pretrain
    tutorial/en/vectorization
 
@@ -156,9 +156,9 @@ If this repository is helpful for you, please cite our work
 
    tutorial/zh/index
    tutorial/zh/sif
-   tutorial/zh/parse
    tutorial/zh/seg
    tutorial/zh/tokenize
+   tutorial/zh/tokenization
    tutorial/zh/pretrain
    tutorial/zh/vectorization
 

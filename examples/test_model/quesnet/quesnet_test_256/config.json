@@ -1,0 +1,16 @@
+{
+  "meta": "know_name",
+  "emb_size": 256,
+  "rnn": "LSTM",
+  "lambda_input": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "lambda_loss": [
+    1.0,
+    1.0
+  ],
+  "layers": 4,
+  "feat_size": 256
+}
