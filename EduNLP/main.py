@@ -3,11 +3,12 @@
 
 import fire
 
-from EduNLP.I2V.i2v import MODELS
+
+from EduNLP.Vector.t2v import get_all_pretrained_models
 
 
 def list_i2v():
-    print("\n".join(MODELS.keys()))
+    print("\n".join(get_all_pretrained_models()))
 
 
 def cli():  # pragma: no cover

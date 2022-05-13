@@ -6,14 +6,14 @@ import os.path
 
 from EduNLP.constant import MODEL_DIR
 from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
-from ..Vector import PRETRAINED_MODELS
+from ..Vector import get_pretrained_model_info, get_all_pretrained_models
 from longling import path_append
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer
+from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
 
-__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "DisenQ", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "DisenQ", "QuesNet", "get_pretrained_i2v"]
 
 
 class I2V(object):
@@ -60,6 +60,9 @@ class I2V(object):
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'quesnet':
+            self.tokenizer = QuesNetTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'elmo':
             self.tokenizer = ElmoTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'disenq':
@@ -216,7 +219,8 @@ class W2V(I2V):
 
     Examples
     ---------
-    >>> i2v = get_pretrained_i2v("test_w2v", "examples/test_model/data/w2v")
+    >>> (); i2v = get_pretrained_i2v("w2v_test_256", "examples/test_model/data/w2v"); () # doctest: +ELLIPSIS
+    (...)
     >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
     >>> item_vector # doctest: +ELLIPSIS
     [array([...], dtype=float32)]
@@ -329,7 +333,7 @@ class Elmo(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
@@ -393,7 +397,7 @@ class Bert(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
-        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
@@ -406,11 +410,9 @@ class Bert(I2V):
 class DisenQ(I2V):
     """
     The model aims to transfer item and tokens to vector with DisenQ.
-
     Bases
     -------
     I2V
-
     Parameters
     -----------
     tokenizer: str
@@ -426,7 +428,6 @@ class DisenQ(I2V):
         False: use your own t2v model
     kwargs:
         the parameters passed to t2v
-
     Returns
     -------
     i2v model: DisenQ
@@ -435,7 +436,6 @@ class DisenQ(I2V):
                      key=lambda x: x, vector_type=None, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
-
         Parameters
         -----------
         item: dict or list
@@ -448,7 +448,6 @@ class DisenQ(I2V):
             the parameters passed to t2v
         kwargs:
             the parameters passed to t2v
-
         Returns
         --------
         vector:list
@@ -460,7 +459,7 @@ class DisenQ(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, **kwargs):
-        model_path = path_append(model_dir, PRETRAINED_MODELS[name][0].split('/')[-1], to_str=True)
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_dir: %s" % model_path)
@@ -472,21 +471,63 @@ class DisenQ(I2V):
                    tokenizer_kwargs=tokenizer_kwargs, **kwargs)
 
 
-MODELS = {
-    "d2v_all_256": [D2V, "d2v_all_256"],
-    "d2v_sci_256": [D2V, "d2v_sci_256"],
-    "d2v_eng_256": [D2V, "d2v_eng_256"],
-    "d2v_lit_256": [D2V, "d2v_lit_256"],
-    "w2v_sci_300": [W2V, "w2v_sci_300"],
-    "w2v_lit_300": [W2V, "w2v_lit_300"],
-    "test_w2v": [W2V, "test_w2v"],
-    "test_d2v": [D2V, "test_d2v"],
-    'luna_bert': [Bert, 'luna_bert'],
-    "elmo_pub_math": [Elmo, "elmo_pub_math"],
-    'elmo_test': [Elmo, "elmo_test"],
-    "tal_edu_bert": [Bert, "tal_edu_bert"],
-    "luna_pub_bert_math_base": [Bert, "luna_pub_bert_math_base"],
-    'disenq_pub_128': [DisenQ, 'disenq_pub_128'],
+class QuesNet(I2V):
+    """
+    The model aims to transfer item and tokens to vector with quesnet.
+    Bases
+    -------
+    I2V
+    """
+
+    def infer_vector(self, item, tokenize=True, key=lambda x: x, meta=['know_name'], *args, **kwargs):
+        """ It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+        Parameters
+        ----------
+        item : str or dict or list
+            the item of question, or question list
+        tokenize : bool, optional
+            True: tokenize the item
+        key : _type_, optional
+            _description_, by default lambdax:x
+        meta : list, optional
+            meta information, by default ['know_name']
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+        Returns
+        -------
+        token embeddings
+        question embedding
+        """
+        input = self.tokenize(item, key=key, meta=meta, *args, **kwargs) if tokenize is True else item
+        content = input['content_idx']
+        meta_idx = input['meta_idx']
+        if isinstance(item, list):
+            qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(item))]
+        else:
+            qs = Question("", content, [0], [[0], [0], [0]], meta_idx)
+        return self.t2v.infer_vector(qs), self.t2v.infer_tokens(qs)
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_path: %s" % model_path)
+        tokenizer_kwargs = {
+            "tokenizer_config_dir": model_path}
+        return cls("quesnet", name, pretrained_t2v=True, model_dir=model_dir,
+                   tokenizer_kwargs=tokenizer_kwargs)
+
+
+MODEL_MAP = {
+    "w2v": W2V,
+    "d2v": D2V,
+    "bert": Bert,
+    "disenq": DisenQ,
+    "quesnet": QuesNet,
+    "elmo": Elmo
 }
 
 
@@ -518,13 +559,16 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
-    >>> i2v = get_pretrained_i2v("test_d2v", "examples/test_model/data/d2v")
+    >>> (); i2v = get_pretrained_i2v("d2v_test_256", "examples/test_model/data/d2v"); () # doctest: +ELLIPSIS
+    (...)
     >>> print(i2v(item))
     ([array([ ...dtype=float32)], None)
     """
-    if name not in MODELS:
+    pretraind_models = get_all_pretrained_models()
+    if name not in pretraind_models:
         raise KeyError(
-            "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(MODELS.keys()))
+            "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(pretraind_models))
         )
-    _class, *params = MODELS[name]
+    _, t2v = get_pretrained_model_info(name)
+    _class, *params = MODEL_MAP[t2v], name
     return _class.from_pretrained(*params, model_dir=model_dir)

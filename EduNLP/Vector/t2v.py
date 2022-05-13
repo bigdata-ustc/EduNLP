@@ -2,11 +2,14 @@
 # 2021/7/13 @ tongshiwei
 
 import os
+import json
+import requests
 from longling import path_append
 from EduData import get_data
 from .rnn import RNNModel
 from .gensim_vec import W2V, D2V
 from .bert_vec import BertModel
+from .quesnet import QuesNetModel
 from .elmo_vec import ElmoModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
@@ -21,8 +24,12 @@ MODELS = {
     "gru": RNNModel,
     "elmo": ElmoModel,
     'bert': BertModel,
+    'quesnet': QuesNetModel,
     "disenq": DisenQModel,
 }
+
+
+MODELHUB_URL = 'https://modelhub-backend-269-production.env.bdaa.pro/v1/api/'
 
 
 class T2V(object):
@@ -68,25 +75,21 @@ class T2V(object):
         return self.i2v.vector_size
 
 
-PRETRAINED_MODELS = {
-    "d2v_all_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_all_256.zip", "d2v"],
-    "d2v_sci_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_science_256.zip", "d2v"],
-    "d2v_eng_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_english_256.zip", "d2v"],
-    "d2v_lit_256": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/general_literal_256.zip", "d2v"],
-    "w2v_eng_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_english_300.zip", "w2v"],
-    "w2v_lit_300": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/general_literal_300.zip", "w2v"],
-    "test_w2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/w2v/test_w2v_256.zip", "w2v"],
-    "test_d2v": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/d2v/test_256.zip", "d2v"],
-    "luna_bert": ["http://base.ustc.edu.cn/data/model_zoo/EduNLP/LUNABert.zip", "bert"],
-    "elmo_pub_math": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo_pub/1/elmo_pub_math.zip",
-                      'elmo'],
-    "elmo_test": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/elmo_pub/1/elmo_test.zip",
-                  "elmo"],
-    "tal_edu_bert": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/tal_edu_bert.zip", "bert"],
-    "luna_pub_bert_math_base": [
-        "http://base.ustc.edu.cn/data/model_zoo/modelhub/bert_pub/1/luna_pub_bert_math_base.zip", "bert"],
-    "disenq_pub_128": ["http://base.ustc.edu.cn/data/model_zoo/modelhub/disenq_public/1/disenq_pub_128.zip", "disenq"],
-}
+def get_pretrained_model_info(name):
+    url = MODELHUB_URL + 'getPretrainedModel'
+    param = {'name': name}
+    r = requests.get(url, params=param)
+    assert r.status_code == 200, r.status_code
+    r = json.loads(r.content)
+    return [r['url'], r['t2v_name']]
+
+
+def get_all_pretrained_models():
+    url = MODELHUB_URL + 'getPretrainedModelList'
+    r = requests.get(url)
+    assert r.status_code == 200, r.status_code
+    r = json.loads(r.content)
+    return r['name']
 
 
 def get_pretrained_t2v(name, model_dir=MODEL_DIR):
@@ -115,16 +118,17 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     --------
     >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
     ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
-    >>> i2v = get_pretrained_t2v("test_d2v", "examples/test_model/data/d2v") # doctest: +ELLIPSIS
+    >>> i2v = get_pretrained_t2v("d2v_test_256", "examples/test_model/data/d2v") # doctest: +ELLIPSIS
     >>> print(i2v(item)) # doctest: +ELLIPSIS
     [array([...dtype=float32)]
     """
-    if name not in PRETRAINED_MODELS:
+    pretrained_models = get_all_pretrained_models()
+    if name not in pretrained_models:
         raise KeyError(
             "Unknown pretrained model %s, use one of the provided pretrained models: %s" % (
-                name, ", ".join(PRETRAINED_MODELS.keys()))
+                name, ", ".join(pretrained_models))
         )
-    url, model_name, *args = PRETRAINED_MODELS[name]
+    url, model_name, *args = get_pretrained_model_info(name)
     model_path = get_data(url, model_dir)
     if model_name in ["d2v", "w2v"]:
         postfix = ".bin" if model_name == "d2v" else ".kv"
