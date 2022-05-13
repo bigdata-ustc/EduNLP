@@ -358,10 +358,8 @@ def clip(v, low, high):
 class Lines:
     def __init__(self, filename, skip=0, preserve_newline=False):
         self.filename = filename
-        with open(filename):
-            pass
-        output = subprocess.check_output(('wc -l ' + filename).split())
-        self.length = int(output.split()[0]) - skip
+        with open(filename) as f:
+            self.length = len(f.readlines()) - skip
         self.skip = skip
         self.preserve_newline = preserve_newline
 
