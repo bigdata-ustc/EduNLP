@@ -481,7 +481,7 @@ def train_disenqnet(train_items, disen_tokenizer, output_dir, predata_dir,
     >>> test_data = load_items("static/test_data/disenq_test.json")[:100]
     >>> tokenizer = DisenQTokenizer(max_length=250, tokenize_method="space")
     >>> train_disenqnet(train_data, tokenizer,
-    ... "examples/test_model/disenq","examples/test_model/disenq", silent=True)  # doctest: +SKIP
+    ... "examples/test_model/data/disenq","examples/test_model/data/disenq", silent=True)  # doctest: +SKIP
     """
     # dataset
     default_train_params = {

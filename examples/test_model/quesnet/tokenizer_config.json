@@ -1,9 +1,0 @@
-{
-  "img_token": "<img>",
-  "unk_token": "<unk>",
-  "pad_token": "<pad>",
-  "max_length": 50,
-  "meta": [
-    "know_name"
-  ]
-}

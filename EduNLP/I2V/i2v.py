@@ -42,7 +42,7 @@ class I2V(object):
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
-    >>> model_path = "examples/test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
+    >>> model_path = "examples/test_model/data/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
     >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
     >>> i2v(item)
     ([array([ ...dtype=float32)], None)
@@ -150,7 +150,7 @@ class D2V(I2V):
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
-    >>> model_path = "examples/test_model/d2v/d2v_test_256/d2v_test_256.bin"
+    >>> model_path = "examples/test_model/data/d2v/d2v_test_256/d2v_test_256.bin"
     >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
     >>> i2v(item)
     ([array([ ...dtype=float32)], None)
@@ -219,7 +219,7 @@ class W2V(I2V):
 
     Examples
     ---------
-    >>> (); i2v = get_pretrained_i2v("w2v_test_256", "examples/test_model/w2v"); () # doctest: +ELLIPSIS
+    >>> (); i2v = get_pretrained_i2v("w2v_test_256", "examples/test_model/data/w2v"); () # doctest: +ELLIPSIS
     (...)
     >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
     >>> item_vector # doctest: +ELLIPSIS
@@ -559,7 +559,7 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
     >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, \
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
-    >>> (); i2v = get_pretrained_i2v("d2v_test_256", "examples/test_model/d2v"); () # doctest: +ELLIPSIS
+    >>> (); i2v = get_pretrained_i2v("d2v_test_256", "examples/test_model/data/d2v"); () # doctest: +ELLIPSIS
     (...)
     >>> print(i2v(item))
     ([array([ ...dtype=float32)], None)
