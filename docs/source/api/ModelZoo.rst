@@ -6,11 +6,21 @@ rnn
 
 .. automodule:: EduNLP.ModelZoo.rnn
    :members:
-   :imported-members:
+
+disenqnet
+-----------
+
+.. automodule:: EduNLP.ModelZoo.disenqnet
+   :members:
+
+quesnet
+-----------
+
+.. automodule:: EduNLP.ModelZoo.quesnet
+   :members:
 
 utils
 -----------
 
 .. automodule:: EduNLP.ModelZoo.utils
    :members:
-   :imported-members:
