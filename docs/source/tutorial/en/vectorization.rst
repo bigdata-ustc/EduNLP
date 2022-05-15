@@ -28,7 +28,7 @@ Use the pre-training model provided by EduNLP to convert the given question text
 
 * Disadvantages: Only the model given in the project can be used, which has great limitations.
 
-* Call this function to obtain the corresponding pre-training model. At present, the following pre training models are provided: d2v_all_256, d2v_sci_256, d2v_eng_256 and d2v_lit_256.
+* Call this function to obtain the corresponding pre-training model. At present, the following pre training models are provided: d2v_all_300, d2v_science_300, d2v_english_300 and d2v_literal_300.
 
 Selection and Use of Models
 ####################################
@@ -66,7 +66,7 @@ Examples:
 
 ::
 
-  >>> i2v = get_pretrained_i2v("d2v_sci_256")
+  >>> i2v = get_pretrained_i2v("d2v_science_300")
   >>> i2v(item)
 
 
