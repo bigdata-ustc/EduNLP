@@ -121,7 +121,7 @@ Set method to `ast`
 
 
 3. AST formula parsing and variable symbolization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you care only about the structure and type of formula, and variables themself is ignorable.
 For example, `x^2 + y = 1` is structurally identical with `w^2 + z = 1`.
@@ -132,11 +132,9 @@ You can convert variable names into tokens, by set `ord2token=True`.
   ['mathord', '{ }', 'mathord', '+', 'mathord', '{ }', '\\frac', '+', 'textord', '=', 'mathord']
 
 
-（4） 公式AST解析+变量标准化
 4. AST formula parsing and variable normalization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-如果您除了 （3） 中提供的功能之外，还需要区分不同的变量。此时可以另外设置参数：`var_numbering=True`
 If you want variables distinguishable in **3**, just set `var_numbering=True`.
 
 ::
