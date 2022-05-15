@@ -91,7 +91,7 @@ I2V 向量化容器
 +--------+---------+
 | d2v    | D2V     |
 +--------+---------+
-| elmo   | Emlo    |
+| elmo   | Elmo    |
 +--------+---------+
 | bert   | Bert    |
 +--------+---------+
@@ -137,7 +137,7 @@ I2V 向量化容器
     
     D2V向量化  <../../build/blitz/i2v/i2v_d2v.ipynb>
     
-    Emlo向量化  <../../build/blitz/i2v/i2v_elmo.ipynb>
+    Elmo向量化  <../../build/blitz/i2v/i2v_elmo.ipynb>
 
 
 .. nbgallery::
@@ -161,7 +161,7 @@ T2V 向量化容器
 
 - 优点：此容器与令牌化容器相互分离，用户可以自主调整令牌化容器和向量化容器的参数，可用于个性化的需求。
 
-`I2V` 模块提供两种向量化方法：
+`T2V` 模块提供两种向量化方法：
 
 - 使用开源预训练模型
 - 使用本地预训练模型
@@ -263,7 +263,7 @@ T2V 向量化容器
 
     D2V向量化  <../../build/blitz/t2v/t2v_d2v.ipynb>
 
-    Emlo向量化  <../../build/blitz/t2v/t2v_elmo.ipynb>
+    Elmo向量化  <../../build/blitz/t2v/t2v_elmo.ipynb>
 
 
 .. nbgallery::

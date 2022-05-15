@@ -1,12 +1,12 @@
-Pre-training
+Pretraining
 ==============
 
-In the field of NLP, Pre-trained Language Models has become a very important basic technology.
+In the field of NLP, Pretrained Language Models has become a very important basic technology.
 In this chapter, we will introduce the pre training tools in EduNLP:
 
-* How to train with a corpus to get a pre-trained model
-* How to load the pre-trained model
-* Public pre-trained models
+* How to train with a corpus to get a pretrained model
+* How to load the pretrained model
+* Public pretrained models
 
 Import modules
 ---------------
@@ -26,7 +26,7 @@ Basic Steps
 
 1.Determine the type of model and select the appropriate tokenizer (GensimWordTokenizer、 GensimSegTokenizer) to finish tokenization.
 
-2.Call train_vector function to get the required pre-trained model。
+2.Call train_vector function to get the required pretrained model。
 
 Examples：
 
@@ -97,7 +97,7 @@ Get the dataset
 
    prepare_dataset  <../../build/blitz/pretrain/prepare_dataset.ipynb>
 
-An example of d2v in gensim model
+Examples of d2v in gensim model
 ##################################
 
 .. toctree::
@@ -108,7 +108,7 @@ An example of d2v in gensim model
    d2v_general  <../../build/blitz/pretrain/gensim/d2v_general.ipynb>
    d2v_stem_tf  <../../build/blitz/pretrain/gensim/d2v_stem_tf.ipynb>
 
-An example of w2v in gensim model
+Examples of w2v in gensim model
 ##################################
 
 .. toctree::
@@ -118,7 +118,7 @@ An example of w2v in gensim model
    w2v_stem_text  <../../build/blitz/pretrain/gensim/w2v_stem_text.ipynb>
    w2v_stem_tf  <../../build/blitz/pretrain/gensim/w2v_stem_tf.ipynb>
 
-An example of seg_token
+Examples of seg_token
 #############################
 
 .. toctree::
@@ -128,3 +128,25 @@ An example of seg_token
    d2v.ipynb  <../../build/blitz/pretrain/seg_token/d2v.ipynb>
    d2v_d1  <../../build/blitz/pretrain/seg_token/d2v_d1.ipynb>
    d2v_d2  <../../build/blitz/pretrain/seg_token/d2v_d2.ipynb>
+
+Examples of advanced models
+#############################
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: pretrain_gallery_en1
+    :glob:
+
+    ELMo pretrain  <../../build/blitz/pretrain/elmo.ipynb>
+
+    BERT pretrain <../../build/blitz/pretrain/bert.ipynb>
+
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: pretrain_gallery_en2
+    :glob:
+
+    DisenQNet pretrain  <../../build/blitz/pretrain/disenq.ipynb>
+
+    QuesNet pretrain <../../build/blitz/pretrain/quesnet.ipynb>
