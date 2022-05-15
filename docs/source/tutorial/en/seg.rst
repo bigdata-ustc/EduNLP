@@ -10,9 +10,9 @@ At the same time, it may also contain different components semantically, such as
 Main Processing Contents
 ---------------------------
 
-1. Convert multiple-choice questions in the form of dict to qualified item by `Syntax parsing <tokenize.rst>`_;
+1. Convert items in the form of dict (contains stems, options, answers...)  to qualified items in the form of str by special delimiters;
 
-2. The input items are segmented and grouped according to the element type.
+2. The input items are segmented and grouped according to the element type(Text, Formulas, Pictures...).
 
 Semantic Component Segmentation
 ---------------------------------
@@ -71,27 +71,19 @@ Optional additional parameters / interfaces
 Structural Component Segmentation
 ------------------------------------------
 
-This step is to segment sliced items. In this step, there is a depth option. You can select all positions or some labels for segmentation according to your needs, such as \SIFSep and \SIFTag. You can also select where to add labels, either at the head and tail or only at the head or tail.
+`EduNLP.SIF.segment` is the main module to implement structural component segmentation, which can identify texts, formulas, pictures and other different content components from the item in string format and then group them by type.  In addition, `EduNLP.SIF.sif4csi` also includes the function of 'seg'.  
 
-
-There are two modes:
-
-* linear mode: it is used for text processing (word segmentation using jieba library);
-
-* ast mode: it is used to parse the formula.
 
 Basic Segmentation process:
 
 - Match components with regular expression matching
-
 - Process the components with special structures, such as converting the base64 encoded picture to numpy form
-
 - Classify the elements into each element group
+- Symbolize the unconcerned components  
 
-- Enter the corresponding parameters as required to get the filtered results
 
 Import Modules
-+++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ::
 
@@ -99,7 +91,7 @@ Import Modules
  from EduNLP.SIF import sif4sci
 
 Basic Usage
-++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ::
 
@@ -108,7 +100,7 @@ Basic Usage
  >>> ['如图所示，则', '\\bigtriangleup ABC', '的面积是', '\\SIFBlank', '。', \FigureID{1}]
 
 Optional additional parameters/interfaces
-++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++
 
 1.describe: count the number of elements of different types
 

@@ -99,6 +99,11 @@ All I2V containers provided
 | quesnet     |  QuesNet      |
 +-------------+---------------+
 
+.. note::
+
+   The complete list of the public pretrained models provided by `EduNLP` can be found through `Vector.t2v.get_all_pretrained_models` or `Modelhub <https://modelhub.bdaa.pro/>`_
+
+
 Example
 ^^^^^^^^^^^^^^^^^^^^^^
 
