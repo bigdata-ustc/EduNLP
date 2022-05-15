@@ -1,39 +1,47 @@
+==================
 Vectorization
 ==================
 
-This section provides a simple interface to convert the incoming items into vectors directly. Currently, the option of whether to use the pre training model is provided. You can choose according to your needs. If you don't want to use the pre-trained model, you can call D2V directly, or call get_pretrained_i2v function if you want to use the pre-trained model.
-
-- Don't use the pre-trained model
-
-- Use the pre-trained model
-
-Overview Flow
----------------------------
-
-1.Perform `syntax parsing <tokenize.rst>`_ on incoming items to get items in SIF format；
-
-2.Perform `component segmentation <seg.rst>`_ on sif_items;
-
-3.Perform `tokenization <tokenization.rst>`_ on segmented items;
-
-4.Use the existing or pre-trained model we provided to convert the tokenized items into vectors.
+The vectorization process is divided into two steps:
+- Use `Tokenizer` to convert original questions (`item`) to tokenization sequence (`tokens`)
+- Use `T2V` to convert tokenization sequence (`tokens`) to vectors
 
 
-Use the pre-training model: call get_pretrained_i2v directly
+I2V container
+=====================
+`I2V container` makes it easy to use models(from local or open-source) for vectorization, it contains operations from tokenization to vectorization together in one pipeline.
+
+`I2V` provides two ways of vectorization:
+
+- Use a pretrained model from local
+- Use an open-source pretrained model
+
+
+Items to input
+---------------------------------------------------
+A list of questions or one question, and the text of a question is given as a `dictionary` or `string`
+
+::
+
+   items = [
+      r"题目一：如图几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$",
+      r"题目二: 如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"
+   ]
+
+
+Use an open-source pretrained model
 ---------------------------------------------
 
-Use the pre-training model provided by EduNLP to convert the given question text into vectors.
+Use `get_pretrained_i2v` function to obtain the open-source pretrained models provided by EduNLP.
 
-* Advantages: Simple and convenient.
+- Advantages: simple and convenient, easy to use even if you don’t understand the code powering the models.
 
-* Disadvantages: Only the model given in the project can be used, which has great limitations.
+- Disadvantages: NOT designed for model parameters tuning
 
-* Call this function to obtain the corresponding pre-training model. At present, the following pre training models are provided: d2v_all_256, d2v_sci_256, d2v_eng_256 and d2v_lit_256.
 
-Selection and Use of Models
-####################################
-
-Select the pre-training model according to the subject:
+Models selection and usage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Select the pre-training model according to the subject (here are some of the open-source models):
 
 +----------------------------+--------------------------------+
 |   Pre-training model name  | Subject of model training data |
@@ -54,111 +62,216 @@ Select the pre-training model according to the subject:
 +----------------------------+--------------------------------+
 
 
-The concrete process of processing
-####################################
-
-1.Download the corresponding preprocessing model
-
-2.Transfer the obtained model to D2V and process it with D2V
-  Convert the obtained model into D2V and process it through D2V
-
-Examples:
+Example
+^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-  >>> i2v = get_pretrained_i2v("d2v_sci_256")
-  >>> i2v(item)
+   from EduNLP import get_pretrained_i2v
+
+   i2v = get_pretrained_i2v("w2v_eng_300")
+   item_vector, token_vector = i2v(items)
 
 
-Don't use the pre-trained model: call existing models directly
+Use a pretrained model from local
 --------------------------------------------------------------------------
 
-You can use any pre-trained model provided by yourself (just give the storage path of the model) to convert the given question text into vectors.
+You can use any pretrained model provided by yourself (with the storage path of the model) to convert the given question text into vectors.
 
-* Advantages: it is flexible to use your own model and its parameters can be adjusted freely.
+* Advantages: flexible, free to tune your model parameters.
 
-Import modules
-+++++++++++++++++++++++
+All I2V containers provided
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-::
++-------------+---------------+
+| Name        | I2V container |
++=============+===============+
+| w2v         |  W2V          |
++-------------+---------------+
+| d2v         |  D2V          |
++-------------+---------------+
+| elmo        |  Elmo         |
++-------------+---------------+
+| bert        |  Bert         |
++-------------+---------------+
+| disenq      |  DisenQ       |
++-------------+---------------+
+| quesnet     |  QuesNet      |
++-------------+---------------+
 
-   from EduNLP.I2V import D2V,W2V,get_pretrained_i2v
-   from EduNLP.Vector import T2V,get_pretrained_t2v
+.. note::
 
-Models provided
-++++++++++++++++++++
+   The complete list of the public pretrained models provided by `EduNLP` can be found through `Vector.t2v.get_all_pretrained_models` or `Modelhub <https://modelhub.bdaa.pro/>`_
 
-- W2V
 
-- D2V
-
-- T2V
-
-W2V
-<<<<<<<<<
-
-This model directly uses the relevant model methods in the gensim library to convert words into vectors. Currently, there are four methods:
-
- - FastText
-
- - Word2Vec
-
- - KeyedVectors
-
-::
-
-   >>> i2v = get_pretrained_i2v("test_w2v", "examples/test_model/w2v") # doctest: +ELLIPSIS
-   >>> item_vector, token_vector = i2v(["有学者认为：‘学习’，必须适应实际"])
-   >>> item_vector # doctest: +ELLIPSIS
-   array([[...]], dtype=float32)
-
-D2V
-<<<<<<<<<<<<
-
-This model is a comprehensive processing method which can convert items into vectors. Currently, the following methods are provided:
-
-- d2v: call doc2vec module in gensim library to convert items into vectors.
-
-- BowLoader: call corpora module in gensim library to convert docs into bows.
-
-- TfidfLoader: call TfidfModel module in gensim library to convert docs into bows.
+Example
+^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
-   >>> item = {"如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"}
-   >>> model_path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
-   >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-   >>> i2v(item)
-   ([array([ 4.76559885e-02, -1.60574958e-01,  1.94614579e-03,  2.40295693e-01,
-   2.24517003e-01, -3.24351490e-02,  4.35789041e-02, -1.65670961e-02,...
+   from EduNLP.I2V import W2V
 
-T2V
-<<<<<<<<<<
+   # load vectorization container
+   pretrained_path = "path/to/model"
+   i2v = W2V("pure_text", "w2v", pretrained_path)
 
-You can use any pre-trained model provided by yourself to represent the segmentation sequences of a group of questions as vectors (just give the storage path of the model).
+   # vectorization
+   item_vector, token_vector = i2v(items)
+   # or
+   item_vector, token_vector = i2v.infer_vector(items)
+   # or
+   item_vector = i2v.infer_item_vector(items)
+   token_vector = i2v.infer_token_vector(items)
 
-- Advantages: the model and its parameters can be adjusted independently and has strong flexibility.
 
-Input
-^^^^^^^^^^
+.. note::
 
-Types: list
-Contents: the combination of each question segmentation sequences in one question group.
->You can transfer question text (`str` type) to tokens using ``GensimWordTokenizer`` model
+   I2V container of different models can be slightly different in use, please refer to the specific API guide.
+
+Specific I2V examples
+------------------------------------
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: i2v_gallery_en1
+    :glob:
+
+    W2V  <../../build/blitz/i2v/i2v_w2v.ipynb>
+
+    D2V  <../../build/blitz/i2v/i2v_d2v.ipynb>
+
+    Elmo  <../../build/blitz/i2v/i2v_elmo.ipynb>
+
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: i2v_gallery_en2
+    :glob:
+
+    Bert  <../../build/blitz/i2v/i2v_bert.ipynb>
+
+    DisenQNet  <../../build/blitz/i2v/i2v_disenq.ipynb>
+
+    QuesNet  <../../build/blitz/i2v/i2v_quesnet.ipynb>
+
+
+T2V container
+=======================
+
+`T2V` is designed to convert tokenization sequence (tokens) to vectors.
+
+- Advantages: separated from tokenization, users are free to configure tokenization and vectorization parameters.
+
+`I2V` also provides two ways of vectorization:
+
+- Use a pretrained model from local
+- Use an open-source pretrained model
+
+Items to input
+---------------------------------------------------
+`T2V` accepts only tokenization sequence (`tokens`) as input, please use `Tokenizer` to obtain `tokens` before this.
 
 ::
 
-   >>> token_items=['公式','[FORMULA]','公式','[FORMULA]','如图','[FIGURE]','x',',','y','约束条件','[SEP]','z','=','x','+','7','y','最大值','[MARK]']
-   >>> path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
-   >>> t2v = T2V('d2v',filepath=path)
-   >>> t2v(token_items)
-   [array([ 0.0256574 ,  0.06061139, -0.00121044, -0.0167674 , -0.0111706 ,
-   0.05325712, -0.02097339, -0.01613594,  0.02904145,  0.0185046 ,...
+   from EduNLP.Tokenizer import PureTextTokenize
 
-Specific process of processing
-++++++++++++++++++++++++++++++++++++++++
+   raw_items = [
+      r"题目一：如图几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$",
+      r"题目二: 如图来自古希腊数学家希波克拉底所研究的几何图形．此图由三个半圆构成，三个半圆的直径分别为直角三角形$ABC$的斜边$BC$, 直角边$AB$, $AC$.$\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\SIFChoice$$\FigureID{1}$"
+   ]
 
-1.Call get_tokenizer function to get the result after word segmentation;
+   tokenizer = PureTextTokenizer()
+   token_items = [t for t in tokenizer(raw_items)]
 
-2.Select the model provided for vectorization depending on the model used.
+
+Use an open-source pretrained model
+---------------------------------------------
+
+.. note::
+
+   The open-source models are same as `I2V`
+
+
+Example: load a pretrained model to W2V:
+
+::
+
+   from EduNLP.Vector import get_pretrained_t2v
+
+   model_dir = "path/to/save/model"
+   t2v = get_pretrained_t2v("test_w2v", model_dir=model_dir)
+
+   item_vector = t2v.infer_vector(token_items)
+   # [array(), ..., array()]
+   token_vector = t2v.infer_tokens(token_items)
+   # [[array(), ..., array()], [...], [...]]
+
+
+Use a pretrained model from local
+------------------------------------
+
+All T2V containers provided:
+
++---------+--------------+
+| Name    |T2V container |
++=========+==============+
+| w2v     | W2V          |
++---------+--------------+
+| d2v     | D2V          |
++---------+--------------+
+| elmo    | ElmoModel    |
++---------+--------------+
+| bert    | BertModel    |
++---------+--------------+
+| dienq   |DisenQMode    |
++---------+--------------+
+|quesnet  |QuesNetModel  |
++---------+--------------+
+
+Example: load a local models to W2V container:
+
+::
+
+   from EduNLP.Vector import T2V, W2V
+
+   path = "path_to_model"
+   t2v = T2V('w2v', filepath=path)
+   # 或
+   # t2v = W2V(path)
+
+   tem_vector = t2v.infer_vector(token_items)
+   # [array(), ..., array()]
+   token_vector = t2v.infer_tokens(token_items)
+   # [[array(), ..., array()], [...], [...]]
+
+
+.. note::
+
+   I2V container of different models can be slightly different in use, please refer to the specific API guide.
+
+
+Specific T2V examples
+------------------------------------
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: t2v_gallery_en1
+    :glob:
+
+    W2V  <../../build/blitz/t2v/t2v_w2v.ipynb>
+
+    D2V  <../../build/blitz/t2v/t2v_d2v.ipynb>
+
+    Elmo  <../../build/blitz/t2v/t2v_elmo.ipynb>
+
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: t2v_gallery_en2
+    :glob:
+
+    Bert  <../../build/blitz/t2v/t2v_bert.ipynb>
+
+    DisenQNet  <../../build/blitz/t2v/t2v_disenq.ipynb>
+
+    QuesNet  <../../build/blitz/t2v/t2v_quesnet.ipynb>
 
