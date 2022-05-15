@@ -1,3 +1,4 @@
+==================
 Vectorization
 ==================
 
@@ -7,7 +8,7 @@ The vectorization process is divided into two steps:
 
 
 I2V container
-==================
+=====================
 `I2V container` makes it easy to use models(from local or open-source) for vectorization, it contains operations from tokenization to vectorization together in one pipeline.
 
 `I2V` provides two ways of vectorization:
@@ -39,7 +40,7 @@ Use `get_pretrained_i2v` function to obtain the open-source pretrained models pr
 
 
 Models selection and usage
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Select the pre-training model according to the subject (here are some of the open-source models):
 
 +----------------------------+--------------------------------+
@@ -80,7 +81,7 @@ You can use any pretrained model provided by yourself (with the storage path of 
 * Advantages: flexible, free to tune your model parameters.
 
 All I2V containers provided
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 +-------------+---------------+
 | Name        | I2V container |
@@ -150,7 +151,7 @@ Specific I2V examples
 
 
 T2V container
-==================
+=======================
 
 `T2V` is designed to convert tokenization sequence (tokens) to vectors.
 

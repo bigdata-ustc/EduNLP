@@ -20,6 +20,7 @@ Train the Model
 ------------------
 
 Call train_Vector function interface directly to make the training model easier. This section calls the relevant training models in the gensim library. At present, the training methods of "sg"、 "cbow"、 "fastext"、 "d2v"、 "bow"、 "tfidf" are provided. Parameter embedding_dim is also provided for users to determine vector dimension according to their needs.
+The module interface definition is in `EduNLP.Pretrain`, including tokenization, data processing, model definition, model training.
 
 Basic Steps
 ##################
