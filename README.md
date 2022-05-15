@@ -45,7 +45,7 @@ pip install EduNLP[full]
 
 ```python
 from EduNLP import get_pretrained_i2v
-i2v = get_pretrained_i2v("d2v_all_256", "./model")
+i2v = get_pretrained_i2v("d2v_all_300", "./model")
 item_vector, token_vector = i2v(["the content of item 1", "the content of item 2"])
 ```
 

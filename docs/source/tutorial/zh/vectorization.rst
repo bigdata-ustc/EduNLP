@@ -60,6 +60,10 @@ I2V 向量化容器
 |    quesnet_math_512|         数学           |
 +--------------------+------------------------+
 
+.. note::
+
+   完整预训练模型列表可通过 `Vector.t2v.get_all_pretrained_models` 查看或者前往  `模型库 <https://modelhub.bdaa.pro/>`_ 查看
+
 
 具体用法
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -68,7 +72,7 @@ I2V 向量化容器
 
    from EduNLP import get_pretrained_i2v
 
-   i2v = get_pretrained_i2v("w2v_eng_300")
+   i2v = get_pretrained_i2v("w2v_math_300")
    item_vector, token_vector = i2v(items)
 
 
@@ -240,7 +244,11 @@ T2V 向量化容器
    # 或
    # t2v = W2V(path)
 
+<<<<<<< HEAD
+   item_vector = t2v.infer_vector(token_items)
+=======
    tem_vector = t2v.infer_vector(token_items)
+>>>>>>> upstream/dev
    # [array(), ..., array()]
    token_vector = t2v.infer_tokens(token_items)
    # [[array(), ..., array()], [...], [...]]
