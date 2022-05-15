@@ -45,7 +45,6 @@ Examples:
 Tokenization container
 ----------------------------
 
-我们提供了多种已经封装好的令牌化容器供用户便捷调用，通过查看 `EduNLP.Tokenizer` 及 `EduNLP.Pretrain` 可以查看更多令牌化器。下面是一个完整的令牌化器列表:
 We provide various encapsulated tokenization containers for simple using, please check `EduNLP.Tokenizer` and `EduNLP.Pretrain` for more instances. Here is a tokenization container list:
 Generalized base tokenization containers:
 

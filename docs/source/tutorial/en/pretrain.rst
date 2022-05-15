@@ -16,10 +16,9 @@ Import modules
    from EduNLP.I2V import get_pretrained_i2v
    from EduNLP.Vector import get_pretrained_t2v
 
-Train the Model
+Train a model
 ------------------
 
-Call train_Vector function interface directly to make the training model easier. This section calls the relevant training models in the gensim library. At present, the training methods of "sg"、 "cbow"、 "fastext"、 "d2v"、 "bow"、 "tfidf" are provided. Parameter embedding_dim is also provided for users to determine vector dimension according to their needs.
 The module interface definition is in `EduNLP.Pretrain`, including tokenization, data processing, model definition, model training.
 
 Basic Steps
@@ -27,7 +26,7 @@ Basic Steps
 
 1.Determine the type of model and select the appropriate tokenizer (GensimWordTokenizer、 GensimSegTokenizer) to finish tokenization.
 
-2.Call train_vector function to get the required pretrained model。
+2.Call `train_vector` function to get the required pretrained model。
 
 Examples：
 
@@ -54,36 +53,6 @@ Examples：
 
    >>> model_path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
    >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-
-The overview of our public model
-------------------------------------
-
-Version description
-#######################
-
-First level version:
-
-* Public version 1 (luna_pub): college entrance examination
-* Public version 2 (luna_pub_large): college entrance examination + regional examination
-
-Second level version:
-
-* Single subject(Chinese,Math,English,History,Geography,Politics,Biology,Physics,Chemistry)
-* Multiple subject(science, arts and all subject)
-
-Third level version【to be finished】:
-
-* Don't use third-party initializers
-* Use third-party initializers
-
-Description of train data in models
-##############################################
-
-* Currently, the data used in w2v and d2v models are the subjects of senior high school.
-* test data:`[OpenLUNA.json] <http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_
-
-At present, the following models are provided. More models of different subjects and question types are being trained. Please look forward to it.
-    "d2v_all_300" (all subject), "d2v_science_300" (Science), "d2v_english_300" (English)，"d2v_literal_300" (Arts)
 
 
 Examples of Model Training
