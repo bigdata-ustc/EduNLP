@@ -68,7 +68,7 @@ I2V 向量化容器
 
    from EduNLP import get_pretrained_i2v
 
-   i2v = get_pretrained_i2v("w2v_eng_300")
+   i2v = get_pretrained_i2v("w2v_math_300")
    item_vector, token_vector = i2v(items)
 
 
@@ -240,7 +240,7 @@ T2V 向量化容器
    # 或
    # t2v = W2V(path)
 
-   tem_vector = t2v.infer_vector(token_items)
+   item_vector = t2v.infer_vector(token_items)
    # [array(), ..., array()]
    token_vector = t2v.infer_tokens(token_items)
    # [[array(), ..., array()], [...], [...]]

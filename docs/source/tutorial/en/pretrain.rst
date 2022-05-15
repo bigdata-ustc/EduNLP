@@ -82,7 +82,7 @@ Description of train data in models
 * test data:`[OpenLUNA.json] <http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_
 
 At present, the following models are provided. More models of different subjects and question types are being trained. Please look forward to it.
-    "d2v_all_256" (all subject), "d2v_sci_256" (Science), "d2v_eng_256" (English)，"d2v_lit_256" (Arts)
+    "d2v_all_300" (all subject), "d2v_science_300" (Science), "d2v_english_300" (English)，"d2v_literal_300" (Arts)
 
 
 Examples of Model Training
