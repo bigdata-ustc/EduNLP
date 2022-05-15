@@ -11,7 +11,7 @@ rnn
 disenqnet
 -----------
 
-.. automodule:: EduNLP.ModelZoo.disenqnet.disenqnet
+.. automodule:: EduNLP.ModelZoo.disenqnet
    :members:
    :imported-members:
 

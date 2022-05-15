@@ -60,6 +60,10 @@ I2V 向量化容器
 |    quesnet_math_512|         数学           |
 +--------------------+------------------------+
 
+.. note::
+
+   完整预训练模型列表可通过 `Vector.t2v.get_all_pretrained_models` 查看或者前往  `模型库 <https://modelhub.bdaa.pro/>`_ 查看
+
 
 具体用法
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -68,7 +72,7 @@ I2V 向量化容器
 
    from EduNLP import get_pretrained_i2v
 
-   i2v = get_pretrained_i2v("w2v_eng_300")
+   i2v = get_pretrained_i2v("w2v_math_300")
    item_vector, token_vector = i2v(items)
 
 
@@ -91,7 +95,7 @@ I2V 向量化容器
 +--------+---------+
 | d2v    | D2V     |
 +--------+---------+
-| elmo   | Emlo    |
+| elmo   | Elmo    |
 +--------+---------+
 | bert   | Bert    |
 +--------+---------+
@@ -137,7 +141,7 @@ I2V 向量化容器
     
     D2V向量化  <../../build/blitz/i2v/i2v_d2v.ipynb>
     
-    Emlo向量化  <../../build/blitz/i2v/i2v_elmo.ipynb>
+    Elmo向量化  <../../build/blitz/i2v/i2v_elmo.ipynb>
 
 
 .. nbgallery::
@@ -161,7 +165,7 @@ T2V 向量化容器
 
 - 优点：此容器与令牌化容器相互分离，用户可以自主调整令牌化容器和向量化容器的参数，可用于个性化的需求。
 
-`I2V` 模块提供两种向量化方法：
+`T2V` 模块提供两种向量化方法：
 
 - 使用开源预训练模型
 - 使用本地预训练模型
@@ -240,7 +244,11 @@ T2V 向量化容器
    # 或
    # t2v = W2V(path)
 
+<<<<<<< HEAD
+   item_vector = t2v.infer_vector(token_items)
+=======
    tem_vector = t2v.infer_vector(token_items)
+>>>>>>> upstream/dev
    # [array(), ..., array()]
    token_vector = t2v.infer_tokens(token_items)
    # [[array(), ..., array()], [...], [...]]
@@ -263,7 +271,7 @@ T2V 向量化容器
 
     D2V向量化  <../../build/blitz/t2v/t2v_d2v.ipynb>
 
-    Emlo向量化  <../../build/blitz/t2v/t2v_elmo.ipynb>
+    Elmo向量化  <../../build/blitz/t2v/t2v_elmo.ipynb>
 
 
 .. nbgallery::
