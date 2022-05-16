@@ -1,3 +1,12 @@
+v0.0.8
+    1. add Emlo
+    2. add DisenQNet
+    3. add QuesNet
+    4. add tal-edu-bert
+    5. add dynamic mapping table from modelhub
+    6. fix cuda error
+    7. update pretrained models
+
 v0.0.7:
     1. add BERT and pretrained model (luna_bert)
     2. speed up the process in sif

@@ -4,16 +4,7 @@ import re
 
 class Parser:
     """
-    initial data and special variable
-
-    Attributes
-    ----------
-    get_token
-        Get different elements in the item.
-    txt_list
-        show txt list
-    description_list
-        use Parser to process and describe the txt
+    Parse the item to standard format.
     """
     def __init__(self, data, check_formula=True):
         self.lookahead = 0

@@ -1,12 +1,12 @@
-Pre-training
+Pretraining
 ==============
 
-In the field of NLP, Pre-trained Language Models has become a very important basic technology.
+In the field of NLP, Pretrained Language Models has become a very important basic technology.
 In this chapter, we will introduce the pre training tools in EduNLP:
 
-* How to train with a corpus to get a pre-trained model
-* How to load the pre-trained model
-* Public pre-trained models
+* How to train with a corpus to get a pretrained model
+* How to load the pretrained model
+* Public pretrained models
 
 Import modules
 ---------------
@@ -16,17 +16,17 @@ Import modules
    from EduNLP.I2V import get_pretrained_i2v
    from EduNLP.Vector import get_pretrained_t2v
 
-Train the Model
+Train a model
 ------------------
 
-Call train_Vector function interface directly to make the training model easier. This section calls the relevant training models in the gensim library. At present, the training methods of "sg"、 "cbow"、 "fastext"、 "d2v"、 "bow"、 "tfidf" are provided. Parameter embedding_dim is also provided for users to determine vector dimension according to their needs.
+The module interface definition is in `EduNLP.Pretrain`, including tokenization, data processing, model definition, model training.
 
 Basic Steps
 ##################
 
 1.Determine the type of model and select the appropriate tokenizer (GensimWordTokenizer、 GensimSegTokenizer) to finish tokenization.
 
-2.Call train_vector function to get the required pre-trained model。
+2.Call `train_vector` function to get the required pretrained model。
 
 Examples：
 
@@ -51,38 +51,8 @@ Examples：
 
 ::
 
-   >>> model_path = "../test_model/test_gensim_luna_stem_tf_d2v_256.bin"
+   >>> model_path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
    >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
-
-The overview of our public model
-------------------------------------
-
-Version description
-#######################
-
-First level version:
-
-* Public version 1 (luna_pub): college entrance examination
-* Public version 2 (luna_pub_large): college entrance examination + regional examination
-
-Second level version:
-
-* Single subject(Chinese,Math,English,History,Geography,Politics,Biology,Physics,Chemistry)
-* Multiple subject(science, arts and all subject)
-
-Third level version【to be finished】:
-
-* Don't use third-party initializers
-* Use third-party initializers
-
-Description of train data in models
-##############################################
-
-* Currently, the data used in w2v and d2v models are the subjects of senior high school.
-* test data:`[OpenLUNA.json] <http://base.ustc.edu.cn/data/OpenLUNA/OpenLUNA.json>`_
-
-At present, the following models are provided. More models of different subjects and question types are being trained. Please look forward to it.
-    "d2v_all_256" (all subject), "d2v_sci_256" (Science), "d2v_eng_256" (English)，"d2v_lit_256" (Arts)
 
 
 Examples of Model Training
@@ -97,7 +67,7 @@ Get the dataset
 
    prepare_dataset  <../../build/blitz/pretrain/prepare_dataset.ipynb>
 
-An example of d2v in gensim model
+Examples of d2v in gensim model
 ##################################
 
 .. toctree::
@@ -108,7 +78,7 @@ An example of d2v in gensim model
    d2v_general  <../../build/blitz/pretrain/gensim/d2v_general.ipynb>
    d2v_stem_tf  <../../build/blitz/pretrain/gensim/d2v_stem_tf.ipynb>
 
-An example of w2v in gensim model
+Examples of w2v in gensim model
 ##################################
 
 .. toctree::
@@ -118,7 +88,7 @@ An example of w2v in gensim model
    w2v_stem_text  <../../build/blitz/pretrain/gensim/w2v_stem_text.ipynb>
    w2v_stem_tf  <../../build/blitz/pretrain/gensim/w2v_stem_tf.ipynb>
 
-An example of seg_token
+Examples of seg_token
 #############################
 
 .. toctree::
@@ -128,3 +98,25 @@ An example of seg_token
    d2v.ipynb  <../../build/blitz/pretrain/seg_token/d2v.ipynb>
    d2v_d1  <../../build/blitz/pretrain/seg_token/d2v_d1.ipynb>
    d2v_d2  <../../build/blitz/pretrain/seg_token/d2v_d2.ipynb>
+
+Examples of advanced models
+#############################
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: pretrain_gallery_en1
+    :glob:
+
+    ELMo pretrain  <../../build/blitz/pretrain/elmo.ipynb>
+
+    BERT pretrain <../../build/blitz/pretrain/bert.ipynb>
+
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: pretrain_gallery_en2
+    :glob:
+
+    DisenQNet pretrain  <../../build/blitz/pretrain/disenq.ipynb>
+
+    QuesNet pretrain <../../build/blitz/pretrain/quesnet.ipynb>

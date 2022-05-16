@@ -32,8 +32,8 @@ class PureTextTokenizer(Tokenizer):
     Examples
     --------
     >>> tokenizer = PureTextTokenizer()
-    >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
+    >>> items = ["有公式$\\FormFigureID{1}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
     >>> tokens = tokenizer(items)
     >>> next(tokens)[:10]
     ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z']
@@ -53,6 +53,7 @@ class PureTextTokenizer(Tokenizer):
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']
     """
+
     def __init__(self, *args, **kwargs):
         self.tokenization_params = {
             "formula_params": {
@@ -84,8 +85,8 @@ class TextTokenizer(Tokenizer):
     Examples
     ----------
     >>> tokenizer = TextTokenizer()
-    >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
-    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
+    >>> items = ["有公式$\\FormFigureID{1}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
     >>> tokens = tokenizer(items)
     >>> next(tokens)[:10]
     ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
@@ -96,6 +97,7 @@ class TextTokenizer(Tokenizer):
     >>> next(tokens)[:10]
     ['[TAG]', '复数', 'z', '=', '1', '+', '2', 'i', '+', 'i']
     """
+
     def __init__(self, *args, **kwargs):
         self.tokenization_params = {
             "formula_params": {
@@ -118,7 +120,6 @@ TOKENIZER = {
 def get_tokenizer(name, *args, **kwargs):
     r"""
     It is a total interface to use difference tokenizer.
-
     Parameters
     ----------
     name: str
@@ -127,11 +128,9 @@ def get_tokenizer(name, *args, **kwargs):
         the parameters passed to tokenizer
     kwargs:
         the parameters passed to tokenizer
-
     Returns
     -------
     tokenizer: Tokenizer
-
     Examples
     --------
     >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]

@@ -90,7 +90,7 @@ One basic usage of EduNLP is to convert an item into a vector, i.e.,
 .. code-block:: python
 
    from EduNLP import get_pretrained_i2v
-   i2v = get_pretrained_i2v("d2v_all_256", "./model")
+   i2v = get_pretrained_i2v("d2v_all_300", "./model")
    item_vector, token_vector = i2v(["the content of item 1", "the content of item 2"])
 
 
@@ -143,9 +143,9 @@ If this repository is helpful for you, please cite our work
 
    tutorial/en/index
    tutorial/en/sif
-   tutorial/en/parse
    tutorial/en/seg
    tutorial/en/tokenize
+   tutorial/en/tokenization
    tutorial/en/pretrain
    tutorial/en/vectorization
 
@@ -156,9 +156,9 @@ If this repository is helpful for you, please cite our work
 
    tutorial/zh/index
    tutorial/zh/sif
-   tutorial/zh/parse
    tutorial/zh/seg
    tutorial/zh/tokenize
+   tutorial/zh/tokenization
    tutorial/zh/pretrain
    tutorial/zh/vectorization
 
