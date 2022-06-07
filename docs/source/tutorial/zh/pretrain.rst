@@ -104,7 +104,7 @@ gensim模型w2v例子
     :name: pretrain_gallery1
     :glob:
 
-    Emlo预训练  <../../build/blitz/pretrain/elmo.ipynb>
+    Elmo预训练  <../../build/blitz/pretrain/elmo.ipynb>
 
     Bert预训练  <../../build/blitz/pretrain/bert.ipynb>
 

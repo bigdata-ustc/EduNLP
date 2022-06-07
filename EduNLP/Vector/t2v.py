@@ -101,12 +101,13 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     name:str
         select the pretrained model
         e.g.:
-        d2v_all_256,
-        d2v_sci_256,
-        d2v_eng_256,
-        d2v_lit_256,
-        w2v_eng_300,
-        w2v_lit_300.
+        d2v_math_300
+        w2v_math_300
+        elmo_math_2048
+        bert_math_768
+        bert_taledu_768
+        disenq_math_256
+        quesnet_math_512
     model_dir:str
         the path of model, default: MODEL_DIR = '~/.EduNLP/model'
 
