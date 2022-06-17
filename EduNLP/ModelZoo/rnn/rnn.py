@@ -1,12 +1,13 @@
-# coding: utf-8
-# 2021/7/12 @ tongshiwei
-
 import torch
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 from baize.torch import load_net
 import torch.nn.functional as F
 import json
+import os
+from ..base_model import BaseModel
+from transformers.modeling_outputs import ModelOutput
+from transformers import PretrainedConfig
 
 
 class LM(nn.Module):
@@ -106,6 +107,13 @@ class LM(nn.Module):
         return output, hn
 
 
+class ElmoLMOutput(ModelOutput):
+    pred_forward: torch.FloatTensor = None
+    pred_backward: torch.FloatTensor = None
+    forward_output: torch.FloatTensor = None
+    backward_output: torch.FloatTensor = None
+
+
 class ElmoLM(nn.Module):
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True):
@@ -116,6 +124,8 @@ class ElmoLM(nn.Module):
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size
         self.dropout = nn.Dropout(dropout_rate)
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
+        self.config = PretrainedConfig.from_dict(config)
 
     def forward(self, seq_idx, seq_len):
         """
@@ -141,4 +151,129 @@ class ElmoLM(nn.Module):
         pred_forward = F.softmax(input=self.pred_layer(forward_output), dim=-1)
         pred_backward = F.softmax(input=self.pred_layer(backward_output), dim=-1)
 
-        return pred_forward, pred_backward, forward_output, backward_output
+        return ElmoLMOutput(
+            pred_forward=pred_forward,
+            pred_backward=pred_backward,
+            forward_output=forward_output,
+            backward_output=backward_output
+        )
+
+    @classmethod
+    def from_pretrained(cls, pretrained_model_path):
+        config_path = os.path.join(pretrained_model_path, "config.json")
+        model_path = os.path.join(pretrained_model_path, "pytorch_model.bin")
+        model, prefix = cls.from_config(config_path)
+        if not prefix:
+            model.load_state_dict(torch.load(model_path))
+        else:
+            state_dict = torch.load(model_path)
+            new_state_dict = {}
+            for k, v in state_dict.items():
+                if prefix in k:
+                    new_state_dict[k.replace(prefix + '.', '')] = v
+                else:
+                    new_state_dict[k] = v
+            model.load_state_dict(new_state_dict)
+        return model
+
+    @classmethod
+    def from_config(cls, config_path):
+        with open(config_path, "r", encoding="utf-8") as rf:
+            model_config = json.load(rf)
+            if 'prefix' in model_config:
+                prefix = model_config['prefix']
+            else:
+                prefix = None
+            return cls(
+                vocab_size=model_config['vocab_size'],
+                embedding_dim=model_config['embedding_dim'],
+                hidden_size=model_config['hidden_size'],
+                dropout_rate=model_config['dropout_rate'],
+                batch_first=model_config['batch_first']
+            ), prefix
+
+
+class ElmoLMForPreTrainingOutput(ModelOutput):
+    loss: torch.FloatTensor = None
+    pred_forward: torch.FloatTensor = None
+    pred_backward: torch.FloatTensor = None
+    forward_output: torch.FloatTensor = None
+    backward_output: torch.FloatTensor = None
+
+
+class ElmoLMForPreTraining(BaseModel):
+    def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
+                 batch_first=True):
+        super(ElmoLMForPreTraining, self).__init__()
+        self.elmo = ElmoLM(
+            vocab_size=vocab_size,
+            embedding_dim=embedding_dim,
+            hidden_size=hidden_size,
+            dropout_rate=dropout_rate,
+            batch_first=batch_first
+        )
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.hidden_size = hidden_size
+        self.dropout = nn.Dropout(dropout_rate)
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
+        config['prefix'] = 'elmo'
+        self.config = PretrainedConfig.from_dict(config)
+
+    def forward(self, seq_idx, seq_len, pred_mask, idx_mask):
+        y = F.one_hot(seq_idx, self.elmo.vocab_size).to(seq_idx.device)
+        outputs = self.elmo(seq_idx, seq_len)
+        pred_forward, pred_backward = outputs.pred_forward, outputs.pred_backward
+
+        loss_func = nn.BCELoss()
+        pred_forward = pred_forward[pred_mask]
+        pred_backward = pred_backward[torch.flip(pred_mask, [1])]
+        y_rev = torch.flip(y, [1])[torch.flip(idx_mask, [1])]
+        y = y[idx_mask]
+        forward_loss = loss_func(pred_forward[:, :-1].double(), y[:, 1:].double())
+        backward_loss = loss_func(pred_backward[:, :-1].double(), y_rev[:, 1:].double())
+        loss = forward_loss + backward_loss
+
+        return ElmoLMForPreTrainingOutput(
+            loss=loss,
+            pred_forward=pred_forward,
+            pred_backward=pred_backward,
+            forward_output=outputs.forward_output,
+            backward_output=outputs.backward_output
+        )
+
+    @classmethod
+    def from_pretrained(cls, pretrained_model_path):
+        config_path = os.path.join(pretrained_model_path, "config.json")
+        model_path = os.path.join(pretrained_model_path, "pytorch_model.bin")
+        model = cls.from_config(config_path)
+        state_dict = torch.load(model_path)
+        prefix = 'elmo'
+        new_state_dict = {}
+        for k, v in state_dict.items():
+            if prefix not in k:
+                new_state_dict[prefix + '.' + k] = v
+            else:
+                new_state_dict[k] = v
+        model.load_state_dict(new_state_dict)
+        return model
+
+    @classmethod
+    def from_config(cls, config_path):
+        with open(config_path, "r", encoding="utf-8") as rf:
+            model_config = json.load(rf)
+            return cls(
+                vocab_size=model_config['vocab_size'],
+                embedding_dim=model_config['embedding_dim'],
+                hidden_size=model_config['hidden_size'],
+                dropout_rate=model_config['dropout_rate'],
+                batch_first=model_config['batch_first']
+            )
+
+
+if __name__ == '__main__':
+    # model = ElmoLMForPreTraining(10, 10, 10, 0.2)
+    model = ElmoLM(10, 10, 10, 0.2)
+    model.save_pretrained('./')
+    model = ElmoLMForPreTraining.from_pretrained('./')
+    s_dict = torch.load('./model.pt')

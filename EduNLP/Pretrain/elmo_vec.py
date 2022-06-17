@@ -9,8 +9,9 @@ import os
 import time
 from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
 from EduNLP.Tokenizer import PureTextTokenizer
-from EduNLP.ModelZoo.rnn import ElmoLM
+from EduNLP.ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining
 from EduNLP.ModelZoo import set_device
+from transformers import TrainingArguments, Trainer
 
 UNK_SYMBOL = '[UNK]'
 PAD_SYMBOL = '[PAD]'
@@ -137,14 +138,14 @@ def elmo_collate_fn(batch_data):
     ret_batch = {
         'pred_mask': torch.tensor(pred_mask),
         'idx_mask': torch.tensor(idx_mask),
-        'length': torch.tensor([data['length'] for data in batch_data]),
-        'idx': torch.tensor([data['idx'] for data in batch_data])
+        'seq_len': torch.tensor([data['length'] for data in batch_data]),
+        'seq_idx': torch.tensor([data['idx'] for data in batch_data])
     }
     return ret_batch
 
 
 def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, batch_size=2,
-               epochs=3, lr: float = 5e-4, device=None):
+               epochs=3, lr: float = 5e-4):
     """
     Parameters
     ----------
@@ -180,67 +181,41 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
             for token in text:
                 tokenizer.append(token)
     train_dataset = ElmoDataset(texts, tokenizer)
-    if pretrained_dir:
-        with open(os.path.join(pretrained_dir, 'config.json'), 'r') as f:
-            config = json.load(f)
-        model = ElmoLM(vocab_size=len(tokenizer), embedding_dim=config['emb_dim'],
-                       hidden_size=config['hid_dim'])
-        model.load_state_dict(torch.load(os.path.join(pretrained_dir, 'weight.pt')))
-    else:
-        model = ElmoLM(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
 
-    if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if pretrained_dir:
+        model = ElmoLMForPreTraining.from_pretrained(pretrained_dir)
     else:
-        device = torch.device(device)
-    model.LM_layer.rnn.flatten_parameters()
-    model.to(device)
-    model.train()
-    global_step = 0
-    adam = optim.Adam(model.parameters(), lr=lr)
-    loss_func = nn.BCELoss()
-    loss_func.to(device)
-    dataloader = tud.DataLoader(train_dataset, collate_fn=elmo_collate_fn, batch_size=batch_size, shuffle=True)
-    begin = time.time()
-    for epoch in range(epochs):
-        for step, sample in enumerate(dataloader):
-            pred_mask = sample['pred_mask'].to(device)
-            idx_mask = sample['idx_mask'].to(device)
-            idx = sample['idx'].to(device)
-            length = sample['length'].to(device)
-            try:
-                y = F.one_hot(idx, num_classes=len(tokenizer)).to(device)
-                pred_forward, pred_backward, _, _ = model.forward(idx, length)
-                pred_forward = pred_forward[pred_mask]
-                pred_backward = pred_backward[torch.flip(pred_mask, [1])]
-                y_rev = torch.flip(y, [1])[torch.flip(idx_mask, [1])]
-                y = y[idx_mask]
-                forward_loss = loss_func(pred_forward[:, :-1].double(), y[:, 1:].double())
-                backward_loss = loss_func(pred_backward[:, :-1].double(), y_rev[:, 1:].double())
-                forward_loss.backward(retain_graph=True)
-                backward_loss.backward(retain_graph=True)
-                adam.step()
-                adam.zero_grad()
-                global_step += 1
-                if global_step % 10 == 0:
-                    print("[Global step %d, epoch %d, batch %d] Loss: %.10f" % (
-                        global_step, epoch, step, forward_loss + backward_loss))
-            except RuntimeError as e:
-                print("RuntimeError:", e)
-                print("[DEBUG]Sample idx:", idx)
-    end = time.time()
-    print("Train time: ", (end - begin))
-    model.cpu()
-    config = {
-        'emb_dim': emb_dim,
-        'hid_dim': hid_dim,
-        'batch_first': True,
-        'vocab_size': len(tokenizer)
-    }
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    with open(os.path.join(output_dir, 'config.json'), 'w') as f:
-        json.dump(config, f)
-    torch.save(model.state_dict(), os.path.join(output_dir, 'weight.pt'))
+        model = ElmoLMForPreTraining(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
+
+    model.elmo.LM_layer.rnn.flatten_parameters()
+
+    epochs = 1
+    batch_size = 64
+    save_steps = 10
+    save_total_limit = 2
+    logging_steps = 2
+    gradient_accumulation_steps = 1
+
+    training_args = TrainingArguments(
+        output_dir=output_dir,
+        overwrite_output_dir=True,
+        num_train_epochs=epochs,
+        per_device_train_batch_size=batch_size,
+        save_steps=save_steps,
+        save_total_limit=save_total_limit,
+        logging_steps=logging_steps,
+        learning_rate=lr,
+        gradient_accumulation_steps=gradient_accumulation_steps,
+    )
+
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        data_collator=elmo_collate_fn,
+        train_dataset=train_dataset,
+    )
+
+    trainer.train()
+    model.save_pretrained(output_dir)
     tokenizer.save_vocab(os.path.join(output_dir, 'vocab.json'))
     return output_dir
