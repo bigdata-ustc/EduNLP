@@ -114,7 +114,7 @@ class ElmoLMOutput(ModelOutput):
     backward_output: torch.FloatTensor = None
 
 
-class ElmoLM(nn.Module):
+class ElmoLM(BaseModel):
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True):
         super(ElmoLM, self).__init__()
@@ -269,11 +269,3 @@ class ElmoLMForPreTraining(BaseModel):
                 dropout_rate=model_config['dropout_rate'],
                 batch_first=model_config['batch_first']
             )
-
-
-if __name__ == '__main__':
-    # model = ElmoLMForPreTraining(10, 10, 10, 0.2)
-    model = ElmoLM(10, 10, 10, 0.2)
-    model.save_pretrained('./')
-    model = ElmoLMForPreTraining.from_pretrained('./')
-    s_dict = torch.load('./model.pt')
