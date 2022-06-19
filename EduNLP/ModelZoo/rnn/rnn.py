@@ -193,7 +193,6 @@ class ElmoLMForPreTraining(BaseModel):
             dropout_rate=dropout_rate,
             batch_first=batch_first
         )
-        self.head = nn.Linear(20, 10)
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size

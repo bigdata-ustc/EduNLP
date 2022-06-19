@@ -144,8 +144,7 @@ def elmo_collate_fn(batch_data):
     return ret_batch
 
 
-def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, batch_size=2,
-               epochs=3, lr: float = 5e-4):
+def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, train_params=None):
     """
     Parameters
     ----------
@@ -159,14 +158,8 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
         The embedding dim
     hid_dim: int, optional, default=1024
         The hidden dim
-    batch_size: int, optional, default=2
-        The training batch size
-    epochs: int, optional, default=3
-        The training epochs
-    lr: float, optional, default=5e-4
-        The learning rate
-    device: str, optional
-        Default is 'cuda' if available, otherwise 'cpu'
+    train_params: dict, optional, default=None
+        the training parameters passed to Trainer
 
     Returns
     -------
@@ -189,12 +182,25 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
 
     model.elmo.LM_layer.rnn.flatten_parameters()
 
-    epochs = 1
-    batch_size = 64
-    save_steps = 10
-    save_total_limit = 2
-    logging_steps = 2
-    gradient_accumulation_steps = 1
+    # training parameters
+    if train_params:
+        epochs = train_params['epochs'] if 'epochs' in train_params else 1
+        batch_size = train_params['batch_size'] if 'batch_size' in train_params else 64
+        save_steps = train_params['save_steps'] if 'save_steps' in train_params else 100
+        save_total_limit = train_params['save_total_limit'] if 'save_total_limit' in train_params else 2
+        logging_steps = train_params['logging_steps'] if 'logging_steps' in train_params else 5
+        gradient_accumulation_steps = train_params['gradient_accumulation_steps'] \
+            if 'gradient_accumulation_steps' in train_params else 1
+        learning_rate = train_params['learning_rate'] if 'learning_rate' in train_params else 5e-4
+    else:
+        # default
+        epochs = 1
+        batch_size = 64
+        save_steps = 1000
+        save_total_limit = 2
+        logging_steps = 5
+        gradient_accumulation_steps = 1
+        learning_rate = 5e-4
 
     training_args = TrainingArguments(
         output_dir=output_dir,
@@ -204,7 +210,7 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
         save_steps=save_steps,
         save_total_limit=save_total_limit,
         logging_steps=logging_steps,
-        learning_rate=lr,
+        learning_rate=learning_rate,
         gradient_accumulation_steps=gradient_accumulation_steps,
     )
 
