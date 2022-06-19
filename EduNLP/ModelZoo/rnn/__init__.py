@@ -1,4 +1,4 @@
 # coding: utf-8
 # 2021/7/12 @ tongshiwei
 
-from .rnn import LM, ElmoLM
+from .rnn import LM, ElmoLM, ElmoLMForDifficultyPrediction

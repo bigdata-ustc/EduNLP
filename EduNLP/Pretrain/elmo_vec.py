@@ -7,10 +7,11 @@ import numpy as np
 import json
 import os
 import time
-from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
-from EduNLP.Tokenizer import PureTextTokenizer
-from EduNLP.ModelZoo.rnn import ElmoLM
-from EduNLP.ModelZoo import set_device
+from ..SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
+from ..Tokenizer import PureTextTokenizer
+from ..ModelZoo.rnn import ElmoLM, ElmoLMForDifficultyPrediction
+from ..ModelZoo import set_device
+from transformers import TrainingArguments, Trainer
 
 UNK_SYMBOL = '[UNK]'
 PAD_SYMBOL = '[PAD]'
@@ -242,5 +243,73 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     with open(os.path.join(output_dir, 'config.json'), 'w') as f:
         json.dump(config, f)
     torch.save(model.state_dict(), os.path.join(output_dir, 'weight.pt'))
+    tokenizer.save_vocab(os.path.join(output_dir, 'vocab.json'))
+    return output_dir
+
+
+
+def 
+
+def train_elmo_for_difficulty_prediction(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512,
+                                         hid_dim=512, train_params=None):
+    tokenizer = ElmoTokenizer()
+    if pretrained_dir:
+        tokenizer.load_vocab(os.path.join(pretrained_dir, 'vocab.json'))
+    else:
+        for text in texts:
+            for token in text:
+                tokenizer.append(token)
+    train_dataset = ElmoDataset(texts, tokenizer)
+
+    if pretrained_dir:
+        model = ElmoLMForDifficultyPrediction.from_pretrained(pretrained_dir)
+    else:
+        model = ElmoLMForDifficultyPrediction(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
+
+    model.elmo.LM_layer.rnn.flatten_parameters()
+
+
+
+    # training parameters
+    if train_params:
+        epochs = train_params['epochs'] if 'epochs' in train_params else 1
+        batch_size = train_params['batch_size'] if 'batch_size' in train_params else 64
+        save_steps = train_params['save_steps'] if 'save_steps' in train_params else 100
+        save_total_limit = train_params['save_total_limit'] if 'save_total_limit' in train_params else 2
+        logging_steps = train_params['logging_steps'] if 'logging_steps' in train_params else 5
+        gradient_accumulation_steps = train_params['gradient_accumulation_steps'] \
+            if 'gradient_accumulation_steps' in train_params else 1
+        learning_rate = train_params['learning_rate'] if 'learning_rate' in train_params else 5e-4
+    else:
+        # default
+        epochs = 1
+        batch_size = 64
+        save_steps = 1000
+        save_total_limit = 2
+        logging_steps = 5
+        gradient_accumulation_steps = 1
+        learning_rate = 5e-4
+
+    training_args = TrainingArguments(
+        output_dir=output_dir,
+        overwrite_output_dir=True,
+        num_train_epochs=epochs,
+        per_device_train_batch_size=batch_size,
+        save_steps=save_steps,
+        save_total_limit=save_total_limit,
+        logging_steps=logging_steps,
+        learning_rate=learning_rate,
+        gradient_accumulation_steps=gradient_accumulation_steps,
+    )
+
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        data_collator=elmo_collate_fn,
+        train_dataset=train_dataset,
+    )
+
+    trainer.train()
+    model.save_pretrained(output_dir)
     tokenizer.save_vocab(os.path.join(output_dir, 'vocab.json'))
     return output_dir
