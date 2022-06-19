@@ -233,3 +233,58 @@ class ElmoLMForPreTraining(BaseModel):
                 dropout_rate=model_config['dropout_rate'],
                 batch_first=model_config['batch_first']
             )
+
+
+class DifficultyPredictionOutput(ModelOutput):
+    loss: torch.FloatTensor = None
+    prediction_logits: torch.FloatTensor = None
+
+
+class ElmoLMForDifficultyPrediction(BaseModel):
+    def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
+                 batch_first=True, classifier_dropout=0.5):
+        super(ElmoLMForDifficultyPrediction).__init__()
+
+        self.elmo = ElmoLM(
+            vocab_size=vocab_size,
+            embedding_dim=embedding_dim,
+            hidden_size=hidden_size,
+            dropout_rate=dropout_rate,
+            batch_first=batch_first
+        )
+        self.classifier_dropout = classifier_dropout
+        self.dropout = nn.Dropout(classifier_dropout)
+        self.classifier = nn.Linear(hidden_size, 1)
+
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
+        config['architecture'] = 'ElmoLMForPreTraining'
+        self.config = PretrainedConfig.from_dict(config)
+
+    def forward(self, seq_idx, seq_len, pred_mask, idx_mask, labels):
+        outputs = self.elmo(seq_idx, seq_len)
+
+        item_embeds = torch.cat(
+            (outputs.forward_output[torch.arange(len(seq_len)), torch.tensor(seq_len) - 1],
+             outputs.backward_output[torch.arange(len(seq_len)), max(seq_len) - torch.tensor(seq_len)]),
+            dim=-1)
+
+        logits = self.sigmoid(self.classifier(item_embeds, dim=1))
+        loss = F.mse_loss(logits, labels)
+        
+        return DifficultyPredictionOutput(
+            loss = loss,
+            logits = logits
+        )
+
+    @classmethod
+    def from_config(cls, config_path):
+         with open(config_path, "r", encoding="utf-8") as rf:
+            model_config = json.load(rf)
+            return cls(
+                vocab_size=model_config['vocab_size'],
+                embedding_dim=model_config['embedding_dim'],
+                hidden_size=model_config['hidden_size'],
+                dropout_rate=model_config['dropout_rate'],
+                batch_first=model_config['batch_first'],
+                classifier_dropout=model_config['classifier_dropout'], 
+            )
