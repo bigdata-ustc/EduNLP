@@ -115,6 +115,7 @@ class ElmoLMOutput(ModelOutput):
 
 
 class ElmoLM(BaseModel):
+    base_model_prefix = 'elmo'
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True):
         super(ElmoLM, self).__init__()
@@ -125,6 +126,7 @@ class ElmoLM(BaseModel):
         self.hidden_size = hidden_size
         self.dropout = nn.Dropout(dropout_rate)
         config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
+        config['architecture'] = 'ElmoLM'
         self.config = PretrainedConfig.from_dict(config)
 
     def forward(self, seq_idx, seq_len):
@@ -159,38 +161,16 @@ class ElmoLM(BaseModel):
         )
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_path):
-        config_path = os.path.join(pretrained_model_path, "config.json")
-        model_path = os.path.join(pretrained_model_path, "pytorch_model.bin")
-        model, prefix = cls.from_config(config_path)
-        if not prefix:
-            model.load_state_dict(torch.load(model_path))
-        else:
-            state_dict = torch.load(model_path)
-            new_state_dict = {}
-            for k, v in state_dict.items():
-                if prefix in k:
-                    new_state_dict[k.replace(prefix + '.', '')] = v
-                else:
-                    new_state_dict[k] = v
-            model.load_state_dict(new_state_dict)
-        return model
-
-    @classmethod
     def from_config(cls, config_path):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            if 'prefix' in model_config:
-                prefix = model_config['prefix']
-            else:
-                prefix = None
             return cls(
                 vocab_size=model_config['vocab_size'],
                 embedding_dim=model_config['embedding_dim'],
                 hidden_size=model_config['hidden_size'],
                 dropout_rate=model_config['dropout_rate'],
                 batch_first=model_config['batch_first']
-            ), prefix
+            )
 
 
 class ElmoLMForPreTrainingOutput(ModelOutput):
@@ -202,6 +182,7 @@ class ElmoLMForPreTrainingOutput(ModelOutput):
 
 
 class ElmoLMForPreTraining(BaseModel):
+    base_model_prefix = 'elmo'
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True):
         super(ElmoLMForPreTraining, self).__init__()
@@ -212,12 +193,12 @@ class ElmoLMForPreTraining(BaseModel):
             dropout_rate=dropout_rate,
             batch_first=batch_first
         )
+        self.head = nn.Linear(20, 10)
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size
-        self.dropout = nn.Dropout(dropout_rate)
         config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
-        config['prefix'] = 'elmo'
+        config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
 
     def forward(self, seq_idx, seq_len, pred_mask, idx_mask):
@@ -241,22 +222,6 @@ class ElmoLMForPreTraining(BaseModel):
             forward_output=outputs.forward_output,
             backward_output=outputs.backward_output
         )
-
-    @classmethod
-    def from_pretrained(cls, pretrained_model_path):
-        config_path = os.path.join(pretrained_model_path, "config.json")
-        model_path = os.path.join(pretrained_model_path, "pytorch_model.bin")
-        model = cls.from_config(config_path)
-        state_dict = torch.load(model_path)
-        prefix = 'elmo'
-        new_state_dict = {}
-        for k, v in state_dict.items():
-            if prefix not in k:
-                new_state_dict[prefix + '.' + k] = v
-            else:
-                new_state_dict[k] = v
-        model.load_state_dict(new_state_dict)
-        return model
 
     @classmethod
     def from_config(cls, config_path):
