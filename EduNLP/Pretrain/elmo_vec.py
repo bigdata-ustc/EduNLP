@@ -178,7 +178,12 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     if pretrained_dir:
         model = ElmoLMForPreTraining.from_pretrained(pretrained_dir)
     else:
-        model = ElmoLMForPreTraining(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
+        model = ElmoLMForPreTraining(
+            vocab_size=len(tokenizer),
+            embedding_dim=emb_dim,
+            hidden_size=hid_dim,
+            batch_first=True
+        )
 
     model.elmo.LM_layer.rnn.flatten_parameters()
 

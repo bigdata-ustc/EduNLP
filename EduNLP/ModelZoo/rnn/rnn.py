@@ -108,6 +108,16 @@ class LM(nn.Module):
 
 
 class ElmoLMOutput(ModelOutput):
+    """
+    Output type of [`ElmoLM`]
+
+    Parameters
+    ----------
+    pred_forward: of shape (batch_size, sequence_length)
+    pred_backward: of shape (batch_size, sequence_length)
+    forward_output: of shape (batch_size, sequence_length, hidden_size)
+    backward_output: of shape (batch_size, sequence_length, hidden_size)
+    """
     pred_forward: torch.FloatTensor = None
     pred_backward: torch.FloatTensor = None
     forward_output: torch.FloatTensor = None
@@ -116,6 +126,7 @@ class ElmoLMOutput(ModelOutput):
 
 class ElmoLM(BaseModel):
     base_model_prefix = 'elmo'
+
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True):
         super(ElmoLM, self).__init__()
@@ -140,10 +151,11 @@ class ElmoLM(BaseModel):
 
         Returns
         ----------
-        pred_forward: of shape (batch_size, sequence_length)
-        pred_backward: of shape (batch_size, sequence_length)
-        forward_output: of shape (batch_size, sequence_length, hidden_size)
-        backward_output: of shape (batch_size, sequence_length, hidden_size)
+        ElmoLMOutput
+            pred_forward: of shape (batch_size, sequence_length)
+            pred_backward: of shape (batch_size, sequence_length)
+            forward_output: of shape (batch_size, sequence_length, hidden_size)
+            backward_output: of shape (batch_size, sequence_length, hidden_size)
         """
         lm_output, _ = self.LM_layer(seq_idx, seq_len)
         forward_output = lm_output[:, :, :self.hidden_size]
@@ -174,6 +186,17 @@ class ElmoLM(BaseModel):
 
 
 class ElmoLMForPreTrainingOutput(ModelOutput):
+    """
+    Output type of [`ElmoLMForPreTraining`].
+
+    Parameters
+    ----------
+    loss:
+    pred_forward: of shape (batch_size, sequence_length)
+    pred_backward: of shape (batch_size, sequence_length)
+    forward_output: of shape (batch_size, sequence_length, hidden_size)
+    backward_output: of shape (batch_size, sequence_length, hidden_size)
+    """
     loss: torch.FloatTensor = None
     pred_forward: torch.FloatTensor = None
     pred_backward: torch.FloatTensor = None
@@ -183,6 +206,7 @@ class ElmoLMForPreTrainingOutput(ModelOutput):
 
 class ElmoLMForPreTraining(BaseModel):
     base_model_prefix = 'elmo'
+
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True):
         super(ElmoLMForPreTraining, self).__init__()
@@ -201,6 +225,26 @@ class ElmoLMForPreTraining(BaseModel):
         self.config = PretrainedConfig.from_dict(config)
 
     def forward(self, seq_idx, seq_len, pred_mask, idx_mask):
+        """
+
+        Parameters
+        ----------
+        seq_idx:Tensor, of shape (batch_size, sequence_length)
+            a list of indices
+        seq_len:Tensor, of shape (batch_size)
+            length
+        pred_mask : Tensor, of shape(batch_size, sequence_length)
+        idx_mask : Tensor, of shape (batch_size, sequence_length)
+
+        Returns
+        -------
+        ElmoLMForPreTrainingOutput
+            loss
+            pred_forward: of shape (batch_size, sequence_length)
+            pred_backward: of shape (batch_size, sequence_length)
+            forward_output: of shape (batch_size, sequence_length, hidden_size)
+            backward_output: of shape (batch_size, sequence_length, hidden_size)
+        """
         y = F.one_hot(seq_idx, self.elmo.vocab_size).to(seq_idx.device)
         outputs = self.elmo(seq_idx, seq_len)
         pred_forward, pred_backward = outputs.pred_forward, outputs.pred_backward

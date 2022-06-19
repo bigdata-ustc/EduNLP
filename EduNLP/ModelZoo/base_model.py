@@ -29,10 +29,10 @@ class BaseModel(nn.Module):
         self.save_config(output_dir)
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_path):
+    def from_pretrained(cls, pretrained_model_path, *args, **kwargs):
         config_path = os.path.join(pretrained_model_path, "config.json")
         model_path = os.path.join(pretrained_model_path, "pytorch_model.bin")
-        model = cls.from_config(config_path)
+        model = cls.from_config(config_path, *args, **kwargs)
         loaded_state_dict = torch.load(model_path)
         loaded_keys = loaded_state_dict.keys()
         expected_keys = model.state_dict().keys()
@@ -81,10 +81,8 @@ class BaseModel(nn.Module):
         return model
 
     def save_config(self, config_dir):
-        # with open(config_path, "w", encoding="utf-8") as wf:
-        #     json.dump(self.config, wf, ensure_ascii=False, indent=2)
         self.config.save_pretrained(config_dir)
 
     @classmethod
-    def from_config(cls, config_path):
+    def from_config(cls, config_path, *args, **kwargs):
         raise NotImplementedError
