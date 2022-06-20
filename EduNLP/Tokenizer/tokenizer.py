@@ -5,12 +5,27 @@ from typing import Iterable
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
 
-__all__ = ["TOKENIZER", "Tokenizer", "PureTextTokenizer", "TextTokenizer", "get_tokenizer"]
+__all__ = ["TOKENIZER", "Tokenizer", "CustomTokenizer", "PureTextTokenizer", "TextTokenizer", "get_tokenizer"]
 
 
 class Tokenizer(object):
     def __call__(self, *args, **kwargs):
         raise NotImplementedError
+
+
+class CustomTokenizer(Tokenizer):
+    def __init__(self, symbol="gmas", figures=None, **kwargs):
+        self.tokenization_params = {
+            "text_params": kwargs.get("text_params", None),
+            "formula_params": kwargs.get("formula_params", None),
+            "figure_params": kwargs.get("figure_params", None)
+        }
+        self.symbol = symbol
+        self.figures = figures
+
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
+        for item in items:
+            yield tokenize(seg(key(item), symbol=self.symbol, figures=self.figures), **self.tokenization_params).tokens
 
 
 class PureTextTokenizer(Tokenizer):
@@ -62,7 +77,7 @@ class PureTextTokenizer(Tokenizer):
             }
         }
 
-    def __call__(self, items: Iterable, key=lambda x: x, *args, **kwargs):
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
         for item in items:
             yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
 
@@ -106,14 +121,28 @@ class TextTokenizer(Tokenizer):
             }
         }
 
-    def __call__(self, items: Iterable, key=lambda x: x, *args, **kwargs):
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
         for item in items:
             yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
 
 
+class FormulaTokenizer(Tokenizer):
+    def __init__(self, *args, **kwargs):
+        self.tokenization_params = {
+            "formula_params": {
+                "method": "ast",
+            }
+        }
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError
+
+
 TOKENIZER = {
+    "custom": CustomTokenizer,
     "pure_text": PureTextTokenizer,
-    "text": TextTokenizer
+    "text": TextTokenizer,
+    "formula": FormulaTokenizer
 }
 
 
