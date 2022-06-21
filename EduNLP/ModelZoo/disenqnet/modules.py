@@ -153,7 +153,9 @@ class ConceptEstimator(nn.Module):
             Tensor of (), BCE loss of concept label
         """
         output = self.classifier(hidden)
-        loss = self.loss(output, label.float())
+        batch_size, concept_size = output.shape
+        label_onehot = F.one_hot(label, num_classes=concept_size)
+        loss = self.loss(output, label_onehot.float())
         return loss
 
 

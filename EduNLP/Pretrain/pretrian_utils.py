@@ -1,4 +1,5 @@
 from typing import Tuple
+import traceback
 import torch
 import os
 import json
@@ -42,7 +43,11 @@ class Vocab(object):
         self.unk_idx = self.token_to_idx[self.unk_token]
 
     def __len__(self):
-        return self._tokens
+        return len(self._tokens)
+
+    @property
+    def vocab_size(self):
+        return len(self._tokens)
 
     @property
     def special_tokens(self):
@@ -77,7 +82,7 @@ class Vocab(object):
                 word2cnt[word] = word2cnt.get(word, 0) + 1
         words = [w for w, c in word2cnt.items() if c >= trim_min_count and w not in self._special_tokens]
         for token in words:
-            self._add(token)
+            self.add(token)
 
     def load_vocab(self, vocab_path):
         with open(vocab_path, "r", encoding="utf-8") as file:
@@ -87,7 +92,7 @@ class Vocab(object):
 
     def save_vocab(self, vocab_path):
         with open(vocab_path, 'w', encoding='utf-8') as file:
-            for i in range(self.size):
+            for i in range(self.vocab_size):
                 token = self._tokens[i]
                 file.write(f"{token}\n")
 
@@ -130,7 +135,7 @@ class PretrainedTokenizer(object):
         self.config = PretrainedConfig.from_dict(config)
 
     def __call__(self, items: (list, str, dict), key=lambda x: x, padding=True,
-                 return_tensors=True, return_text=False, **kwargs):
+                 return_tensor=True, return_text=False, **kwargs):
         """
         Parameters
         ----------
@@ -140,7 +145,7 @@ class PretrainedTokenizer(object):
             determine how to get the text of each item
         padding: bool
             whether to pad the seq_idx
-        return_tensors: bool
+        return_tensor: bool
             whether to return data as tensors (would ignore text tokens)
         return_text: bool
             whether to return text tokens
@@ -161,14 +166,15 @@ class PretrainedTokenizer(object):
                                                    eos=kwargs.get("eos", False)) for token_item in token_items]
         lengths = [len(seq) for seq in seqs]
         ret = {
-            "seq_idx": pad_sequence(seqs, pad_val=self.word2index[self.pad_token]) if padding else seqs,
+            "seq_idx": pad_sequence(seqs, pad_val=self.vocab.pad_idx) if padding else seqs,
             "seq_len": lengths
         }
 
         if isinstance(items, str) or isinstance(items, dict):
             ret = {k: v[0] for k, v in ret.items()}
+            token_items = token_items[0]
 
-        if return_tensors:
+        if return_tensor:
             ret = {key: torch.as_tensor(val) for key, val in ret.items()}
 
         if return_text:
@@ -220,19 +226,24 @@ class PretrainedTokenizer(object):
             return[self.vocab.convert_sequence_to_token(key(item)) for item in items]
 
     def _tokenize(self, item: Tuple[str, dict], key=lambda x: x):
-        token_item = next(self.text_tokenizer([item], key=key))
-        if len(token_item) == 0:
-            token_item = [self.unk_token]
-        if len(token_item) > self.max_length:
-            token_item = token_item[:self.max_length]
+        try:
+            token_item = next(self.text_tokenizer([item], key=key))
+            if len(token_item) == 0:
+                token_item = [self.vocab.unk_token]
+            if len(token_item) > self.max_length:
+                token_item = token_item[:self.max_length]
+        except Exception:
+            print("[debug]", item)
+            msg = traceback.format_exc()
+            print(msg)
         return token_item
 
-    def _char_tokenizer(self, items, key=lambda x: x):
+    def _char_tokenizer(self, items, key=lambda x: x, **argv):
         for item in items:
             tokens = key(item).strip().split('')
             yield tokens
 
-    def _space_tokenizer(self, items, key=lambda x: x):
+    def _space_tokenizer(self, items, key=lambda x: x, **argv):
         for item in items:
             tokens = key(item).strip().split(' ')
             yield tokens
@@ -246,8 +257,9 @@ class PretrainedTokenizer(object):
         key: function
             determine how to get the text of each item
         """
-        corpus_items = [key(item) for item in items]
-        self.vocab.set_vocab(corpus_items=corpus_items, trim_min_count=trim_min_count)
+        token_items = self.tokenize(items, key)
+        self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count)
+        return token_items
 
     @classmethod
     def from_pretrained(cls, tokenizer_config_dir, **argv):
@@ -276,7 +288,9 @@ class PretrainedTokenizer(object):
         tokenizer_config_path = os.path.join(tokenizer_config_dir, "tokenizer_config.json")
         vocab_path = os.path.join(tokenizer_config_dir, "vocab.txt")
         self.vocab.save_vocab(vocab_path)
-        self.config.save_pretrained(tokenizer_config_path)
+
+        with open(tokenizer_config_path, "w", encoding="utf-8") as wf:
+            json.dump(self.config.to_dict(), wf, ensure_ascii=False, indent=2)
 
     @property
     def vocab_size(self):

@@ -11,9 +11,9 @@ import time
 from ..SIF import EDU_SPYMBOLS
 from ..Tokenizer import PureTextTokenizer
 from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForDifficultyPrediction
-from ..ModelZoo import set_device
+from ..ModelZoo.utils import pad_sequence
 from .pretrian_utils import PretrainedTokenizer
-from transformers import TrainingArguments, Trainer
+from transformers import TrainingArguments, Trainer, PretrainedConfig
 
 UNK_SYMBOL = '[UNK]'
 PAD_SYMBOL = '[PAD]'
@@ -36,7 +36,7 @@ class ElmoTokenizer(PretrainedTokenizer):
 
 
 class ElmoDataset(tud.Dataset):
-    def __init__(self, items: list, tokenizer: ElmoTokenizer):
+    def __init__(self, texts: list, tokenizer: ElmoTokenizer):
         """
         Parameters
         ----------
@@ -46,7 +46,7 @@ class ElmoDataset(tud.Dataset):
         """
         super(ElmoDataset, self).__init__()
         self.tokenizer = tokenizer
-        self.items = items
+        self.texts = texts
         self.max_length = tokenizer.max_length
 
     def __len__(self):
@@ -54,23 +54,26 @@ class ElmoDataset(tud.Dataset):
 
     def __getitem__(self, index):
         item = self.texts[index]
-        return self.tokenizer(item, padding=True, key=lambda x: x,
-                              return_tensors=True, return_text=False)
+        return self.tokenizer(item, padding=False, return_tensor=False, return_text=False)
 
-    def elmo_collate_fn(self, batch_data):
-        pred_mask = []
-        idx_mask = []
-        max_len = max([data['seq_len'] for data in batch_data])
+    def collate_fn(self, batch_data):
+        pad_idx = self.tokenizer.vocab.pad_idx
+        first =  batch_data[0]
+        batch = {
+            k: [item[k] for item in batch_data] for k in first.keys()
+        }
+        batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx)
+
+        # old版本使用max_len进行pad
+        pred_mask, idx_mask = [], []
+        max_len, batch_len = max(batch["seq_len"]), batch["seq_idx"].shape[1]
         for data in batch_data:
             pred_mask.append([True] * data['seq_len'] + [False] * (max_len - data['seq_len']))
-        for data in batch_data:
-            idx_mask.append([True] * data['seq_len'] + [False] * (len(data['idx']) - data['seq_len']))
+            idx_mask.append([True] * data['seq_len'] + [False] * (batch_len - data['seq_len']))
+        batch["pred_mask"] = pred_mask
+        batch["idx_mask"] = idx_mask
 
-        batch = dict()
-        for k, v in batch_data[0].items():
-            batch[k] = torch.stack([f[k] for f in batch_data])
-        batch["pred_mask"] = torch.tensor(pred_mask)
-        batch["idx_mask"] = torch.tensor(idx_mask)
+        batch = {key: torch.as_tensor(val) for key, val in batch.items()}
         return batch
 
 
@@ -79,7 +82,7 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     Parameters
     ----------
     texts: list, required
-        The training corpus of shape (text_num, token_num), a text must be tokenized into tokens
+        The training corpus of shape (text_num)
     output_dir: str, required
         The directory to save trained model files
     pretrained_dir: str, optional
@@ -106,7 +109,12 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     if pretrained_dir:
         model = ElmoLMForPreTraining.from_pretrained(pretrained_dir)
     else:
-        model = ElmoLMForPreTraining(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
+        model = ElmoLMForPreTraining(
+            vocab_size=len(tokenizer),
+            embedding_dim=emb_dim,
+            hidden_size=hid_dim,
+            batch_first=True
+        )
 
     model.elmo.LM_layer.rnn.flatten_parameters()
 
@@ -145,13 +153,13 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     trainer = Trainer(
         model=model,
         args=training_args,
-        data_collator=train_dataset.elmo_collate_fn,
+        data_collator=train_dataset.collate_fn,
         train_dataset=train_dataset,
     )
 
     trainer.train()
     model.save_pretrained(output_dir)
-    tokenizer.save_vocab(os.path.join(output_dir, 'vocab.json'))
+    tokenizer.save_pretrained(output_dir)
     return output_dir
 
 
@@ -211,5 +219,5 @@ def train_elmo_for_difficulty_prediction(texts: list, output_dir: str, pretraine
 
     trainer.train()
     model.save_pretrained(output_dir)
-    tokenizer.save_vocab(os.path.join(output_dir, 'vocab.json'))
+    tokenizer.save_pretrained(output_dir)
     return output_dir

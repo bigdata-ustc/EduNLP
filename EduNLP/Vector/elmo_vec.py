@@ -14,18 +14,14 @@ import json
 
 
 class ElmoModel(Vector):
-    def __init__(self, pretrained_model_path: str):
+    def __init__(self, pretrained_dir: str):
         """
         Parameters
         ----------
         pretrained_model_path: str
         """
         super(ElmoModel, self).__init__()
-        with open(os.path.join(pretrained_model_path, 'config.json'), 'r') as f:
-            config = json.load(f)
-        self.model = ElmoLM(vocab_size=config['vocab_size'], embedding_dim=config['emb_dim'],
-                            hidden_size=config['hid_dim'])
-        self.model.load_state_dict(torch.load(os.path.join(pretrained_model_path, 'weight.pt')))
+        self.model = ElmoLM.from_pretrained(pretrained_dir)
         self.model.eval()
 
     def __call__(self, *args, **kwargs):
@@ -35,9 +31,9 @@ class ElmoModel(Vector):
         is_batch = isinstance(items[0], list)
         items = items if is_batch else [items]
         lengths = kwargs.get('lengths', [len(i) for i in items])
-        pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor(items),
-                                                                                    torch.tensor(lengths,
-                                                                                                 dtype=torch.int64))
+        outputs = self.model(torch.tensor(items), torch.tensor(lengths, dtype=torch.int64))
+        forward_hiddens = outputs.forward_output
+        backward_hiddens = outputs.backward_output
         ret = torch.cat(
             (forward_hiddens[torch.arange(len(lengths)), torch.tensor(lengths) - 1],
              backward_hiddens[torch.arange(len(lengths)), max(lengths) - torch.tensor(lengths)]),
@@ -49,9 +45,9 @@ class ElmoModel(Vector):
         is_batch = isinstance(items[0], list)
         items = items if is_batch else [items]
         lengths = kwargs.get('lengths', [len(i) for i in items])
-        pred_forward, pred_backward, forward_hiddens, backward_hiddens = self.model(torch.tensor(items),
-                                                                                    torch.tensor(lengths,
-                                                                                                 dtype=torch.int64))
+        outputs = self.model(torch.tensor(items), torch.tensor(lengths, dtype=torch.int64))
+        forward_hiddens = outputs.forward_output
+        backward_hiddens = outputs.backward_output
         if is_batch:
             ret = []
             for fh, bh, lg in zip(forward_hiddens, backward_hiddens, lengths):
