@@ -32,7 +32,6 @@ def tokenize(text, granularity="word", stopwords="default"):
     if granularity == "word":
         return [token for token in jieba.cut(text) if token not in stopwords and token.strip()]
     elif granularity == "char":
-        stopwords = stopwords if stopwords is not None else {}
         return [token for token in text if token not in stopwords and token.strip()]
     else:
         raise TypeError("Unknown granularity %s" % granularity)

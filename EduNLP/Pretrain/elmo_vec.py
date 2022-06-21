@@ -7,17 +7,19 @@ import numpy as np
 import json
 import os
 import time
-from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
-from EduNLP.Tokenizer import PureTextTokenizer
-from EduNLP.ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForDifficultyPrediction
-from EduNLP.ModelZoo import set_device
+
+from ..SIF import EDU_SPYMBOLS
+from ..Tokenizer import PureTextTokenizer
+from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForDifficultyPrediction
+from ..ModelZoo import set_device
+from .pretrian_utils import PretrainedTokenizer
 from transformers import TrainingArguments, Trainer
 
 UNK_SYMBOL = '[UNK]'
 PAD_SYMBOL = '[PAD]'
 
 
-class ElmoTokenizer(object):
+class ElmoTokenizer(PretrainedTokenizer):
     """
     Examples
     --------
@@ -29,80 +31,12 @@ class ElmoTokenizer(object):
     >>> len(t)
     18
     """
-
-    def __init__(self, path: str = None):
-        """
-        Parameters
-        ----------
-        path: str, optional
-            the path of saved ElmoTokenizer, e.g. "../elmo_pub_math/vocab.json"
-        """
-        self.pure_tokenizer = PureTextTokenizer()
-        self.t2id = {PAD_SYMBOL: 0, UNK_SYMBOL: 1, FORMULA_SYMBOL: 2, FIGURE_SYMBOL: 3,
-                     QUES_MARK_SYMBOL: 4, TAG_SYMBOL: 5, SEP_SYMBOL: 6}
-        if path is None:
-            pass
-        else:
-            self.load_vocab(path)
-
-    def __call__(self, item: (str, list), freeze_vocab=False, pad_to_max_length=False, *args, **kwargs):
-        tokens, lengths = self.tokenize(item=item, freeze_vocab=freeze_vocab, return_length=True)
-        if isinstance(item, str):
-            return self.to_index(item=tokens, pad_to_max_length=pad_to_max_length), lengths
-        else:
-            ret = []
-            for ts in tokens:
-                ret.append(self.to_index(item=ts, pad_to_max_length=pad_to_max_length))
-            return ret, lengths
-
-    def __len__(self):
-        return len(self.t2id)
-
-    def tokenize(self, item: (str, list), freeze_vocab=False, return_length=False):
-        items = [item] if isinstance(item, str) else item
-        lengths = []
-        tokens = []
-        for i in self.pure_tokenizer(items):
-            tokens.append(i)
-            lengths.append(len(i))
-            if not freeze_vocab:
-                for t in i:
-                    self.append(t)
-        tokens = tokens[0] if isinstance(item, str) else tokens
-        lengths = lengths[0] if isinstance(item, str) else lengths
-        if return_length:
-            return tokens, lengths
-        else:
-            return tokens
-
-    def to_index(self, item: list, max_length=128, pad_to_max_length=False):
-        ret = [self.t2id[UNK_SYMBOL] if token not in self.t2id else self.t2id[token] for token in item]
-        if pad_to_max_length:
-            if len(ret) < max_length:
-                ret = ret + (max_length - len(ret)) * [self.t2id[PAD_SYMBOL]]
-            else:
-                ret = ret[0:max_length - 1]
-        return ret
-
-    def append(self, item):
-        if item in self.t2id:
-            pass
-        else:
-            self.t2id[item] = len(self.t2id)
-
-    def save_vocab(self, path):
-        with open(path, 'w') as f:
-            json.dump(self.t2id, f)
-        return path
-
-    def load_vocab(self, path):
-        with open(path, 'r') as f:
-            self.t2id = json.load(f)
-        return path
+    def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", **argv):
+        super().__init__(vocab_path, max_length, tokenize_method, **argv)
 
 
 class ElmoDataset(tud.Dataset):
-    def __init__(self, texts: list, tokenizer: ElmoTokenizer, max_length=128):
+    def __init__(self, items: list, tokenizer: ElmoTokenizer):
         """
         Parameters
         ----------
@@ -112,36 +46,32 @@ class ElmoDataset(tud.Dataset):
         """
         super(ElmoDataset, self).__init__()
         self.tokenizer = tokenizer
-        self.texts = [text if len(text) < max_length else text[0:max_length - 1] for text in texts]
-        self.max_length = max_length
+        self.items = items
+        self.max_length = tokenizer.max_length
 
     def __len__(self):
         return len(self.texts)
 
     def __getitem__(self, index):
-        text = self.texts[index]
-        sample = {
-            'length': len(text),
-            'idx': self.tokenizer.to_index(text, pad_to_max_length=True, max_length=self.max_length)
-        }
-        return sample
+        item = self.texts[index]
+        return self.tokenizer(item, padding=True, key=lambda x: x,
+                              return_tensors=True, return_text=False)
 
+    def elmo_collate_fn(self, batch_data):
+        pred_mask = []
+        idx_mask = []
+        max_len = max([data['seq_len'] for data in batch_data])
+        for data in batch_data:
+            pred_mask.append([True] * data['seq_len'] + [False] * (max_len - data['seq_len']))
+        for data in batch_data:
+            idx_mask.append([True] * data['seq_len'] + [False] * (len(data['idx']) - data['seq_len']))
 
-def elmo_collate_fn(batch_data):
-    pred_mask = []
-    idx_mask = []
-    max_len = max([data['length'] for data in batch_data])
-    for data in batch_data:
-        pred_mask.append([True] * data['length'] + [False] * (max_len - data['length']))
-    for data in batch_data:
-        idx_mask.append([True] * data['length'] + [False] * (len(data['idx']) - data['length']))
-    ret_batch = {
-        'pred_mask': torch.tensor(pred_mask),
-        'idx_mask': torch.tensor(idx_mask),
-        'seq_len': torch.tensor([data['length'] for data in batch_data]),
-        'seq_idx': torch.tensor([data['idx'] for data in batch_data])
-    }
-    return ret_batch
+        batch = dict()
+        for k, v in batch_data[0].items():
+            batch[k] = torch.stack([f[k] for f in batch_data])
+        batch["pred_mask"] = torch.tensor(pred_mask)
+        batch["idx_mask"] = torch.tensor(idx_mask)
+        return batch
 
 
 def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, train_params=None):
@@ -168,11 +98,9 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     """
     tokenizer = ElmoTokenizer()
     if pretrained_dir:
-        tokenizer.load_vocab(os.path.join(pretrained_dir, 'vocab.json'))
+        tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir)
     else:
-        for text in texts:
-            for token in text:
-                tokenizer.append(token)
+        tokenizer.set_vocab(texts)
     train_dataset = ElmoDataset(texts, tokenizer)
 
     if pretrained_dir:
@@ -217,7 +145,7 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     trainer = Trainer(
         model=model,
         args=training_args,
-        data_collator=elmo_collate_fn,
+        data_collator=train_dataset.elmo_collate_fn,
         train_dataset=train_dataset,
     )
 
@@ -227,18 +155,13 @@ def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim
     return output_dir
 
 
-
-def 
-
 def train_elmo_for_difficulty_prediction(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512,
                                          hid_dim=512, train_params=None):
     tokenizer = ElmoTokenizer()
     if pretrained_dir:
-        tokenizer.load_vocab(os.path.join(pretrained_dir, 'vocab.json'))
+        tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir)
     else:
-        for text in texts:
-            for token in text:
-                tokenizer.append(token)
+        tokenizer.set_vocab(texts)
     train_dataset = ElmoDataset(texts, tokenizer)
 
     if pretrained_dir:
@@ -247,9 +170,6 @@ def train_elmo_for_difficulty_prediction(texts: list, output_dir: str, pretraine
         model = ElmoLMForDifficultyPrediction(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
 
     model.elmo.LM_layer.rnn.flatten_parameters()
-
-
-
     # training parameters
     if train_params:
         epochs = train_params['epochs'] if 'epochs' in train_params else 1
@@ -285,7 +205,7 @@ def train_elmo_for_difficulty_prediction(texts: list, output_dir: str, pretraine
     trainer = Trainer(
         model=model,
         args=training_args,
-        data_collator=elmo_collate_fn,
+        data_collator=ElmoDataset.elmo_collate_fn,
         train_dataset=train_dataset,
     )
 
