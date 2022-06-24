@@ -278,15 +278,15 @@ class ElmoLMForPreTraining(BaseModel):
             )
 
 
-class DifficultyPredictionOutput(ModelOutput):
+class PropertyPredictionOutput(ModelOutput):
     loss: torch.FloatTensor = None
-    prediction_logits: torch.FloatTensor = None
+    logits: torch.FloatTensor = None
 
 
-class ElmoLMForDifficultyPrediction(BaseModel):
+class ElmoLMForPropertyPrediction(BaseModel):
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True, classifier_dropout=0.5):
-        super(ElmoLMForDifficultyPrediction).__init__()
+        super(ElmoLMForPropertyPrediction).__init__()
 
         self.elmo = ElmoLM(
             vocab_size=vocab_size,
@@ -306,6 +306,7 @@ class ElmoLMForDifficultyPrediction(BaseModel):
     def forward(self, seq_idx, seq_len, pred_mask, idx_mask, labels):
         outputs = self.elmo(seq_idx, seq_len)
 
+        # ...
         item_embeds = torch.cat(
             (outputs.forward_output[torch.arange(len(seq_len)), torch.tensor(seq_len) - 1],
              outputs.backward_output[torch.arange(len(seq_len)), max(seq_len) - torch.tensor(seq_len)]),
@@ -314,7 +315,7 @@ class ElmoLMForDifficultyPrediction(BaseModel):
         logits = self.sigmoid(self.classifier(item_embeds, dim=1))
         loss = F.mse_loss(logits, labels)
         
-        return DifficultyPredictionOutput(
+        return PropertyPredictionOutput(
             loss = loss,
             logits = logits
         )

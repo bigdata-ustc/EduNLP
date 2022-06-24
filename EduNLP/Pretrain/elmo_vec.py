@@ -10,7 +10,7 @@ import time
 
 from ..SIF import EDU_SPYMBOLS
 from ..Tokenizer import PureTextTokenizer
-from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForDifficultyPrediction
+from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPrediction
 from ..ModelZoo.utils import pad_sequence
 from .pretrian_utils import PretrainedTokenizer
 from transformers import TrainingArguments, Trainer, PretrainedConfig
@@ -75,6 +75,10 @@ class ElmoDataset(tud.Dataset):
 
         batch = {key: torch.as_tensor(val) for key, val in batch.items()}
         return batch
+
+
+class ElmoForPPDataset(tud.Dataset):
+    pass
 
 
 def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, train_params=None):
@@ -173,9 +177,9 @@ def train_elmo_for_difficulty_prediction(texts: list, output_dir: str, pretraine
     train_dataset = ElmoDataset(texts, tokenizer)
 
     if pretrained_dir:
-        model = ElmoLMForDifficultyPrediction.from_pretrained(pretrained_dir)
+        model = ElmoLMForPropertyPrediction.from_pretrained(pretrained_dir)
     else:
-        model = ElmoLMForDifficultyPrediction(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
+        model = ElmoLMForPropertyPrediction(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
 
     model.elmo.LM_layer.rnn.flatten_parameters()
     # training parameters

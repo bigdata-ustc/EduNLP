@@ -1,11 +1,13 @@
 # coding: utf-8
 # 2021/8/1 @ tongshiwei
 
+from pickle import NONE
 from typing import Iterable
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
+from ..SIF import sif4sci
 
-__all__ = ["TOKENIZER", "Tokenizer", "CustomTokenizer", "PureTextTokenizer", "TextTokenizer", "get_tokenizer"]
+__all__ = ["TOKENIZER", "Tokenizer", "CustomTokenizer", "PureTextTokenizer", "AstFormulaTokenizer", "get_tokenizer"]
 
 
 class Tokenizer(object):
@@ -67,39 +69,7 @@ class PureTextTokenizer(Tokenizer):
     ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
     '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
     '\\quad', 'A', '\\cap', 'B', '=']
-    """
-
-    def __init__(self, *args, **kwargs):
-        self.tokenization_params = {
-            "formula_params": {
-                "method": "linear",
-                "skip_figure_formula": True
-            }
-        }
-
-    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
-        for item in items:
-            yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
-
-
-class TextTokenizer(Tokenizer):
-    r"""
-    Duel with text and formula including special formula.
-
-    Parameters
-    ----------
-    items: str
-    key
-    args
-    kwargs
-
-    Returns
-    -------
-    token
-
-    Examples
-    ----------
-    >>> tokenizer = TextTokenizer()
+    >>> tokenizer = TextTokenizer(symbolize_figure_formula=True)
     >>> items = ["有公式$\\FormFigureID{1}$，如图$\\FigureID{088f15ea-xxx}$,\
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
     >>> tokens = tokenizer(items)
@@ -113,11 +83,16 @@ class TextTokenizer(Tokenizer):
     ['[TAG]', '复数', 'z', '=', '1', '+', '2', 'i', '+', 'i']
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, skip_figure_formula=None, symbolize_figure_formula=None, **kwargs):
+        # Formula images are not processed by default
+        if skip_figure_formula is None and symbolize_figure_formula is None:
+            skip_figure_formula = True
+            symbolize_figure_formula = False
         self.tokenization_params = {
             "formula_params": {
                 "method": "linear",
-                "symbolize_figure_formula": True
+                "skip_figure_formula": skip_figure_formula,
+                "symbolize_figure_formula": symbolize_figure_formula
             }
         }
 
@@ -126,23 +101,35 @@ class TextTokenizer(Tokenizer):
             yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
 
 
-class FormulaTokenizer(Tokenizer):
-    def __init__(self, *args, **kwargs):
-        self.tokenization_params = {
-            "formula_params": {
+class AstFormulaTokenizer(Tokenizer):
+    def __init__(self, symbol="gmas", figures=None):
+        self.tokenization_params={
+            "formula_params":{
                 "method": "ast",
+                "ord2token": True,
+                "return_type": "list",
+                "var_numbering": True
             }
         }
+        self.symbol = symbol
+        self.figures = figures
 
-    def __call__(self, *args, **kwargs):
-        raise NotImplementedError
+    def __call__(self, items: Iterable, key=lambda x: x, mode=2, **kwargs):
+        for item in items:
+            ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=2,
+                        tokenization_params=self.tokenization_params, errors="ignore")
+            if ret is None:
+                ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=0,
+                          tokenization_params=self.tokenization_params, errors="ignore")
+            
+            ret = [] if ret is None else ret.tokens
+            yield ret
 
 
 TOKENIZER = {
     "custom": CustomTokenizer,
     "pure_text": PureTextTokenizer,
-    "text": TextTokenizer,
-    "formula": FormulaTokenizer
+    "ast_formula": AstFormulaTokenizer
 }
 
 
