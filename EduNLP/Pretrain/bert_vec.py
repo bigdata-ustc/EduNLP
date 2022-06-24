@@ -1,14 +1,17 @@
 import os
 import json
 from EduNLP import logger
-from EduNLP.Tokenizer import PureTextTokenizer, TOKENIZER
+from ..Tokenizer import PureTextTokenizer, TOKENIZER
+from ..ModelZoo.utils import pad_sequence
 from typing import Optional, Union
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer, TrainingArguments
 from transformers.file_utils import TensorType
 from torch.utils.data import Dataset
+import torch
 from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
+
 
 __all__ = ["BertTokenizer", "finetune_bert"]
 
@@ -67,7 +70,7 @@ class BertTokenizer(object):
             self.text_tokenizer = PureTextTokenizer()
             self.text_tokenizer_name = 'pure_text'
 
-    def __call__(self, item: Union[list, str], return_tensors: Optional[Union[str, TensorType]] = None,
+    def __call__(self, item: Union[list, str], key=lambda x: x, return_tensors: Optional[Union[str, TensorType]] = None,
                  *args, **kwargs):
         if isinstance(item, str):
             item = ''.join(next(self.text_tokenizer([item])))
@@ -117,6 +120,45 @@ class FinetuneDataset(Dataset):
 
     def __len__(self):
         return self.len
+
+
+class BertForPPDataset(Dataset):
+    def __init__(self, items, tokenizer, mode="train", feature_key="content", labal_key="difficulty"):
+        self.tokenizer = tokenizer
+        self.items = items
+        self.mode = mode
+        self.feature_key = feature_key
+        self.labal_key = labal_key
+
+
+    def __getitem__(self, index):
+        item = self.items[index]
+        ret = self.tokenizer(item[self.feature_key])
+        if not ret or ret is None:
+            ret = self.tokenizer(self.tokenizer.tokenizer.unk_token)
+
+        if self.mode in ["train", "val"]:
+            ret["labels"] = item[self.labal_key]
+        return ret
+
+    def __len__(self):
+        return len(self.items)
+
+
+    def collate_fn(self, batch_data):
+        bert_tokenizer=self.tokenizer.tokenizer
+        pad_idx = bert_tokenizer.vocab.get(bert_tokenizer.pad_token)
+        first =  batch_data[0]
+        batch = {
+            k: [item[k] for item in batch_data] for k in first.keys()
+        }
+        for k,v in batch.items():
+            if k != "labels":
+                batch[k] = pad_sequence(v, pad_val=pad_idx)
+        
+        batch = {key: torch.as_tensor(val) for key, val in batch.items()}
+        # print("[debug] batch final: ", batch)
+        return batch
 
 
 def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_params=None):

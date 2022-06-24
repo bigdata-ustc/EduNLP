@@ -322,7 +322,8 @@ class TokenList(object):
         """classify token to tokens"""
         if isinstance(token, Formula):
             if self.formula_params.get("return_type") == "list":
-                tokens.extend(formula.traversal_formula(token.ast_graph, **self.formula_params))
+                ret = formula.traversal_formula(token.ast_graph, **self.formula_params)
+                tokens.extend([i for i in ret if i is not None])
             elif self.formula_params.get("return_type") == "ast":
                 tokens.append(token.ast_graph)
             else:
