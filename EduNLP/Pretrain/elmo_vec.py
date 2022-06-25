@@ -7,13 +7,18 @@ import numpy as np
 import json
 import os
 import time
-
+from typing import Dict, List
 from ..SIF import EDU_SPYMBOLS
 from ..Tokenizer import PureTextTokenizer
 from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPrediction
 from ..ModelZoo.utils import pad_sequence
 from .pretrian_utils import PretrainedTokenizer
 from transformers import TrainingArguments, Trainer, PretrainedConfig
+from datasets import load_dataset
+from datasets import Dataset as HFDataset
+import datasets
+import pandas as pd
+
 
 UNK_SYMBOL = '[UNK]'
 PAD_SYMBOL = '[PAD]'
@@ -36,7 +41,7 @@ class ElmoTokenizer(PretrainedTokenizer):
 
 
 class ElmoDataset(tud.Dataset):
-    def __init__(self, texts: list, tokenizer: ElmoTokenizer):
+    def __init__(self, texts: List[str], tokenizer: ElmoTokenizer):
         """
         Parameters
         ----------
@@ -45,16 +50,21 @@ class ElmoDataset(tud.Dataset):
         max_length: int, optional, default=128
         """
         super(ElmoDataset, self).__init__()
+
         self.tokenizer = tokenizer
-        self.texts = texts
-        self.max_length = tokenizer.max_length
+        self.items = texts
+        ds = HFDataset.from_dict({"text": texts})
+        ds = ds.map(self._preprocess, batched=True, batch_size=1000)
+        self.ds = ds.remove_columns("text")
+
+    def _preprocess(self, sample):
+        return self.tokenizer(sample["text"], padding=False, return_tensors=False, return_text=False)
 
     def __len__(self):
-        return len(self.texts)
+        return self.ds.num_rows
 
     def __getitem__(self, index):
-        item = self.texts[index]
-        return self.tokenizer(item, padding=False, return_tensor=False, return_text=False)
+        return self.ds[index]
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
@@ -62,24 +72,46 @@ class ElmoDataset(tud.Dataset):
         batch = {
             k: [item[k] for item in batch_data] for k in first.keys()
         }
-        batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx)
-
-        # old版本使用max_len进行pad
-        pred_mask, idx_mask = [], []
-        max_len, batch_len = max(batch["seq_len"]), batch["seq_idx"].shape[1]
-        for data in batch_data:
-            pred_mask.append([True] * data['seq_len'] + [False] * (max_len - data['seq_len']))
-            idx_mask.append([True] * data['seq_len'] + [False] * (batch_len - data['seq_len']))
-        batch["pred_mask"] = pred_mask
-        batch["idx_mask"] = idx_mask
-
+        batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx, max_length=500)
         batch = {key: torch.as_tensor(val) for key, val in batch.items()}
         return batch
 
 
-class ElmoForPPDataset(tud.Dataset):
-    pass
+class EmloForPPDataset(tud.Dataset):
+    def __init__(self, items, tokenizer, mode="train", feature_key="content", labal_key="difficulty"):
+        self.tokenizer = tokenizer
+        self.items = items
+        self.mode = mode
+        self.feature_key = feature_key
+        self.labal_key = labal_key
 
+        if mode in ["train", "val"]:
+            columns = [feature_key, labal_key]
+        else:
+            columns = [feature_key]
+        ds = HFDataset.from_pandas(pd.DataFrame(items)[columns])
+        ds = ds.map(self._preprocess, batched=True, batch_size=1000)
+        ds = ds.remove_columns(feature_key)
+        self.ds = ds.rename_columns({labal_key: "labels"})
+
+    def _preprocess(self, sample):
+        return self.tokenizer(sample[self.feature_key], padding=False, return_tensors=False, return_text=False)
+
+    def __len__(self):
+        return self.ds.num_rows
+
+    def __getitem__(self, index):
+        return self.ds[index]
+
+    def collate_fn(self, batch_data):
+        pad_idx = self.tokenizer.vocab.pad_idx
+        first =  batch_data[0]
+        batch = {
+            k: [item[k] for item in batch_data] for k in first.keys()
+        }
+        batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx, max_length=500)
+        batch = {key: torch.as_tensor(val) for key, val in batch.items()}
+        return batch
 
 def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, train_params=None):
     """

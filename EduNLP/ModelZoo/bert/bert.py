@@ -16,20 +16,21 @@ class BertForPPOutput(ModelOutput):
 
 
 class BertForPropertyPrediction(BaseModel):
-    def __init__(self, pretrained_model_dir=None, classifier_dropout=0.5):
+    def __init__(self, pretrained_model_dir=None, head_dropout=0.5):
 
         super(BertForPropertyPrediction, self).__init__()
 
         self.bert = BertModel.from_pretrained(pretrained_model_dir)
         
         hidden_size = self.bert.config.hidden_size
-        # print(hidden_size)
-        self.classifier_dropout = classifier_dropout
-        self.dropout = nn.Dropout(classifier_dropout)
+
+        self.head_dropout = head_dropout
+        self.dropout = nn.Dropout(head_dropout)
         self.classifier = nn.Linear(hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
-        
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
+        self.loss = nn.MSELoss()
+
+        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "pretrained_model_dir"]}
         config['architecture'] = 'BertForPropertyPrediction'
         self.config = PretrainedConfig.from_dict(config)
 
@@ -38,30 +39,28 @@ class BertForPropertyPrediction(BaseModel):
                 attention_mask=None,
                 token_type_ids=None,
                 labels=None):
-                # 固定使用labels, Trainer会对其做一些黑箱操作
         outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
-        # print("[DEBUG]: outputs ", outputs)
-        item_embed = outputs.last_hidden_state[:, 0, :]
+        item_embeds = outputs.last_hidden_state[:, 0, :]
+        item_embeds = self.dropout(item_embeds)
 
-        logits = self.sigmoid(self.classifier(item_embed)).squeeze(1)
-
-        loss = F.mse_loss(logits, labels)
-
+        logits = self.sigmoid(self.classifier(item_embeds)).squeeze(1)
+        loss = self.loss(logits, labels) if labels is not None else None
         return BertForPPOutput(
             loss = loss,
             logits = logits,
-            # labels = labels # 多余的返回值，除loss外，会以元组合并在一起
         )
     
     @classmethod
-    def from_config(cls, config_path):
+    def from_config(cls, config_path, **argv):
          with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
+            model_config.update(argv)
             return cls(
-                # vocab_size=model_config['vocab_size'],
-                # embedding_dim=model_config['embedding_dim'],
-                # hidden_size=model_config['hidden_size'],
-                # dropout_rate=model_config['dropout_rate'],
-                # batch_first=model_config['batch_first'],
-                # classifier_dropout=model_config['classifier_dropout'], 
+                pretrained_model_dir=model_config['pretrained_model_dir'],
+                head_dropout=model_config.get("head_dropout", 0.5)
             )
+
+    @classmethod
+    def from_pretrained(cls):
+        NotImplementedError
+        # 需要验证是否和huggingface的模型兼容

@@ -135,7 +135,7 @@ class PretrainedTokenizer(object):
         self.config = PretrainedConfig.from_dict(config)
 
     def __call__(self, items: (list, str, dict), key=lambda x: x, padding=True,
-                 return_tensor=True, return_text=False, **kwargs):
+                 return_tensors=True, return_text=False, **kwargs):
         """
         Parameters
         ----------
@@ -145,7 +145,7 @@ class PretrainedTokenizer(object):
             determine how to get the text of each item
         padding: bool
             whether to pad the seq_idx
-        return_tensor: bool
+        return_tensors: bool
             whether to return data as tensors (would ignore text tokens)
         return_text: bool
             whether to return text tokens
@@ -174,7 +174,7 @@ class PretrainedTokenizer(object):
             ret = {k: v[0] for k, v in ret.items()}
             token_items = token_items[0]
 
-        if return_tensor:
+        if return_tensors:
             ret = {key: torch.as_tensor(val) for key, val in ret.items()}
 
         if return_text:
