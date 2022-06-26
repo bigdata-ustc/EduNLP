@@ -97,6 +97,7 @@ class LM(nn.Module):
         """
         seq = self.embedding(seq_idx)
         pack = pack_padded_sequence(seq, seq_len.cpu(), batch_first=True, enforce_sorted=False)
+        # pack = pack_padded_sequence(seq, seq_len, batch_first=True, enforce_sorted=False)
         h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size).to(seq_idx.device)
         if self.c is True:
             c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size).to(seq_idx.device)
@@ -127,10 +128,10 @@ class ElmoLMOutput(ModelOutput):
 class ElmoLM(BaseModel):
     base_model_prefix = 'elmo'
 
-    def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
-                 batch_first=True):
+    def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers: int = 2,
+                 dropout_rate: float = 0.5, **argv):
         super(ElmoLM, self).__init__()
-        self.LM_layer = LM("BiLSTM", vocab_size, embedding_dim, hidden_size, num_layers=2, batch_first=batch_first)
+        self.LM_layer = LM("BiLSTM", vocab_size, embedding_dim, hidden_size, num_layers=num_layers, **argv)
         self.pred_layer = nn.Linear(hidden_size, vocab_size)
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
@@ -204,6 +205,7 @@ class ElmoLMForPreTrainingOutput(ModelOutput):
     backward_output: torch.FloatTensor = None
 
 
+
 class ElmoLMForPreTraining(BaseModel):
     base_model_prefix = 'elmo'
 
@@ -220,6 +222,8 @@ class ElmoLMForPreTraining(BaseModel):
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size
+        self.criterion = nn.CrossEntropyLoss()
+
         config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
         config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
@@ -245,16 +249,37 @@ class ElmoLMForPreTraining(BaseModel):
             forward_output: of shape (batch_size, sequence_length, hidden_size)
             backward_output: of shape (batch_size, sequence_length, hidden_size)
         """
-        y = F.one_hot(seq_idx, self.elmo.vocab_size).to(seq_idx.device)
+        batch_size, idx_len = seq_idx.shape
+        max_len = seq_len.max().item()
+
+        print("seq_idx", seq_idx.device)
+        pred_mask = torch.arange(max_len, device=seq_idx.device)[None, :] < seq_len[:, None]
+        idx_mask = torch.arange(idx_len, device=seq_idx.device)[None, :] < seq_len[:, None]
+        print("pred_mask", pred_mask.device)
+        print("idx_mask", idx_mask.device)
+
+        pred_forward_mask = pred_mask.clone()
+        pred_forward_mask[torch.arange(batch_size).unsqueeze(1), seq_len.unsqueeze(1)-1] = False
+        pred_backward_mask = pred_mask.clone()
+        pred_backward_mask[torch.arange(batch_size).unsqueeze(1), 0] = False
+
+        idx_forward_mask = idx_mask.clone()
+        idx_forward_mask[torch.arange(batch_size).unsqueeze(1), 0] = False
+        idx_backward_mask = idx_mask.clone()
+        idx_backward_mask[torch.arange(batch_size).unsqueeze(1), seq_len.unsqueeze(1)-1] = False
+
         outputs = self.elmo(seq_idx, seq_len)
         pred_forward, pred_backward = outputs.pred_forward, outputs.pred_backward
-        loss_func = nn.BCELoss()
-        pred_forward = pred_forward[pred_mask]
-        pred_backward = pred_backward[torch.flip(pred_mask, [1])]
-        y_rev = torch.flip(y, [1])[torch.flip(idx_mask, [1])]
-        y = y[idx_mask]
-        forward_loss = loss_func(pred_forward[:, :-1].double(), y[:, 1:].double())
-        backward_loss = loss_func(pred_backward[:, :-1].double(), y_rev[:, 1:].double())
+
+        pred_forward = pred_forward[pred_forward_mask]
+        pred_backward = pred_backward[pred_backward_mask]
+        # y = F.one_hot(seq_idx, self.elmo.vocab_size).to(seq_idx.device)
+        # loss_func = nn.BCELoss()
+        y_backword = seq_idx[idx_backward_mask]
+        y_forword = seq_idx[idx_forward_mask]
+
+        forward_loss = self.criterion(pred_forward.double(), y_forword)
+        backward_loss = self.criterion(pred_backward.double(), y_backword)
         loss = forward_loss + backward_loss
 
         return ElmoLMForPreTrainingOutput(
@@ -266,9 +291,10 @@ class ElmoLMForPreTraining(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path):
+    def from_config(cls, config_path, **argv):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
+            model_config.update(argv)
             return cls(
                 vocab_size=model_config['vocab_size'],
                 embedding_dim=model_config['embedding_dim'],
@@ -284,8 +310,10 @@ class PropertyPredictionOutput(ModelOutput):
 
 
 class ElmoLMForPropertyPrediction(BaseModel):
+    base_model_prefix = 'elmo'
+
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
-                 batch_first=True, classifier_dropout=0.5):
+                 batch_first=True, head_dropout=0.5):
         super(ElmoLMForPropertyPrediction).__init__()
 
         self.elmo = ElmoLM(
@@ -295,40 +323,41 @@ class ElmoLMForPropertyPrediction(BaseModel):
             dropout_rate=dropout_rate,
             batch_first=batch_first
         )
-        self.classifier_dropout = classifier_dropout
-        self.dropout = nn.Dropout(classifier_dropout)
+        self.head_dropout = head_dropout
+        self.dropout = nn.Dropout(head_dropout)
         self.classifier = nn.Linear(hidden_size, 1)
+        self.sigmoid = nn.Sigmoid()
+        self.loss = nn.MSELoss()
 
         config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
         config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
 
-    def forward(self, seq_idx, seq_len, pred_mask, idx_mask, labels):
+    def forward(self, seq_idx, seq_len, labels):
         outputs = self.elmo(seq_idx, seq_len)
-
-        # ...
         item_embeds = torch.cat(
             (outputs.forward_output[torch.arange(len(seq_len)), torch.tensor(seq_len) - 1],
              outputs.backward_output[torch.arange(len(seq_len)), max(seq_len) - torch.tensor(seq_len)]),
             dim=-1)
+        item_embeds = self.dropout(item_embeds)
 
         logits = self.sigmoid(self.classifier(item_embeds, dim=1))
         loss = F.mse_loss(logits, labels)
-        
         return PropertyPredictionOutput(
             loss = loss,
             logits = logits
         )
 
     @classmethod
-    def from_config(cls, config_path):
+    def from_config(cls, config_path, **argv):
          with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
+            model_config.update(argv)
             return cls(
                 vocab_size=model_config['vocab_size'],
                 embedding_dim=model_config['embedding_dim'],
                 hidden_size=model_config['hidden_size'],
                 dropout_rate=model_config['dropout_rate'],
                 batch_first=model_config['batch_first'],
-                classifier_dropout=model_config['classifier_dropout'], 
+                head_dropout=model_config['head_dropout'], 
             )

@@ -1,19 +1,46 @@
 import os
 import json
 from EduNLP import logger
-from ..Tokenizer import PureTextTokenizer, TOKENIZER
-from ..ModelZoo.utils import pad_sequence
-from typing import Optional, Union
+from typing import List, Optional, Union
 from transformers import AutoTokenizer, AutoModelForMaskedLM
-from transformers import DataCollatorForLanguageModeling
+from transformers import DataCollatorForLanguageModeling, DataCollatorWithPadding
 from transformers import Trainer, TrainingArguments
 from transformers.file_utils import TensorType
+from transformers import BertTokenizer as HFBertTokenizer
 from torch.utils.data import Dataset
-import torch
-from EduNLP.SIF import Symbol, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
+from datasets import Dataset as HFDataset
+import pandas as pd
+from ..Tokenizer import PureTextTokenizer, TOKENIZER
+from ..ModelZoo.utils import pad_sequence, load_items
+from ..SIF import Symbol, EDU_SPYMBOLS
+from ..ModelZoo.bert import BertForPropertyPrediction
 
 
 __all__ = ["BertTokenizer", "finetune_bert"]
+
+
+class BasicTokenizerForBert(HFBertTokenizer):
+    def _tokenize(self, text):
+        split_tokens = []
+        if self.do_basic_tokenize:
+            for token in self.basic_tokenizer._tokenize(text):
+                # If the token is part of the never_split set
+                if token in self.all_special_tokens:
+                    split_tokens.append(token)
+                # If token is all English word 
+                # (Please note that '[xxx]' and 'mathod_x' work well, but 'textord' will break down)
+                elif token.encode('utf-8').isalpha():
+                    split_tokens += self.wordpiece_tokenizer.tokenize(token)
+                # If chinese \ punctuation\ other-mixed-english
+                else:
+                    split_tokens.append(token)
+        else:
+            split_tokens = self.wordpiece_tokenizer.tokenize(text)
+        return split_tokens
+    
+    def set_bert_basic_tokenizer(self, text_tokenizer):
+        assert text_tokenizer in TOKENIZER, f"text_tokenizer should be one of {list(TOKENIZER.keys())}"
+        self.basic_tokenizer = TOKENIZER[text_tokenizer]()
 
 
 class BertTokenizer(object):
@@ -51,46 +78,49 @@ class BertTokenizer(object):
     >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
     >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
-
     def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False, text_tokenizer=None):
-        self.tokenizer = AutoTokenizer.from_pretrained(pretrain_model)
+        self.bert_tokenizer = BasicTokenizerForBert.from_pretrained(pretrain_model, use_fast=False)
         self.add_special_tokens = add_special_tokens
         if add_special_tokens:
             customize_tokens = []
-            for i in [FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL]:
-                if i not in self.tokenizer.additional_special_tokens:
+            for i in EDU_SPYMBOLS:
+                if i not in self.bert_tokenizer.additional_special_tokens:
                     customize_tokens.append(Symbol(i))
             if customize_tokens:
-                self.tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
-        if text_tokenizer:
-            assert text_tokenizer in TOKENIZER, f"text_tokenizer should be one of {list(TOKENIZER.keys())}"
-            self.text_tokenizer = TOKENIZER[text_tokenizer]()
-            self.text_tokenizer_name = text_tokenizer
-        else:
-            self.text_tokenizer = PureTextTokenizer()
-            self.text_tokenizer_name = 'pure_text'
+                self.bert_tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
+
+        self.text_tokenizer_name = text_tokenizer
+        if text_tokenizer is not None:
+            # In order to be more general for Huggingface's other models,
+            # may be we need to inherit and rewrite `_tokenize` for XXTokenizer(PreTrainedTokenizer)
+            self.bert_tokenizer.set_bert_basic_tokenizer(text_tokenizer)
+
+    def add_specials(self, added_spectials: List[str]):
+        self.bert_tokenizer.add_special_tokens({'additional_special_tokens': added_spectials})
+
+    def add_tokens(self, added_tokens: List[str]):
+        self.bert_tokenizer.add_tokens(added_tokens)
 
     def __call__(self, item: Union[list, str], key=lambda x: x, return_tensors: Optional[Union[str, TensorType]] = None,
                  *args, **kwargs):
         if isinstance(item, str):
-            item = ''.join(next(self.text_tokenizer([item])))
+            item = key(item)
         else:
-            token_generation = self.text_tokenizer(item)
-            item = [''.join(next(token_generation)) for i in range(len(item))]
-        return self.tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
+            item = [key(item)]
+        return self.bert_tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
+
+    def __len__(self):
+        return len(self.bert_tokenizer)
 
     def tokenize(self, item: Union[list, str], *args, **kwargs):
         if isinstance(item, str):
-            item = ''.join(next(self.text_tokenizer([item])))
-            return self.tokenizer.tokenize(item)
+            return self.bert_tokenizer.tokenize(item)
         else:
-            token_generation = self.text_tokenizer(item)
-            item = [''.join(next(token_generation)) for i in range(len(item))]
-            item = [self.tokenizer.tokenize(i) for i in item]
+            item = [self.bert_tokenizer.tokenize(i) for i in item]
             return item
 
     def save_pretrained(self, tokenizer_config_dir):
-        self.tokenizer.save_pretrained(tokenizer_config_dir)
+        self.bert_tokenizer.save_pretrained(tokenizer_config_dir)
         custom_config = {
             'add_special_tokens': self.add_special_tokens,
             'text_tokenizer': self.text_tokenizer_name
@@ -130,35 +160,20 @@ class BertForPPDataset(Dataset):
         self.feature_key = feature_key
         self.labal_key = labal_key
 
+        if mode in ["train", "val"]:
+            columns = [feature_key, labal_key]
+        else:
+            columns = [feature_key]
+        ds = HFDataset.from_pandas(pd.DataFrame(items)[columns])
+        ds = ds.map(lambda sample: tokenizer(sample[feature_key]), batched=True, batch_size=1000)
+        ds = ds.remove_columns(feature_key)
+        self.ds = ds.rename_columns({labal_key: "labels"})
 
     def __getitem__(self, index):
-        item = self.items[index]
-        ret = self.tokenizer(item[self.feature_key])
-        if not ret or ret is None:
-            ret = self.tokenizer(self.tokenizer.tokenizer.unk_token)
-
-        if self.mode in ["train", "val"]:
-            ret["labels"] = item[self.labal_key]
-        return ret
+        return self.ds[index]
 
     def __len__(self):
         return len(self.items)
-
-
-    def collate_fn(self, batch_data):
-        bert_tokenizer=self.tokenizer.tokenizer
-        pad_idx = bert_tokenizer.vocab.get(bert_tokenizer.pad_token)
-        first =  batch_data[0]
-        batch = {
-            k: [item[k] for item in batch_data] for k in first.keys()
-        }
-        for k,v in batch.items():
-            if k != "labels":
-                batch[k] = pad_sequence(v, pad_val=pad_idx)
-        
-        batch = {key: torch.as_tensor(val) for key, val in batch.items()}
-        # print("[debug] batch final: ", batch)
-        return batch
 
 
 def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_params=None):
@@ -189,7 +204,7 @@ def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_p
     model = AutoModelForMaskedLM.from_pretrained(pretrain_model)
     tokenizer = BertTokenizer(pretrain_model, add_special_tokens=True)
     # resize embedding for additional special tokens
-    model.resize_token_embeddings(len(tokenizer.tokenizer))
+    model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
 
     # training parameters
     if train_params:
@@ -212,7 +227,7 @@ def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_p
         gradient_accumulation_steps = 1
 
     data_collator = DataCollatorForLanguageModeling(
-        tokenizer=tokenizer.tokenizer, mlm=True, mlm_probability=mlm_probability
+        tokenizer=tokenizer.bert_tokenizer, mlm=True, mlm_probability=mlm_probability
     )
 
     dataset = FinetuneDataset(items)
@@ -232,9 +247,79 @@ def finetune_bert(items, output_dir, pretrain_model="bert-base-chinese", train_p
         model=model,
         args=training_args,
         data_collator=data_collator,
-        tokenizer=tokenizer.tokenizer,
+        tokenizer=tokenizer.bert_tokenizer,
         train_dataset=dataset,
     )
     trainer.train()
     trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
+
+
+def train_bert_for_perporty_predition(train_items, output_dir, pretrain_model="bert-base-chinese",
+                                      eval_items=None, train_params=None, model_params=None):
+    model = BertForPropertyPrediction(pretrain_model, **model_params)
+    tokenizer = BertTokenizer(pretrain_model, add_special_tokens=True)
+    
+    train_dataset = BertForPPDataset(train_items, tokenizer)
+    if eval_items is not None:
+        eval_dataset = BertForPPDataset(eval_items, tokenizer)
+
+
+    if train_params:
+        epochs = train_params.pop('epochs') if 'epochs' in train_params else 1
+        batch_size = train_params.pop('batch_size') if 'batch_size' in train_params else 64
+        
+        save_steps = train_params.pop('save_steps') if 'save_steps' in train_params else 100
+        save_total_limit = train_params.pop('save_total_limit') if 'save_total_limit' in train_params else 2
+        logging_dir= train_params.pop('logging_dir') if 'logging_dir' in train_params else None
+        logging_steps = train_params.pop('logging_steps') if 'logging_steps' in train_params else 5
+        gradient_accumulation_steps = train_params.pop('gradient_accumulation_steps') \
+            if 'gradient_accumulation_steps' in train_params else 1
+    
+    else:
+        # default
+        epochs = 1
+        batch_size = 64
+        save_steps = 1000
+        save_total_limit = 2
+        logging_dir=None
+        logging_steps = 5
+        gradient_accumulation_steps = 1
+    
+    work_args = TrainingArguments(
+        output_dir=output_dir,
+        overwrite_output_dir=True,
+        num_train_epochs=epochs,
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=batch_size,
+        # evaluation_strategy = "steps",
+        # eval_steps=200,
+        save_steps=save_steps,
+        save_total_limit=save_total_limit,
+        load_best_model_at_end=True,
+        metric_for_best_model="loss",
+        greater_is_better=False,
+
+        logging_steps=logging_steps,
+        logging_dir=logging_dir,
+        gradient_accumulation_steps=gradient_accumulation_steps,
+        # learning_rate=5e-5,
+        # disable_tqdm=True,
+        # no_cuda=True,
+        **train_params,
+    )
+
+    data_collator = DataCollatorWithPadding(tokenizer.bert_tokenizer)
+    trainer = Trainer(
+        model=model,
+        args=work_args,
+
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=data_collator,
+    )
+
+    trainer.train()
+    trainer.save_model(output_dir)
+    tokenizer.save_pretrained(output_dir)
+    

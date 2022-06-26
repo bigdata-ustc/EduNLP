@@ -2,7 +2,7 @@
 # 2021/8/1 @ tongshiwei
 
 from pickle import NONE
-from typing import Iterable
+from typing import Iterable, Union
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
 from ..SIF import sif4sci
@@ -12,6 +12,9 @@ __all__ = ["TOKENIZER", "Tokenizer", "CustomTokenizer", "PureTextTokenizer", "As
 
 class Tokenizer(object):
     def __call__(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def _tokenize(self, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -27,7 +30,10 @@ class CustomTokenizer(Tokenizer):
 
     def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
         for item in items:
-            yield tokenize(seg(key(item), symbol=self.symbol, figures=self.figures), **self.tokenization_params).tokens
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        return tokenize(seg(key(item), symbol=self.symbol, figures=self.figures), **self.tokenization_params).tokens
 
 
 class PureTextTokenizer(Tokenizer):
@@ -98,7 +104,10 @@ class PureTextTokenizer(Tokenizer):
 
     def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
         for item in items:
-            yield tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        return tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
 
 
 class AstFormulaTokenizer(Tokenizer):
@@ -114,16 +123,18 @@ class AstFormulaTokenizer(Tokenizer):
         self.symbol = symbol
         self.figures = figures
 
-    def __call__(self, items: Iterable, key=lambda x: x, mode=2, **kwargs):
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
         for item in items:
-            ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=2,
-                        tokenization_params=self.tokenization_params, errors="ignore")
-            if ret is None:
-                ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=0,
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=2,
+                      tokenization_params=self.tokenization_params, errors="ignore")
+        if ret is None:
+            ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=0,
                           tokenization_params=self.tokenization_params, errors="ignore")
-            
-            ret = [] if ret is None else ret.tokens
-            yield ret
+        ret = [] if ret is None else ret.tokens
+        return ret
 
 
 TOKENIZER = {
