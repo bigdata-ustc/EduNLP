@@ -111,7 +111,7 @@ class Vocab(object):
 
 
 # to do: how to handle tokenizer with formulas or pictures.
-class PretrainedTokenizer(object):
+class PretrainedEduTokenizer(object):
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="char", add_specials: list = None, **argv):
         """
         Parameters
@@ -248,7 +248,7 @@ class PretrainedTokenizer(object):
             tokens = key(item).strip().split(' ')
             yield tokens
 
-    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=1):
+    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=1, reserve=True):
         """
         Parameters
         -----------

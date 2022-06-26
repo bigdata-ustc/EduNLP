@@ -6,4 +6,4 @@ from .elmo_vec import ElmoTokenizer, ElmoDataset, train_elmo
 from .bert_vec import BertTokenizer, finetune_bert
 from .quesnet_vec import QuesNetTokenizer, pretrain_quesnet, Question
 from .disenqnet_vec import DisenQTokenizer, train_disenqnet
-from .pretrian_utils import Vocab, PretrainedTokenizer
+from .pretrian_utils import Vocab, PretrainedEduTokenizer

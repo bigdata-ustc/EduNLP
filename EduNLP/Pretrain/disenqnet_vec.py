@@ -8,7 +8,7 @@ from ..ModelZoo.utils import load_items, pad_sequence
 import json
 import warnings
 from typing import Dict, List, Tuple
-from .pretrian_utils import PretrainedTokenizer
+from .pretrian_utils import PretrainedEduTokenizer
 from .gensim_vec import train_vector
 from gensim.models import Word2Vec
 
@@ -75,7 +75,7 @@ def save_dict_to_list(item2index, path):
         file.write('\n'.join(items))
     return
 
-class DisenQTokenizer(PretrainedTokenizer):
+class DisenQTokenizer(PretrainedEduTokenizer):
     """
     Examples
     --------

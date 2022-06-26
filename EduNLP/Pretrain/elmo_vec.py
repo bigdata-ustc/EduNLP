@@ -12,7 +12,7 @@ from ..SIF import EDU_SPYMBOLS
 from ..Tokenizer import PureTextTokenizer
 from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPrediction
 from ..ModelZoo.utils import pad_sequence
-from .pretrian_utils import PretrainedTokenizer
+from .pretrian_utils import PretrainedEduTokenizer
 from transformers import TrainingArguments, Trainer, PretrainedConfig
 from datasets import load_dataset
 from datasets import Dataset as HFDataset
@@ -24,7 +24,7 @@ UNK_SYMBOL = '[UNK]'
 PAD_SYMBOL = '[PAD]'
 
 
-class ElmoTokenizer(PretrainedTokenizer):
+class ElmoTokenizer(PretrainedEduTokenizer):
     """
     Examples
     --------
