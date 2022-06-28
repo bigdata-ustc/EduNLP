@@ -22,15 +22,15 @@ class BertForPropertyPrediction(BaseModel):
 
         self.bert = BertModel.from_pretrained(pretrained_model_dir)
         
-        hidden_size = self.bert.config.hidden_size
+        self.hidden_size = self.bert.config.hidden_size
 
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
-        self.classifier = nn.Linear(hidden_size, 1)
+        self.classifier = nn.Linear(self.hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
-        self.loss = nn.MSELoss()
+        self.criterion = nn.MSELoss()
 
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "pretrained_model_dir"]}
+        config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
         config['architecture'] = 'BertForPropertyPrediction'
         self.config = PretrainedConfig.from_dict(config)
 
@@ -44,7 +44,7 @@ class BertForPropertyPrediction(BaseModel):
         item_embeds = self.dropout(item_embeds)
 
         logits = self.sigmoid(self.classifier(item_embeds)).squeeze(1)
-        loss = self.loss(logits, labels) if labels is not None else None
+        loss = self.criterion(logits, labels) if labels is not None else None
         return BertForPPOutput(
             loss = loss,
             logits = logits,
@@ -60,7 +60,7 @@ class BertForPropertyPrediction(BaseModel):
                 head_dropout=model_config.get("head_dropout", 0.5)
             )
 
-    @classmethod
-    def from_pretrained(cls):
-        NotImplementedError
-        # 需要验证是否和huggingface的模型兼容
+    # @classmethod
+    # def from_pretrained(cls):
+    #     NotImplementedError
+    #     # 需要验证是否和huggingface的模型兼容

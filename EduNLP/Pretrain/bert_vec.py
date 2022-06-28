@@ -7,6 +7,7 @@ from transformers import DataCollatorForLanguageModeling, DataCollatorWithPaddin
 from transformers import Trainer, TrainingArguments
 from transformers.file_utils import TensorType
 from transformers import BertTokenizer as HFBertTokenizer
+from transformers import PretrainedConfig
 from torch.utils.data import Dataset
 from datasets import Dataset as HFDataset
 import pandas as pd
@@ -19,7 +20,7 @@ from ..ModelZoo.bert import BertForPropertyPrediction
 __all__ = ["BertTokenizer", "finetune_bert"]
 
 
-class BasicTokenizerForBert(HFBertTokenizer):
+class EduTokenizerForBert(HFBertTokenizer):
     def _tokenize(self, text):
         split_tokens = []
         if self.do_basic_tokenize:
@@ -38,14 +39,13 @@ class BasicTokenizerForBert(HFBertTokenizer):
             split_tokens = self.wordpiece_tokenizer.tokenize(text)
         return split_tokens
     
-    def set_bert_basic_tokenizer(self, text_tokenizer):
+    def set_bert_basic_tokenizer(self, text_tokenizer, **argv):
         assert text_tokenizer in TOKENIZER, f"text_tokenizer should be one of {list(TOKENIZER.keys())}"
-        self.basic_tokenizer = TOKENIZER[text_tokenizer]()
+        self.basic_tokenizer = TOKENIZER[text_tokenizer](**argv)
 
 
 class BertTokenizer(object):
     """
-
     Parameters
     ----------
     pretrain_model:
@@ -78,22 +78,27 @@ class BertTokenizer(object):
     >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
     >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
-    def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False, text_tokenizer=None):
-        self.bert_tokenizer = BasicTokenizerForBert.from_pretrained(pretrain_model, use_fast=False)
+    def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False, text_tokenizer=None, **argv):
+        self.bert_tokenizer = EduTokenizerForBert.from_pretrained(pretrain_model, use_fast=False)
         self.add_special_tokens = add_special_tokens
         if add_special_tokens:
-            customize_tokens = []
-            for i in EDU_SPYMBOLS:
-                if i not in self.bert_tokenizer.additional_special_tokens:
-                    customize_tokens.append(Symbol(i))
-            if customize_tokens:
-                self.bert_tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
+            self.add_specials(EDU_SPYMBOLS)
+            # customize_tokens = []
+            # for i in EDU_SPYMBOLS:
+            #     if i not in self.bert_tokenizer.additional_special_tokens:
+            #         customize_tokens.append(Symbol(i))
+            # if customize_tokens:
+            #     self.bert_tokenizer.add_special_tokens({'additional_special_tokens': customize_tokens})
 
         self.text_tokenizer_name = text_tokenizer
         if text_tokenizer is not None:
             # In order to be more general for Huggingface's other models,
             # may be we need to inherit and rewrite `_tokenize` for XXTokenizer(PreTrainedTokenizer)
-            self.bert_tokenizer.set_bert_basic_tokenizer(text_tokenizer)
+            self.bert_tokenizer.set_bert_basic_tokenizer(text_tokenizer, **argv)
+
+        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "pretrain_model"]}
+        print("[debug] config: ", config)
+        self.config = config
 
     def add_specials(self, added_spectials: List[str]):
         self.bert_tokenizer.add_special_tokens({'additional_special_tokens': added_spectials})
@@ -101,41 +106,57 @@ class BertTokenizer(object):
     def add_tokens(self, added_tokens: List[str]):
         self.bert_tokenizer.add_tokens(added_tokens)
 
+    def set_vocab(self, items: list, key=lambda x: x, lower=False, trim_min_count=1, tokenize=True):
+        """
+        Parameters
+        -----------
+        items: list
+            can be the list of str, or list of dict
+        key: function
+            determine how to get the text of each item
+        """
+        word2cnt = dict()
+        for item in items:
+            tokens = self.bert_tokenizer._tokenize(key(item)) if tokenize else key(item)
+            for word in tokens:
+                word = word.lower() if lower else word
+                word2cnt[word] = word2cnt.get(word, 0) + 1
+        words = [w for w, c in word2cnt.items() if c >= trim_min_count]
+        self.add_tokens(words)
+        return words
+
     def __call__(self, item: Union[list, str], key=lambda x: x, return_tensors: Optional[Union[str, TensorType]] = None,
                  *args, **kwargs):
         if isinstance(item, str):
             item = key(item)
         else:
-            item = [key(item)]
+            item = [key(i) for i in item]
         return self.bert_tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
 
     def __len__(self):
         return len(self.bert_tokenizer)
 
-    def tokenize(self, item: Union[list, str], *args, **kwargs):
+    def tokenize(self, item: Union[list, str], *args, key=lambda x: x, **kwargs):
         if isinstance(item, str):
-            return self.bert_tokenizer.tokenize(item)
+            return self.bert_tokenizer.tokenize(key(item))
         else:
-            item = [self.bert_tokenizer.tokenize(i) for i in item]
+            item = [self.bert_tokenizer.tokenize(key(i)) for i in item]
             return item
 
     def save_pretrained(self, tokenizer_config_dir):
         self.bert_tokenizer.save_pretrained(tokenizer_config_dir)
-        custom_config = {
-            'add_special_tokens': self.add_special_tokens,
-            'text_tokenizer': self.text_tokenizer_name
-        }
+        custom_config = self.config
         with open(os.path.join(tokenizer_config_dir, 'custom_config.json'), 'w') as f:
             json.dump(custom_config, f, indent=2)
 
     @classmethod
-    def from_pretrained(cls, tokenizer_config_dir):
+    def from_pretrained(cls, tokenizer_config_dir, **argv):
         custom_config_dir = os.path.join(tokenizer_config_dir, 'custom_config.json')
         if os.path.exists(custom_config_dir):
             with open(custom_config_dir, 'r') as f:
                 custom_config = json.load(f)
-            return cls(tokenizer_config_dir, custom_config['add_special_tokens'],
-                       custom_config['text_tokenizer'])
+                custom_config.update(argv)
+            return cls(tokenizer_config_dir, **custom_config)
         else:
             return cls(tokenizer_config_dir)
 
@@ -164,10 +185,11 @@ class BertForPPDataset(Dataset):
             columns = [feature_key, labal_key]
         else:
             columns = [feature_key]
-        ds = HFDataset.from_pandas(pd.DataFrame(items)[columns])
-        ds = ds.map(lambda sample: tokenizer(sample[feature_key]), batched=True, batch_size=1000)
-        ds = ds.remove_columns(feature_key)
-        self.ds = ds.rename_columns({labal_key: "labels"})
+        self.ds = HFDataset.from_pandas(pd.DataFrame(items)[columns])
+        self.ds = self.ds.map(lambda sample: tokenizer(sample[feature_key]), batched=True, batch_size=1000)
+        self.ds = self.ds.remove_columns(feature_key)
+        if mode in ["train", "val"]:
+            self.ds = self.ds.rename_columns({labal_key: "labels"})
 
     def __getitem__(self, index):
         return self.ds[index]

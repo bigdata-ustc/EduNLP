@@ -109,6 +109,9 @@ class Vocab(object):
                 self._special_tokens += [token]
                 self.add(token)
 
+    def add_tokens(self, tokens):
+        for token in tokens:
+            self.add(token)
 
 # to do: how to handle tokenizer with formulas or pictures.
 class PretrainedEduTokenizer(object):
@@ -248,19 +251,6 @@ class PretrainedEduTokenizer(object):
             tokens = key(item).strip().split(' ')
             yield tokens
 
-    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=1, reserve=True):
-        """
-        Parameters
-        -----------
-        items: list
-            can be the list of str, or list of dict
-        key: function
-            determine how to get the text of each item
-        """
-        token_items = self.tokenize(items, key)
-        self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count)
-        return token_items
-
     @classmethod
     def from_pretrained(cls, tokenizer_config_dir, **argv):
         """
@@ -295,3 +285,22 @@ class PretrainedEduTokenizer(object):
     @property
     def vocab_size(self):
         return len(self.vocab)
+
+    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=1, reserve=True):
+        """
+        Parameters
+        -----------
+        items: list
+            can be the list of str, or list of dict
+        key: function
+            determine how to get the text of each item
+        """
+        token_items = self.tokenize(items, key)
+        self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count)
+        return token_items
+
+    def add_specials(self, tokens):
+        self.vocab.add_specials(tokens)
+
+    def add_tokens(self, tokens):
+        self.vocab.add_tokens(tokens)

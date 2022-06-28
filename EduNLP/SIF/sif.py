@@ -141,8 +141,9 @@ def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str 
             More parameters can be found in the definition in SIF.tokenization.formula
         For figure_params:
             figure_instance：whether to return instance of figures in tokens
-        For text_params:
-            See definition in SIF.tokenization.text
+        For text_params: See definition in SIF.tokenization.text
+            granularity: word or char
+            stopwords: default or None or list
 
     errors:
         warn,

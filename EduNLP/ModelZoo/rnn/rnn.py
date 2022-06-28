@@ -205,7 +205,6 @@ class ElmoLMForPreTrainingOutput(ModelOutput):
     backward_output: torch.FloatTensor = None
 
 
-
 class ElmoLMForPreTraining(BaseModel):
     base_model_prefix = 'elmo'
 
@@ -327,7 +326,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
         self.dropout = nn.Dropout(head_dropout)
         self.classifier = nn.Linear(hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
-        self.loss = nn.MSELoss()
+        self.criterion = nn.MSELoss()
 
         config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
         config['architecture'] = 'ElmoLMForPreTraining'
@@ -342,7 +341,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
         item_embeds = self.dropout(item_embeds)
 
         logits = self.sigmoid(self.classifier(item_embeds, dim=1))
-        loss = F.mse_loss(logits, labels)
+        loss = self.criterion(logits, labels)
         return PropertyPredictionOutput(
             loss = loss,
             logits = logits

@@ -33,7 +33,7 @@ class CustomTokenizer(Tokenizer):
             yield self._tokenize(item, key=key, **kwargs)
 
     def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
-        return tokenize(seg(key(item), symbol=self.symbol, figures=self.figures), **self.tokenization_params).tokens
+        return tokenize(seg(key(item), symbol=self.symbol, figures=self.figures), **self.tokenization_params, **kwargs).tokens
 
 
 class PureTextTokenizer(Tokenizer):
@@ -89,17 +89,22 @@ class PureTextTokenizer(Tokenizer):
     ['[TAG]', '复数', 'z', '=', '1', '+', '2', 'i', '+', 'i']
     """
 
-    def __init__(self, *args, skip_figure_formula=None, symbolize_figure_formula=None, **kwargs):
+    def __init__(self, skip_figure_formula=None, symbolize_figure_formula=None, **kwargs):
         # Formula images are not processed by default
         if skip_figure_formula is None and symbolize_figure_formula is None:
             skip_figure_formula = True
             symbolize_figure_formula = False
+        formula_params = {
+            "method": "linear",
+            "skip_figure_formula": skip_figure_formula,
+            "symbolize_figure_formula": symbolize_figure_formula
+        }
+        formula_params.update(kwargs.pop("formula_params", {}))
         self.tokenization_params = {
-            "formula_params": {
-                "method": "linear",
-                "skip_figure_formula": skip_figure_formula,
-                "symbolize_figure_formula": symbolize_figure_formula
-            }
+            "formula_params": formula_params,
+            "text_params": kwargs.get("text_params", None),
+            "figure_params": kwargs.get("figure_params", None)
+
         }
 
     def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
@@ -107,18 +112,22 @@ class PureTextTokenizer(Tokenizer):
             yield self._tokenize(item, key=key, **kwargs)
 
     def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
-        return tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params).tokens
+        return tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params, **kwargs).tokens
 
 
 class AstFormulaTokenizer(Tokenizer):
-    def __init__(self, symbol="gmas", figures=None):
+    def __init__(self, symbol="gmas", figures=None, **argv):
+        formula_params = {
+            "method": "ast",
+            "ord2token": True,
+            "return_type": "list",
+            "var_numbering": True
+        }
+        formula_params.update(argv.pop("formula_params", {}))
         self.tokenization_params={
-            "formula_params":{
-                "method": "ast",
-                "ord2token": True,
-                "return_type": "list",
-                "var_numbering": True
-            }
+            "formula_params": formula_params,
+            "text_params": argv.pop("text_params", None),
+            "figure_params": argv.pop("figure_params", None),
         }
         self.symbol = symbol
         self.figures = figures
@@ -128,11 +137,9 @@ class AstFormulaTokenizer(Tokenizer):
             yield self._tokenize(item, key=key, **kwargs)
 
     def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
-        ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=2,
-                      tokenization_params=self.tokenization_params, errors="ignore")
-        if ret is None:
-            ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=0,
-                          tokenization_params=self.tokenization_params, errors="ignore")
+        mode = kwargs.pop("mode", 0)
+        ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=mode,
+                        tokenization_params=self.tokenization_params, errors="ignore", **kwargs)
         ret = [] if ret is None else ret.tokens
         return ret
 
