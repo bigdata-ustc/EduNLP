@@ -40,7 +40,6 @@ def tokenize(text, granularity="word", stopwords="default"):
         return [token for token in jieba.cut(text) if token not in stopwords and token.strip()]
     elif granularity == "char":
         jieba_tokens = [token for token in jieba.cut(text) if token not in stopwords and token.strip()]
-        print("[debug] jieba_tokens:", jieba_tokens)
         # Use jieba_tokens to hangle sentence with mixed chinese and english.
         split_tokens = []
         for token in jieba_tokens:

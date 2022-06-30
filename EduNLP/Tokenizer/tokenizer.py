@@ -6,6 +6,8 @@ from typing import Iterable, Union
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
 from ..SIF import sif4sci
+from copy import deepcopy
+
 
 __all__ = ["TOKENIZER", "Tokenizer", "CustomTokenizer", "PureTextTokenizer", "AstFormulaTokenizer", "get_tokenizer"]
 
@@ -123,11 +125,12 @@ class AstFormulaTokenizer(Tokenizer):
             "return_type": "list",
             "var_numbering": True
         }
-        formula_params.update(argv.pop("formula_params", {}))
+        _argv = deepcopy(argv)
+        formula_params.update(_argv.pop("formula_params", {}))
         self.tokenization_params={
             "formula_params": formula_params,
-            "text_params": argv.pop("text_params", None),
-            "figure_params": argv.pop("figure_params", None),
+            "text_params": _argv.pop("text_params", None),
+            "figure_params": _argv.pop("figure_params", None),
         }
         self.symbol = symbol
         self.figures = figures

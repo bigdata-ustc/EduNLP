@@ -67,7 +67,6 @@ def load_list_to_dict(path):
     item2index = {item: index for index, item in enumerate(items)}
     return item2index
 
-
 def save_dict_to_list(item2index, path):
     item2index = sorted(item2index.items(), key=lambda kv: kv[1])
     items = [item for item, _ in item2index]

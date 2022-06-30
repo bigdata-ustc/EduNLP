@@ -3,17 +3,23 @@ import traceback
 import torch
 import os
 import json
+import pandas as pd
 from transformers import PretrainedConfig
+from datasets import Dataset as HFDataset, load_from_disk
+from torch.utils.data import Dataset
 from ..Tokenizer import get_tokenizer
 from ..ModelZoo.utils import pad_sequence
 from ..SIF import EDU_SPYMBOLS
+from typing import Optional, Union, List, Dict
+
+__all__ = ["EduVocab", "EduDataset", "train_elmo_for_perporty_prediction"]
 
 
-class Vocab(object):
+class EduVocab(object):
     def __init__(self, vocab_path=None, corpus_items=None, bos_token="[BOS]",
                  eos_token="[EOS]", pad_token="[PAD]", unk_token="[UNK]",
                  specials=None, lower=False, trim_min_count=1, **argv):
-        super(Vocab, self).__init__()
+        super(EduVocab, self).__init__()
 
         self._tokens = []
         self.idx_to_token = dict()
@@ -113,6 +119,7 @@ class Vocab(object):
         for token in tokens:
             self.add(token)
 
+
 # to do: how to handle tokenizer with formulas or pictures.
 class PretrainedEduTokenizer(object):
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="char", add_specials: list = None, **argv):
@@ -132,7 +139,7 @@ class PretrainedEduTokenizer(object):
 
         specials = EDU_SPYMBOLS + [add_specials if add_specials is not None else None]
         self.max_length = max_length
-        self.vocab = Vocab(vocab_path=vocab_path, specials=specials, **argv)
+        self.vocab = EduVocab(vocab_path=vocab_path, specials=specials, **argv)
 
         config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
         self.config = PretrainedConfig.from_dict(config)
@@ -228,6 +235,9 @@ class PretrainedEduTokenizer(object):
         else:
             return[self.vocab.convert_sequence_to_token(key(item)) for item in items]
 
+    def _pad(self):
+        raise NotImplementedError
+
     def _tokenize(self, item: Tuple[str, dict], key=lambda x: x):
         try:
             token_item = next(self.text_tokenizer([item], key=key))
@@ -236,7 +246,6 @@ class PretrainedEduTokenizer(object):
             if len(token_item) > self.max_length:
                 token_item = token_item[:self.max_length]
         except Exception:
-            print("[debug]", item)
             msg = traceback.format_exc()
             print(msg)
         return token_item
@@ -304,3 +313,43 @@ class PretrainedEduTokenizer(object):
 
     def add_tokens(self, tokens):
         self.vocab.add_tokens(tokens)
+
+
+class EduDataset(HFDataset):
+    def __init__(self, ds_disk_path: HFDataset = None,
+                 items: Union[List[dict], List[str]]=None, tokenizer=None,
+                 feature_key=Optional[str], labal_key=Optional[str],
+                 num_processor=None, **argv):
+        if ds_disk_path is None:
+            assert items is not None
+            items = items if isinstance(items[0], dict) else [{"text": i} for i in items]
+            if isinstance(items[0], dict):
+                assert feature_key is not None
+            if isinstance(items[0], str):
+                assert feature_key is None and labal_key is None
+            columns = [feature_key] + [labal_key] if labal_key is not None else []
+            df = pd.DataFrame(items)[columns]
+            self.ds = HFDataset.from_pandas(df)
+            self.ds = self.ds.map(lambda sample: tokenizer(sample[feature_key]),
+                                num_proc=num_processor,
+                                batched=True, batch_size=1000)
+            self.ds = self.ds.remove_columns(feature_key)
+            self.ds = self.ds.rename_columns({labal_key: "labels"})
+        else:
+            self.ds = load_from_disk(ds_disk_path)
+
+    @classmethod
+    def from_disk(cls, ds_disk_path, **argv):
+        return cls(ds_disk_path=ds_disk_path, **argv)
+
+    def to_disk(self, ds_disk_path):
+        self.ds.save_to_disk(ds_disk_path)
+
+    def __getitem__(self, index):
+        return self.ds[index]
+
+    def __len__(self):
+        return self.ds.num_rows
+    
+    def collect_fn(self):
+        raise NotImplementedError

@@ -1,3 +1,5 @@
+from tkinter.messagebox import NO
+from matplotlib.colors import NoNorm
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -7,21 +9,44 @@ import numpy as np
 import json
 import os
 import time
+import multiprocessing
+from copy import deepcopy
 from typing import Dict, List
 from ..SIF import EDU_SPYMBOLS
 from ..Tokenizer import PureTextTokenizer
 from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPrediction
 from ..ModelZoo.utils import pad_sequence
-from .pretrian_utils import PretrainedEduTokenizer
+from .pretrian_utils import PretrainedEduTokenizer, EduDataset
 from transformers import TrainingArguments, Trainer, PretrainedConfig
 from datasets import load_dataset
 from datasets import Dataset as HFDataset
 import datasets
 import pandas as pd
+from typing import Optional, Union, List, Dict
 
+__all__ = ["ElmoTokenizer", "train_elmo", "train_elmo_for_perporty_prediction"]
 
-UNK_SYMBOL = '[UNK]'
-PAD_SYMBOL = '[PAD]'
+DEFAULT_TRAIN_PARAMS = {
+    # default
+    "output_dir": None,
+    "overwrite_output_dir": True,
+    "num_train_epochs": 1,
+    "per_device_train_batch_size": 32,
+    "per_device_eval_batch_size": 32,
+    # evaluation_strategy: "steps",
+    # eval_steps:200,
+    "save_steps": 1000,
+    "save_total_limit": 2,
+    "load_best_model_at_end": True,
+    # metric_for_best_model: "loss",
+    # greater_is_better: False,
+    "logging_dir": None,
+    "logging_steps": 5,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 5e-4,
+    # disable_tqdm: True,
+    # no_cuda: True,
+}
 
 
 class ElmoTokenizer(PretrainedEduTokenizer):
@@ -37,34 +62,13 @@ class ElmoTokenizer(PretrainedEduTokenizer):
     18
     """
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", **argv):
-        super().__init__(vocab_path, max_length, tokenize_method, **argv)
+        super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method, **argv)
 
 
-class ElmoDataset(tud.Dataset):
-    def __init__(self, texts: List[str], tokenizer: ElmoTokenizer):
-        """
-        Parameters
-        ----------
-        texts: list
-        tokenizer: ElmoTokenizer
-        max_length: int, optional, default=128
-        """
-        super(ElmoDataset, self).__init__()
-
-        self.tokenizer = tokenizer
-        self.items = texts
-        ds = HFDataset.from_dict({"text": texts})
-        ds = ds.map(self._preprocess, batched=True, batch_size=1000)
-        self.ds = ds.remove_columns("text")
-
-    def _preprocess(self, sample):
-        return self.tokenizer(sample["text"], padding=False, return_tensors=False, return_text=False)
-
-    def __len__(self):
-        return self.ds.num_rows
-
-    def __getitem__(self, index):
-        return self.ds[index]
+"""Note: Be Make sure Tokenizer output batched tensors by default"""
+class ElmoDataset(EduDataset):
+    def __init__(self, tokenizer: ElmoTokenizer, **argv):
+        super(ElmoDataset, self).__init__(tokenizer=tokenizer, **argv)
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
@@ -77,183 +81,149 @@ class ElmoDataset(tud.Dataset):
         return batch
 
 
-class EmloForPPDataset(tud.Dataset):
-    def __init__(self, items, tokenizer, mode="train", feature_key="content", labal_key="difficulty"):
-        self.tokenizer = tokenizer
-        self.items = items
-        self.mode = mode
-        self.feature_key = feature_key
-        self.labal_key = labal_key
-
-        if mode in ["train", "val"]:
-            columns = [feature_key, labal_key]
-        else:
-            columns = [feature_key]
-        ds = HFDataset.from_pandas(pd.DataFrame(items)[columns])
-        ds = ds.map(self._preprocess, batched=True, batch_size=1000)
-        ds = ds.remove_columns(feature_key)
-        self.ds = ds.rename_columns({labal_key: "labels"})
-
-    def _preprocess(self, sample):
-        return self.tokenizer(sample[self.feature_key], padding=False, return_tensors=False, return_text=False)
-
-    def __len__(self):
-        return self.ds.num_rows
-
-    def __getitem__(self, index):
-        return self.ds[index]
-
-    def collate_fn(self, batch_data):
-        pad_idx = self.tokenizer.vocab.pad_idx
-        first =  batch_data[0]
-        batch = {
-            k: [item[k] for item in batch_data] for k in first.keys()
-        }
-        batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx, max_length=500)
-        batch = {key: torch.as_tensor(val) for key, val in batch.items()}
-        return batch
-
-def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, train_params=None):
+def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrain_dir: str = None,
+               tokenizer_params=None, data_params=None, model_params=None, train_params=None):
     """
     Parameters
     ----------
-    texts: list, required
-        The training corpus of shape (text_num)
+    items: list, required
+        The training corpus, each item could be str or dict
     output_dir: str, required
         The directory to save trained model files
     pretrained_dir: str, optional
-        The pretrained model files' directory
-    emb_dim: int, optional, default=512
-        The embedding dim
-    hid_dim: int, optional, default=1024
-        The hidden dim
+        The pretrained directory for model and tokenizer
+    tokenizer_params: dict, optional, default=None
+        The parameters passed to ElmoTokenizer
+    data_params: dict, optional, default=None
+        The parameters passed to ElmoDataset and ElmoTokenizer
+    model_params: dict, optional, default=None
+        The parameters passed to Trainer
     train_params: dict, optional, default=None
-        the training parameters passed to Trainer
-
-    Returns
-    -------
-    output_dir: str
-        The directory that trained model files are saved
     """
-    tokenizer = ElmoTokenizer()
-    if pretrained_dir:
-        tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir)
+    # tokenizer configuration
+    if os.path.exists(pretrain_dir):
+        tokenizer = ElmoTokenizer.from_pretrained(pretrain_dir)
     else:
-        tokenizer.set_vocab(texts)
-    train_dataset = ElmoDataset(texts, tokenizer)
+        work_tokenizer_params = {
+            "add_special_tokens": True,
+            "text_tokenizer": "pure_text",
+        }
+        work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
+        tokenizer = ElmoTokenizer(pretrain_dir, **work_tokenizer_params)
+        corpus_items = items
+        if isinstance(items[0], str):
+            tokenizer.set_vocab(corpus_items)
+        else:
+            tokenizer.set_vocab(corpus_items,
+                                key=lambda x: x[data_params.get("feature_key", "stem")])
 
-    if pretrained_dir:
-        model = ElmoLMForPreTraining.from_pretrained(pretrained_dir)
+    # dataset configuration
+    dataset = ElmoDataset(items=items, tokenizer=tokenizer,
+                          feature_key=data_params.get("feature_key", None))
+
+    # model configuration
+    if pretrain_dir:
+        model = ElmoLMForPreTraining.from_pretrained(pretrain_dir)
     else:
-        model = ElmoLMForPreTraining(
-            vocab_size=len(tokenizer),
-            embedding_dim=emb_dim,
-            hidden_size=hid_dim,
-            batch_first=True
-        )
-
+        work_model_params = {
+            "vocab_size": len(tokenizer),
+            "embedding_dim": 512,
+            "hidden_size": 512
+        }
+        work_model_params.update(model_params if model_params else {})
+        model = ElmoLMForPreTraining(**work_model_params)
     model.elmo.LM_layer.rnn.flatten_parameters()
 
-    # training parameters
-    if train_params:
-        epochs = train_params['epochs'] if 'epochs' in train_params else 1
-        batch_size = train_params['batch_size'] if 'batch_size' in train_params else 64
-        save_steps = train_params['save_steps'] if 'save_steps' in train_params else 100
-        save_total_limit = train_params['save_total_limit'] if 'save_total_limit' in train_params else 2
-        logging_steps = train_params['logging_steps'] if 'logging_steps' in train_params else 5
-        gradient_accumulation_steps = train_params['gradient_accumulation_steps'] \
-            if 'gradient_accumulation_steps' in train_params else 1
-        learning_rate = train_params['learning_rate'] if 'learning_rate' in train_params else 5e-4
-    else:
-        # default
-        epochs = 1
-        batch_size = 64
-        save_steps = 1000
-        save_total_limit = 2
-        logging_steps = 5
-        gradient_accumulation_steps = 1
-        learning_rate = 5e-4
-
-    training_args = TrainingArguments(
-        output_dir=output_dir,
-        overwrite_output_dir=True,
-        num_train_epochs=epochs,
-        per_device_train_batch_size=batch_size,
-        save_steps=save_steps,
-        save_total_limit=save_total_limit,
-        logging_steps=logging_steps,
-        learning_rate=learning_rate,
-        gradient_accumulation_steps=gradient_accumulation_steps,
-    )
-
+    # training configuration
+    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
+    work_train_params["output_dir"] = output_dir
+    if train_params is not None:
+        work_train_params.update(train_params if train_params else {})
+    work_args = TrainingArguments(**work_train_params)
     trainer = Trainer(
         model=model,
-        args=training_args,
-        data_collator=train_dataset.collate_fn,
-        train_dataset=train_dataset,
+        args=work_args,
+        train_dataset=dataset,
+        data_collator=dataset.collate_fn,
     )
-
     trainer.train()
-    model.save_pretrained(output_dir)
+    trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
     return output_dir
 
 
-def train_elmo_for_difficulty_prediction(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512,
-                                         hid_dim=512, train_params=None):
-    tokenizer = ElmoTokenizer()
-    if pretrained_dir:
+def train_elmo_for_perporty_prediction(
+        train_items: list, output_dir: str, pretrained_dir=None, eval_items=None,
+        tokenizer_params=None, data_params=None, train_params=None, model_params=None
+    ):
+    """
+    Parameters
+    ----------
+    train_items: list, required
+        The training items, each item could be str or dict
+    output_dir: str, required
+        The directory to save trained model files
+    pretrained_dir: str, optional
+        The pretrained directory for model and tokenizer
+    eval_items: list, required
+        The evaluating items, each item could be str or dict
+    tokenizer_params: dict, optional, default=None
+        The parameters passed to ElmoTokenizer
+    data_params: dict, optional, default=None
+        The parameters passed to ElmoDataset and ElmoTokenizer
+    model_params: dict, optional, default=None
+        The parameters passed to Trainer
+    train_params: dict, optional, default=None
+    """
+    # tokenizer configuration
+    if pretrained_dir is not None:
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir)
     else:
-        tokenizer.set_vocab(texts)
-    train_dataset = ElmoDataset(texts, tokenizer)
+        work_tokenizer_params = {
+            "add_special_tokens": True,
+            "text_tokenizer": "pure_text",
+        }
+        work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
+        tokenizer = ElmoTokenizer(pretrained_dir, **work_tokenizer_params)
+        corpus_items = train_items + eval_items
+        tokenizer.set_vocab(corpus_items,
+                            key=lambda x: x[data_params.get("feature_key", "stem")])
+    # dataset configuration
+    train_dataset = EduDataset(items=train_items, tokenizer=tokenizer,
+                               feature_key=data_params.get("feature_key", "stem"),
+                               labal_key=data_params.get("labal_key", "diff"))
+    if eval_items is not None:
+        eval_dataset = EduDataset(items=eval_items, tokenizer=tokenizer,
+                                  feature_key=data_params.get("feature_key", "stem"),
+                                  labal_key=data_params.get("labal_key", "diff"))
 
-    if pretrained_dir:
+    # model configuration
+    if pretrained_dir is not None:
         model = ElmoLMForPropertyPrediction.from_pretrained(pretrained_dir)
     else:
-        model = ElmoLMForPropertyPrediction(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
-
+        work_model_params = {
+            "vocab_size": len(tokenizer),
+            "embedding_dim": 512,
+            "hidden_size": 512
+        }
+        work_model_params.update(model_params if model_params else {})
+        model = ElmoLMForPropertyPrediction(**work_model_params)
     model.elmo.LM_layer.rnn.flatten_parameters()
-    # training parameters
-    if train_params:
-        epochs = train_params['epochs'] if 'epochs' in train_params else 1
-        batch_size = train_params['batch_size'] if 'batch_size' in train_params else 64
-        save_steps = train_params['save_steps'] if 'save_steps' in train_params else 100
-        save_total_limit = train_params['save_total_limit'] if 'save_total_limit' in train_params else 2
-        logging_steps = train_params['logging_steps'] if 'logging_steps' in train_params else 5
-        gradient_accumulation_steps = train_params['gradient_accumulation_steps'] \
-            if 'gradient_accumulation_steps' in train_params else 1
-        learning_rate = train_params['learning_rate'] if 'learning_rate' in train_params else 5e-4
-    else:
-        # default
-        epochs = 1
-        batch_size = 64
-        save_steps = 1000
-        save_total_limit = 2
-        logging_steps = 5
-        gradient_accumulation_steps = 1
-        learning_rate = 5e-4
 
-    training_args = TrainingArguments(
-        output_dir=output_dir,
-        overwrite_output_dir=True,
-        num_train_epochs=epochs,
-        per_device_train_batch_size=batch_size,
-        save_steps=save_steps,
-        save_total_limit=save_total_limit,
-        logging_steps=logging_steps,
-        learning_rate=learning_rate,
-        gradient_accumulation_steps=gradient_accumulation_steps,
-    )
-
+    # training configuration
+    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
+    work_train_params["output_dir"] = output_dir
+    if train_params is not None:
+        work_train_params.update(train_params if train_params else {})
+    work_train_params = TrainingArguments(**work_train_params)  
     trainer = Trainer(
         model=model,
-        args=training_args,
-        data_collator=ElmoDataset.elmo_collate_fn,
+        args=work_train_params,
         train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=ElmoDataset.elmo_collate_fn,
     )
-
     trainer.train()
-    model.save_pretrained(output_dir)
+    trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
     return output_dir
