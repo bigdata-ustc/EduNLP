@@ -137,7 +137,8 @@ class ElmoLM(BaseModel):
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size
         self.dropout = nn.Dropout(dropout_rate)
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        config.update(argv)
         config['architecture'] = 'ElmoLM'
         self.config = PretrainedConfig.from_dict(config)
 
@@ -174,9 +175,10 @@ class ElmoLM(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path):
+    def from_config(cls, config_path, **argv):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
+            model_config.update(argv)
             return cls(
                 vocab_size=model_config['vocab_size'],
                 embedding_dim=model_config['embedding_dim'],
@@ -209,21 +211,23 @@ class ElmoLMForPreTraining(BaseModel):
     base_model_prefix = 'elmo'
 
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
-                 batch_first=True):
+                 batch_first=True, **argv):
         super(ElmoLMForPreTraining, self).__init__()
         self.elmo = ElmoLM(
             vocab_size=vocab_size,
             embedding_dim=embedding_dim,
             hidden_size=hidden_size,
             dropout_rate=dropout_rate,
-            batch_first=batch_first
+            batch_first=batch_first,
+            **argv
         )
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size
         self.criterion = nn.CrossEntropyLoss()
 
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        config.update(argv)
         config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
 
@@ -251,11 +255,8 @@ class ElmoLMForPreTraining(BaseModel):
         batch_size, idx_len = seq_idx.shape
         max_len = seq_len.max().item()
 
-        print("seq_idx", seq_idx.device)
         pred_mask = torch.arange(max_len, device=seq_idx.device)[None, :] < seq_len[:, None]
         idx_mask = torch.arange(idx_len, device=seq_idx.device)[None, :] < seq_len[:, None]
-        print("pred_mask", pred_mask.device)
-        print("idx_mask", idx_mask.device)
 
         pred_forward_mask = pred_mask.clone()
         pred_forward_mask[torch.arange(batch_size).unsqueeze(1), seq_len.unsqueeze(1) - 1] = False
@@ -312,7 +313,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
     base_model_prefix = 'elmo'
 
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
-                 batch_first=True, head_dropout=0.5):
+                 batch_first=True, head_dropout=0.5, **argv):
         super(ElmoLMForPropertyPrediction).__init__()
 
         self.elmo = ElmoLM(
@@ -326,9 +327,10 @@ class ElmoLMForPropertyPrediction(BaseModel):
         self.dropout = nn.Dropout(head_dropout)
         self.classifier = nn.Linear(hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
-        self.loss = nn.MSELoss()
+        self.criterion = nn.MSELoss()
 
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__"}
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        config.update(argv)
         config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
 
@@ -341,7 +343,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
         item_embeds = self.dropout(item_embeds)
 
         logits = self.sigmoid(self.classifier(item_embeds, dim=1))
-        loss = F.mse_loss(logits, labels)
+        loss = self.criterion(logits, labels)
         return PropertyPredictionOutput(
             loss=loss,
             logits=logits

@@ -107,10 +107,10 @@ class I2V(object):
             params: dict = json.load(f)
             tokenizer = params.pop("tokenizer")
             t2v = params.pop("t2v")
-            args = params.pop("args")
-            kwargs = params.pop("kwargs")
-            params.update(kwargs)
-            return cls(tokenizer, t2v, *args, **params)
+            _args = params.pop("args")
+            _kwargs = params.pop("kwargs")
+            params.update(_kwargs)
+            return cls(tokenizer, t2v, *_args, **params)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
