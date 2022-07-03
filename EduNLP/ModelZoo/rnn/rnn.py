@@ -205,7 +205,6 @@ class ElmoLMForPreTrainingOutput(ModelOutput):
     backward_output: torch.FloatTensor = None
 
 
-
 class ElmoLMForPreTraining(BaseModel):
     base_model_prefix = 'elmo'
 
@@ -259,14 +258,14 @@ class ElmoLMForPreTraining(BaseModel):
         print("idx_mask", idx_mask.device)
 
         pred_forward_mask = pred_mask.clone()
-        pred_forward_mask[torch.arange(batch_size).unsqueeze(1), seq_len.unsqueeze(1)-1] = False
+        pred_forward_mask[torch.arange(batch_size).unsqueeze(1), seq_len.unsqueeze(1) - 1] = False
         pred_backward_mask = pred_mask.clone()
         pred_backward_mask[torch.arange(batch_size).unsqueeze(1), 0] = False
 
         idx_forward_mask = idx_mask.clone()
         idx_forward_mask[torch.arange(batch_size).unsqueeze(1), 0] = False
         idx_backward_mask = idx_mask.clone()
-        idx_backward_mask[torch.arange(batch_size).unsqueeze(1), seq_len.unsqueeze(1)-1] = False
+        idx_backward_mask[torch.arange(batch_size).unsqueeze(1), seq_len.unsqueeze(1) - 1] = False
 
         outputs = self.elmo(seq_idx, seq_len)
         pred_forward, pred_backward = outputs.pred_forward, outputs.pred_backward
@@ -275,11 +274,11 @@ class ElmoLMForPreTraining(BaseModel):
         pred_backward = pred_backward[pred_backward_mask]
         # y = F.one_hot(seq_idx, self.elmo.vocab_size).to(seq_idx.device)
         # loss_func = nn.BCELoss()
-        y_backword = seq_idx[idx_backward_mask]
-        y_forword = seq_idx[idx_forward_mask]
+        y_backward = seq_idx[idx_backward_mask]
+        y_forward = seq_idx[idx_forward_mask]
 
-        forward_loss = self.criterion(pred_forward.double(), y_forword)
-        backward_loss = self.criterion(pred_backward.double(), y_backword)
+        forward_loss = self.criterion(pred_forward.double(), y_forward)
+        backward_loss = self.criterion(pred_backward.double(), y_backward)
         loss = forward_loss + backward_loss
 
         return ElmoLMForPreTrainingOutput(
@@ -344,13 +343,13 @@ class ElmoLMForPropertyPrediction(BaseModel):
         logits = self.sigmoid(self.classifier(item_embeds, dim=1))
         loss = F.mse_loss(logits, labels)
         return PropertyPredictionOutput(
-            loss = loss,
-            logits = logits
+            loss=loss,
+            logits=logits
         )
 
     @classmethod
     def from_config(cls, config_path, **argv):
-         with open(config_path, "r", encoding="utf-8") as rf:
+        with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
             model_config.update(argv)
             return cls(
@@ -359,5 +358,5 @@ class ElmoLMForPropertyPrediction(BaseModel):
                 hidden_size=model_config['hidden_size'],
                 dropout_rate=model_config['dropout_rate'],
                 batch_first=model_config['batch_first'],
-                head_dropout=model_config['head_dropout'], 
+                head_dropout=model_config['head_dropout'],
             )

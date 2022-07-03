@@ -217,13 +217,13 @@ class PretrainedEduTokenizer(object):
         if isinstance(items, str) or isinstance(items, dict):
             return self.vocab.convert_sequence_to_idx(key(items))
         else:
-            return[self.vocab.convert_sequence_to_idx(key(item)) for item in items]
+            return [self.vocab.convert_sequence_to_idx(key(item)) for item in items]
 
     def decode(self, items: Tuple[list, str, dict], key=lambda x: x):
         if isinstance(items, str) or isinstance(items, dict):
             return self.vocab.convert_sequence_to_token(key(items))
         else:
-            return[self.vocab.convert_sequence_to_token(key(item)) for item in items]
+            return [self.vocab.convert_sequence_to_token(key(item)) for item in items]
 
     def _tokenize(self, item: Tuple[str, dict], key=lambda x: x):
         try:

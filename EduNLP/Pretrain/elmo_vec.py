@@ -19,7 +19,6 @@ from datasets import Dataset as HFDataset
 import datasets
 import pandas as pd
 
-
 UNK_SYMBOL = '[UNK]'
 PAD_SYMBOL = '[PAD]'
 
@@ -36,6 +35,7 @@ class ElmoTokenizer(PretrainedEduTokenizer):
     >>> len(t)
     18
     """
+
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", **argv):
         super().__init__(vocab_path, max_length, tokenize_method, **argv)
 
@@ -68,7 +68,7 @@ class ElmoDataset(tud.Dataset):
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
-        first =  batch_data[0]
+        first = batch_data[0]
         batch = {
             k: [item[k] for item in batch_data] for k in first.keys()
         }
@@ -77,7 +77,7 @@ class ElmoDataset(tud.Dataset):
         return batch
 
 
-class EmloForPPDataset(tud.Dataset):
+class ElmoForPPDataset(tud.Dataset):
     def __init__(self, items, tokenizer, mode="train", feature_key="content", labal_key="difficulty"):
         self.tokenizer = tokenizer
         self.items = items
@@ -105,13 +105,14 @@ class EmloForPPDataset(tud.Dataset):
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
-        first =  batch_data[0]
+        first = batch_data[0]
         batch = {
             k: [item[k] for item in batch_data] for k in first.keys()
         }
         batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx, max_length=500)
         batch = {key: torch.as_tensor(val) for key, val in batch.items()}
         return batch
+
 
 def train_elmo(texts: list, output_dir: str, pretrained_dir: str = None, emb_dim=512, hid_dim=512, train_params=None):
     """
@@ -211,7 +212,8 @@ def train_elmo_for_difficulty_prediction(texts: list, output_dir: str, pretraine
     if pretrained_dir:
         model = ElmoLMForPropertyPrediction.from_pretrained(pretrained_dir)
     else:
-        model = ElmoLMForPropertyPrediction(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim, batch_first=True)
+        model = ElmoLMForPropertyPrediction(vocab_size=len(tokenizer), embedding_dim=emb_dim, hidden_size=hid_dim,
+                                            batch_first=True)
 
     model.elmo.LM_layer.rnn.flatten_parameters()
     # training parameters

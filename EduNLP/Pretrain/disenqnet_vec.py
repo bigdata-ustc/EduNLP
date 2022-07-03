@@ -75,6 +75,7 @@ def save_dict_to_list(item2index, path):
         file.write('\n'.join(items))
     return
 
+
 class DisenQTokenizer(PretrainedEduTokenizer):
     """
     Examples
@@ -89,7 +90,8 @@ class DisenQTokenizer(PretrainedEduTokenizer):
     >>> print(token_items[0].keys())
     dict_keys(['seq_idx', 'seq_len'])
     """
-    def __init__(self, vocab_path=None, max_length=250, tokenize_method="space", 
+
+    def __init__(self, vocab_path=None, max_length=250, tokenize_method="space",
                  num_token="[NUM]", **argv):
         """
         Parameters
@@ -129,78 +131,80 @@ class DisenQTokenizer(PretrainedEduTokenizer):
             yield token_item
 
 
-def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, trim_min_count=None, embed_dim=None, w2v_params=None, silent=False):
-        default_data_formation = {
-            "content": "content",
-            "knowledge": "knowledge"
-        }
-        if data_formation is not None:
-            default_data_formation.update(data_formation)
-        data_formation = default_data_formation
+def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, trim_min_count=None, embed_dim=None,
+                       w2v_params=None, silent=False):
+    default_data_formation = {
+        "content": "content",
+        "knowledge": "knowledge"
+    }
+    if data_formation is not None:
+        default_data_formation.update(data_formation)
+    data_formation = default_data_formation
 
-        default_w2v_params = {
-            "workers": 1,
-        }
-        if w2v_params is not None:
-            default_w2v_params.update(w2v_params)
-        w2v_params = default_w2v_params
+    default_w2v_params = {
+        "workers": 1,
+    }
+    if w2v_params is not None:
+        default_w2v_params.update(w2v_params)
+    w2v_params = default_w2v_params
 
-        concept_list_path = os.path.join(pretrained_dir, "concept.list")
-        vocab_path = os.path.join(pretrained_dir, "vocab.list")
-        wv_path = os.path.join(pretrained_dir, "wv.th")
+    concept_list_path = os.path.join(pretrained_dir, "concept.list")
+    vocab_path = os.path.join(pretrained_dir, "vocab.list")
+    wv_path = os.path.join(pretrained_dir, "wv.th")
 
-        file_num = sum(map(lambda x: os.path.exists(x), [wv_path, concept_list_path]))
-        if file_num > 0 and file_num < 3:
-            warnings.warn("Some files are missed in pretrained_dir(which including wv.th, vocab.list, and concept.list)",
-                          UserWarning)
-        
-        if not os.path.exists(vocab_path):
-            # load word
-            token_items = disen_tokenizer.set_vocab(items, key=lambda x: x[data_formation["content"]], trim_min_count=trim_min_count)
-            disen_tokenizer.save_pretrained(pretrained_dir)
-            if not silent:
-                print(f"save vocab to {vocab_path}")
-        else:
-            if not silent:
-                print(f"load vocab from {vocab_path}")
+    file_num = sum(map(lambda x: os.path.exists(x), [wv_path, concept_list_path]))
+    if file_num > 0 and file_num < 3:
+        warnings.warn("Some files are missed in pretrained_dir(which including wv.th, vocab.list, and concept.list)",
+                      UserWarning)
 
-        # construct concept list
-        if not os.path.exists(concept_list_path):
-            concepts = set()
-            for data in items:
-                concept = data[data_formation["knowledge"]]
-                for c in concept:
-                    if c not in concepts:
-                        concepts.add(c)
-            concepts = sorted(concepts)
-            concept_to_idx = {concept: index for index, concept in enumerate(concepts)}
-            save_dict_to_list(concept_to_idx, concept_list_path)
-            if not silent:
-                print(f"save concept to {concept_list_path}")
-        else:
-            print(f"load concept from {concept_list_path}")
-            concept_to_idx = load_list_to_dict(concept_list_path)
+    if not os.path.exists(vocab_path):
+        # load word
+        token_items = disen_tokenizer.set_vocab(items, key=lambda x: x[data_formation["content"]],
+                                                trim_min_count=trim_min_count)
+        disen_tokenizer.save_pretrained(pretrained_dir)
+        if not silent:
+            print(f"save vocab to {vocab_path}")
+    else:
+        if not silent:
+            print(f"load vocab from {vocab_path}")
 
-        # word2vec
-        if not os.path.exists(wv_path):
-            words = disen_tokenizer.vocab.tokens
-            unk_token = disen_tokenizer.vocab.unk_token
-            corpus = list()
-            word_set = set(words)
-            for text in token_items:
-                text = [w if w in word_set else unk_token for w in text]
-                corpus.append(text)
-            wv = Word2Vec(corpus, vector_size=embed_dim, min_count=trim_min_count, **w2v_params).wv
-            # 按照 vocab 中的词序 来保存
-            wv_list = [wv[w] if w in wv.key_to_index else np.random.rand(embed_dim) for w in words]
-            word2vec = torch.tensor(wv_list)
-            torch.save(word2vec, wv_path)
-            if not silent:
-                print(f"save word2vec to {wv_path}")
-        else:
-            print(f"load word2vec from {wv_path}")
-            word2vec = torch.load(wv_path)
-        return disen_tokenizer, concept_to_idx, word2vec
+    # construct concept list
+    if not os.path.exists(concept_list_path):
+        concepts = set()
+        for data in items:
+            concept = data[data_formation["knowledge"]]
+            for c in concept:
+                if c not in concepts:
+                    concepts.add(c)
+        concepts = sorted(concepts)
+        concept_to_idx = {concept: index for index, concept in enumerate(concepts)}
+        save_dict_to_list(concept_to_idx, concept_list_path)
+        if not silent:
+            print(f"save concept to {concept_list_path}")
+    else:
+        print(f"load concept from {concept_list_path}")
+        concept_to_idx = load_list_to_dict(concept_list_path)
+
+    # word2vec
+    if not os.path.exists(wv_path):
+        words = disen_tokenizer.vocab.tokens
+        unk_token = disen_tokenizer.vocab.unk_token
+        corpus = list()
+        word_set = set(words)
+        for text in token_items:
+            text = [w if w in word_set else unk_token for w in text]
+            corpus.append(text)
+        wv = Word2Vec(corpus, vector_size=embed_dim, min_count=trim_min_count, **w2v_params).wv
+        # 按照 vocab 中的词序 来保存
+        wv_list = [wv[w] if w in wv.key_to_index else np.random.rand(embed_dim) for w in words]
+        word2vec = torch.tensor(wv_list)
+        torch.save(word2vec, wv_path)
+        if not silent:
+            print(f"save word2vec to {wv_path}")
+    else:
+        print(f"load word2vec from {wv_path}")
+        word2vec = torch.load(wv_path)
+    return disen_tokenizer, concept_to_idx, word2vec
 
 
 class DisenQDataset(Dataset):
@@ -225,13 +229,13 @@ class DisenQDataset(Dataset):
     def __getitem__(self, index):
         item = self.texts[index]
         ret = self.tokenizer(item, padding=False, key=lambda x: x,
-                              return_tensors=True, return_text=False)
+                             return_tensors=True, return_text=False)
         if self.mode in ["train", "val"]:
             ret["know_idx"] = self.concept_to_idx[item["knowledge"]]
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
-        first =  batch_data[0]
+        first = batch_data[0]
         batch = {
             k: [item[k] for item in batch_data] for k in first.keys()
         }
@@ -338,9 +342,10 @@ def train_disenqnet(train_items, output_dir, pretrained_dir=None,
 
     items = train_items + ([] if test_items is not None else test_items)
     disen_tokenizer, concept_to_idx, word2vec = preprocess_dataset(pretrained_dir, disen_tokenizer, items,
-                                                                data_formation,trim_min_count=train_params["trim_min"],
-                                                                embed_dim=train_params["hidden"],
-                                                                w2v_params=None, silent=False)
+                                                                   data_formation,
+                                                                   trim_min_count=train_params["trim_min"],
+                                                                   embed_dim=train_params["hidden"],
+                                                                   w2v_params=None, silent=False)
 
     train_dataset = DisenQDataset(train_items, disen_tokenizer, mode="train", concept_to_idx=concept_to_idx)
     train_dataloader = DataLoader(train_dataset, batch_size=train_params["batch"],
@@ -348,7 +353,7 @@ def train_disenqnet(train_items, output_dir, pretrained_dir=None,
     if test_items is not None:
         test_dataset = DisenQDataset(test_items, disen_tokenizer, mode="test", concept_to_idx=concept_to_idx)
         test_dataloader = DataLoader(test_dataset, batch_size=train_params["batch"],
-                                  shuffle=True, collate_fn=test_dataset.collate_fn)
+                                     shuffle=True, collate_fn=test_dataset.collate_fn)
     else:
         test_dataloader = None
 
