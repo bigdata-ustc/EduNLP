@@ -2,7 +2,7 @@ import os
 import json
 from EduNLP import logger
 from typing import List, Optional, Union
-from transformers import BertModelForMaskedLM
+from transformers import BertForMaskedLM
 from transformers import DataCollatorForLanguageModeling, DataCollatorWithPadding
 from transformers import Trainer, TrainingArguments
 from transformers.file_utils import TensorType
@@ -14,8 +14,7 @@ from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.bert import BertForPropertyPrediction
 from .pretrian_utils import EduDataset
 
-
-__all__ = ["BertTokenizer", "finetune_bert", "train_bert_for_perporty_predition"]
+__all__ = ["BertTokenizer", "finetune_bert", "train_bert_for_property_prediction"]
 
 DEFAULT_TRAIN_PARAMS = {
     # default
@@ -59,9 +58,9 @@ class EduTokenizerForBert(HFBertTokenizer):
                     split_tokens.append(token)
         else:
             split_tokens = self.wordpiece_tokenizer.tokenize(text)
-        
+
         return split_tokens
-    
+
     def set_bert_basic_tokenizer(self, text_tokenizer, **argv):
         self.basic_tokenizer = get_tokenizer[text_tokenizer](**argv)
 
@@ -100,6 +99,7 @@ class BertTokenizer(object):
     >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
     >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
+
     def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False, text_tokenizer=None, **argv):
         self.bert_tokenizer = EduTokenizerForBert.from_pretrained(pretrain_model, use_fast=False)
         self.add_special_tokens = add_special_tokens
@@ -179,6 +179,7 @@ class BertTokenizer(object):
 class BertDataset(EduDataset):
     pass
 
+
 def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain_model="bert-base-chinese",
                   tokenizer_params=None, data_params=None, model_params=None, train_params=None):
     """
@@ -219,14 +220,14 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
         tokenizer = BertTokenizer(pretrain_model, **work_tokenizer_params)
         # todo: tokenizer.set_vocab()
     # model configuration
-    model = BertModelForMaskedLM.from_pretrained(pretrain_model, **model_params)
+    model = BertForMaskedLM.from_pretrained(pretrain_model, **model_params)
     # resize embedding for additional special tokens
     model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
 
     # dataset configuration  
     dataset = BertDataset(items=items, tokenizer=tokenizer,
-                         feature_key=data_params.get("feature_key", None))
-    mlm_probability = train_params.pop('mlm_probability', 0.15)  
+                          feature_key=data_params.get("feature_key", None))
+    mlm_probability = train_params.pop('mlm_probability', 0.15)
     data_collator = DataCollatorForLanguageModeling(
         tokenizer=tokenizer.bert_tokenizer, mlm=True, mlm_probability=mlm_probability
     )
@@ -247,9 +248,9 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
     tokenizer.save_pretrained(output_dir)
 
 
-def train_bert_for_perporty_predition(train_items, output_dir, pretrain_model="bert-base-chinese",
-                                      eval_items=None, 
-                                      data_params=None, train_params=None, model_params=None):
+def train_bert_for_property_prediction(train_items, output_dir, pretrain_model="bert-base-chinese",
+                                       eval_items=None,
+                                       data_params=None, train_params=None, model_params=None):
     """
     Parameters
     ----------
@@ -273,12 +274,12 @@ def train_bert_for_perporty_predition(train_items, output_dir, pretrain_model="b
     tokenizer = BertTokenizer.from_pretrained(pretrain_model)
     # dataset configuration
     train_dataset = BertDataset(items=train_items, tokenizer=tokenizer,
-                               feature_key=data_params.get("feature_key", "stem"),
-                               labal_key=data_params.get("labal_key", "diff"))
+                                feature_key=data_params.get("feature_key", "stem"),
+                                labal_key=data_params.get("labal_key", "diff"))
     if eval_items is not None:
         eval_dataset = BertDataset(items=eval_items, tokenizer=tokenizer,
-                                  feature_key=data_params.get("feature_key", "stem"),
-                                  labal_key=data_params.get("labal_key", "diff"))
+                                   feature_key=data_params.get("feature_key", "stem"),
+                                   labal_key=data_params.get("labal_key", "diff"))
     # model configuration
     model = BertForPropertyPrediction(pretrain_model, **model_params)
     model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
@@ -299,4 +300,3 @@ def train_bert_for_perporty_predition(train_items, output_dir, pretrain_model="b
     trainer.train()
     trainer.save_model(output_dir)
     tokenizer.save_pretrained(output_dir)
-    

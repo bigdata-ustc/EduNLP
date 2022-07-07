@@ -1,5 +1,3 @@
-from tkinter.messagebox import NO
-from matplotlib.colors import NoNorm
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -24,7 +22,7 @@ import datasets
 import pandas as pd
 from typing import Optional, Union, List, Dict
 
-__all__ = ["ElmoTokenizer", "train_elmo", "train_elmo_for_perporty_prediction"]
+__all__ = ["ElmoTokenizer", "train_elmo", "train_elmo_for_property_prediction"]
 
 DEFAULT_TRAIN_PARAMS = {
     # default
@@ -61,18 +59,21 @@ class ElmoTokenizer(PretrainedEduTokenizer):
     >>> len(t)
     18
     """
+
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", **argv):
         super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method, **argv)
 
 
 """Note: Be Make sure Tokenizer output batched tensors by default"""
+
+
 class ElmoDataset(EduDataset):
     def __init__(self, tokenizer: ElmoTokenizer, **argv):
         super(ElmoDataset, self).__init__(tokenizer=tokenizer, **argv)
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
-        first =  batch_data[0]
+        first = batch_data[0]
         batch = {
             k: [item[k] for item in batch_data] for k in first.keys()
         }
@@ -152,10 +153,10 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrain_di
     return output_dir
 
 
-def train_elmo_for_perporty_prediction(
+def train_elmo_for_property_prediction(
         train_items: list, output_dir: str, pretrained_dir=None, eval_items=None,
         tokenizer_params=None, data_params=None, train_params=None, model_params=None
-    ):
+):
     """
     Parameters
     ----------

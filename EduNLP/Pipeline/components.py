@@ -10,9 +10,9 @@ class IsSifPipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs):
-        print(is_sif(inputs, *self.args, **self.kwargs))
-        return inputs
+    def __call__(self, input_):
+        print(is_sif(input_, *self.args, **self.kwargs))
+        return input_
 
 
 class ToSifPipe:
@@ -20,8 +20,8 @@ class ToSifPipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs):
-        return to_sif(inputs, *self.args, **self.kwargs)
+    def __call__(self, input_):
+        return to_sif(input_, *self.args, **self.kwargs)
 
 
 class Dict2Str4SifPipe:
@@ -29,8 +29,8 @@ class Dict2Str4SifPipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs):
-        return dict2str4sif(inputs, *self.args, **self.kwargs)
+    def __call__(self, input_):
+        return dict2str4sif(input_, *self.args, **self.kwargs)
 
 
 class Sif4SciPipe:
@@ -38,8 +38,8 @@ class Sif4SciPipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs):
-        return sif4sci(inputs, *self.args, **self.kwargs)
+    def __call__(self, input_):
+        return sif4sci(input_, *self.args, **self.kwargs)
 
 
 class SegPipe:
@@ -47,8 +47,8 @@ class SegPipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs):
-        return seg(inputs, *self.args, **self.kwargs)
+    def __call__(self, input_):
+        return seg(input_, *self.args, **self.kwargs)
 
 
 class SegDescribePipe:
@@ -56,9 +56,9 @@ class SegDescribePipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs: SegmentList):
-        print(inputs.describe())
-        return inputs
+    def __call__(self, input_: SegmentList):
+        print(input_.describe())
+        return input
 
 
 class SegFilterPipe:
@@ -66,9 +66,9 @@ class SegFilterPipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs: SegmentList):
-        inputs.filter(*self.args, **self.kwargs)
-        return inputs
+    def __call__(self, input_: SegmentList):
+        input_.filter(*self.args, **self.kwargs)
+        return input_
 
 
 class TokenizePipe:
@@ -76,8 +76,8 @@ class TokenizePipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs):
-        return tokenize(inputs, *self.args, **self.kwargs)
+    def __call__(self, input_):
+        return tokenize(input_, *self.args, **self.kwargs)
 
 
 class PureTextTokenizerPipe:
@@ -86,8 +86,8 @@ class PureTextTokenizerPipe:
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self, inputs):
-        return [i for i in self.tokenizer(inputs, *self.args, **self.kwargs)]
+    def __call__(self, input_):
+        return [i for i in self.tokenizer(input_, *self.args, **self.kwargs)]
 
 
 TOKENIZER_PIPES = {

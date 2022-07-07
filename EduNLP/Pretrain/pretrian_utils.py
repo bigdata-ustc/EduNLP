@@ -10,9 +10,9 @@ from torch.utils.data import Dataset
 from ..Tokenizer import get_tokenizer
 from ..ModelZoo.utils import pad_sequence
 from ..SIF import EDU_SPYMBOLS
-from typing import Optional, Union, List, Dict
+from typing import Optional, Union, List, Dict, Any
 
-__all__ = ["EduVocab", "EduDataset", "train_elmo_for_perporty_prediction"]
+__all__ = ["EduVocab", "EduDataset", "PretrainedEduTokenizer"]
 
 
 class EduVocab(object):
@@ -145,7 +145,7 @@ class PretrainedEduTokenizer(object):
         self.config = PretrainedConfig.from_dict(config)
 
     def __call__(self, items: (list, str, dict), key=lambda x: x, padding=True,
-                 return_tensors=True, return_text=False, **kwargs):
+                 return_tensors=True, return_text=False, **kwargs) -> Dict[str, Any]:
         """
         Parameters
         ----------
@@ -317,7 +317,7 @@ class PretrainedEduTokenizer(object):
 
 class EduDataset(HFDataset):
     def __init__(self, ds_disk_path: HFDataset = None,
-                 items: Union[List[dict], List[str]]=None, tokenizer=None,
+                 items: Union[List[dict], List[str]] = None, tokenizer=None,
                  feature_key=Optional[str], labal_key=Optional[str],
                  num_processor=None, **argv):
         if ds_disk_path is None:
@@ -331,8 +331,8 @@ class EduDataset(HFDataset):
             df = pd.DataFrame(items)[columns]
             self.ds = HFDataset.from_pandas(df)
             self.ds = self.ds.map(lambda sample: tokenizer(sample[feature_key]),
-                                num_proc=num_processor,
-                                batched=True, batch_size=1000)
+                                  num_proc=num_processor,
+                                  batched=True, batch_size=1000)
             self.ds = self.ds.remove_columns(feature_key)
             self.ds = self.ds.rename_columns({labal_key: "labels"})
         else:
@@ -350,6 +350,6 @@ class EduDataset(HFDataset):
 
     def __len__(self):
         return self.ds.num_rows
-    
+
     def collect_fn(self):
         raise NotImplementedError

@@ -1,8 +1,12 @@
 from EduNLP import logger
-from typing import Union, List, Callable, Optional
+from typing import Union, List, Callable, Optional, Dict
 from .components import TOKENIZER_PIPES
 from ..Pretrain import PretrainedEduTokenizer
 from ..ModelZoo.base_model import BaseModel
+from transformers.pipelines.pt_utils import PipelineIterator
+from transformers.modeling_outputs import ModelOutput
+
+GenericTensor = Union[List["GenericTensor"], "torch.Tensor"]
 
 
 class TokenizerPipeline(object):
@@ -196,3 +200,72 @@ class TokenizerPipeline(object):
         Get the processing pipeline consisting of tuple (name, component) tuples.
         """
         return [(name, self._tokenize_components[name]) for name in self.component_pipeline]
+
+
+# class Pipeline(object):
+#     """
+#     The Pipeline contains pretrained tokenizer, model and downstream task. Pipeline workflow are these operations:
+#         Input -> Tokenization -> Model Inference -> Post-processing -> Output
+#
+#     Parameters
+#     ----------
+#     tokenizer: `PretrainedEduTokenizer`, optional
+#         tokenizer for tokenization, related to Tokenization
+#     model: `BaseModel`, required
+#         model for inference, related to Model Inference
+#     task: `str`, optional
+#         task name of downstream task, related to Post-processing
+#     """
+#
+#     def __init__(
+#             self,
+#             tokenizer: Optional[PretrainedEduTokenizer] = None,
+#             model: BaseModel = None,
+#             task: str = '',
+#             **kwargs
+#     ):
+#         self.tokenizer = tokenizer
+#         self.model = model
+#         self.task = task
+#
+#         # Parameters
+#         self._preprocess_params, self._forward_params, self._postprocess_params = self._sanitize_parameters(**kwargs)
+#         self._batch_size = kwargs.pop("batch_size", None)
+#         self._num_workers = kwargs.pop("num_workers", None)
+#
+#     def save_pretrained(self, save_dir: str):
+#         if self.tokenizer is not None:
+#             self.tokenizer.save_pretrained(save_dir)
+#         if self.model is not None:
+#             self.model.save_pretrained(save_dir)
+#
+#     @abstractmethod
+#     def _sanitize_parameters(self, **pipeline_params):
+#         """
+#         This method will take the Pipeline initialization parameters and return 3 parameter dictionaries used by
+#         'preprocess', '_forward' and 'postprocess' methods.
+#         """
+#         raise NotImplementedError("_sanitize_parameters not implemented!")
+#
+#     @abstractmethod
+#     def preprocess(self, input_, **preprocess_params: Dict) -> Dict[str,]:
+#         """
+#         Preprocess will take the input and return a dict of everything _forward needs
+#         """
+#         raise NotImplementedError("Preprocess not implemented!")
+#
+#     @abstractmethod
+#     def _forward(self, input_, **_forward_params: Dict) -> ModelOutput:
+#         """
+#         _forward will receive the dictionary from preprocess, run it on the model and return the result.
+#         """
+#         raise NotImplementedError("_forward not implemented!")
+#
+#     @abstractmethod
+#     def postprocess(self, input_: ModelOutput, **postprocess_params: Dict):
+#         """
+#         Postprocess will receive the model output from _forward, which is generally a `torch.tensor`, and reformat
+#         it into something more intuitive.
+#         """
+#         raise NotImplementedError("Postprocess not implemented!")
+
