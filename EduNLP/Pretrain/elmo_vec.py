@@ -22,7 +22,7 @@ import datasets
 import pandas as pd
 from typing import Optional, Union, List, Dict
 
-__all__ = ["ElmoTokenizer", "train_elmo", "train_elmo_for_property_prediction"]
+__all__ = ["ElmoTokenizer", "ElmoDataset", "train_elmo", "train_elmo_for_property_prediction"]
 
 DEFAULT_TRAIN_PARAMS = {
     # default

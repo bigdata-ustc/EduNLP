@@ -1,13 +1,11 @@
 from transformers.pipelines.base import Pipeline, GenericTensor
-from .mappings import MODEL_FOR_PROPERTY_PREDICTION_MAPPING
 from typing import Dict
+from torch import sigmoid
 
 
 class PropertyPredictionPipeline(Pipeline):
     def __init__(self, **kwargs):
         super(PropertyPredictionPipeline, self).__init__(**kwargs)
-
-        self.check_model_type(MODEL_FOR_PROPERTY_PREDICTION_MAPPING)
 
     def _sanitize_parameters(self, **tokenizer_kwargs):
         preprocess_params = tokenizer_kwargs
@@ -32,4 +30,5 @@ class PropertyPredictionPipeline(Pipeline):
         return dict_property
 
     def __call__(self, *args, **kwargs):
+        super(PropertyPredictionPipeline, self).__call__(*args, **kwargs)
         pass
