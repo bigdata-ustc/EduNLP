@@ -5,7 +5,7 @@ from pathlib import Path
 import torch
 # import logging
 from ..utils import logger
-from transformers import PretrainedConfig
+from transformers import PretrainedConfig, PreTrainedModel
 
 
 class BaseModel(nn.Module):

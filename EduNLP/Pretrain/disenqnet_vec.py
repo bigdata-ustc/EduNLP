@@ -2,15 +2,17 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
-from ..ModelZoo.disenqnet.disenqnet import DisenQNet
-from ..Tokenizer import get_tokenizer
-from ..ModelZoo.utils import load_items, pad_sequence
 import json
 import warnings
 from typing import Dict, List, Tuple
+from gensim.models import Word2Vec
+
+from ..SIF import EDU_SPYMBOLS
+from ..ModelZoo.disenqnet.disenqnet import DisenQNet
+from ..ModelZoo.utils import load_items, pad_sequence
+from ..Tokenizer import get_tokenizer
 from .pretrian_utils import PretrainedEduTokenizer
 from .gensim_vec import train_vector
-from gensim.models import Word2Vec
 
 
 def check_num(s):
@@ -90,7 +92,7 @@ class DisenQTokenizer(PretrainedEduTokenizer):
     dict_keys(['seq_idx', 'seq_len'])
     """
 
-    def __init__(self, vocab_path=None, max_length=250, tokenize_method="space",
+    def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", add_specials: (list, bool) = None,
                  num_token="[NUM]", **argv):
         """
         Parameters
@@ -100,12 +102,15 @@ class DisenQTokenizer(PretrainedEduTokenizer):
         max_length: int
             default is 250, used to clip the sentence out of length
         tokenize_method: str
-            default: "space"
+            default: "pure_text"
             when text is already seperated by space, use "space"
             when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
         num_token: str
         """
-        add_specials = argv.get("add_specials", []) + [num_token]
+        if isinstance(add_specials, bool):
+            add_specials = (EDU_SPYMBOLS + [num_token]) if add_specials else None
+        elif isinstance(add_specials, list):
+            add_specials = EDU_SPYMBOLS + [num_token] + add_specials
         super().__init__(vocab_path, max_length, tokenize_method, add_specials=add_specials, **argv)
         self.num_token = num_token
         self.config.update({
@@ -113,21 +118,13 @@ class DisenQTokenizer(PretrainedEduTokenizer):
         })
 
     def _tokenize(self, item: Tuple[str, dict], key=lambda x: x):
-        token_item = next(self.text_tokenizer([item], key=key))
+        token_item = self.text_tokenizer._tokenize(item, key=key)
         if len(token_item) == 0:
-            token_item = [self.unk_token]
+            token_item = [self.vocab.unk_token]
         if len(token_item) > self.max_length:
             token_item = token_item[:self.max_length]
-
         token_item = [self.num_token if check_num(w) else w for w in token_item]
         return token_item
-
-    def _space_tokenizer(self, items, key=lambda x: x):
-        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）")
-        for item in items:
-            tokens = key(item).strip().split(' ')
-            token_item = [w for w in tokens if w != '' and w not in stop_words]
-            yield token_item
 
 
 def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, trim_min_count=None, embed_dim=None,
@@ -239,8 +236,7 @@ class DisenQDataset(Dataset):
             k: [item[k] for item in batch_data] for k in first.keys()
         }
         batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx)
-
-        batch = {key: torch.as_tensor(val) for key, val in batch[0].items()}
+        batch = {key: torch.as_tensor(val) for key, val in batch.items()}
         return batch
 
 

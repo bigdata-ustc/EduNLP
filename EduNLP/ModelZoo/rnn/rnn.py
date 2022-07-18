@@ -5,9 +5,12 @@ from baize.torch import load_net
 import torch.nn.functional as F
 import json
 import os
-from ..base_model import BaseModel
 from transformers.modeling_outputs import ModelOutput
 from transformers import PretrainedConfig
+from ..base_model import BaseModel
+from ..utils import torch_utils as mytorch
+
+__all__ = ["LM", "ElmoLM", "ElmoLMForPreTraining", "ElmoLMForPropertyPrediction"]
 
 
 class LM(nn.Module):
@@ -44,12 +47,12 @@ class LM(nn.Module):
     >>> hn.shape
     torch.Size([2, 3, 2])
     """
-
     def __init__(self, rnn_type: str, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers=1,
-                 bidirectional=False, embedding=None, model_params=None, **kwargs):
+                 bidirectional=False, embedding=None, model_params=None, use_pack_pad=False, **kwargs):
         super(LM, self).__init__()
         rnn_type = rnn_type.upper()
         self.embedding = torch.nn.Embedding(vocab_size, embedding_dim) if embedding is None else embedding
+        self.use_pack_pad = use_pack_pad
         self.c = False
         if rnn_type == "RNN":
             self.rnn = torch.nn.RNN(
@@ -96,15 +99,19 @@ class LM(nn.Module):
             a PackedSequence object
         """
         seq = self.embedding(seq_idx)
-        pack = pack_padded_sequence(seq, seq_len.cpu(), batch_first=True, enforce_sorted=False)
-        # pack = pack_padded_sequence(seq, seq_len, batch_first=True, enforce_sorted=False)
+        if self.use_pack_pad:
+            seq_or_pack = pack_padded_sequence(seq, seq_len.cpu(), batch_first=True, enforce_sorted=False)
+        else:
+            seq_or_pack = seq
         h0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size).to(seq_idx.device)
         if self.c is True:
             c0 = torch.zeros(self.num_layers, seq.shape[0], self.hidden_size).to(seq_idx.device)
-            output, (hn, _) = self.rnn(pack, (h0, c0))
+            output, (hn, _) = self.rnn(seq_or_pack, (h0, c0))
         else:
-            output, hn = self.rnn(pack, h0)
-        output, _ = pad_packed_sequence(output, batch_first=True)
+            output, hn = self.rnn(seq_or_pack, h0)
+        if self.use_pack_pad:
+            output, _ = pad_packed_sequence(output, batch_first=True)
+
         return output, hn
 
 
@@ -142,7 +149,7 @@ class ElmoLM(BaseModel):
         config['architecture'] = 'ElmoLM'
         self.config = PretrainedConfig.from_dict(config)
 
-    def forward(self, seq_idx, seq_len):
+    def forward(self, seq_idx=None, seq_len=None):
         """
         Parameters
         ----------
@@ -231,7 +238,7 @@ class ElmoLMForPreTraining(BaseModel):
         config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
 
-    def forward(self, seq_idx, seq_len, pred_mask, idx_mask):
+    def forward(self, seq_idx=None, seq_len=None):
         """
 
         Parameters
@@ -254,7 +261,7 @@ class ElmoLMForPreTraining(BaseModel):
         """
         batch_size, idx_len = seq_idx.shape
         max_len = seq_len.max().item()
-
+        # NOTE: pred_mask matters when LM use pack_pad
         pred_mask = torch.arange(max_len, device=seq_idx.device)[None, :] < seq_len[:, None]
         idx_mask = torch.arange(idx_len, device=seq_idx.device)[None, :] < seq_len[:, None]
 
@@ -271,15 +278,13 @@ class ElmoLMForPreTraining(BaseModel):
         outputs = self.elmo(seq_idx, seq_len)
         pred_forward, pred_backward = outputs.pred_forward, outputs.pred_backward
 
-        pred_forward = pred_forward[pred_forward_mask]
-        pred_backward = pred_backward[pred_backward_mask]
-        # y = F.one_hot(seq_idx, self.elmo.vocab_size).to(seq_idx.device)
-        # loss_func = nn.BCELoss()
-        y_backward = seq_idx[idx_backward_mask]
-        y_forward = seq_idx[idx_forward_mask]
+        flat_pred_forward = pred_forward[pred_forward_mask]
+        flat_pred_backward = pred_backward[pred_backward_mask]
+        flat_y_backward = seq_idx[idx_backward_mask]
+        flat_y_forward = seq_idx[idx_forward_mask]
 
-        forward_loss = self.criterion(pred_forward.double(), y_forward)
-        backward_loss = self.criterion(pred_backward.double(), y_backward)
+        forward_loss = self.criterion(flat_pred_forward.double(), flat_y_forward)
+        backward_loss = self.criterion(flat_pred_backward.double(), flat_y_backward)
         loss = forward_loss + backward_loss
 
         return ElmoLMForPreTrainingOutput(
@@ -314,7 +319,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
 
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
                  batch_first=True, head_dropout=0.5, **argv):
-        super(ElmoLMForPropertyPrediction).__init__()
+        super(ElmoLMForPropertyPrediction, self).__init__()
 
         self.elmo = ElmoLM(
             vocab_size=vocab_size,
@@ -325,7 +330,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
         )
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
-        self.classifier = nn.Linear(hidden_size, 1)
+        self.classifier = nn.Linear(2*hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
 
@@ -334,15 +339,15 @@ class ElmoLMForPropertyPrediction(BaseModel):
         config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
 
-    def forward(self, seq_idx, seq_len, labels):
+    def forward(self, seq_idx=None, seq_len=None, labels=None):
         outputs = self.elmo(seq_idx, seq_len)
         item_embeds = torch.cat(
             (outputs.forward_output[torch.arange(len(seq_len)), torch.tensor(seq_len) - 1],
-             outputs.backward_output[torch.arange(len(seq_len)), max(seq_len) - torch.tensor(seq_len)]),
+             outputs.backward_output[torch.arange(len(seq_len)), 0]),
             dim=-1)
         item_embeds = self.dropout(item_embeds)
 
-        logits = self.sigmoid(self.classifier(item_embeds, dim=1))
+        logits = self.sigmoid(self.classifier(item_embeds))
         loss = self.criterion(logits, labels)
         return PropertyPredictionOutput(
             loss=loss,
@@ -355,10 +360,10 @@ class ElmoLMForPropertyPrediction(BaseModel):
             model_config = json.load(rf)
             model_config.update(argv)
             return cls(
-                vocab_size=model_config['vocab_size'],
-                embedding_dim=model_config['embedding_dim'],
-                hidden_size=model_config['hidden_size'],
-                dropout_rate=model_config['dropout_rate'],
-                batch_first=model_config['batch_first'],
-                head_dropout=model_config['head_dropout'],
+                vocab_size=model_config.get('vocab_size'),
+                embedding_dim=model_config.get('embedding_dim'),
+                hidden_size=model_config.get('hidden_size'),
+                dropout_rate=model_config.get('dropout_rate'),
+                batch_first=model_config.get('batch_first'),
+                head_dropout=model_config.get('head_dropout', 0.5),
             )

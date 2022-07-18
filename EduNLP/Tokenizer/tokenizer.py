@@ -90,23 +90,26 @@ class PureTextTokenizer(Tokenizer):
     >>> next(tokens)[:10]
     ['[TAG]', '复数', 'z', '=', '1', '+', '2', 'i', '+', 'i']
     """
-
     def __init__(self, skip_figure_formula=None, symbolize_figure_formula=None, **kwargs):
         # Formula images are not processed by default
         if skip_figure_formula is None and symbolize_figure_formula is None:
-            skip_figure_formula = True
-            symbolize_figure_formula = False
+            skip_figure_formula = False
+            symbolize_figure_formula = True
         formula_params = {
             "method": "linear",
             "skip_figure_formula": skip_figure_formula,
             "symbolize_figure_formula": symbolize_figure_formula
         }
+        text_params={
+            "granularity": "word",
+            "stopwords": "default",
+        }
         formula_params.update(kwargs.pop("formula_params", {}))
+        text_params.update(kwargs.pop("text_params", {}))
         self.tokenization_params = {
             "formula_params": formula_params,
-            "text_params": kwargs.get("text_params", None),
+            "text_params": text_params,
             "figure_params": kwargs.get("figure_params", None)
-
         }
 
     def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
@@ -121,16 +124,24 @@ class AstFormulaTokenizer(Tokenizer):
     def __init__(self, symbol="gmas", figures=None, **argv):
         formula_params = {
             "method": "ast",
+
             "ord2token": True,
             "return_type": "list",
-            "var_numbering": True
+            "var_numbering": True,
+
+            "skip_figure_formula": False,
+            "symbolize_figure_formula": True
         }
-        _argv = deepcopy(argv)
-        formula_params.update(_argv.pop("formula_params", {}))
+        text_params={
+            "granularity": "word",
+            "stopwords": "default",
+        }
+        formula_params.update(argv.pop("formula_params", {}))
+        text_params.update(argv.pop("text_params", {}))
         self.tokenization_params={
             "formula_params": formula_params,
-            "text_params": _argv.pop("text_params", None),
-            "figure_params": _argv.pop("figure_params", None),
+            "text_params": text_params,
+            "figure_params": argv.pop("figure_params", None),
         }
         self.symbol = symbol
         self.figures = figures

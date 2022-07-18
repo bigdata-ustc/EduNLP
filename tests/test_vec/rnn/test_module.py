@@ -1,3 +1,4 @@
+from black import main
 import torch
 import numpy as np
 import pytest
@@ -7,7 +8,6 @@ from EduNLP.Vector import ElmoModel, T2V
 from EduNLP.I2V import Elmo, get_pretrained_i2v
 
 
-@pytest.fixture(scope="module")
 def stem_data_elmo(data):
     test_items = [
         {'stem': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
@@ -75,3 +75,7 @@ def test_pretrained_elmo_i2v(stem_data_elmo, tmpdir):
     assert len(i_vec) == i2v.vector_size
     t_vec = i2v.infer_token_vector(item['stem'])
     assert len(t_vec[0]) == i2v.vector_size
+
+
+if __name__ == "__main__":
+    data = stem_data_elmo([])

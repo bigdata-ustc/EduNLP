@@ -17,13 +17,9 @@ class BertForPPOutput(ModelOutput):
 
 class BertForPropertyPrediction(BaseModel):
     def __init__(self, pretrained_model_dir=None, head_dropout=0.5):
-
         super(BertForPropertyPrediction, self).__init__()
-
         self.bert = BertModel.from_pretrained(pretrained_model_dir)
-        
         self.hidden_size = self.bert.config.hidden_size
-
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
         self.classifier = nn.Linear(self.hidden_size, 1)

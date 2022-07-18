@@ -28,14 +28,14 @@ DEFAULT_TRAIN_PARAMS = {
     # default
     "output_dir": None,
     "overwrite_output_dir": True,
-    "num_train_epochs": 1,
-    "per_device_train_batch_size": 32,
+    "num_train_epochs": 3,
+    "per_device_train_batch_size": 8,
     "per_device_eval_batch_size": 32,
     # evaluation_strategy: "steps",
     # eval_steps:200,
     "save_steps": 1000,
     "save_total_limit": 2,
-    "load_best_model_at_end": True,
+    # "load_best_model_at_end": False,
     # metric_for_best_model: "loss",
     # greater_is_better: False,
     "logging_dir": None,
@@ -59,16 +59,14 @@ class ElmoTokenizer(PretrainedEduTokenizer):
     >>> len(t)
     18
     """
-
-    def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", **argv):
-        super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method, **argv)
-
-
-"""Note: Be Make sure Tokenizer output batched tensors by default"""
+    def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", add_specials=True, **argv):
+        super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method,
+                         add_specials=add_specials, **argv)
 
 
 class ElmoDataset(EduDataset):
     def __init__(self, tokenizer: ElmoTokenizer, **argv):
+        self.tokenizer = tokenizer
         super(ElmoDataset, self).__init__(tokenizer=tokenizer, **argv)
 
     def collate_fn(self, batch_data):
@@ -77,12 +75,12 @@ class ElmoDataset(EduDataset):
         batch = {
             k: [item[k] for item in batch_data] for k in first.keys()
         }
-        batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx, max_length=500)
+        batch["seq_idx"] = pad_sequence(batch["seq_idx"], pad_val=pad_idx)
         batch = {key: torch.as_tensor(val) for key, val in batch.items()}
         return batch
 
 
-def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrain_dir: str = None,
+def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrained_dir: str = None,
                tokenizer_params=None, data_params=None, model_params=None, train_params=None):
     """
     Parameters
@@ -96,21 +94,27 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrain_di
     tokenizer_params: dict, optional, default=None
         The parameters passed to ElmoTokenizer
     data_params: dict, optional, default=None
+        - feature_key
+        - label_key
         The parameters passed to ElmoDataset and ElmoTokenizer
     model_params: dict, optional, default=None
         The parameters passed to Trainer
     train_params: dict, optional, default=None
     """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
     # tokenizer configuration
-    if os.path.exists(pretrain_dir):
-        tokenizer = ElmoTokenizer.from_pretrained(pretrain_dir)
+    if pretrained_dir is not None and os.path.exists(pretrained_dir):
+        tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir, **tokenizer_params)
     else:
         work_tokenizer_params = {
-            "add_special_tokens": True,
+            "add_specials": True,
             "text_tokenizer": "pure_text",
         }
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
-        tokenizer = ElmoTokenizer(pretrain_dir, **work_tokenizer_params)
+        tokenizer = ElmoTokenizer(**work_tokenizer_params)
         corpus_items = items
         if isinstance(items[0], str):
             tokenizer.set_vocab(corpus_items)
@@ -123,13 +127,13 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrain_di
                           feature_key=data_params.get("feature_key", None))
 
     # model configuration
-    if pretrain_dir:
-        model = ElmoLMForPreTraining.from_pretrained(pretrain_dir)
+    if pretrained_dir:
+        model = ElmoLMForPreTraining.from_pretrained(pretrained_dir, **model_params)
     else:
         work_model_params = {
             "vocab_size": len(tokenizer),
-            "embedding_dim": 512,
-            "hidden_size": 512
+            "embedding_dim": 300,
+            "hidden_size": 300
         }
         work_model_params.update(model_params if model_params else {})
         model = ElmoLMForPreTraining(**work_model_params)
@@ -148,7 +152,10 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrain_di
         data_collator=dataset.collate_fn,
     )
     trainer.train()
+    # trainer.model.save_pretrained(output_dir)
+    assert isinstance(trainer.model, ElmoLMForPreTraining)
     trainer.save_model(output_dir)
+    trainer.model.save_config(output_dir)
     tokenizer.save_pretrained(output_dir)
     return output_dir
 
@@ -176,31 +183,36 @@ def train_elmo_for_property_prediction(
         The parameters passed to Trainer
     train_params: dict, optional, default=None
     """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
     # tokenizer configuration
     if pretrained_dir is not None:
-        tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir)
+        tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir, **tokenizer_params)
     else:
         work_tokenizer_params = {
             "add_special_tokens": True,
             "text_tokenizer": "pure_text",
         }
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
-        tokenizer = ElmoTokenizer(pretrained_dir, **work_tokenizer_params)
+        tokenizer = ElmoTokenizer(**work_tokenizer_params)
         corpus_items = train_items + eval_items
         tokenizer.set_vocab(corpus_items,
                             key=lambda x: x[data_params.get("feature_key", "stem")])
     # dataset configuration
-    train_dataset = EduDataset(items=train_items, tokenizer=tokenizer,
+    train_dataset = ElmoDataset(items=train_items, tokenizer=tokenizer,
                                feature_key=data_params.get("feature_key", "stem"),
                                labal_key=data_params.get("labal_key", "diff"))
     if eval_items is not None:
-        eval_dataset = EduDataset(items=eval_items, tokenizer=tokenizer,
+        eval_dataset = ElmoDataset(items=eval_items, tokenizer=tokenizer,
                                   feature_key=data_params.get("feature_key", "stem"),
                                   labal_key=data_params.get("labal_key", "diff"))
-
+    else:
+        eval_dataset = None
     # model configuration
     if pretrained_dir is not None:
-        model = ElmoLMForPropertyPrediction.from_pretrained(pretrained_dir)
+        model = ElmoLMForPropertyPrediction.from_pretrained(pretrained_dir, **model_params)
     else:
         work_model_params = {
             "vocab_size": len(tokenizer),
@@ -222,9 +234,12 @@ def train_elmo_for_property_prediction(
         args=work_train_params,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        data_collator=ElmoDataset.elmo_collate_fn,
+        data_collator=train_dataset.collate_fn,
     )
     trainer.train()
+    # trainer.model.save_pretrained(output_dir)
+    assert isinstance(trainer.model, ElmoLMForPropertyPrediction)
     trainer.save_model(output_dir)
+    trainer.model.save_config(output_dir)
     tokenizer.save_pretrained(output_dir)
     return output_dir

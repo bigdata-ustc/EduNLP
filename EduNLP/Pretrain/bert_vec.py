@@ -1,7 +1,8 @@
 import os
 import json
+from xmlrpc.client import Boolean
 from EduNLP import logger
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 from transformers import BertForMaskedLM
 from transformers import DataCollatorForLanguageModeling, DataCollatorWithPadding
 from transformers import Trainer, TrainingArguments
@@ -14,7 +15,8 @@ from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.bert import BertForPropertyPrediction
 from .pretrian_utils import EduDataset
 
-__all__ = ["BertTokenizer", "finetune_bert", "train_bert_for_property_prediction"]
+__all__ = ["BertTokenizer", "BertDataset", "finetune_bert", "finetune_bert_for_property_prediction"]
+
 
 DEFAULT_TRAIN_PARAMS = {
     # default
@@ -26,7 +28,7 @@ DEFAULT_TRAIN_PARAMS = {
     # eval_steps:200,
     "save_steps": 1000,
     "save_total_limit": 2,
-    "load_best_model_at_end": True,
+    # "load_best_model_at_end": True,
     # metric_for_best_model: "loss",
     # greater_is_better: False,
     "logging_dir": None,
@@ -62,14 +64,14 @@ class EduTokenizerForBert(HFBertTokenizer):
         return split_tokens
 
     def set_bert_basic_tokenizer(self, text_tokenizer, **argv):
-        self.basic_tokenizer = get_tokenizer[text_tokenizer](**argv)
+        self.basic_tokenizer = get_tokenizer(text_tokenizer, **argv)
 
 
 class BertTokenizer(object):
     """
     Parameters
     ----------
-    pretrain_model:
+    pretrained_model:
         used pretrained model
     add_special_tokens:
         Whether to add tokens like [FIGURE], [TAG], etc.
@@ -100,69 +102,60 @@ class BertTokenizer(object):
     >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
 
-    def __init__(self, pretrain_model="bert-base-chinese", add_special_tokens=False, text_tokenizer=None, **argv):
-        self.bert_tokenizer = EduTokenizerForBert.from_pretrained(pretrain_model, use_fast=False)
-        self.add_special_tokens = add_special_tokens
-        if add_special_tokens:
-            self.add_specials(EDU_SPYMBOLS)
+    def __init__(self, pretrained_model="bert-base-chinese", max_length=None, add_specials: (list, bool) = False, text_tokenizer=None, **argv):
         self.text_tokenizer_name = text_tokenizer
+        self.max_length = max_length
         if text_tokenizer is not None:
             # In order to be more general for Huggingface's other models,
             # may be we need to inherit and rewrite `_tokenize` for XXTokenizer(PreTrainedTokenizer)
+            self.bert_tokenizer = EduTokenizerForBert.from_pretrained(pretrained_model, use_fast=False)
             self.bert_tokenizer.set_bert_basic_tokenizer(text_tokenizer, **argv)
+        else:
+            self.bert_tokenizer = HFBertTokenizer.from_pretrained(pretrained_model, use_fast=False)
+        if isinstance(add_specials, bool):
+            add_specials = EDU_SPYMBOLS if add_specials else None
+        if add_specials is not None:
+            self.add_specials(add_specials)
 
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "pretrain_model", "argv"]}
+        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "pretrained_model", "argv"]}
         config.update(argv)
         self.config = config
 
-    def add_specials(self, added_spectials: List[str]):
-        self.bert_tokenizer.add_special_tokens({'additional_special_tokens': added_spectials})
-
-    def add_tokens(self, added_tokens: List[str]):
-        self.bert_tokenizer.add_tokens(added_tokens)
-
-    def set_vocab(self, items: list, key=lambda x: x, lower=False, trim_min_count=1, tokenize=True):
-        """
-        Parameters
-        -----------
-        items: list
-            can be the list of str, or list of dict
-        key: function
-            determine how to get the text of each item
-        """
-        word2cnt = dict()
-        for item in items:
-            tokens = self.bert_tokenizer.tokenize(key(item)) if tokenize else key(item)
-            for word in tokens:
-                word = word.lower() if lower else word
-                word2cnt[word] = word2cnt.get(word, 0) + 1
-        words = [w for w, c in word2cnt.items() if c >= trim_min_count]
-        self.add_tokens(words)
-        return words
-
-    def __call__(self, item: Union[list, str], key=lambda x: x, return_tensors: Optional[Union[str, TensorType]] = None,
+    def __call__(self, item: Union[list, str, dict], key=lambda x: x, return_tensors: Optional[Tuple[str, TensorType, bool]] = True,
                  *args, **kwargs):
-        if isinstance(item, str):
-            item = key(item)
+        if isinstance(item, list):
+            text = [key(i) for i in item]
         else:
-            item = [key(i) for i in item]
-        return self.bert_tokenizer(item, truncation=True, padding=True, return_tensors=return_tensors)
+            text = key(item)
+        if isinstance(return_tensors, bool):
+            return_tensors = "pt" if return_tensors is True else None
+        encodes = self.bert_tokenizer(text, truncation=True, padding=True, max_len=self.max_length, return_tensors=return_tensors)
+        return encodes
 
     def __len__(self):
         return len(self.bert_tokenizer)
 
-    def tokenize(self, item: Union[list, str], *args, key=lambda x: x, **kwargs):
-        if isinstance(item, str):
-            return self.bert_tokenizer.tokenize(key(item))
+    def tokenize(self, item: Union[list, str, dict], *args, key=lambda x: x, **kwargs):
+        if isinstance(item, list):
+            texts = [self._tokenize(key(i)) for i in item]
+            return texts
         else:
-            item = [self.bert_tokenizer.tokenize(key(i)) for i in item]
-            return item
+            return self._tokenize(key(item))
 
-    def save_pretrained(self, tokenizer_config_dir):
-        self.bert_tokenizer.save_pretrained(tokenizer_config_dir)
-        custom_config = self.config
-        with open(os.path.join(tokenizer_config_dir, 'custom_config.json'), 'w') as f:
-            json.dump(custom_config, f, indent=2)
+    def encode(self, items: Tuple[list, str, dict], key=lambda x: x):
+        if isinstance(items, str) or isinstance(items, dict):
+            return self.bert_tokenizer.encode(key(items))
+        else:
+            return [self.bert_tokenizer.encode(key(item)) for item in items]
+
+    def decode(self, items: Tuple[list, str, dict], key=lambda x: x):
+        if isinstance(items, str) or isinstance(items, dict):
+            return self.bert_tokenizer.decode(key(items))
+        else:
+            return [self.bert_tokenizer.decode(key(item)) for item in items]
+
+    def _tokenize(self, item: Union[list, str, dict], *args, key=lambda x: x, **kwargs):
+        return self.bert_tokenizer._tokenize(key(item))
 
     @classmethod
     def from_pretrained(cls, tokenizer_config_dir, **argv):
@@ -175,12 +168,48 @@ class BertTokenizer(object):
         else:
             return cls(tokenizer_config_dir, **argv)
 
+    def save_pretrained(self, tokenizer_config_dir):
+        self.bert_tokenizer.save_pretrained(tokenizer_config_dir)
+        custom_config = self.config
+        with open(os.path.join(tokenizer_config_dir, 'custom_config.json'), 'w') as f:
+            json.dump(custom_config, f, indent=2)
+
+    @property
+    def vocab_size(self):
+        return len(self.bert_tokenizer)
+
+    def set_vocab(self, items: list, key=lambda x: x, lower=False, trim_min_count=1, tokenize=True):
+        """
+        Parameters
+        -----------
+        items: list
+            can be the list of str, or list of dict
+        key: function
+            determine how to get the text of each item
+        """
+        word2cnt = dict()
+        for item in items:
+            tokens = self._tokenize(key(item)) if tokenize else key(item)
+            if not tokens:
+                continue
+            for word in tokens:
+                word = word.lower() if lower else word
+                word2cnt[word] = word2cnt.get(word, 0) + 1
+        words = [w for w, c in word2cnt.items() if c >= trim_min_count]
+        self.add_tokens(words)
+        return words
+
+    def add_specials(self, added_spectials: List[str]):
+        self.bert_tokenizer.add_special_tokens({'additional_special_tokens': added_spectials})
+
+    def add_tokens(self, added_tokens: List[str]):
+        self.bert_tokenizer.add_tokens(added_tokens)
 
 class BertDataset(EduDataset):
     pass
 
 
-def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain_model="bert-base-chinese",
+def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrained_model="bert-base-chinese",
                   tokenizer_params=None, data_params=None, model_params=None, train_params=None):
     """
     Parameters
@@ -189,7 +218,7 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
         The training corpus, each item could be str or dict
     output_dir: str, required
         The directory to save trained model files
-    pretrain_model: str, optional
+    pretrained_model: str, optional
         The pretrained model name or path for model and tokenizer
     eval_items: list, required
         The evaluating items, each item could be str or dict
@@ -208,19 +237,23 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
     >>> finetune_bert(stems, "examples/test_model/data/data/bert") # doctest: +SKIP
     {'train_runtime': ..., ..., 'epoch': 1.0}
     """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
     # tokenizer configuration
-    if os.path.exists(pretrain_model):
-        tokenizer = BertTokenizer.from_pretrained(pretrain_model)
+    if os.path.exists(pretrained_model):
+        tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     else:
         work_tokenizer_params = {
             "add_special_tokens": True,
             "text_tokenizer": "pure_text",
         }
-        work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
-        tokenizer = BertTokenizer(pretrain_model, **work_tokenizer_params)
+        work_tokenizer_params.update()
+        tokenizer = BertTokenizer(pretrained_model, **work_tokenizer_params)
         # todo: tokenizer.set_vocab()
     # model configuration
-    model = BertForMaskedLM.from_pretrained(pretrain_model, **model_params)
+    model = BertForMaskedLM.from_pretrained(pretrained_model, **model_params)
     # resize embedding for additional special tokens
     model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
 
@@ -248,9 +281,9 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
     tokenizer.save_pretrained(output_dir)
 
 
-def train_bert_for_property_prediction(train_items, output_dir, pretrain_model="bert-base-chinese",
+def finetune_bert_for_property_prediction(train_items, output_dir, pretrained_model="bert-base-chinese",
                                        eval_items=None,
-                                       data_params=None, train_params=None, model_params=None):
+                                       tokenizer_params=None, data_params=None, train_params=None, model_params=None):
     """
     Parameters
     ----------
@@ -258,7 +291,7 @@ def train_bert_for_property_prediction(train_items, output_dir, pretrain_model="
         The training corpus, each item could be str or dict
     output_dir: str, required
         The directory to save trained model files
-    pretrain_model: str, optional
+    pretrained_model: str, optional
         The pretrained model name or path for model and tokenizer
     eval_items: list, required
         The evaluating items, each item could be str or dict
@@ -270,8 +303,12 @@ def train_bert_for_property_prediction(train_items, output_dir, pretrain_model="
         The parameters passed to Trainer
     train_params: dict, optional, default=None
     """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
     # tokenizer configuration
-    tokenizer = BertTokenizer.from_pretrained(pretrain_model)
+    tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
     train_dataset = BertDataset(items=train_items, tokenizer=tokenizer,
                                 feature_key=data_params.get("feature_key", "stem"),
@@ -280,8 +317,10 @@ def train_bert_for_property_prediction(train_items, output_dir, pretrain_model="
         eval_dataset = BertDataset(items=eval_items, tokenizer=tokenizer,
                                    feature_key=data_params.get("feature_key", "stem"),
                                    labal_key=data_params.get("labal_key", "diff"))
+    else:
+        eval_dataset = None
     # model configuration
-    model = BertForPropertyPrediction(pretrain_model, **model_params)
+    model = BertForPropertyPrediction(pretrained_model, **model_params)
     model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
@@ -298,5 +337,7 @@ def train_bert_for_property_prediction(train_items, output_dir, pretrain_model="
         data_collator=data_collator,
     )
     trainer.train()
+    # trainer.model.save_pretrained(output_dir)
     trainer.save_model(output_dir)
+    trainer.model.save_config(output_dir)
     tokenizer.save_pretrained(output_dir)

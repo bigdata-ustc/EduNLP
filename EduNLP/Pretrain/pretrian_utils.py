@@ -1,16 +1,15 @@
-from typing import Tuple
+from typing import Optional, Union, List, Dict, Any, Iterable, Tuple
 import traceback
 import torch
 import os
 import json
 import pandas as pd
-from transformers import PretrainedConfig
 from datasets import Dataset as HFDataset, load_from_disk
 from torch.utils.data import Dataset
 from ..Tokenizer import get_tokenizer
 from ..ModelZoo.utils import pad_sequence
 from ..SIF import EDU_SPYMBOLS
-from typing import Optional, Union, List, Dict, Any
+
 
 __all__ = ["EduVocab", "EduDataset", "PretrainedEduTokenizer"]
 
@@ -25,14 +24,13 @@ class EduVocab(object):
         self.idx_to_token = dict()
         self.token_to_idx = dict()
         self.frequencies = dict()
-        self._special_tokens = []
-
+        # 定义特殊词
         self.bos_token = bos_token
         self.eos_token = eos_token
         self.pad_token = pad_token
         self.unk_token = unk_token
-        # 定义特殊词
-        self._special_tokens = [self.bos_token, self.eos_token, self.pad_token, self.unk_token]
+        self._special_tokens = [self.pad_token, self.unk_token, self.bos_token, self.eos_token]
+
         if specials is not None:
             self._special_tokens += specials
         for st in self._special_tokens:
@@ -120,9 +118,41 @@ class EduVocab(object):
             self.add(token)
 
 
+class CharTokenizer(object):
+    def __init__(self, stop_words="default") -> None:
+        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "default" else stop_words
+        self.stop_words = stop_words if stop_words is not None else []
+
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
+        for item in items:
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        tokens = key(item).strip().split('')
+        if self.stop_words:
+            tokens = [w for w in tokens if w != '' and w not in self.stop_words]
+        return tokens
+
+
+class SpaceTokenizer(object):
+    def __init__(self, stop_words="default") -> None:
+        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "default" else stop_words
+        self.stop_words = stop_words if stop_words is not None else []
+
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
+        for item in items:
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        tokens = key(item).strip().split(' ')
+        if self.stop_words:
+            tokens = [w for w in tokens if w != '' and w not in self.stop_words]
+        return tokens
+
+
 # to do: how to handle tokenizer with formulas or pictures.
 class PretrainedEduTokenizer(object):
-    def __init__(self, vocab_path=None, max_length=250, tokenize_method="char", add_specials: list = None, **argv):
+    def __init__(self, vocab_path=None, max_length=None, tokenize_method="char", add_specials: (list, bool) = None, **argv):
         """
         Parameters
         ----------
@@ -135,16 +165,17 @@ class PretrainedEduTokenizer(object):
             when text is already seperated by space, use "space"
             when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
         """
-        self._set_base_tokenizer(tokenize_method)
-
-        specials = EDU_SPYMBOLS + [add_specials if add_specials is not None else None]
+        self._set_base_tokenizer(tokenize_method, **argv)
+        if isinstance(add_specials, bool):
+            add_specials = EDU_SPYMBOLS if add_specials else None
+        elif isinstance(add_specials, list):
+            add_specials = EDU_SPYMBOLS + add_specials
         self.max_length = max_length
-        self.vocab = EduVocab(vocab_path=vocab_path, specials=specials, **argv)
+        self.vocab = EduVocab(vocab_path=vocab_path, specials=add_specials, **argv)
 
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
 
-    def __call__(self, items: (list, str, dict), key=lambda x: x, padding=True,
+    def __call__(self, items: (list, str, dict), key=lambda x: x, padding: Tuple[bool, str]=True,
                  return_tensors=True, return_text=False, **kwargs) -> Dict[str, Any]:
         """
         Parameters
@@ -166,43 +197,56 @@ class PretrainedEduTokenizer(object):
             {"seq_idx": None, "seq_len": None}
             or {"seq_token": None, seq_idx": None, "seq_len": None}.
             The shape of element is (batch, seq) or (batch,).
+
+        Notes:
+        -------
+        Be Make sure Tokenizer output batched tensors by default
         """
+        if isinstance(padding, str):
+            assert padding == "max_length"
+            if padding == "max_length":
+                batch_max_length = self.max_length
+                padding = True
+            elif padding == "longest":
+                batch_max_length = None
+                padding = True
+            elif padding == "do_not_pad":
+                padding = False
+            else:
+                raise ValueError("'padding' must be `bool` or `string` in ['max_length', 'longest', 'do_not_pad']")
         token_items = self.tokenize(items, key)
         if isinstance(items, str) or isinstance(items, dict):
             token_items = [token_items]
-
         seqs = [self.vocab.convert_sequence_to_idx(token_item,
                                                    bos=kwargs.get("bos", False),
                                                    eos=kwargs.get("eos", False)) for token_item in token_items]
+        if self.max_length is not None:
+            seqs = [seq[:self.max_length] for seq in seqs]
         lengths = [len(seq) for seq in seqs]
         ret = {
-            "seq_idx": pad_sequence(seqs, pad_val=self.vocab.pad_idx) if padding else seqs,
+            "seq_idx": pad_sequence(seqs, pad_val=self.vocab.pad_idx, max_length=batch_max_length) if padding else seqs,
             "seq_len": lengths
         }
-
         if isinstance(items, str) or isinstance(items, dict):
             ret = {k: v[0] for k, v in ret.items()}
             token_items = token_items[0]
-
         if return_tensors:
             ret = {key: torch.as_tensor(val) for key, val in ret.items()}
-
         if return_text:
             ret["seq_token"] = token_items
-
         return ret
 
     def __len__(self):
         return len(self.vocab)
 
-    def _set_base_tokenizer(self, tokenize_method):
+    def _set_base_tokenizer(self, tokenize_method, **argv):
         self.tokenize_method = tokenize_method
         if tokenize_method == "char":
-            self.text_tokenizer = self._char_tokenizer
+            self.text_tokenizer = CharTokenizer(**argv)
         elif tokenize_method == "space":
-            self.text_tokenizer = self._space_tokenizer
+            self.text_tokenizer = SpaceTokenizer(**argv)
         else:
-            self.text_tokenizer = get_tokenizer(tokenize_method)
+            self.text_tokenizer = get_tokenizer(tokenize_method, **argv)
 
     def tokenize(self, items: Tuple[list, str, dict], key=lambda x: x, **kwargs):
         """
@@ -239,26 +283,12 @@ class PretrainedEduTokenizer(object):
         raise NotImplementedError
 
     def _tokenize(self, item: Tuple[str, dict], key=lambda x: x):
-        try:
-            token_item = next(self.text_tokenizer([item], key=key))
-            if len(token_item) == 0:
-                token_item = [self.vocab.unk_token]
-            if len(token_item) > self.max_length:
-                token_item = token_item[:self.max_length]
-        except Exception:
-            msg = traceback.format_exc()
-            print(msg)
+        token_item = self.text_tokenizer._tokenize(item, key=key)
+        if len(token_item) == 0:
+            token_item = [self.vocab.unk_token]
+        if len(token_item) > self.max_length:
+            token_item = token_item[:self.max_length]
         return token_item
-
-    def _char_tokenizer(self, items, key=lambda x: x, **argv):
-        for item in items:
-            tokens = key(item).strip().split('')
-            yield tokens
-
-    def _space_tokenizer(self, items, key=lambda x: x, **argv):
-        for item in items:
-            tokens = key(item).strip().split(' ')
-            yield tokens
 
     @classmethod
     def from_pretrained(cls, tokenizer_config_dir, **argv):
@@ -273,6 +303,7 @@ class PretrainedEduTokenizer(object):
 
         with open(tokenizer_config_path, "r", encoding="utf-8") as rf:
             tokenizer_config = json.load(rf)
+            tokenizer_config.update(argv)
             return cls(
                 vocab_path=pretrained_vocab_path,
                 **tokenizer_config)
@@ -284,12 +315,14 @@ class PretrainedEduTokenizer(object):
         tokenizer_config_dir: str
             save tokenizer params in tokenizer_config.json and save words in vocab.list
         """
+        if not os.path.exists(tokenizer_config_dir):
+            os.makedirs(tokenizer_config_dir, exist_ok=True)
         tokenizer_config_path = os.path.join(tokenizer_config_dir, "tokenizer_config.json")
         vocab_path = os.path.join(tokenizer_config_dir, "vocab.txt")
         self.vocab.save_vocab(vocab_path)
 
         with open(tokenizer_config_path, "w", encoding="utf-8") as wf:
-            json.dump(self.config.to_dict(), wf, ensure_ascii=False, indent=2)
+            json.dump(self.config, wf, ensure_ascii=False, indent=2)
 
     @property
     def vocab_size(self):
@@ -315,28 +348,39 @@ class PretrainedEduTokenizer(object):
         self.vocab.add_tokens(tokens)
 
 
-class EduDataset(HFDataset):
+class EduDataset(Dataset):
     def __init__(self, ds_disk_path: HFDataset = None,
                  items: Union[List[dict], List[str]] = None, tokenizer=None,
-                 feature_key=Optional[str], labal_key=Optional[str],
+                 feature_key: Optional[str] = "feature", labal_key: Optional[str] = None,
                  num_processor=None, **argv):
         if ds_disk_path is None:
             assert items is not None
-            items = items if isinstance(items[0], dict) else [{"text": i} for i in items]
+            items = items if isinstance(items[0], dict) else [{"feature": i} for i in items]
             if isinstance(items[0], dict):
                 assert feature_key is not None
             if isinstance(items[0], str):
                 assert feature_key is None and labal_key is None
-            columns = [feature_key] + [labal_key] if labal_key is not None else []
+                feature_key = "feature"
+            columns = [feature_key] + ([labal_key] if labal_key is not None else [])
             df = pd.DataFrame(items)[columns]
             self.ds = HFDataset.from_pandas(df)
-            self.ds = self.ds.map(lambda sample: tokenizer(sample[feature_key]),
+            self.ds = self.ds.map(lambda sample: tokenizer(sample[feature_key], return_tensors=False),
                                   num_proc=num_processor,
                                   batched=True, batch_size=1000)
             self.ds = self.ds.remove_columns(feature_key)
-            self.ds = self.ds.rename_columns({labal_key: "labels"})
+            if labal_key is not None:
+                self.ds = self.ds.rename_columns({
+                    labal_key: "labels",
+                })
+            # TODO: whether use transform instead of rename
         else:
             self.ds = load_from_disk(ds_disk_path)
+
+    def __getitem__(self, index):
+        return self.ds[index]
+
+    def __len__(self):
+        return self.ds.num_rows
 
     @classmethod
     def from_disk(cls, ds_disk_path, **argv):
@@ -344,12 +388,6 @@ class EduDataset(HFDataset):
 
     def to_disk(self, ds_disk_path):
         self.ds.save_to_disk(ds_disk_path)
-
-    def __getitem__(self, index):
-        return self.ds[index]
-
-    def __len__(self):
-        return self.ds.num_rows
 
     def collect_fn(self):
         raise NotImplementedError
