@@ -1,4 +1,4 @@
-from typing import Optional, Union, List, Dict, Any, Iterable, Tuple
+from typing import Optional, Union, List, Dict, Any, Iterable, Tuple, List
 import traceback
 import torch
 import os
@@ -165,7 +165,7 @@ class PretrainedEduTokenizer(object):
             when text is already seperated by space, use "space"
             when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
         """
-        self._set_base_tokenizer(tokenize_method, **argv)
+        self._set_basic_tokenizer(tokenize_method, **argv)
         if isinstance(add_specials, bool):
             add_specials = EDU_SPYMBOLS if add_specials else None
         elif isinstance(add_specials, list):
@@ -175,7 +175,7 @@ class PretrainedEduTokenizer(object):
 
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
 
-    def __call__(self, items: (list, str, dict), key=lambda x: x, padding: Tuple[bool, str]=True,
+    def __call__(self, items: Tuple[list, str, dict], key=lambda x: x, padding: Tuple[bool, str]=True,
                  return_tensors=True, return_text=False, **kwargs) -> Dict[str, Any]:
         """
         Parameters
@@ -202,20 +202,21 @@ class PretrainedEduTokenizer(object):
         -------
         Be Make sure Tokenizer output batched tensors by default
         """
+        batch_max_length = None
         if isinstance(padding, str):
             assert padding == "max_length"
             if padding == "max_length":
                 batch_max_length = self.max_length
                 padding = True
             elif padding == "longest":
-                batch_max_length = None
                 padding = True
             elif padding == "do_not_pad":
                 padding = False
             else:
                 raise ValueError("'padding' must be `bool` or `string` in ['max_length', 'longest', 'do_not_pad']")
+
         token_items = self.tokenize(items, key)
-        if isinstance(items, str) or isinstance(items, dict):
+        if isinstance(items, dict) or isinstance(items, str):
             token_items = [token_items]
         seqs = [self.vocab.convert_sequence_to_idx(token_item,
                                                    bos=kwargs.get("bos", False),
@@ -227,7 +228,7 @@ class PretrainedEduTokenizer(object):
             "seq_idx": pad_sequence(seqs, pad_val=self.vocab.pad_idx, max_length=batch_max_length) if padding else seqs,
             "seq_len": lengths
         }
-        if isinstance(items, str) or isinstance(items, dict):
+        if isinstance(items, dict) or isinstance(items, str):
             ret = {k: v[0] for k, v in ret.items()}
             token_items = token_items[0]
         if return_tensors:
@@ -239,7 +240,7 @@ class PretrainedEduTokenizer(object):
     def __len__(self):
         return len(self.vocab)
 
-    def _set_base_tokenizer(self, tokenize_method, **argv):
+    def _set_basic_tokenizer(self, tokenize_method, **argv):
         self.tokenize_method = tokenize_method
         if tokenize_method == "char":
             self.text_tokenizer = CharTokenizer(**argv)
@@ -328,7 +329,7 @@ class PretrainedEduTokenizer(object):
     def vocab_size(self):
         return len(self.vocab)
 
-    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=1, reserve=True):
+    def set_vocab(self, items: list, key=lambda x: x, lower=False, trim_min_count=1, do_tokenize=True):
         """
         Parameters
         -----------
@@ -337,8 +338,8 @@ class PretrainedEduTokenizer(object):
         key: function
             determine how to get the text of each item
         """
-        token_items = self.tokenize(items, key)
-        self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count)
+        token_items = self.tokenize(items, key) if do_tokenize else [key(item) for item in items]
+        self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count, lower=lower)
         return token_items
 
     def add_specials(self, tokens):
@@ -349,42 +350,53 @@ class PretrainedEduTokenizer(object):
 
 
 class EduDataset(Dataset):
-    def __init__(self, ds_disk_path: HFDataset = None,
-                 items: Union[List[dict], List[str]] = None, tokenizer=None,
-                 feature_key: Optional[str] = "feature", labal_key: Optional[str] = None,
+    def __init__(self, tokenizer, ds_disk_path: HFDataset = None,
+                 items: Union[List[dict], List[str]] = None,
+                 stem_key: str = "text", label_key: Optional[str] = None,
+                 feature_keys: Optional[List[str]] = None,
                  num_processor=None, **argv):
-        if ds_disk_path is None:
-            assert items is not None
-            items = items if isinstance(items[0], dict) else [{"feature": i} for i in items]
+        self.tokenizer = tokenizer
+        feature_keys = [] if feature_keys is None else feature_keys
+        if items is not None:
+            assert ds_disk_path is None
             if isinstance(items[0], dict):
-                assert feature_key is not None
+                assert stem_key is not None
+                raw_columns = set(items[0].keys())
             if isinstance(items[0], str):
-                assert feature_key is None and labal_key is None
-                feature_key = "feature"
-            columns = [feature_key] + ([labal_key] if labal_key is not None else [])
-            df = pd.DataFrame(items)[columns]
+                assert stem_key is None and label_key is None
+                stem_key = "text"
+                raw_columns = [stem_key]
+            work_columns = set([stem_key] + feature_keys + ([label_key] if label_key is not None else []))
+            redundant_columns = raw_columns - work_columns
+            # 在线预处理特征
+            items = items if isinstance(items[0], dict) else [{"text": i} for i in items]
+            df = pd.DataFrame(items)
+            df.drop(columns=list(redundant_columns), inplace=True)
             self.ds = HFDataset.from_pandas(df)
-            self.ds = self.ds.map(lambda sample: tokenizer(sample[feature_key], return_tensors=False),
+            """Note: map will break down for super large data which is greater than 4GB """
+            self.ds = self.ds.map(lambda sample: tokenizer(sample[stem_key], return_tensors=False),
                                   num_proc=num_processor,
                                   batched=True, batch_size=1000)
-            self.ds = self.ds.remove_columns(feature_key)
-            if labal_key is not None:
-                self.ds = self.ds.rename_columns({
-                    labal_key: "labels",
-                })
-            # TODO: whether use transform instead of rename
+            remove_columns = [stem_key]
         else:
+            # 离线加载工作特征
+            assert ds_disk_path is not None
             self.ds = load_from_disk(ds_disk_path)
+            reserve_columns = list(tokenizer("edunlp", return_tensors=False).keys()) + feature_keys + ([label_key] if label_key is not None else [])
+            remove_columns = list(set(self.ds.column_names) - set(reserve_columns))
+
+        # 工作特征
+        self.work_ds = self.ds.remove_columns(remove_columns) if len(remove_columns) > 0 else self.ds
+        if label_key is not None:
+            self.work_ds = self.work_ds.rename_columns({
+                label_key: "labels",
+            })
 
     def __getitem__(self, index):
-        return self.ds[index]
+        return self.work_ds[index]
 
     def __len__(self):
-        return self.ds.num_rows
-
-    @classmethod
-    def from_disk(cls, ds_disk_path, **argv):
-        return cls(ds_disk_path=ds_disk_path, **argv)
+        return self.work_ds.num_rows
 
     def to_disk(self, ds_disk_path):
         self.ds.save_to_disk(ds_disk_path)

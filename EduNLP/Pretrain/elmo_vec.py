@@ -1,26 +1,11 @@
 import torch
-from torch import nn
-import torch.nn.functional as F
-import torch.utils.data as tud
-import torch.optim as optim
-import numpy as np
-import json
 import os
-import time
-import multiprocessing
 from copy import deepcopy
-from typing import Dict, List
-from ..SIF import EDU_SPYMBOLS
-from ..Tokenizer import PureTextTokenizer
+from transformers import TrainingArguments, Trainer
+from typing import Optional, Union, List
 from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPrediction
 from ..ModelZoo.utils import pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer, EduDataset
-from transformers import TrainingArguments, Trainer, PretrainedConfig
-from datasets import load_dataset
-from datasets import Dataset as HFDataset
-import datasets
-import pandas as pd
-from typing import Optional, Union, List, Dict
 
 __all__ = ["ElmoTokenizer", "ElmoDataset", "train_elmo", "train_elmo_for_property_prediction"]
 
@@ -66,7 +51,6 @@ class ElmoTokenizer(PretrainedEduTokenizer):
 
 class ElmoDataset(EduDataset):
     def __init__(self, tokenizer: ElmoTokenizer, **argv):
-        self.tokenizer = tokenizer
         super(ElmoDataset, self).__init__(tokenizer=tokenizer, **argv)
 
     def collate_fn(self, batch_data):
@@ -94,7 +78,7 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrained_
     tokenizer_params: dict, optional, default=None
         The parameters passed to ElmoTokenizer
     data_params: dict, optional, default=None
-        - feature_key
+        - stem_key
         - label_key
         The parameters passed to ElmoDataset and ElmoTokenizer
     model_params: dict, optional, default=None
@@ -111,7 +95,7 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrained_
     else:
         work_tokenizer_params = {
             "add_specials": True,
-            "text_tokenizer": "pure_text",
+            "tokenize_method": "pure_text",
         }
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
         tokenizer = ElmoTokenizer(**work_tokenizer_params)
@@ -120,11 +104,11 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrained_
             tokenizer.set_vocab(corpus_items)
         else:
             tokenizer.set_vocab(corpus_items,
-                                key=lambda x: x[data_params.get("feature_key", "stem")])
+                                key=lambda x: x[data_params.get("stem_key", "stem")])
 
     # dataset configuration
-    dataset = ElmoDataset(items=items, tokenizer=tokenizer,
-                          feature_key=data_params.get("feature_key", None))
+    dataset = ElmoDataset(tokenizer=tokenizer, items=items,
+                          stem_key=data_params.get("stem_key", None))
 
     # model configuration
     if pretrained_dir:
@@ -193,20 +177,20 @@ def train_elmo_for_property_prediction(
     else:
         work_tokenizer_params = {
             "add_special_tokens": True,
-            "text_tokenizer": "pure_text",
+            "tokenize_method": "pure_text",
         }
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
         tokenizer = ElmoTokenizer(**work_tokenizer_params)
         corpus_items = train_items + eval_items
         tokenizer.set_vocab(corpus_items,
-                            key=lambda x: x[data_params.get("feature_key", "stem")])
+                            key=lambda x: x[data_params.get("stem_key", "stem")])
     # dataset configuration
-    train_dataset = ElmoDataset(items=train_items, tokenizer=tokenizer,
-                               feature_key=data_params.get("feature_key", "stem"),
+    train_dataset = ElmoDataset(tokenizer=tokenizer, items=train_items,
+                               stem_key=data_params.get("stem_key", "stem"),
                                labal_key=data_params.get("labal_key", "diff"))
     if eval_items is not None:
-        eval_dataset = ElmoDataset(items=eval_items, tokenizer=tokenizer,
-                                  feature_key=data_params.get("feature_key", "stem"),
+        eval_dataset = ElmoDataset(tokenizer=tokenizer, items=eval_items,
+                                  stem_key=data_params.get("stem_key", "stem"),
                                   labal_key=data_params.get("labal_key", "diff"))
     else:
         eval_dataset = None

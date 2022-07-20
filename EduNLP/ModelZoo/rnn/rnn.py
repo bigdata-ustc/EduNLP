@@ -260,7 +260,7 @@ class ElmoLMForPreTraining(BaseModel):
             backward_output: of shape (batch_size, sequence_length, hidden_size)
         """
         batch_size, idx_len = seq_idx.shape
-        max_len = seq_len.max().item()
+        max_len = seq_len.max().item() if self.config.to_dict().get("use_pack_pad", False) is True else idx_len
         # NOTE: pred_mask matters when LM use pack_pad
         pred_mask = torch.arange(max_len, device=seq_idx.device)[None, :] < seq_len[:, None]
         idx_mask = torch.arange(idx_len, device=seq_idx.device)[None, :] < seq_len[:, None]

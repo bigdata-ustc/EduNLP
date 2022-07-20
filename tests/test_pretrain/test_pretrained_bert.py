@@ -11,22 +11,6 @@ from EduNLP.Pretrain import BertTokenizer, BertDataset, finetune_bert, finetune_
 TEST_GPU = torch.cuda.is_available()
 os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
 
-# BASE_DIR = "/home/qlh/EduNLP/data/test/test_pretrain/bert"
-# pretrained_tokenizer_dir = f"{BASE_DIR}/pretrained_tokenizer_dir"
-# pretrained_model_dir = f"{BASE_DIR}/output_model_dir"
-# pretrained_pp_dir = f"{BASE_DIR}/pretrained_pp_dir"
-# if not os.path.exists(pretrained_tokenizer_dir):
-#     os.makedirs(pretrained_tokenizer_dir, exist_ok=True)
-# if not os.path.exists(pretrained_model_dir):
-#     os.makedirs(pretrained_model_dir, exist_ok=True)
-# if not os.path.exists(pretrained_pp_dir):
-#     os.makedirs(pretrained_pp_dir, exist_ok=True)
-# def get_standard_luna_data():
-#     data_path = path_append(abs_current_dir(__file__), "../../static/test_data/standard_luna_data.json", to_str=True)
-#     _data = load_items(data_path)
-#     return _data
-# standard_luna_data = get_standard_luna_data()
-
 
 class PretrainBertTest:
     def test_tokenizer(standard_luna_data, pretrained_tokenizer_dir):
@@ -42,7 +26,7 @@ class PretrainBertTest:
             # "stopwords": None,
         }
         tokenizer = BertTokenizer(pretrained_model="bert-base-chinese", add_specials=True,
-                                  text_tokenizer="ast_formula", text_params=text_params)
+                                  tokenize_method="ast_formula", text_params=text_params)
 
         tokenizer_size1 = len(tokenizer)
         tokenizer.set_vocab(standard_luna_data, key=lambda x: x["ques_content"])
@@ -76,7 +60,7 @@ class PretrainBertTest:
             standard_luna_data,
             pretrained_model_dir,
             data_params={
-                "feature_key": "ques_content",
+                "stem_key": "ques_content",
             },
             train_params={
                 "num_train_epochs": 3,
@@ -95,7 +79,7 @@ class PretrainBertTest:
 
     def test_train_pp(standard_luna_data, pretrained_pp_dir, pretrained_model_dir):
         data_params = {
-            "feature_key": "ques_content",
+            "stem_key": "ques_content",
             "labal_key": "difficulty"
         }
         train_params = {
@@ -125,7 +109,7 @@ class PretrainBertTest:
 # Old test
 # def test_bert_tokenizer(stem_data_bert, tmpdir):
     # output_dir = str(tmpdir.mkdir('test_bert_tokenizer'))
-    # tokenizer = BertTokenizer(add_special_tokens=True, text_tokenizer='pure_text')
+    # tokenizer = BertTokenizer(add_special_tokens=True, tokenize_method='pure_text')
     # tokenizer.save_pretrained(output_dir)
     # tokenizer = BertTokenizer.from_pretrained(output_dir)
     # tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')

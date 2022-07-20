@@ -48,23 +48,22 @@ class EduTokenizerForBert(HFBertTokenizer):
         split_tokens = []
         if self.do_basic_tokenize:
             for token in self.basic_tokenizer._tokenize(text):
-                # If the token is part of the never_split set
                 if token in self.all_special_tokens:
+                    # If the token is part of the never_split set
                     split_tokens.append(token)
-                # If token is all English word 
-                # (Please note that '[xxx]' and 'mathod_x' work well, but 'textord' will break down)
                 elif token.encode('utf-8').isalpha():
+                    # If token is all English word (Please note that 'textord' will not recognize as new)
                     split_tokens += self.wordpiece_tokenizer.tokenize(token)
-                # If chinese \ punctuation\ other-mixed-english
                 else:
+                    # If chinese \ punctuation\ other-mixed-english (Please note that '[xxx]' and 'mathod_x' will be recognize as new) 
                     split_tokens.append(token)
         else:
             split_tokens = self.wordpiece_tokenizer.tokenize(text)
 
         return split_tokens
 
-    def set_bert_basic_tokenizer(self, text_tokenizer, **argv):
-        self.basic_tokenizer = get_tokenizer(text_tokenizer, **argv)
+    def set_bert_basic_tokenizer(self, tokenize_method, **argv):
+        self.basic_tokenizer = get_tokenizer(tokenize_method, **argv)
 
 
 class BertTokenizer(object):
@@ -73,9 +72,9 @@ class BertTokenizer(object):
     ----------
     pretrained_model:
         used pretrained model
-    add_special_tokens:
+    add_specials:
         Whether to add tokens like [FIGURE], [TAG], etc.
-    text_tokenizer:
+    tokenize_method:
         Which text tokenizer to use.
         Must be consistent with TOKENIZER dictionary.
 
@@ -102,14 +101,14 @@ class BertTokenizer(object):
     >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
 
-    def __init__(self, pretrained_model="bert-base-chinese", max_length=None, add_specials: (list, bool) = False, text_tokenizer=None, **argv):
-        self.text_tokenizer_name = text_tokenizer
+    def __init__(self, pretrained_model="bert-base-chinese", max_length=500, add_specials: (list, bool) = False, tokenize_method=None, **argv):
+        self.text_tokenizer_name = tokenize_method
         self.max_length = max_length
-        if text_tokenizer is not None:
+        if tokenize_method is not None:
             # In order to be more general for Huggingface's other models,
             # may be we need to inherit and rewrite `_tokenize` for XXTokenizer(PreTrainedTokenizer)
             self.bert_tokenizer = EduTokenizerForBert.from_pretrained(pretrained_model, use_fast=False)
-            self.bert_tokenizer.set_bert_basic_tokenizer(text_tokenizer, **argv)
+            self.bert_tokenizer.set_bert_basic_tokenizer(tokenize_method, **argv)
         else:
             self.bert_tokenizer = HFBertTokenizer.from_pretrained(pretrained_model, use_fast=False)
         if isinstance(add_specials, bool):
@@ -121,26 +120,26 @@ class BertTokenizer(object):
         config.update(argv)
         self.config = config
 
-    def __call__(self, item: Union[list, str, dict], key=lambda x: x, return_tensors: Optional[Tuple[str, TensorType, bool]] = True,
-                 *args, **kwargs):
-        if isinstance(item, list):
-            text = [key(i) for i in item]
+    def __call__(self, items: Tuple[list, str, dict], key=lambda x: x, padding=True,
+                 return_tensors: Optional[Tuple[str, TensorType, bool]] = True, **kwargs):
+        if isinstance(items, list):
+            text = [key(i) for i in items]
         else:
-            text = key(item)
+            text = key(items)
         if isinstance(return_tensors, bool):
             return_tensors = "pt" if return_tensors is True else None
-        encodes = self.bert_tokenizer(text, truncation=True, padding=True, max_len=self.max_length, return_tensors=return_tensors)
+        encodes = self.bert_tokenizer(text, truncation=True, padding=padding, max_len=self.max_length, return_tensors=return_tensors, return_text=False)
         return encodes
 
     def __len__(self):
         return len(self.bert_tokenizer)
 
-    def tokenize(self, item: Union[list, str, dict], *args, key=lambda x: x, **kwargs):
-        if isinstance(item, list):
-            texts = [self._tokenize(key(i)) for i in item]
+    def tokenize(self, items: Union[list, str, dict], key=lambda x: x, **kwargs):
+        if isinstance(items, list):
+            texts = [self._tokenize(key(i)) for i in items]
             return texts
         else:
-            return self._tokenize(key(item))
+            return self._tokenize(key(items))
 
     def encode(self, items: Tuple[list, str, dict], key=lambda x: x):
         if isinstance(items, str) or isinstance(items, dict):
@@ -154,7 +153,7 @@ class BertTokenizer(object):
         else:
             return [self.bert_tokenizer.decode(key(item)) for item in items]
 
-    def _tokenize(self, item: Union[list, str, dict], *args, key=lambda x: x, **kwargs):
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
         return self.bert_tokenizer._tokenize(key(item))
 
     @classmethod
@@ -178,7 +177,7 @@ class BertTokenizer(object):
     def vocab_size(self):
         return len(self.bert_tokenizer)
 
-    def set_vocab(self, items: list, key=lambda x: x, lower=False, trim_min_count=1, tokenize=True):
+    def set_vocab(self, items: list, key=lambda x: x, lower=False, trim_min_count=1, do_tokenize=True):
         """
         Parameters
         -----------
@@ -189,21 +188,21 @@ class BertTokenizer(object):
         """
         word2cnt = dict()
         for item in items:
-            tokens = self._tokenize(key(item)) if tokenize else key(item)
+            tokens = self._tokenize(key(item)) if do_tokenize else key(item)
             if not tokens:
                 continue
             for word in tokens:
                 word = word.lower() if lower else word
                 word2cnt[word] = word2cnt.get(word, 0) + 1
         words = [w for w, c in word2cnt.items() if c >= trim_min_count]
-        self.add_tokens(words)
-        return words
+        valid_added_num = self.add_tokens(words)
+        return words, valid_added_num
 
     def add_specials(self, added_spectials: List[str]):
-        self.bert_tokenizer.add_special_tokens({'additional_special_tokens': added_spectials})
+        return self.bert_tokenizer.add_special_tokens({'additional_special_tokens': added_spectials})
 
     def add_tokens(self, added_tokens: List[str]):
-        self.bert_tokenizer.add_tokens(added_tokens)
+        return self.bert_tokenizer.add_tokens(added_tokens)
 
 class BertDataset(EduDataset):
     pass
@@ -246,20 +245,20 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
         tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     else:
         work_tokenizer_params = {
-            "add_special_tokens": True,
-            "text_tokenizer": "pure_text",
+            "add_specials": True,
+            "tokenize_method": "pure_text",
         }
         work_tokenizer_params.update()
         tokenizer = BertTokenizer(pretrained_model, **work_tokenizer_params)
-        # todo: tokenizer.set_vocab()
+        # TODO: tokenizer.set_vocab()
     # model configuration
     model = BertForMaskedLM.from_pretrained(pretrained_model, **model_params)
     # resize embedding for additional special tokens
     model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
 
-    # dataset configuration  
-    dataset = BertDataset(items=items, tokenizer=tokenizer,
-                          feature_key=data_params.get("feature_key", None))
+    # dataset configuration
+    dataset = BertDataset(tokenizer, items=items,
+                          stem_key=data_params.get("stem_key", None))
     mlm_probability = train_params.pop('mlm_probability', 0.15)
     data_collator = DataCollatorForLanguageModeling(
         tokenizer=tokenizer.bert_tokenizer, mlm=True, mlm_probability=mlm_probability
@@ -310,12 +309,12 @@ def finetune_bert_for_property_prediction(train_items, output_dir, pretrained_mo
     # tokenizer configuration
     tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
-    train_dataset = BertDataset(items=train_items, tokenizer=tokenizer,
-                                feature_key=data_params.get("feature_key", "stem"),
+    train_dataset = BertDataset(tokenizer=tokenizer, items=train_items,
+                                stem_key=data_params.get("stem_key", "stem"),
                                 labal_key=data_params.get("labal_key", "diff"))
     if eval_items is not None:
-        eval_dataset = BertDataset(items=eval_items, tokenizer=tokenizer,
-                                   feature_key=data_params.get("feature_key", "stem"),
+        eval_dataset = BertDataset(tokenizer=tokenizer, items=eval_items,
+                                   stem_key=data_params.get("stem_key", "stem"),
                                    labal_key=data_params.get("labal_key", "diff"))
     else:
         eval_dataset = None

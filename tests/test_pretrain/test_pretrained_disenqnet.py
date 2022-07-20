@@ -10,23 +10,7 @@ TEST_GPU = torch.cuda.is_available()
 os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
 
 
-# BASE_DIR = "/home/qlh/EduNLP/data/test/test_pretrain/bert"
-# pretrained_tokenizer_dir = f"{BASE_DIR}/pretrained_tokenizer_dir"
-# pretrained_model_dir = f"{BASE_DIR}/output_model_dir"
-# pretrained_pp_dir = f"{BASE_DIR}/pretrained_pp_dir"
-# if not os.path.exists(pretrained_tokenizer_dir):
-#     os.makedirs(pretrained_tokenizer_dir, exist_ok=True)
-# if not os.path.exists(pretrained_model_dir):
-#     os.makedirs(pretrained_model_dir, exist_ok=True)
-# if not os.path.exists(pretrained_pp_dir):
-#     os.makedirs(pretrained_pp_dir, exist_ok=True)
-# def get_standard_luna_data():
-#     data_path = path_append(abs_current_dir(__file__), "../../static/test_data/standard_luna_data.json", to_str=True)
-#     _data = load_items(data_path)
-#     return _data
-# standard_luna_data = get_standard_luna_data()
-
-
+# TODO
 class PretrainDisenQNetTest:
     def test_tokenizer(standard_luna_data, pretrained_tokenizer_dir):
         pretrained_dir = pretrained_tokenizer_dir

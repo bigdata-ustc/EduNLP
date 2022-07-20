@@ -10,23 +10,6 @@ TEST_GPU = torch.cuda.is_available()
 os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
 
 
-# BASE_DIR = "/home/qlh/EduNLP/data/test/test_pretrain/bert"
-# pretrained_tokenizer_dir = f"{BASE_DIR}/pretrained_tokenizer_dir"
-# pretrained_model_dir = f"{BASE_DIR}/output_model_dir"
-# pretrained_pp_dir = f"{BASE_DIR}/pretrained_pp_dir"
-# if not os.path.exists(pretrained_tokenizer_dir):
-#     os.makedirs(pretrained_tokenizer_dir, exist_ok=True)
-# if not os.path.exists(pretrained_model_dir):
-#     os.makedirs(pretrained_model_dir, exist_ok=True)
-# if not os.path.exists(pretrained_pp_dir):
-#     os.makedirs(pretrained_pp_dir, exist_ok=True)
-# def get_standard_luna_data():
-#     data_path = path_append(abs_current_dir(__file__), "../../static/test_data/standard_luna_data.json", to_str=True)
-#     _data = load_items(data_path)
-#     return _data
-# standard_luna_data = get_standard_luna_data()
-
-
 class PretrainEmloTest:
     def test_tokenizer(standard_luna_data, pretrained_tokenizer_dir):
         pretrained_dir = pretrained_tokenizer_dir
@@ -37,7 +20,7 @@ class PretrainEmloTest:
             {'ques_content': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                     若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
-        tokenizer = ElmoTokenizer()
+        tokenizer = ElmoTokenizer(tokenize_method="pure_text")
         tokenizer_size1 = len(tokenizer)
         tokenizer.set_vocab(standard_luna_data, key=lambda x: x["ques_content"])
         tokenizer_size2 = len(tokenizer)
@@ -71,7 +54,7 @@ class PretrainEmloTest:
             standard_luna_data,
             pretrained_model_dir,
             data_params={
-                "feature_key": "ques_content"
+                "stem_key": "ques_content"
             },
             train_params={
                 "num_train_epochs": 3,
@@ -98,7 +81,7 @@ class PretrainEmloTest:
                     若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
         data_params = {
-            "feature_key": "ques_content",
+            "stem_key": "ques_content",
             "labal_key": "difficulty"
         }
         train_params = {
