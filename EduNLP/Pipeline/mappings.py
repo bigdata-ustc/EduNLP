@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from transformers.models.auto.auto_factory import _LazyAutoMapping
 
-MODEL_MAPPING_NAMES = OrderedDict(
+I2V_MAPPING_NAMES = OrderedDict(
     [
         ("elmo", "ElmoModel"),
         ("bert", "BertModel")
@@ -21,14 +21,6 @@ MODEL_FOR_PROPERTY_PREDICTION_MAPPING_NAMES = OrderedDict(
         ("bert", "BertForPropertyPrediction")
     ]
 )
-
-MODEL_FOR_PRETRAINING_MAPPING_NAMES = OrderedDict(
-    [
-        ("elmo", "ElmoLMForPreTraining"),
-        ("bert", "BertForMaskedLM")
-    ]
-)
-
 
 TASK_MAPPING = {
     "property-prediction": MODEL_FOR_PROPERTY_PREDICTION_MAPPING_NAMES
