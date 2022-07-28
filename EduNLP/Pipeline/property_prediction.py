@@ -24,7 +24,3 @@ class PropertyPredictionPipeline(Pipeline):
             {"property": p.item()} for p in outputs
         ]
         return dict_property
-
-    def __call__(self, *args, **kwargs):
-        super(PropertyPredictionPipeline, self).__call__(*args, **kwargs)
-        pass
