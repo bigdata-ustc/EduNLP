@@ -1,4 +1,4 @@
-from base import Pipeline, GenericTensor
+from .base import Pipeline, GenericTensor
 from typing import Dict, Optional, Union
 from torch import sigmoid
 
@@ -20,7 +20,5 @@ class PropertyPredictionPipeline(Pipeline):
     def postprocess(self, model_outputs, **postprocess_params):
         outputs = model_outputs["logits"]
         outputs = outputs.numpy()
-        dict_property = [
-            {"property": p.item()} for p in outputs
-        ]
+        dict_property = {"property": outputs.item()}
         return dict_property

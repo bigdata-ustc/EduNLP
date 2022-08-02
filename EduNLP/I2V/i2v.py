@@ -12,7 +12,6 @@ from ..Tokenizer import Tokenizer, get_tokenizer
 from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
-
 __all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "DisenQ", "QuesNet", "get_pretrained_i2v"]
 
 
@@ -162,7 +161,7 @@ class D2V(I2V):
 
     def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
                      **kwargs) -> tuple:
-        '''
+        """
         It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
@@ -183,7 +182,7 @@ class D2V(I2V):
         Returns
         --------
         vector:list
-        '''
+        """
         tokens = self.tokenize(items, return_token=True, key=key) if tokenize is True else items
         tokens = [token for token in tokens]
         return self.t2v(tokens, *args, **kwargs), None
@@ -292,6 +291,7 @@ class Elmo(I2V):
     -------
     i2v model: Elmo
     """
+
     def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
         """It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
@@ -432,13 +432,14 @@ class DisenQ(I2V):
     -------
     i2v model: DisenQ
     """
+
     def infer_vector(self, items: (dict, list), tokenize=True,
                      key=lambda x: x, vector_type=None, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
         Parameters
         -----------
-        item: dict or list
+        items: dict or list
             the item of question
         tokenize: bool
             True: tokenize the item
@@ -479,7 +480,7 @@ class QuesNet(I2V):
     I2V
     """
 
-    def infer_vector(self, item, tokenize=True, key=lambda x: x, meta=['know_name'], *args, **kwargs):
+    def infer_vector(self, item, tokenize=True, key=lambda x: x, meta=None, *args, **kwargs):
         """ It is a function to switch item to vector. And before using the function, it is nesseary to load model.
         Parameters
         ----------
@@ -500,9 +501,11 @@ class QuesNet(I2V):
         token embeddings
         question embedding
         """
-        input = self.tokenize(item, key=key, meta=meta, *args, **kwargs) if tokenize is True else item
-        content = input['content_idx']
-        meta_idx = input['meta_idx']
+        if meta is None:
+            meta = ['know_name']
+        input_ = self.tokenize(item, key=key, meta=meta, *args, **kwargs) if tokenize is True else item
+        content = input_['content_idx']
+        meta_idx = input_['meta_idx']
         if isinstance(item, list):
             qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(item))]
         else:
@@ -564,10 +567,10 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
     >>> print(i2v(item))
     ([array([ ...dtype=float32)], None)
     """
-    pretraind_models = get_all_pretrained_models()
-    if name not in pretraind_models:
+    pretrained_models = get_all_pretrained_models()
+    if name not in pretrained_models:
         raise KeyError(
-            "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(pretraind_models))
+            "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(pretrained_models))
         )
     _, t2v = get_pretrained_model_info(name)
     _class, *params = MODEL_MAP[t2v], name

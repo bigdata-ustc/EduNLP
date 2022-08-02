@@ -5,6 +5,7 @@ from .components import PREPROCESSING_PIPES
 from ..Pretrain import PretrainedEduTokenizer
 from ..ModelZoo.base_model import BaseModel
 from transformers.modeling_outputs import ModelOutput
+from abc import ABC, abstractmethod
 
 GenericTensor = Union["torch.Tensor", List["GenericTensor"]]
 
@@ -205,7 +206,7 @@ class PreProcessingPipeline(object):
         return [(name, self._preproc_components[name]) for name in self.component_pipeline]
 
 
-class Pipeline(object):
+class Pipeline(ABC):
     """
     The pipeline class is the class from which all pipelines inherit. Pipeline workflow is defined as a sequence of the
     following operations:

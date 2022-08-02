@@ -81,15 +81,6 @@ class TokenizePipe(BasePipe):
         return tokenize(input_, *self.args, **self.kwargs)
 
 
-class PureTextTokenizerPipe(BasePipe):
-    def __init__(self, *args, **kwargs):
-        super(PureTextTokenizerPipe, self).__init__(*args, **kwargs)
-        self.tokenizer = PureTextTokenizer()
-
-    def __call__(self, input_):
-        return [i for i in self.tokenizer(input_, *self.args, **self.kwargs)]
-
-
 PREPROCESSING_PIPES = {
     'dict2str4sif': Dict2Str4SifPipe,
     'is_sif': IsSifPipe,
@@ -99,5 +90,4 @@ PREPROCESSING_PIPES = {
     'seg_describe': SegDescribePipe,
     'seg_filter': SegFilterPipe,
     'tokenize': TokenizePipe,
-    'pure_text_tokenizer': PureTextTokenizerPipe
 }
