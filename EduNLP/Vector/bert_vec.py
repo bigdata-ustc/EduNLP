@@ -1,6 +1,4 @@
-import numpy as np
-from pathlib import PurePath
-from transformers import AutoModel
+from transformers import BertModel as HFBertModel
 from .const import UNK, PAD
 from .meta import Vector
 import torch
@@ -31,7 +29,7 @@ class BertModel(Vector):
     """
 
     def __init__(self, pretrained_model):
-        self.model = AutoModel.from_pretrained(pretrained_model)
+        self.model = HFBertModel.from_pretrained(pretrained_model)
 
     def __call__(self, items: dict):
         # batch_size, sent_len, embedding_size

@@ -112,3 +112,5 @@ venv.bak/
 # User Definition
 data/
 deprecated/
+tmp*/
+jieba.cache

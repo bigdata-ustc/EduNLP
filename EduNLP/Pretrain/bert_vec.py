@@ -23,7 +23,7 @@ DEFAULT_TRAIN_PARAMS = {
     "output_dir": None,
     "num_train_epochs": 1,
     "per_device_train_batch_size": 32,
-    "per_device_eval_batch_size": 32,
+    # "per_device_eval_batch_size": 32,
     # evaluation_strategy: "steps",
     # eval_steps:200,
     "save_steps": 1000,
@@ -101,7 +101,7 @@ class BertTokenizer(object):
     >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
 
-    def __init__(self, pretrained_model="bert-base-chinese", max_length=500, add_specials: (list, bool) = False, tokenize_method=None, **argv):
+    def __init__(self, pretrained_model="bert-base-chinese", max_length=512, add_specials: (list, bool) = False, tokenize_method=None, **argv):
         self.text_tokenizer_name = tokenize_method
         self.max_length = max_length
         if tokenize_method is not None:
@@ -128,7 +128,7 @@ class BertTokenizer(object):
             text = key(items)
         if isinstance(return_tensors, bool):
             return_tensors = "pt" if return_tensors is True else None
-        encodes = self.bert_tokenizer(text, truncation=True, padding=padding, max_len=self.max_length, return_tensors=return_tensors, return_text=False)
+        encodes = self.bert_tokenizer(text, truncation=True, padding=padding, max_length=self.max_length, return_tensors=return_tensors)
         return encodes
 
     def __len__(self):
@@ -254,7 +254,7 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
     # model configuration
     model = BertForMaskedLM.from_pretrained(pretrained_model, **model_params)
     # resize embedding for additional special tokens
-    model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
+    model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
 
     # dataset configuration
     dataset = BertDataset(tokenizer, items=items,
@@ -310,12 +310,12 @@ def finetune_bert_for_property_prediction(train_items, output_dir, pretrained_mo
     tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
     train_dataset = BertDataset(tokenizer=tokenizer, items=train_items,
-                                stem_key=data_params.get("stem_key", "stem"),
-                                labal_key=data_params.get("labal_key", "diff"))
+                                stem_key=data_params.get("stem_key", "ques_content"),
+                                label_key=data_params.get("label_key", "difficulty"))
     if eval_items is not None:
         eval_dataset = BertDataset(tokenizer=tokenizer, items=eval_items,
-                                   stem_key=data_params.get("stem_key", "stem"),
-                                   labal_key=data_params.get("labal_key", "diff"))
+                                   stem_key=data_params.get("stem_key", "ques_content"),
+                                   label_key=data_params.get("label_key", "difficulty"))
     else:
         eval_dataset = None
     # model configuration

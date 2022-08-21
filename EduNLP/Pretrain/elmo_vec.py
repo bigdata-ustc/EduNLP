@@ -104,11 +104,11 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrained_
             tokenizer.set_vocab(corpus_items)
         else:
             tokenizer.set_vocab(corpus_items,
-                                key=lambda x: x[data_params.get("stem_key", "stem")])
+                                key=lambda x: x[data_params.get("stem_key", "ques_content")])
 
     # dataset configuration
     dataset = ElmoDataset(tokenizer=tokenizer, items=items,
-                          stem_key=data_params.get("stem_key", None))
+                          stem_key=data_params.get("stem_key", "ques_content"))
 
     # model configuration
     if pretrained_dir:
@@ -183,15 +183,15 @@ def train_elmo_for_property_prediction(
         tokenizer = ElmoTokenizer(**work_tokenizer_params)
         corpus_items = train_items + eval_items
         tokenizer.set_vocab(corpus_items,
-                            key=lambda x: x[data_params.get("stem_key", "stem")])
+                            key=lambda x: x[data_params.get("stem_key", "ques_content")])
     # dataset configuration
     train_dataset = ElmoDataset(tokenizer=tokenizer, items=train_items,
-                               stem_key=data_params.get("stem_key", "stem"),
-                               labal_key=data_params.get("labal_key", "diff"))
+                               stem_key=data_params.get("stem_key", "ques_content"),
+                               label_key=data_params.get("label_key", "difficulty"))
     if eval_items is not None:
         eval_dataset = ElmoDataset(tokenizer=tokenizer, items=eval_items,
-                                  stem_key=data_params.get("stem_key", "stem"),
-                                  labal_key=data_params.get("labal_key", "diff"))
+                                  stem_key=data_params.get("stem_key", "ques_content"),
+                                  label_key=data_params.get("label_key", "difficulty"))
     else:
         eval_dataset = None
     # model configuration

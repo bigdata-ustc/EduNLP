@@ -1,17 +1,18 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 import pytest
 import torch
-from EduNLP.ModelZoo import load_items
 from EduNLP.ModelZoo.rnn import ElmoLM
 from EduNLP.Pretrain import ElmoTokenizer, train_elmo, train_elmo_for_property_prediction
-from EduNLP.utils import abs_current_dir, path_append
+from EduNLP.Vector import T2V, ElmoModel
+from EduNLP.I2V import Elmo, get_pretrained_i2v
 
 TEST_GPU = torch.cuda.is_available()
-os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
 
 
-class PretrainEmloTest:
-    def test_tokenizer(standard_luna_data, pretrained_tokenizer_dir):
+class TestPretrainEmlo:
+    def test_tokenizer(self, standard_luna_data, pretrained_tokenizer_dir):
         pretrained_dir = pretrained_tokenizer_dir
         test_items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
@@ -42,7 +43,7 @@ class PretrainEmloTest:
         res = tokenizer(test_items, key=lambda x: x["ques_content"], return_tensors=False, return_text=True)
         assert isinstance(res["seq_idx"], list)
 
-    def test_train_elmo(standard_luna_data, pretrained_model_dir):
+    def test_train_elmo(self, standard_luna_data, pretrained_model_dir):
         test_items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
                     如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,\
@@ -67,12 +68,12 @@ class PretrainEmloTest:
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_model_dir)
 
         # TODO: need to handle inference for T2V for batch or single
-        encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
-        model(**encodes)
+        # encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
+        # model(**encodes)
         encodes = tokenizer(test_items, lambda x: x['ques_content'])
         model(**encodes)
 
-    def test_train_pp(standard_luna_data, pretrained_model_dir, pretrained_pp_dir):
+    def test_train_pp(self, standard_luna_data, pretrained_model_dir, pretrained_pp_dir):
         test_items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
                     如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,\
@@ -82,7 +83,7 @@ class PretrainEmloTest:
         ]
         data_params = {
             "stem_key": "ques_content",
-            "labal_key": "difficulty"
+            "label_key": "difficulty"
         }
         train_params = {
             "num_train_epochs": 3,
@@ -95,7 +96,7 @@ class PretrainEmloTest:
             pretrained_pp_dir,
             pretrained_dir=pretrained_model_dir,
 
-            eval_items=standard_luna_data,
+            # eval_items=standard_luna_data,
             train_params=train_params,
             data_params=data_params
         )
@@ -103,59 +104,42 @@ class PretrainEmloTest:
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_pp_dir)
 
         # TODO: need to handle inference for T2V for batch or single
-        encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
-        model(**encodes)
+        # encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
+        # model(**encodes)
         encodes = tokenizer(test_items, lambda x: x['ques_content'])
         model(**encodes)
 
+    def test_elmo_t2v(self, pretrained_model_dir):
+        items = [
+            {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
+                若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
+        ]
+        tokenizer = ElmoTokenizer.from_pretrained(pretrained_model_dir)
 
-# TODO: T2V test
-# model = ElmoModel(pretrained_model_dir)
-# assert model.vector_size > 0
-# assert output.shape[-1] == model.vector_size
-# t2v = T2V('elmo', pretrained_model_dir)
-# assert t2v(inputs).shape[-1] == t2v.vector_size
-# assert t2v.infer_vector(inputs).shape[-1] == t2v.vector_size
+        t2v = ElmoModel(pretrained_model_dir)
+        encodes = tokenizer(items, key=lambda x: x['stem'])
+        output = t2v(encodes)
+        assert output.shape[1] == t2v.vector_size
 
+        t2v = T2V('elmo', pretrained_model_dir)
+        encodes = tokenizer(items, key=lambda x: x['stem'])
+        output = t2v(encodes)
+        assert output.shape[-1] == t2v.vector_size
+        assert t2v.infer_vector(encodes).shape[1] == t2v.vector_size
+        assert t2v.infer_tokens(encodes).shape[2] == t2v.vector_size
 
-def test_elmo_i2v(standard_luna_data):
-    pass
+    def test_elmo_i2v(self, pretrained_model_dir):
+        items = [
+            {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
+                若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
+        ]
+        tokenizer_kwargs = {"tokenizer_config_dir": pretrained_model_dir}
+        i2v = Elmo('elmo', 'elmo', pretrained_model_dir, tokenizer_kwargs=tokenizer_kwargs, pretrained_t2v=False)
 
-
-# def test_elmo_i2v(stem_data_elmo, tmpdir):
-#     output_dir = str(tmpdir.mkdir('elmo_test'))
-#     tokenizer = ElmoTokenizer()
-#     train_text = [tokenizer.tokenize(item=data, freeze_vocab=False) for data in stem_data_elmo]
-#     train_elmo(train_text, output_dir)
-#     tokenizer_kwargs = {"path": os.path.join(output_dir, "vocab.json")}
-#     i2v = Elmo('elmo', 'elmo', output_dir, tokenizer_kwargs=tokenizer_kwargs, pretrained_t2v=False)
-#     item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
-#                 若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
-#     i_vec, t_vec = i2v(item['stem'])
-#     assert len(i_vec) == i2v.vector_size
-#     assert len(t_vec[0]) == i2v.vector_size
-#     i_vec = i2v.infer_item_vector(item['stem'])
-#     assert len(i_vec) == i2v.vector_size
-#     t_vec = i2v.infer_token_vector(item['stem'])
-#     assert len(t_vec[0]) == i2v.vector_size
-
-#     i_vec, t_vec = i2v([item['stem'], item['stem'], item['stem']])
-#     assert len(i_vec[0]) == i2v.vector_size
-#     assert len(t_vec[0][0]) == i2v.vector_size
-
-
-# TODO: pretrained_i2v_test
-def test_pretrained_elmo_i2v(standard_luna_data,):
-    pass
-# def test_pretrained_elmo_i2v(stem_data_elmo, tmpdir):
-#     output_dir = str(tmpdir.mkdir('elmo_test'))
-#     i2v = get_pretrained_i2v("elmo_test", output_dir)
-#     item = {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
-#                     若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
-#     i_vec, t_vec = i2v(item['stem'])
-#     assert len(i_vec) == i2v.vector_size
-#     assert len(t_vec[0]) == i2v.vector_size
-#     i_vec = i2v.infer_item_vector(item['stem'])
-#     assert len(i_vec) == i2v.vector_size
-#     t_vec = i2v.infer_token_vector(item['stem'])
-#     assert len(t_vec[0]) == i2v.vector_size
+        i_vec, t_vec = i2v(items, key=lambda x: x["stem"])
+        assert len(i_vec[0]) == i2v.vector_size
+        assert len(t_vec[0][0]) == i2v.vector_size
+        i_vec = i2v.infer_item_vector(items, key=lambda x: x['stem'])
+        assert len(i_vec[0]) == i2v.vector_size
+        t_vec = i2v.infer_token_vector(items, key=lambda x: x['stem'])
+        assert len(t_vec[0][0]) == i2v.vector_size

@@ -48,7 +48,7 @@ class LM(nn.Module):
     torch.Size([2, 3, 2])
     """
     def __init__(self, rnn_type: str, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers=1,
-                 bidirectional=False, embedding=None, model_params=None, use_pack_pad=False, **kwargs):
+                 bidirectional=False, embedding=None, model_params=None, use_pack_pad=True, **kwargs):
         super(LM, self).__init__()
         rnn_type = rnn_type.upper()
         self.embedding = torch.nn.Embedding(vocab_size, embedding_dim) if embedding is None else embedding
@@ -136,9 +136,9 @@ class ElmoLM(BaseModel):
     base_model_prefix = 'elmo'
 
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers: int = 2,
-                 dropout_rate: float = 0.5, **argv):
+                 dropout_rate: float = 0.5, use_pack_pad=False, **argv):
         super(ElmoLM, self).__init__()
-        self.LM_layer = LM("BiLSTM", vocab_size, embedding_dim, hidden_size, num_layers=num_layers, **argv)
+        self.LM_layer = LM("BiLSTM", vocab_size, embedding_dim, hidden_size, num_layers=num_layers, use_pack_pad=use_pack_pad, **argv)
         self.pred_layer = nn.Linear(hidden_size, vocab_size)
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
@@ -218,7 +218,7 @@ class ElmoLMForPreTraining(BaseModel):
     base_model_prefix = 'elmo'
 
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
-                 batch_first=True, **argv):
+                 batch_first=True, use_pack_pad=False, **argv):
         super(ElmoLMForPreTraining, self).__init__()
         self.elmo = ElmoLM(
             vocab_size=vocab_size,
@@ -226,6 +226,7 @@ class ElmoLMForPreTraining(BaseModel):
             hidden_size=hidden_size,
             dropout_rate=dropout_rate,
             batch_first=batch_first,
+            use_pack_pad=use_pack_pad,
             **argv
         )
         self.vocab_size = vocab_size
@@ -261,7 +262,7 @@ class ElmoLMForPreTraining(BaseModel):
         """
         batch_size, idx_len = seq_idx.shape
         max_len = seq_len.max().item() if self.config.to_dict().get("use_pack_pad", False) is True else idx_len
-        # NOTE: pred_mask matters when LM use pack_pad
+        # NOTE: pred_mask matters when LM use pack_pad, but it will break down for parallel GPU because of different seq_len between gpus
         pred_mask = torch.arange(max_len, device=seq_idx.device)[None, :] < seq_len[:, None]
         idx_mask = torch.arange(idx_len, device=seq_idx.device)[None, :] < seq_len[:, None]
 
@@ -280,13 +281,19 @@ class ElmoLMForPreTraining(BaseModel):
 
         flat_pred_forward = pred_forward[pred_forward_mask]
         flat_pred_backward = pred_backward[pred_backward_mask]
+        
+        _, flat_pred_idx_forward= torch.max(flat_pred_forward, dim=1)
+        _, flat_pred_idx_backward = torch.max(flat_pred_backward, dim=1)
+        
         flat_y_backward = seq_idx[idx_backward_mask]
         flat_y_forward = seq_idx[idx_forward_mask]
+        
+        diff_forword = torch.sum(flat_pred_idx_forward - flat_y_forward)
+        diff_backward = torch.sum(flat_pred_idx_backward - flat_y_backward)
 
-        forward_loss = self.criterion(flat_pred_forward.double(), flat_y_forward)
-        backward_loss = self.criterion(flat_pred_backward.double(), flat_y_backward)
+        forward_loss = self.criterion(flat_pred_forward, flat_y_forward)
+        backward_loss = self.criterion(flat_pred_backward, flat_y_backward)
         loss = forward_loss + backward_loss
-
         return ElmoLMForPreTrainingOutput(
             loss=loss,
             pred_forward=pred_forward,

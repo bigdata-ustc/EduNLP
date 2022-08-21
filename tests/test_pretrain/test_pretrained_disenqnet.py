@@ -1,13 +1,12 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 import pytest
 import torch
-from EduNLP.ModelZoo import load_items
-from EduNLP.ModelZoo.rnn import ElmoLM
+# from EduNLP.ModelZoo.disenqnet import DisenQNet, DisenQForPropertyPrediction
 from EduNLP.Pretrain import DisenQTokenizer, train_disenqnet
-from EduNLP.utils import abs_current_dir, path_append
 
 TEST_GPU = torch.cuda.is_available()
-os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
 
 
 # TODO

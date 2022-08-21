@@ -3,7 +3,7 @@
 
 import json
 import os.path
-
+from typing import List, Tuple
 from EduNLP.constant import MODEL_DIR
 from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import get_pretrained_model_info, get_all_pretrained_models
@@ -24,7 +24,7 @@ class I2V(object):
     Parameters
     -----------
     tokenizer: str
-        the tokenizer name
+        the name of tokenizer. eg. bert, pure_text, ...
     t2v: str
         the name of token2vector model
     args:
@@ -34,6 +34,8 @@ class I2V(object):
     pretrained_t2v: bool
         - True: use pretrained t2v model
         - False: use your own t2v model
+    model_dir: str
+        local directionary for saving online pretrained models, work only when `pretrained_t2v=True`
     kwargs:
         the parameters passed to t2v
 
@@ -43,7 +45,7 @@ class I2V(object):
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
     >>> model_path = "examples/test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
-    >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
+    >>> i2v = D2V("text", "d2v", filepath=model_path, pretrained_t2v=False)
     >>> i2v(item)
     ([array([ ...dtype=float32)], None)
 
@@ -52,21 +54,25 @@ class I2V(object):
     i2v model: I2V
     """
 
-    def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None, pretrained_t2v=False, **kwargs):
+    def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None,
+                 pretrained_t2v=False, model_dir=MODEL_DIR, **kwargs):
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
-            self.t2v = get_t2v_pretrained_model(t2v, kwargs.get("model_dir", MODEL_DIR))
+            self.t2v = get_t2v_pretrained_model(t2v, model_dir)
         else:
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
-            self.tokenizer = BertTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+            self.tokenizer = BertTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'quesnet':
             self.tokenizer = QuesNetTokenizer.from_pretrained(
                 **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'elmo':
-            self.tokenizer = ElmoTokenizer(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+            self.tokenizer = ElmoTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'disenq':
-            self.tokenizer = DisenQTokenizer.from_pretrained(**tokenizer_kwargs if tokenizer_kwargs is not None else {})
+            self.tokenizer = DisenQTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         else:
             self.tokenizer: Tokenizer = get_tokenizer(tokenizer,
                                                       **tokenizer_kwargs if tokenizer_kwargs is not None else {})
@@ -83,12 +89,11 @@ class I2V(object):
         """transfer item to vector"""
         return self.infer_vector(items, *args, **kwargs)
 
-    def tokenize(self, items, *args, indexing=True, padding=False, key=lambda x: x, **kwargs) -> list:
+    def tokenize(self, items, *args, key=lambda x: x, **kwargs) -> list:
         # """tokenize item"""
         return self.tokenizer(items, *args, key=key, **kwargs)
 
-    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x,
-                     **kwargs) -> tuple:
+    def infer_vector(self, items, key=lambda x: x, **kwargs) -> tuple:
         raise NotImplementedError
 
     def infer_item_vector(self, tokens, *args, **kwargs) -> ...:
@@ -160,7 +165,7 @@ class D2V(I2V):
     i2v model: I2V
     """
 
-    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
+    def infer_vector(self, items, tokenize=True, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
         It is a function to switch item to vector. And before using the function, it is necessary to load model.
@@ -169,10 +174,8 @@ class D2V(I2V):
         -----------
         items:str
             the text of question
-        tokenize:bool
+        tokenize: bool
             True: tokenize the item
-        indexing:bool
-        padding:bool
         key: lambda function
             the parameter passed to tokenizer, select the text to be processed
         args:
@@ -184,7 +187,7 @@ class D2V(I2V):
         --------
         vector:list
         '''
-        tokens = self.tokenize(items, return_token=True, key=key) if tokenize is True else items
+        tokens = self.tokenize(items, key=key) if tokenize is True else items
         tokens = [token for token in tokens]
         return self.t2v(tokens, *args, **kwargs), None
 
@@ -231,7 +234,7 @@ class W2V(I2V):
 
     """
 
-    def infer_vector(self, items, tokenize=True, indexing=False, padding=False, key=lambda x: x, *args,
+    def infer_vector(self, items, tokenize=True, key=lambda x: x, *args,
                      **kwargs) -> tuple:
         '''
         It is a function to switch item to vector. And before using the function, it is necessary to load model.
@@ -242,8 +245,6 @@ class W2V(I2V):
             the text of question
         tokenize:bool
             True: tokenize the item
-        indexing:bool
-        padding:bool
         key: lambda function
             the parameter passed to tokenizer, select the text to be processed
         args:
@@ -255,7 +256,7 @@ class W2V(I2V):
         --------
         vector:list
         '''
-        tokens = self.tokenize(items, return_token=True) if tokenize is True else items
+        tokens = self.tokenize(items) if tokenize is True else items
         tokens = [token for token in tokens]
         return self.t2v(tokens, *args, **kwargs), self.t2v.infer_tokens(tokens, *args, **kwargs)
 
@@ -292,15 +293,14 @@ class Elmo(I2V):
     -------
     i2v model: Elmo
     """
-    def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
+    def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
+                     *args, key=lambda x: x, **kwargs) -> tuple:
         """It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
         -----------
-        items: str or list
-            the text of question
-        tokenize:bool
-            True: tokenize the item
+        items : str or dict or list
+            the item of question, or question list
         return_tensors: str
             tensor type used in tokenizer
         args:
@@ -312,24 +312,10 @@ class Elmo(I2V):
         --------
         vector: list
         """
-        is_batch = (tokenize and isinstance(items, list)) or (not tokenize and isinstance(items[0], list))
-        if tokenize:
-            tokens, lengths = self.tokenize(items, freeze_vocab=True, return_tensors=return_tensors,
-                                            pad_to_max_length=True)
-        else:
-            tokens = []
-            lengths = [len(i) for i in tokens] if is_batch else len(tokens)
-        if is_batch:
-            return self.t2v.infer_vector(
-                tokens, lengths=lengths, *args, **kwargs), self.t2v.infer_tokens(tokens,
-                                                                                 lengths=lengths, *args, **kwargs)
-        else:
-            tokens = [tokens]
-            lengths = [lengths]
-            i_v, i_t = self.t2v.infer_vector(
-                tokens, lengths=lengths, *args, **kwargs), self.t2v.infer_tokens(tokens,
-                                                                                 lengths=lengths, *args, **kwargs)
-            return i_v[0], i_t[0]
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
+        inputs = self.tokenize(items, key=key)
+        return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
@@ -337,7 +323,7 @@ class Elmo(I2V):
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
-        tokenizer_kwargs = {"path": os.path.join(model_path, "vocab.json")}
+        tokenizer_kwargs = {"tokenizer_config_dir": model_path}
         return cls("elmo", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
 
@@ -371,16 +357,15 @@ class Bert(I2V):
     i2v model: Bert
     """
 
-    def infer_vector(self, items, tokenize=True, return_tensors='pt', *args, **kwargs) -> tuple:
+    def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
+                     *args, key=lambda x: x, return_tensors='pt', **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
 
         Parameters
         -----------
-        items: str or list
-            the text of question
-        tokenize:bool
-            True: tokenize the item
+        items : str or dict or list
+            the item of question, or question list
         return_tensors: str
             tensor type used in tokenizer
         args:
@@ -392,8 +377,8 @@ class Bert(I2V):
         --------
         vector:list
         """
-        inputs = self.tokenize(items, return_tensors=return_tensors) if tokenize is True else items
-        return self.t2v(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+        inputs = self.tokenize(items, key=key, return_tensors=return_tensors)
+        return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
@@ -401,7 +386,6 @@ class Bert(I2V):
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
-        tokenizer_kwargs = {"pretrain_model": model_path}
         tokenizer_kwargs = {"tokenizer_config_dir": model_path}
         return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
                    tokenizer_kwargs=tokenizer_kwargs)
@@ -432,16 +416,14 @@ class DisenQ(I2V):
     -------
     i2v model: DisenQ
     """
-    def infer_vector(self, items: (dict, list), tokenize=True,
-                     key=lambda x: x, vector_type=None, **kwargs) -> tuple:
+    def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
+                     *args, key=lambda x: x, vector_type=None, **kwargs) -> tuple:
         """
         It is a function to switch item to vector. And before using the function, it is nesseary to load model.
         Parameters
         -----------
-        item: dict or list
-            the item of question
-        tokenize: bool
-            True: tokenize the item
+        items : str or dict or list
+            the item of question, or question list
         key: lambda function
             the parameter passed to tokenizer, select the text to be processed
         args:
@@ -452,7 +434,9 @@ class DisenQ(I2V):
         --------
         vector:list
         """
-        inputs = self.tokenize(items, key=key, **kwargs) if tokenize is True else items
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
+        inputs = self.tokenize(items, key=key, **kwargs)
         i_vec = self.t2v.infer_vector(inputs, vector_type=vector_type, **kwargs)
         t_vec = self.t2v.infer_tokens(inputs, **kwargs)
         return i_vec, t_vec
@@ -479,7 +463,8 @@ class QuesNet(I2V):
     I2V
     """
 
-    def infer_vector(self, item, tokenize=True, key=lambda x: x, meta=['know_name'], *args, **kwargs):
+    def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
+                     *args, key=lambda x: x, meta=['know_name'], **kwargs):
         """ It is a function to switch item to vector. And before using the function, it is nesseary to load model.
         Parameters
         ----------
@@ -500,10 +485,10 @@ class QuesNet(I2V):
         token embeddings
         question embedding
         """
-        input = self.tokenize(item, key=key, meta=meta, *args, **kwargs) if tokenize is True else item
+        input = self.tokenize(items, key=key, meta=meta, *args, **kwargs)
         content = input['content_idx']
         meta_idx = input['meta_idx']
-        if isinstance(item, list):
+        if isinstance(items, list):
             qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(item))]
         else:
             qs = Question("", content, [0], [[0], [0], [0]], meta_idx)

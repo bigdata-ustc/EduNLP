@@ -1,4 +1,3 @@
-from black import main
 import torch
 import numpy as np
 import pytest
