@@ -12,7 +12,6 @@ from ..Tokenizer import Tokenizer, get_tokenizer
 from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
-
 __all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "DisenQ", "QuesNet", "get_pretrained_i2v"]
 
 
@@ -167,7 +166,7 @@ class D2V(I2V):
 
     def infer_vector(self, items, tokenize=True, key=lambda x: x, *args,
                      **kwargs) -> tuple:
-        '''
+        """
         It is a function to switch item to vector. And before using the function, it is necessary to load model.
 
         Parameters
@@ -186,7 +185,7 @@ class D2V(I2V):
         Returns
         --------
         vector:list
-        '''
+        """
         tokens = self.tokenize(items, key=key) if tokenize is True else items
         tokens = [token for token in tokens]
         return self.t2v(tokens, *args, **kwargs), None
@@ -549,10 +548,10 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
     >>> print(i2v(item))
     ([array([ ...dtype=float32)], None)
     """
-    pretraind_models = get_all_pretrained_models()
-    if name not in pretraind_models:
+    pretrained_models = get_all_pretrained_models()
+    if name not in pretrained_models:
         raise KeyError(
-            "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(pretraind_models))
+            "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(pretrained_models))
         )
     _, t2v = get_pretrained_model_info(name)
     _class, *params = MODEL_MAP[t2v], name

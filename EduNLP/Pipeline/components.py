@@ -5,92 +5,83 @@ from ..Tokenizer import PureTextTokenizer
 from ..SIF.tokenization.text import tokenize
 
 
-class IsSifPipe:
+class BasePipe:
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+
+    def __call__(self, input_):
+        raise NotImplementedError
+
+
+class IsSifPipe(BasePipe):
+    def __init__(self, *args, **kwargs):
+        super(IsSifPipe, self).__init__(*args, **kwargs)
 
     def __call__(self, input_):
         print(is_sif(input_, *self.args, **self.kwargs))
         return input_
 
 
-class ToSifPipe:
+class ToSifPipe(BasePipe):
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        super(ToSifPipe, self).__init__(*args, **kwargs)
 
     def __call__(self, input_):
         return to_sif(input_, *self.args, **self.kwargs)
 
 
-class Dict2Str4SifPipe:
+class Dict2Str4SifPipe(BasePipe):
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        super(Dict2Str4SifPipe, self).__init__(*args, **kwargs)
 
     def __call__(self, input_):
         return dict2str4sif(input_, *self.args, **self.kwargs)
 
 
-class Sif4SciPipe:
+class Sif4SciPipe(BasePipe):
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        super(Sif4SciPipe, self).__init__(*args, **kwargs)
 
     def __call__(self, input_):
         return sif4sci(input_, *self.args, **self.kwargs)
 
 
-class SegPipe:
+class SegPipe(BasePipe):
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        super(SegPipe, self).__init__(*args, **kwargs)
 
     def __call__(self, input_):
         return seg(input_, *self.args, **self.kwargs)
 
 
-class SegDescribePipe:
+class SegDescribePipe(BasePipe):
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        super(SegDescribePipe, self).__init__(*args, **kwargs)
 
     def __call__(self, input_: SegmentList):
         print(input_.describe())
         return input
 
 
-class SegFilterPipe:
+class SegFilterPipe(BasePipe):
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        super(SegFilterPipe, self).__init__(*args, **kwargs)
 
     def __call__(self, input_: SegmentList):
         input_.filter(*self.args, **self.kwargs)
         return input_
 
 
-class TokenizePipe:
+class TokenizePipe(BasePipe):
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        super(TokenizePipe, self).__init__(*args, **kwargs)
 
     def __call__(self, input_):
         return tokenize(input_, *self.args, **self.kwargs)
 
 
-class PureTextTokenizerPipe:
-    def __init__(self, *args, **kwargs):
-        self.tokenizer = PureTextTokenizer()
-        self.args = args
-        self.kwargs = kwargs
-
-    def __call__(self, input_):
-        return [i for i in self.tokenizer(input_, *self.args, **self.kwargs)]
-
-
-TOKENIZER_PIPES = {
+PREPROCESSING_PIPES = {
     'dict2str4sif': Dict2Str4SifPipe,
     'is_sif': IsSifPipe,
     'to_sif': ToSifPipe,
@@ -99,5 +90,4 @@ TOKENIZER_PIPES = {
     'seg_describe': SegDescribePipe,
     'seg_filter': SegFilterPipe,
     'tokenize': TokenizePipe,
-    'pure_text_tokenizer': PureTextTokenizerPipe
 }

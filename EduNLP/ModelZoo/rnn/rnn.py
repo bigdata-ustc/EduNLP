@@ -149,7 +149,7 @@ class ElmoLM(BaseModel):
         config['architecture'] = 'ElmoLM'
         self.config = PretrainedConfig.from_dict(config)
 
-    def forward(self, seq_idx=None, seq_len=None):
+    def forward(self, seq_idx=None, seq_len=None) -> ModelOutput:
         """
         Parameters
         ----------
@@ -239,7 +239,7 @@ class ElmoLMForPreTraining(BaseModel):
         config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
 
-    def forward(self, seq_idx=None, seq_len=None):
+    def forward(self, seq_idx=None, seq_len=None) -> ModelOutput:
         """
 
         Parameters
@@ -346,7 +346,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
         config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
 
-    def forward(self, seq_idx=None, seq_len=None, labels=None):
+    def forward(self, seq_idx=None, seq_len=None, labels=None) -> ModelOutput:
         outputs = self.elmo(seq_idx, seq_len)
         item_embeds = torch.cat(
             (outputs.forward_output[torch.arange(len(seq_len)), torch.tensor(seq_len) - 1],
