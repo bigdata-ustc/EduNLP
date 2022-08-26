@@ -175,8 +175,8 @@ class D2V(I2V):
             the text of question
         tokenize: bool
             True: tokenize the item
-        key: lambda function
-            the parameter passed to tokenizer, select the text to be processed
+        key: function
+            determine how to get the text of each item
         args:
             the parameters passed to t2v
         kwargs:
@@ -244,8 +244,8 @@ class W2V(I2V):
             the text of question
         tokenize:bool
             True: tokenize the item
-        key: lambda function
-            the parameter passed to tokenizer, select the text to be processed
+        key: function
+            determine how to get the text of each item
         args:
             the parameters passed to t2v
         kwargs:
@@ -423,8 +423,8 @@ class DisenQ(I2V):
         -----------
         items : str or dict or list
             the item of question, or question list
-        key: lambda function
-            the parameter passed to tokenizer, select the text to be processed
+        key: function
+            determine how to get the text of each item
         args:
             the parameters passed to t2v
         kwargs:
@@ -471,8 +471,8 @@ class QuesNet(I2V):
             the item of question, or question list
         tokenize : bool, optional
             True: tokenize the item
-        key : _type_, optional
-            _description_, by default lambdax:x
+        key : function, optional
+            determine how to get the text of each item, by default lambdax: x
         meta : list, optional
             meta information, by default ['know_name']
         args:

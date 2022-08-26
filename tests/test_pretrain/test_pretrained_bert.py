@@ -8,7 +8,8 @@ from EduNLP.Pretrain import BertTokenizer, finetune_bert, finetune_bert_for_prop
 from EduNLP.Vector import T2V, BertModel
 from EduNLP.I2V import Bert, get_pretrained_i2v
 
-TEST_GPU = torch.cuda.is_available()
+# TEST_GPU = torch.cuda.is_available()
+from conftest import TEST_GPU
 
 
 class TestPretrainBert:

@@ -9,6 +9,7 @@ from EduNLP.Vector import T2V, ElmoModel
 from EduNLP.I2V import Elmo, get_pretrained_i2v
 
 TEST_GPU = torch.cuda.is_available()
+# from conftest import TEST_GPU
 
 
 class TestPretrainEmlo:
@@ -61,7 +62,7 @@ class TestPretrainEmlo:
                 "num_train_epochs": 3,
                 "per_device_train_batch_size": 2,
                 "per_device_eval_batch_size": 2,
-                "no_cuda": not TEST_GPU,
+                # "no_cuda": not TEST_GPU,
             }
         )
         model = ElmoLM.from_pretrained(pretrained_model_dir)

@@ -12,9 +12,9 @@ def test_tokenizer():
 
 
 def test_disenQTokenizer():
-    tokenizer = DisenQTokenizer(max_length=10)
-    with pytest.raises(RuntimeError):
-        tokenizer("10 米 的 (2/5) = () 米 的 (1/2) .")
+    tokenizer = DisenQTokenizer(max_length=10, tokenize_method="space")
+    # with pytest.raises(RuntimeError):
+    #     tokenizer("10 米 的 (2/5) = () 米 的 (1/2) .")
 
     test_items = [
         "10 米 的 (2/5) = () 米 的 (1/2) . 多 余 的 字",

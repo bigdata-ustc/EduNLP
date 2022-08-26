@@ -6,8 +6,8 @@ from EduNLP.ModelZoo.rnn import ElmoLM
 from EduNLP.Pretrain import ElmoTokenizer, train_elmo, train_elmo_for_property_prediction
 from EduNLP.utils import abs_current_dir, path_append
 
-TEST_GPU = torch.cuda.is_available()
-os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
+# TEST_GPU = torch.cuda.is_available()
+from conftest import TEST_GPU
 
 
 # TODO

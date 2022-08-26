@@ -1,5 +1,5 @@
 from .base import Pipeline, PreProcessingPipeline
-from mappings import TASK_MAPPING
+from .mappings import TASK_MAPPING
 from .property_prediction import PropertyPredictionPipeline
 from typing import Optional, Union, List
 from ..Pretrain import PretrainedEduTokenizer

@@ -15,9 +15,32 @@ __all__ = ["EduVocab", "EduDataset", "PretrainedEduTokenizer"]
 
 
 class EduVocab(object):
-    def __init__(self, vocab_path=None, corpus_items=None, bos_token="[BOS]",
-                 eos_token="[EOS]", pad_token="[PAD]", unk_token="[UNK]",
-                 specials=None, lower=False, trim_min_count=1, **argv):
+    def __init__(self, vocab_path: str=None, corpus_items: List[str]=None, bos_token: str="[BOS]",
+                 eos_token: str="[EOS]", pad_token: str="[PAD]", unk_token: str="[UNK]",
+                 specials: List[str]=None, lower: bool=False, trim_min_count: int=1, **argv):
+        """The vocabulary container for a corpus.
+
+        Parameters
+        ----------
+        vocab_path : str, optional
+            vocabulary path to initialize this container, by default None
+        corpus_items : List[str], optional
+            corpus items to update this vocabulary, by default None
+        bos_token : str, optional
+            token representing for the start of a sentence, by default "[BOS]"
+        eos_token : str, optional
+            token representing for the end of a sentence, by default "[EOS]"
+        pad_token : str, optional
+            token representing for padding, by default "[PAD]"
+        unk_token : str, optional
+            token representing for unknown word, by default "[UNK]"
+        specials : List[str], optional
+            spacials tokens in vocabulary, by default None
+        lower : bool, optional
+            wheather to lower the corpus items, by default False
+        trim_min_count : int, optional
+            the lower bound number for adding a word into vocabulary, by default 1
+        """        
         super(EduVocab, self).__init__()
 
         self._tokens = []
@@ -34,7 +57,7 @@ class EduVocab(object):
         if specials is not None:
             self._special_tokens += specials
         for st in self._special_tokens:
-            self.add(st)
+            self._add(st)
         # 加载词典
         if vocab_path is not None:
             self.load_vocab(vocab_path)
@@ -62,12 +85,15 @@ class EduVocab(object):
         return self._tokens
 
     def to_idx(self, token):
+        """convert token to index"""
         return self.token_to_idx.get(token, self.unk_idx)
 
     def to_token(self, idx):
+        """convert index to index"""
         return self.idx_to_token.get(idx, self.unk_token)
 
     def convert_sequence_to_idx(self, tokens, bos=False, eos=False):
+        """convert sentence of tokens to sentence of indexs"""
         res = [self.to_idx(t) for t in tokens]
         if bos is True:
             res = [self.to_idx(self.bos_idx)] + res
@@ -76,9 +102,21 @@ class EduVocab(object):
         return res
 
     def convert_sequence_to_token(self, idxs):
+        """convert sentence of indexs to sentence of tokens"""
         return [self.to_token(i) for i in idxs]
 
-    def set_vocab(self, corpus_items, lower=False, trim_min_count=1):
+    def set_vocab(self, corpus_items: List[str], lower: bool=False, trim_min_count: int=1):
+        """Update the vocabulary with the tokens in corpus items
+
+        Parameters
+        ----------
+        corpus_items : List[str], optional
+            corpus items to update this vocabulary, by default None
+        lower : bool, optional
+            wheather to lower the corpus items, by default False
+        trim_min_count : int, optional
+            the lower bound number for adding a word into vocabulary, by default 1
+        """
         word2cnt = dict()
         for item in corpus_items:
             for word in item:
@@ -86,84 +124,73 @@ class EduVocab(object):
                 word2cnt[word] = word2cnt.get(word, 0) + 1
         words = [w for w, c in word2cnt.items() if c >= trim_min_count and w not in self._special_tokens]
         for token in words:
-            self.add(token)
+            self._add(token)
 
-    def load_vocab(self, vocab_path):
+    def load_vocab(self, vocab_path: str):
+        """Load the vocabulary from vocab_file
+
+        Parameters
+        ----------
+        vocab_path : str
+            path to save vocabulary file
+        """
         with open(vocab_path, "r", encoding="utf-8") as file:
             self._tokens = file.read().strip().split('\n')
             self.token_to_idx = {token: idx for idx, token in enumerate(self._tokens)}
             self.idx_to_token = {idx: token for idx, token in enumerate(self._tokens)}
 
-    def save_vocab(self, vocab_path):
+    def save_vocab(self, vocab_path: str):
+        """Save the vocabulary into vocab_file
+
+        Parameters
+        ----------
+        vocab_path : str
+            path to save vocabulary file
+        """
         with open(vocab_path, 'w', encoding='utf-8') as file:
             for i in range(self.vocab_size):
                 token = self._tokens[i]
                 file.write(f"{token}\n")
 
-    def add(self, token):
+    def _add(self, token: str):
         if token not in self._tokens:
             idx = len(self._tokens)
             self._tokens.append(token)
             self.idx_to_token[idx] = token
             self.token_to_idx[token] = idx
 
-    def add_specials(self, tokens):
+    def add_specials(self, tokens: List[str]):
+        """Add special tokens into vocabulary"""
         for token in tokens:
             if token not in self._special_tokens:
                 self._special_tokens += [token]
-                self.add(token)
+                self._add(token)
 
-    def add_tokens(self, tokens):
+    def add_tokens(self, tokens: List[str]):
+        """Add tokens into vocabulary"""
         for token in tokens:
-            self.add(token)
-
-
-class CharTokenizer(object):
-    def __init__(self, stop_words="default") -> None:
-        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "default" else stop_words
-        self.stop_words = stop_words if stop_words is not None else []
-
-    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
-        for item in items:
-            yield self._tokenize(item, key=key, **kwargs)
-
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
-        tokens = key(item).strip().split('')
-        if self.stop_words:
-            tokens = [w for w in tokens if w != '' and w not in self.stop_words]
-        return tokens
-
-
-class SpaceTokenizer(object):
-    def __init__(self, stop_words="default") -> None:
-        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "default" else stop_words
-        self.stop_words = stop_words if stop_words is not None else []
-
-    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
-        for item in items:
-            yield self._tokenize(item, key=key, **kwargs)
-
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
-        tokens = key(item).strip().split(' ')
-        if self.stop_words:
-            tokens = [w for w in tokens if w != '' and w not in self.stop_words]
-        return tokens
+            self._add(token)
 
 
 # to do: how to handle tokenizer with formulas or pictures.
 class PretrainedEduTokenizer(object):
-    def __init__(self, vocab_path=None, max_length=None, tokenize_method="char", add_specials: (list, bool) = None, **argv):
-        """
+    def __init__(self, vocab_path: str=None, max_length: int=None, tokenize_method: str="pure_text", add_specials: Tuple[list, bool] = None, **argv):
+        """This base class is in charge of preparing the inputs for a model
+
         Parameters
         ----------
-        vocab_path: str
-            default is None
-        max_length: int
-            default is 250, used to clip the sentence out of length
-        tokenize_method: str
+        vocab_path : str, optional
+            _description_, by default None
+        max_length : int, optional
+            used to clip the sentence out of max_length, by default None
+        tokenize_method : str, optional
             default: "space"
-            when text is already seperated by space, use "space"
-            when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
+            - when text is already seperated by space, use "space"
+            - when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
+        add_specials : Tuple[list, bool], optional
+            by default None
+            - For bool, it means whether to add EDU_SPYMBOLS to vocabulary
+            - For list, it means the added special tokens besides EDU_SPYMBOLS
         """
         self._set_basic_tokenizer(tokenize_method, **argv)
         if isinstance(add_specials, bool):
@@ -240,14 +267,9 @@ class PretrainedEduTokenizer(object):
     def __len__(self):
         return len(self.vocab)
 
-    def _set_basic_tokenizer(self, tokenize_method, **argv):
+    def _set_basic_tokenizer(self, tokenize_method: str, **argv):
         self.tokenize_method = tokenize_method
-        if tokenize_method == "char":
-            self.text_tokenizer = CharTokenizer(**argv)
-        elif tokenize_method == "space":
-            self.text_tokenizer = SpaceTokenizer(**argv)
-        else:
-            self.text_tokenizer = get_tokenizer(tokenize_method, **argv)
+        self.text_tokenizer = get_tokenizer(tokenize_method, **argv)
 
     def tokenize(self, items: Tuple[list, str, dict], key=lambda x: x, **kwargs):
         """
@@ -292,12 +314,13 @@ class PretrainedEduTokenizer(object):
         return token_item
 
     @classmethod
-    def from_pretrained(cls, tokenizer_config_dir, **argv):
-        """
+    def from_pretrained(cls, tokenizer_config_dir: str, **argv):
+        """Load tokenizer from local files
+
         Parameters:
         -----------
         tokenizer_config_dir: str
-            must contain tokenizer_config.json and vocab.list
+            The dir path containing tokenizer_config.json and vocab.list
         """
         tokenizer_config_path = os.path.join(tokenizer_config_dir, "tokenizer_config.json")
         pretrained_vocab_path = os.path.join(tokenizer_config_dir, "vocab.txt")
@@ -309,12 +332,13 @@ class PretrainedEduTokenizer(object):
                 vocab_path=pretrained_vocab_path,
                 **tokenizer_config)
 
-    def save_pretrained(self, tokenizer_config_dir):
-        """
+    def save_pretrained(self, tokenizer_config_dir: str):
+        """Save tokenizer into local files
+
         Parameters:
         -----------
         tokenizer_config_dir: str
-            save tokenizer params in tokenizer_config.json and save words in vocab.list
+            save tokenizer params in `/tokenizer_config.json` and save words in `/vocab.list`
         """
         if not os.path.exists(tokenizer_config_dir):
             os.makedirs(tokenizer_config_dir, exist_ok=True)
@@ -329,23 +353,37 @@ class PretrainedEduTokenizer(object):
     def vocab_size(self):
         return len(self.vocab)
 
-    def set_vocab(self, items: list, key=lambda x: x, lower=False, trim_min_count=1, do_tokenize=True):
-        """
+    def set_vocab(self, items: list, key=lambda x: x, lower: bool=False, trim_min_count: int=1, do_tokenize: bool=True):
+        """Update the vocabulary with the tokens in corpus items
+
         Parameters
-        -----------
+        ----------
         items: list
             can be the list of str, or list of dict
-        key: function
+        key: function, optional
             determine how to get the text of each item
+        lower : bool, optional
+            wheather to lower the corpus items, by default False
+        trim_min_count : int, optional
+            the lower bound number for adding a word into vocabulary, by default 1
+        do_tokenize : bool, optional
+            wheather tokenize items before updating vocab, by default True
+
+        Returns
+        -------
+        list
+            token_items
         """
         token_items = self.tokenize(items, key) if do_tokenize else [key(item) for item in items]
         self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count, lower=lower)
         return token_items
 
     def add_specials(self, tokens):
+        """Add special tokens into vocabulary"""
         self.vocab.add_specials(tokens)
 
     def add_tokens(self, tokens):
+        """Add tokens into vocabulary"""
         self.vocab.add_tokens(tokens)
 
 
@@ -354,7 +392,27 @@ class EduDataset(Dataset):
                  items: Union[List[dict], List[str]] = None,
                  stem_key: str = "text", label_key: Optional[str] = None,
                  feature_keys: Optional[List[str]] = None,
-                 num_processor=None, **argv):
+                 num_processor: int=None, **argv):
+        """The base class implements a Dataset, which package the `datasets.Dataset`
+        and provide more convenience, including parallel preprocessing, offline loadding and so on. 
+
+        Parameters
+        ----------
+        tokenizer :
+            PretrainedEduTokenizer or model-specific Pretrained Tokenizer
+        ds_disk_path : HFDataset, optional
+            the dataset_path to save dataset used by `datasets.Dataset`, by default None
+        items : Union[List[dict], List[str]], optional
+            input items to process, by default None
+        stem_key : str, optional
+            the content of items to process, by default "text"
+        label_key : Optional[str], optional
+            the labels of items to process, by default None
+        feature_keys : Optional[List[str]], optional
+            the addional features of items to remain, by default None
+        num_processor : int, optional
+            specific the number of cpus for parallel speedup, by default None
+        """
         self.tokenizer = tokenizer
         feature_keys = [] if feature_keys is None else feature_keys
         if items is not None:
@@ -399,6 +457,7 @@ class EduDataset(Dataset):
         return self.work_ds.num_rows
 
     def to_disk(self, ds_disk_path):
+        """Save the processed dataset into local files"""
         self.ds.save_to_disk(ds_disk_path)
 
     def collect_fn(self):
