@@ -1,12 +1,13 @@
 # coding: utf-8
 # 2021/5/30 @ tongshiwei
-
-import codecs
-import json
+import torch
 import pytest
+import os
 from EduNLP.utils import abs_current_dir, path_append
 from EduNLP.ModelZoo import load_items
-import os
+
+TEST_GPU = torch.cuda.is_available()
+# TEST_GPU = False
 
 
 @pytest.fixture(scope="module")

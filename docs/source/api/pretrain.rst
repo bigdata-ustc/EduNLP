@@ -1,6 +1,12 @@
 EduNLP.Pretrain
 ==================
 
+EduNLP.Pretrain.pretrian_utils
+----------------------------------------
+
+.. automodule:: EduNLP.Pretrain.pretrian_utils
+   :members:
+
 EduNLP.Pretrain.gensim_vec
 ----------------------------------------
 

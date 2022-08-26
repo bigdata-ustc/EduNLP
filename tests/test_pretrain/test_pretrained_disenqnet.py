@@ -6,7 +6,8 @@ import torch
 # from EduNLP.ModelZoo.disenqnet import DisenQNet, DisenQForPropertyPrediction
 from EduNLP.Pretrain import DisenQTokenizer, train_disenqnet
 
-TEST_GPU = torch.cuda.is_available()
+# TEST_GPU = torch.cuda.is_available()
+from conftest import TEST_GPU
 
 
 # TODO

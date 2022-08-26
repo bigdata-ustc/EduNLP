@@ -113,3 +113,4 @@ autodoc_default_options = {
     'member-order': 'bysource',
     'undoc-members': True,
 }
+autodoc_member_order = 'bysource'

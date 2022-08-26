@@ -41,3 +41,11 @@ Vector
 .. automodule:: EduNLP.Vector
    :members:
    :imported-members:
+
+
+Pipeline
+---------------
+
+.. automodule:: EduNLP.Pipeline
+   :members:
+   :imported-members:

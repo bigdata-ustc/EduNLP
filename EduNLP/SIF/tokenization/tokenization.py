@@ -45,13 +45,8 @@ class TokenList(object):
         self.text_params = text_params if text_params is not None else {}
 
         self.formula_params = deepcopy(formula_params) if formula_params is not None else {"method": "linear"}
-
-        self.symbolize_figure_formula = False
-        self.skip_figure_formula = False
-        if "symbolize_figure_formula" in self.formula_params:
-            self.symbolize_figure_formula = self.formula_params.pop("symbolize_figure_formula")
-        if "skip_figure_formula" in self.formula_params:
-            self.skip_figure_formula = self.formula_params.pop("skip_figure_formula")
+        self.symbolize_figure_formula = self.formula_params.pop("symbolize_figure_formula", False)
+        self.skip_figure_formula = self.formula_params.pop("skip_figure_formula", False)
         self.formula_tokenize_method = self.formula_params.get("method")
 
         self.figure_params = figure_params if figure_params is not None else {}

@@ -12,9 +12,9 @@ def test_tokenizer():
 
 
 def test_disenQTokenizer():
-    tokenizer = DisenQTokenizer(max_length=10)
-    with pytest.raises(RuntimeError):
-        tokenizer("10 米 的 (2/5) = () 米 的 (1/2) .")
+    tokenizer = DisenQTokenizer(max_length=10, tokenize_method="space")
+    # with pytest.raises(RuntimeError):
+    #     tokenizer("10 米 的 (2/5) = () 米 的 (1/2) .")
 
     test_items = [
         "10 米 的 (2/5) = () 米 的 (1/2) . 多 余 的 字",
@@ -24,11 +24,11 @@ def test_disenQTokenizer():
         ".",
         ""
     ]
-    tokenizer.set_vocab(test_items, silent=False)
+    tokenizer.set_vocab(test_items)
     print(tokenizer.vocab_size)
     for item in test_items:
         token_item = tokenizer(item)
         print(token_item)
 
     test_item = tokenizer(test_items[0], padding=True)
-    assert test_item["content_idx"].shape[-1] == 10
+    assert test_item["seq_idx"].shape[-1] == 10
