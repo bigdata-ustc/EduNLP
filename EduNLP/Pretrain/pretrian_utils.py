@@ -15,32 +15,32 @@ __all__ = ["EduVocab", "EduDataset", "PretrainedEduTokenizer"]
 
 
 class EduVocab(object):
+    """The vocabulary container for a corpus.
+
+    Parameters
+    ----------
+    vocab_path : str, optional
+        vocabulary path to initialize this container, by default None
+    corpus_items : List[str], optional
+        corpus items to update this vocabulary, by default None
+    bos_token : str, optional
+        token representing for the start of a sentence, by default "[BOS]"
+    eos_token : str, optional
+        token representing for the end of a sentence, by default "[EOS]"
+    pad_token : str, optional
+        token representing for padding, by default "[PAD]"
+    unk_token : str, optional
+        token representing for unknown word, by default "[UNK]"
+    specials : List[str], optional
+        spacials tokens in vocabulary, by default None
+    lower : bool, optional
+        wheather to lower the corpus items, by default False
+    trim_min_count : int, optional
+        the lower bound number for adding a word into vocabulary, by default 1
+    """  
     def __init__(self, vocab_path: str=None, corpus_items: List[str]=None, bos_token: str="[BOS]",
                  eos_token: str="[EOS]", pad_token: str="[PAD]", unk_token: str="[UNK]",
-                 specials: List[str]=None, lower: bool=False, trim_min_count: int=1, **argv):
-        """The vocabulary container for a corpus.
-
-        Parameters
-        ----------
-        vocab_path : str, optional
-            vocabulary path to initialize this container, by default None
-        corpus_items : List[str], optional
-            corpus items to update this vocabulary, by default None
-        bos_token : str, optional
-            token representing for the start of a sentence, by default "[BOS]"
-        eos_token : str, optional
-            token representing for the end of a sentence, by default "[EOS]"
-        pad_token : str, optional
-            token representing for padding, by default "[PAD]"
-        unk_token : str, optional
-            token representing for unknown word, by default "[UNK]"
-        specials : List[str], optional
-            spacials tokens in vocabulary, by default None
-        lower : bool, optional
-            wheather to lower the corpus items, by default False
-        trim_min_count : int, optional
-            the lower bound number for adding a word into vocabulary, by default 1
-        """        
+                 specials: List[str]=None, lower: bool=False, trim_min_count: int=1, **argv):      
         super(EduVocab, self).__init__()
 
         self._tokens = []
@@ -174,24 +174,24 @@ class EduVocab(object):
 
 # to do: how to handle tokenizer with formulas or pictures.
 class PretrainedEduTokenizer(object):
-    def __init__(self, vocab_path: str=None, max_length: int=None, tokenize_method: str="pure_text", add_specials: Tuple[list, bool] = None, **argv):
-        """This base class is in charge of preparing the inputs for a model
+    """This base class is in charge of preparing the inputs for a model
 
-        Parameters
-        ----------
-        vocab_path : str, optional
-            _description_, by default None
-        max_length : int, optional
-            used to clip the sentence out of max_length, by default None
-        tokenize_method : str, optional
-            default: "space"
-            - when text is already seperated by space, use "space"
-            - when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
-        add_specials : Tuple[list, bool], optional
-            by default None
-            - For bool, it means whether to add EDU_SPYMBOLS to vocabulary
-            - For list, it means the added special tokens besides EDU_SPYMBOLS
-        """
+    Parameters
+    ----------
+    vocab_path : str, optional
+        _description_, by default None
+    max_length : int, optional
+        used to clip the sentence out of max_length, by default None
+    tokenize_method : str, optional
+        default: "space"
+        - when text is already seperated by space, use "space"
+        - when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
+    add_specials : Tuple[list, bool], optional
+        by default None
+        - For bool, it means whether to add EDU_SPYMBOLS to vocabulary
+        - For list, it means the added special tokens besides EDU_SPYMBOLS
+    """
+    def __init__(self, vocab_path: str=None, max_length: int=None, tokenize_method: str="pure_text", add_specials: Tuple[list, bool] = None, **argv):
         self._set_basic_tokenizer(tokenize_method, **argv)
         if isinstance(add_specials, bool):
             add_specials = EDU_SPYMBOLS if add_specials else None
@@ -388,31 +388,31 @@ class PretrainedEduTokenizer(object):
 
 
 class EduDataset(Dataset):
+    """The base class implements a Dataset, which package the `datasets.Dataset`
+    and provide more convenience, including parallel preprocessing, offline loadding and so on. 
+
+    Parameters
+    ----------
+    tokenizer :
+        PretrainedEduTokenizer or model-specific Pretrained Tokenizer
+    ds_disk_path : HFDataset, optional
+        the dataset_path to save dataset used by `datasets.Dataset`, by default None
+    items : Union[List[dict], List[str]], optional
+        input items to process, by default None
+    stem_key : str, optional
+        the content of items to process, by default "text"
+    label_key : Optional[str], optional
+        the labels of items to process, by default None
+    feature_keys : Optional[List[str]], optional
+        the addional features of items to remain, by default None
+    num_processor : int, optional
+        specific the number of cpus for parallel speedup, by default None
+    """
     def __init__(self, tokenizer, ds_disk_path: HFDataset = None,
                  items: Union[List[dict], List[str]] = None,
                  stem_key: str = "text", label_key: Optional[str] = None,
                  feature_keys: Optional[List[str]] = None,
                  num_processor: int=None, **argv):
-        """The base class implements a Dataset, which package the `datasets.Dataset`
-        and provide more convenience, including parallel preprocessing, offline loadding and so on. 
-
-        Parameters
-        ----------
-        tokenizer :
-            PretrainedEduTokenizer or model-specific Pretrained Tokenizer
-        ds_disk_path : HFDataset, optional
-            the dataset_path to save dataset used by `datasets.Dataset`, by default None
-        items : Union[List[dict], List[str]], optional
-            input items to process, by default None
-        stem_key : str, optional
-            the content of items to process, by default "text"
-        label_key : Optional[str], optional
-            the labels of items to process, by default None
-        feature_keys : Optional[List[str]], optional
-            the addional features of items to remain, by default None
-        num_processor : int, optional
-            specific the number of cpus for parallel speedup, by default None
-        """
         self.tokenizer = tokenizer
         feature_keys = [] if feature_keys is None else feature_keys
         if items is not None:

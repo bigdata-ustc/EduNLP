@@ -9,7 +9,7 @@ idxs = torch.tensor([
     [1, 2, 0, 0, 0, 0]
 ])
 
-lens = torch.tensor([4,2,1,2])
+lens = torch.tensor([4, 2, 1, 2])
 
 rnn = LM(rnn_type="lstm", vocab_size=20, embedding_dim=5, hidden_size=10)
 output, hn = rnn(idxs, lens)

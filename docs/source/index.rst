@@ -169,12 +169,13 @@ If this repository is helpful for you, please cite our work
    :hidden:
    :glob:
 
-   api/sif
    api/utils
+   api/sif
    api/formula
    api/tokenizer
-   api/pretrain
    api/ModelZoo
-   api/i2v
+   api/pretrain
    api/vector
-   
+   api/i2v
+   api/pipeline
+

@@ -9,7 +9,8 @@ from ..SIF.tokenization.text import tokenize as tokenize_text
 from ..SIF import sif4sci
 
 
-__all__ = ["TOKENIZER", "Tokenizer", "CustomTokenizer", "PureTextTokenizer", "AstFormulaTokenizer", "get_tokenizer"]
+__all__ = ["TOKENIZER", "Tokenizer", "CustomTokenizer", "CharTokenizer", "SpaceTokenizer",
+           "PureTextTokenizer", "AstFormulaTokenizer", "get_tokenizer"]
 
 
 class Tokenizer(object):
