@@ -19,6 +19,6 @@ class PropertyPredictionPipeline(Pipeline):
 
     def postprocess(self, model_outputs, **postprocess_params):
         outputs = model_outputs["logits"]
-        outputs = outputs.numpy()
+        outputs = outputs.detach().numpy()
         dict_property = {"property": outputs.item()}
         return dict_property

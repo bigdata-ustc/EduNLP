@@ -342,7 +342,7 @@ class Pipeline(ABC):
     def run_single(self, inputs, tokenize_params, model_params, postprocess_params):
         tokenize_inputs = self.preproc_pipeline(inputs)
         if not any(component is None for component in [self.tokenizer, self.model, self.task]):
-            model_inputs = self._tokenize(tokenize_inputs, **tokenize_params)
+            model_inputs = self._tokenize([tokenize_inputs], **tokenize_params)
             model_outputs = self._forward(model_inputs, **model_params)
             outputs = self.postprocess(model_outputs, **postprocess_params)
         else:

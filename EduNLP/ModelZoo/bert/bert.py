@@ -40,7 +40,9 @@ class BertForPropertyPrediction(BaseModel):
         item_embeds = self.dropout(item_embeds)
 
         logits = self.sigmoid(self.classifier(item_embeds)).squeeze(1)
-        loss = self.criterion(logits, labels) if labels is not None else None
+        loss = None
+        if labels is not None:
+            loss = self.criterion(logits, labels) if labels is not None else None
         return BertForPPOutput(
             loss = loss,
             logits = logits,

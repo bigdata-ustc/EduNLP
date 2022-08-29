@@ -47,6 +47,7 @@ class LM(nn.Module):
     >>> hn.shape
     torch.Size([2, 3, 2])
     """
+
     def __init__(self, rnn_type: str, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers=1,
                  bidirectional=False, embedding=None, model_params=None, use_pack_pad=True, **kwargs):
         super(LM, self).__init__()
@@ -138,7 +139,8 @@ class ElmoLM(BaseModel):
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers: int = 2,
                  dropout_rate: float = 0.5, use_pack_pad=False, **argv):
         super(ElmoLM, self).__init__()
-        self.LM_layer = LM("BiLSTM", vocab_size, embedding_dim, hidden_size, num_layers=num_layers, use_pack_pad=use_pack_pad, **argv)
+        self.LM_layer = LM("BiLSTM", vocab_size, embedding_dim, hidden_size, num_layers=num_layers,
+                           use_pack_pad=use_pack_pad, **argv)
         self.pred_layer = nn.Linear(hidden_size, vocab_size)
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
@@ -281,13 +283,13 @@ class ElmoLMForPreTraining(BaseModel):
 
         flat_pred_forward = pred_forward[pred_forward_mask]
         flat_pred_backward = pred_backward[pred_backward_mask]
-        
-        _, flat_pred_idx_forward= torch.max(flat_pred_forward, dim=1)
+
+        _, flat_pred_idx_forward = torch.max(flat_pred_forward, dim=1)
         _, flat_pred_idx_backward = torch.max(flat_pred_backward, dim=1)
-        
+
         flat_y_backward = seq_idx[idx_backward_mask]
         flat_y_forward = seq_idx[idx_forward_mask]
-        
+
         diff_forword = torch.sum(flat_pred_idx_forward - flat_y_forward)
         diff_backward = torch.sum(flat_pred_idx_backward - flat_y_backward)
 
@@ -337,7 +339,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
         )
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
-        self.classifier = nn.Linear(2*hidden_size, 1)
+        self.classifier = nn.Linear(2 * hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
 
@@ -355,7 +357,9 @@ class ElmoLMForPropertyPrediction(BaseModel):
         item_embeds = self.dropout(item_embeds)
 
         logits = self.sigmoid(self.classifier(item_embeds))
-        loss = self.criterion(logits, labels)
+        loss = None
+        if labels is not None:
+            loss = self.criterion(logits, labels)
         return PropertyPredictionOutput(
             loss=loss,
             logits=logits
