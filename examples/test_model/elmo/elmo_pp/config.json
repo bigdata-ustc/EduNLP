@@ -1,0 +1,10 @@
+{
+  "architecture": "ElmoLMForPreTraining",
+  "batch_first": true,
+  "dropout_rate": 0.5,
+  "embedding_dim": 512,
+  "head_dropout": 0.5,
+  "hidden_size": 512,
+  "transformers_version": "4.16.2",
+  "vocab_size": 305
+}
