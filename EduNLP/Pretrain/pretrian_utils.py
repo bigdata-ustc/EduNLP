@@ -191,7 +191,7 @@ class PretrainedEduTokenizer(object):
         - For bool, it means whether to add EDU_SPYMBOLS to vocabulary
         - For list, it means the added special tokens besides EDU_SPYMBOLS
     """
-    def __init__(self, vocab_path: str=None, max_length: int=None, tokenize_method: str="pure_text", add_specials: Tuple[list, bool] = None, **argv):
+    def __init__(self, vocab_path: str=None, max_length: int=250, tokenize_method: str="pure_text", add_specials: Tuple[list, bool] = None, **argv):
         self._set_basic_tokenizer(tokenize_method, **argv)
         if isinstance(add_specials, bool):
             add_specials = EDU_SPYMBOLS if add_specials else None
@@ -203,7 +203,7 @@ class PretrainedEduTokenizer(object):
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
 
     def __call__(self, items: Tuple[list, str, dict], key=lambda x: x, padding: Tuple[bool, str]=True,
-                 return_tensors=True, return_text=False, **kwargs) -> Dict[str, Any]:
+                 max_length=None, return_tensors=True, return_text=False, **kwargs) -> Dict[str, Any]:
         """
         Parameters
         ----------
@@ -230,10 +230,11 @@ class PretrainedEduTokenizer(object):
         Be Make sure Tokenizer output batched tensors by default
         """
         batch_max_length = None
+        max_length = self.max_length if max_length is None else max_length
         if isinstance(padding, str):
             assert padding == "max_length"
             if padding == "max_length":
-                batch_max_length = self.max_length
+                batch_max_length = max_length
                 padding = True
             elif padding == "longest":
                 padding = True
@@ -245,11 +246,11 @@ class PretrainedEduTokenizer(object):
         token_items = self.tokenize(items, key)
         if isinstance(items, dict) or isinstance(items, str):
             token_items = [token_items]
+        if max_length is not None:
+            token_items = [seq[:max_length] for seq in token_items]
         seqs = [self.vocab.convert_sequence_to_idx(token_item,
                                                    bos=kwargs.get("bos", False),
                                                    eos=kwargs.get("eos", False)) for token_item in token_items]
-        if self.max_length is not None:
-            seqs = [seq[:self.max_length] for seq in seqs]
         lengths = [len(seq) for seq in seqs]
         ret = {
             "seq_idx": pad_sequence(seqs, pad_val=self.vocab.pad_idx, max_length=batch_max_length) if padding else seqs,

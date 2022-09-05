@@ -62,7 +62,7 @@ class EduTokenizerForBert(HFBertTokenizer):
 
         return split_tokens
 
-    def set_bert_basic_tokenizer(self, tokenize_method, **argv):
+    def _set_bert_basic_tokenizer(self, tokenize_method, **argv):
         self.basic_tokenizer = get_tokenizer(tokenize_method, **argv)
 
 
@@ -102,13 +102,13 @@ class BertTokenizer(object):
     """
 
     def __init__(self, pretrained_model="bert-base-chinese", max_length=512, add_specials: (list, bool) = False, tokenize_method=None, **argv):
-        self.text_tokenizer_name = tokenize_method
+        self.tokenize_method = tokenize_method
         self.max_length = max_length
         if tokenize_method is not None:
             # In order to be more general for Huggingface's other models,
             # may be we need to inherit and rewrite `_tokenize` for XXTokenizer(PreTrainedTokenizer)
             self.bert_tokenizer = EduTokenizerForBert.from_pretrained(pretrained_model, use_fast=False)
-            self.bert_tokenizer.set_bert_basic_tokenizer(tokenize_method, **argv)
+            self._set_basic_tokenizer(tokenize_method, **argv)
         else:
             self.bert_tokenizer = HFBertTokenizer.from_pretrained(pretrained_model, use_fast=False)
         if isinstance(add_specials, bool):
@@ -133,6 +133,10 @@ class BertTokenizer(object):
 
     def __len__(self):
         return len(self.bert_tokenizer)
+
+    def _set_basic_tokenizer(self, tokenize_method: str, **argv):
+        self.tokenize_method = tokenize_method
+        self.bert_tokenizer._set_bert_basic_tokenizer(tokenize_method, **argv)
 
     def tokenize(self, items: Union[list, str, dict], key=lambda x: x, **kwargs):
         if isinstance(items, list):
