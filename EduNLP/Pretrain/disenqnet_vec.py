@@ -1,18 +1,25 @@
 import os
 import numpy as np
 import torch
-from torch.utils.data import Dataset, DataLoader
-import json
+from copy import deepcopy
+from torch.utils.data import Dataset
+from transformers import TrainingArguments, Trainer
 import warnings
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 from gensim.models import Word2Vec
+from torch.optim.adam import Adam
+from torch.optim.lr_scheduler import StepLR
+import torch.nn as nn
 
 from ..SIF import EDU_SPYMBOLS
-from ..ModelZoo.disenqnet.disenqnet import DisenQNet
+from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPreTraining
 from ..ModelZoo.utils import load_items, pad_sequence
-from ..Tokenizer import get_tokenizer
 from .pretrian_utils import PretrainedEduTokenizer
-from .gensim_vec import train_vector
+from transformers import is_apex_available
+
+
+if is_apex_available():
+    from apex import amp
 
 
 def check_num(s):
@@ -68,6 +75,7 @@ def load_list_to_dict(path):
         items = file.read().split('\n')
     item2index = {item: index for index, item in enumerate(items)}
     return item2index
+
 
 def save_dict_to_list(item2index, path):
     item2index = sorted(item2index.items(), key=lambda kv: kv[1])
@@ -129,13 +137,6 @@ class DisenQTokenizer(PretrainedEduTokenizer):
 
 def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, trim_min_count=None, embed_dim=None,
                        w2v_params=None, silent=False):
-    default_data_formation = {
-        "content": "content",
-        "knowledge": "knowledge"
-    }
-    if data_formation is not None:
-        default_data_formation.update(data_formation)
-    data_formation = default_data_formation
 
     default_w2v_params = {
         "workers": 1,
@@ -204,12 +205,13 @@ def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, t
 
 
 class DisenQDataset(Dataset):
-    def __init__(self, items: List[Dict], tokenizer: DisenQTokenizer, mode="train", concept_to_idx=None, **argv):
+    def __init__(self, items: List[Dict], tokenizer: DisenQTokenizer, data_formation: Dict, mode="train", concept_to_idx=None, **argv):
         """
         Parameters
         ----------
         texts: list
         tokenizer: DisenQTokenizer
+        data_formation: dict
         max_length: int, optional, default=128
         """
         super(DisenQDataset, self).__init__()
@@ -218,16 +220,17 @@ class DisenQDataset(Dataset):
         self.mode = mode
         self.items = items
         self.max_length = tokenizer.max_length
+        self.data_formation = data_formation
 
     def __len__(self):
-        return len(self.texts)
+        return len(self.items)
 
     def __getitem__(self, index):
-        item = self.texts[index]
-        ret = self.tokenizer(item, padding=False, key=lambda x: x,
+        item = self.items[index]
+        ret = self.tokenizer(item, padding=False, key=lambda x: x[self.data_formation["content"]],
                              return_tensors=True, return_text=False)
         if self.mode in ["train", "val"]:
-            ret["know_idx"] = self.concept_to_idx[item["knowledge"]]
+            ret["know_idx"] = self.concept_to_idx[item[self.data_formation["knowledge"]]]
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
@@ -240,128 +243,191 @@ class DisenQDataset(Dataset):
         return batch
 
 
-def train_disenqnet(train_items, output_dir, pretrained_dir=None,
-                    train_params=None, test_items=None, silent=False, data_formation=None):
+class DisenQTrainer(Trainer):
+    def create_optimizer_and_scheduler(self, num_training_steps: int):
+        self.optimizer = Adam(self.model.model_params, lr=self.args.learning_rate)
+        self.lr_scheduler = StepLR(self.optimizer, step_size=self.args.step_size, gamma=self.args.gamma)
+        self.adv_optimizer = Adam(self.model.adv_params, lr=self.args.learning_rate)
+        self.adv_scheduler = StepLR(self.adv_optimizer, step_size=self.args.step_size, gamma=self.args.gamma)
+
+    def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
+        model.train()
+        inputs = self._prepare_inputs(inputs)
+
+        warming_up = self.state.epoch <= model.params["warm_up"]
+        if not warming_up:
+            # train disc
+            outputs = model(**inputs)
+            # stop gradient propagation to encoder
+            k_hidden = outputs.k_hidden.detach()
+            i_hidden = outputs.i_hidden.detach()
+             # max dis_loss
+            dis_loss = - self.disen_estimator(k_hidden, i_hidden)
+            dis_loss = model.params["n_adversarial"] * model.params["w_dis"] * dis_loss
+            self.adv_optimizer.zero_grad()
+            dis_loss.backward()
+            self.adv_optimizer.step()
+            # Lipschitz constrain for Disc of WGAN
+            self.disen_estimator.spectral_norm()
+        model.warming_up = warming_up
+
+
+        with self.compute_loss_context_manager():
+            loss = self.compute_loss(model, inputs)
+
+        if self.args.n_gpu > 1:
+            loss = loss.mean()  # mean() to average on multi-gpu parallel training
+
+        if self.args.gradient_accumulation_steps > 1 and not self.deepspeed:
+            # deepspeed handles loss scaling by gradient_accumulation_steps in its `backward`
+            loss = loss / self.args.gradient_accumulation_steps
+
+        if self.do_grad_scaling:
+            self.scaler.scale(loss).backward()
+        elif self.use_apex:
+            with amp.scale_loss(loss, self.optimizer) as scaled_loss:
+                scaled_loss.backward()
+        elif self.deepspeed:
+            # loss gets scaled under gradient_accumulation_steps in deepspeed
+            loss = self.deepspeed.backward(loss)
+        else:
+            loss.backward()
+
+        # TODO: Not sure. if warming_up, the scheduler should not step?
+        if not warming_up:
+            self.adv_scheduler.step()
+
+        return loss.detach()
+
+
+DEFAULT_TRAIN_PARAMS = {
+    # default
+    "output_dir": None,
+    "overwrite_output_dir": True,
+    "num_train_epochs": 3,
+    "per_device_train_batch_size": 8,
+    "per_device_eval_batch_size": 32,
+    # evaluation_strategy: "steps",
+    # eval_steps:200,
+    "save_steps": 1000,
+    "save_total_limit": 2,
+    # "load_best_model_at_end": False,
+    # metric_for_best_model: "loss",
+    # greater_is_better: False,
+    "logging_dir": None,
+    "logging_steps": 5,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 5e-4,
+    # disable_tqdm: True,
+    # no_cuda: True,
+    'step_size': 20,
+    'gamma': 0.5
+}
+
+
+def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, pretrained_dir: str=None, eval_items=None,
+                    tokenizer_params=None, data_params=None, model_params=None, train_params=None):
     """
     Parameters
     ----------
-    train_items: list
-        the raw train question list
-    disen_tokenizer: DisenQTokenizer
-        the initial DisenQTokenizer use for training.
-    output_dir: str
-        the path to save the model
-    pretrained_dir: str
-        the dirname to load or save predata (including wv.th, vocab.list and concept.list)
-    train_params: dict, defaults to None
-        the training parameters for data, model and trianer.
-        - "trim_min": int
-            data param, the trim_min_count for vocab and word2vec, by default 2
-        - "w2v_workers": int
-            data param, the number of workers for word2vec, by default 1
-        - "hidden": int
-            model param, by default 128
-        - "dropout": float
-            model param, dropout rate, by default 0.2
-        - "pos_weight": int
-            model param, positive sample weight in unbalanced multi-label concept classifier, by default 1
-        - "cp": float
-            model param, weight of concept loss, by default 1.5
-        - "mi": float
-            model param, weight of mutual information loss, by default 1.0
-        - "dis": float
-            model param, weight of disentangling loss, by default 2.0
-        - "epoch": int
-            train param, number of epoch, by default 1
-        - "batch": int
-            train param, batch size, by default 64
-        - "lr": float
-            train param, learning rate, by default 1e-3
-        - "step": int
-            train param, step_size for StepLR, by default 20
-        - "gamma": float
-            train param, gamma for StepLR, by default 0.5
-        - "warm_up": int
-            train param, number of epoch for warming up, by default 1
-        - "adv": int
-            train param, ratio of disc/enc training for adversarial process, by default 10
-        - "device": str
-            train param, 'cpu' or 'cuda', by default "cpu"
-    test_items: list, defaults to None
-        the raw test question list, default is None
-    silent: bool, defaults to False
-        whether to print processing inforamtion
-    data_formation: dict, defaults to None
-        Mapping "content" and "knowledge" for the item formation.
-        For example, {"content": "ques_content", "knowledge": "know_name"}
-
-    Examples
-    ----------
-    >>> train_data = load_items("static/test_data/disenq_train.json")[:100]
-    >>> test_data = load_items("static/test_data/disenq_test.json")[:100]
-    >>> tokenizer = DisenQTokenizer(max_length=250, tokenize_method="space")
-    >>> train_disenqnet(train_data, tokenizer,
-    ... "examples/test_model/disenq","examples/test_model/disenq", silent=True)  # doctest: +SKIP
+    train_items : Union[List[dict], List[str]]
+        _description_
+    output_dir : str
+        _description_
+    pretrained_dir : str, optional
+        _description_, by default None
+    tokenizer_params : _type_, optional
+        _description_, by default None
+    data_params : _type_, optional
+        _description_, by default None
+    model_params : _type_, optional
+        _description_, by default None
+    train_params : _type_, optional
+        _description_, by default None
     """
-    # dataset
-    default_train_params = {
-        # data params
-        "trim_min": 2,
-        "w2v_workers": 1,
-        # model params
-        "hidden": 128,
-        "dropout": 0.2,
-        "pos_weight": 1,
-        "cp": 1.5,
-        "mi": 1.0,
-        "dis": 2.0,
-        # training params
-        "epoch": 1,
-        "batch": 64,
-        "lr": 1e-3,
-        "step": 20,
-        "gamma": 0.5,
-        "warm_up": 1,
-        "adv": 10,
-        "device": "cpu"
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
+
+    default_data_formation = {
+        "content": "content",
+        "knowledge": "knowledge"
     }
-    if train_params is not None:
-        default_train_params.update(train_params)
-    train_params = default_train_params
+    data_formation = data_params.get("data_formation", None)
+    if data_formation is not None:
+        default_data_formation.update(data_formation)
+    data_formation = default_data_formation
 
-    tokenizer = DisenQTokenizer()
-    if pretrained_dir:
-        tokenizer = DisenQTokenizer.from_pretrained(pretrained_dir)
+    # tokenizer configuration
+    if pretrained_dir is not None and os.path.exists(pretrained_dir):
+        tokenizer = DisenQTokenizer.from_pretrained(pretrained_dir, **tokenizer_params)
     else:
-        tokenizer.set_vocab(train_items, key="stem")
+        work_tokenizer_params = {
+            "add_specials": True,
+            "tokenize_method": "pure_text",
+        }
+        work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
+        tokenizer = DisenQTokenizer(**work_tokenizer_params)
+        corpus_items = train_items
+        if isinstance(train_items[0], str):
+            tokenizer.set_vocab(corpus_items)
+        else:
+            tokenizer.set_vocab(corpus_items,
+                                key=lambda x: x[data_formation['content']])
 
-    items = train_items + ([] if test_items is not None else test_items)
+    # dataset configuration
+    items = train_items + ([] if eval_items is None else eval_items)
     disen_tokenizer, concept_to_idx, word2vec = preprocess_dataset(pretrained_dir, disen_tokenizer, items,
-                                                                   data_formation,
-                                                                   trim_min_count=train_params["trim_min"],
-                                                                   embed_dim=train_params["hidden"],
-                                                                   w2v_params=None, silent=False)
-
-    train_dataset = DisenQDataset(train_items, disen_tokenizer, mode="train", concept_to_idx=concept_to_idx)
-    train_dataloader = DataLoader(train_dataset, batch_size=train_params["batch"],
-                                  shuffle=True, collate_fn=train_dataset.collate_fn)
-    if test_items is not None:
-        test_dataset = DisenQDataset(test_items, disen_tokenizer, mode="test", concept_to_idx=concept_to_idx)
-        test_dataloader = DataLoader(test_dataset, batch_size=train_params["batch"],
-                                     shuffle=True, collate_fn=test_dataset.collate_fn)
+                                                                data_formation,
+                                                                trim_min_count=train_params["trim_min"],
+                                                                embed_dim=train_params["hidden"],
+                                                                w2v_params=None, silent=False)
+    train_dataset = DisenQDataset(train_items, disen_tokenizer, data_formation, mode="train", concept_to_idx=concept_to_idx)
+    if eval_items:
+        eval_dataset = DisenQDataset(eval_items, disen_tokenizer, data_formation, mode="test", concept_to_idx=concept_to_idx)
     else:
-        test_dataloader = None
+        eval_dataset = None
 
-    vocab_size = len(disen_tokenizer)
-    concept_size = len(concept_to_idx)
-    wv = word2vec
+    # model configuration
+    if pretrained_dir:
+        model = DisenQNetForPreTraining.from_pretrained(pretrained_dir, **model_params)
+    else:
+        work_model_params = {
+            "vocab_size": len(disen_tokenizer),
+            "hidden_size": 300,
+            'concept_size': len(concept_to_idx),
+            'dropout_rate': 0.2,
+            'pos_weight': 1,
+            'w_cp': 1.5,
+            'w_mi': 1.0,
+            'w_dis': 2.0,
+            'warmup': 5,
+            'n_adversarial': 10,
+            'gamma': 0.5,
+            'step_size': 20,
+            'wv': word2vec
+        }
+        work_model_params.update(model_params if model_params else {})
+        model = DisenQNetForPreTraining(**work_model_params)
 
-    # model
-    disen_q_net = DisenQNet(vocab_size, concept_size, train_params["hidden"], train_params["dropout"],
-                            train_params["pos_weight"], train_params["cp"], train_params["mi"], train_params["dis"],
-                            wv=wv, device=train_params["device"])
-
-    disen_q_net.train(train_dataloader, test_dataloader, train_params["epoch"],
-                      train_params["lr"], train_params["step"], train_params["gamma"],
-                      train_params["warm_up"], train_params["adv"], silent=silent)
-    disen_q_net.save_pretrained(output_dir)
+    # training Configuration
+    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
+    work_train_params["output_dir"] = output_dir
+    if train_params is not None:
+        work_train_params.update(train_params if train_params else {})
+    work_args = TrainingArguments(**work_train_params)
+    trainer = DisenQTrainer(
+        model=model,
+        args=work_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=train_dataset.collate_fn,
+    )
+    trainer.train()
+    # trainer.model.save_pretrained(output_dir)
+    assert isinstance(trainer.model, DisenQNetForPreTraining)
+    trainer.save_model(output_dir)
+    trainer.model.save_config(output_dir)
+    tokenizer.save_pretrained(output_dir)
+    return output_dir
