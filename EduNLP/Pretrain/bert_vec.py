@@ -15,8 +15,8 @@ from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.bert import BertForPropertyPrediction
 from .pretrian_utils import EduDataset
 
-__all__ = ["BertTokenizer", "BertDataset", "finetune_bert", "finetune_bert_for_property_prediction"]
-
+__all__ = ["BertTokenizer", "BertDataset", "finetune_bert", "finetune_bert_for_property_prediction",
+           "finetune_bert_for_knowledge_predition"]
 
 DEFAULT_TRAIN_PARAMS = {
     # default
@@ -101,7 +101,8 @@ class BertTokenizer(object):
     >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
 
-    def __init__(self, pretrained_model="bert-base-chinese", max_length=512, add_specials: (list, bool) = False, tokenize_method=None, **argv):
+    def __init__(self, pretrained_model="bert-base-chinese", max_length=512, add_specials: (list, bool) = False,
+                 tokenize_method=None, **argv):
         self.tokenize_method = tokenize_method
         self.max_length = max_length
         if tokenize_method is not None:
@@ -128,7 +129,8 @@ class BertTokenizer(object):
             text = key(items)
         if isinstance(return_tensors, bool):
             return_tensors = "pt" if return_tensors is True else None
-        encodes = self.bert_tokenizer(text, truncation=True, padding=padding, max_length=self.max_length, return_tensors=return_tensors)
+        encodes = self.bert_tokenizer(text, truncation=True, padding=padding, max_length=self.max_length,
+                                      return_tensors=return_tensors)
         return encodes
 
     def __len__(self):
@@ -208,6 +210,7 @@ class BertTokenizer(object):
     def add_tokens(self, added_tokens: List[str]):
         return self.bert_tokenizer.add_tokens(added_tokens)
 
+
 class BertDataset(EduDataset):
     pass
 
@@ -284,13 +287,19 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
     tokenizer.save_pretrained(output_dir)
 
 
-def finetune_bert_for_property_prediction(train_items, output_dir, pretrained_model="bert-base-chinese",
-                                       eval_items=None,
-                                       tokenizer_params=None, data_params=None, train_params=None, model_params=None):
+def finetune_bert_for_property_prediction(train_items,
+                                          output_dir,
+                                          pretrained_model="bert-base-chinese",
+                                          eval_items=None,
+                                          tokenizer_params=None,
+                                          data_params=None,
+                                          train_params=None,
+                                          model_params=None
+                                          ):
     """
     Parameters
     ----------
-    items: list, required
+    train_items: list, required
         The training corpus, each item could be str or dict
     output_dir: str, required
         The directory to save trained model files
@@ -320,6 +329,74 @@ def finetune_bert_for_property_prediction(train_items, output_dir, pretrained_mo
         eval_dataset = BertDataset(tokenizer=tokenizer, items=eval_items,
                                    stem_key=data_params.get("stem_key", "ques_content"),
                                    label_key=data_params.get("label_key", "difficulty"))
+    else:
+        eval_dataset = None
+    # model configuration
+    model = BertForPropertyPrediction(pretrained_model, **model_params)
+    model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
+    # training configuration
+    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
+    work_train_params["output_dir"] = output_dir
+    if train_params is not None:
+        work_train_params.update(train_params if train_params else {})
+    train_args = TrainingArguments(**work_train_params)
+    data_collator = DataCollatorWithPadding(tokenizer.bert_tokenizer)
+    trainer = Trainer(
+        model=model,
+        args=train_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=data_collator,
+    )
+    trainer.train()
+    # trainer.model.save_pretrained(output_dir)
+    trainer.save_model(output_dir)
+    trainer.model.save_config(output_dir)
+    tokenizer.save_pretrained(output_dir)
+
+
+def finetune_bert_for_knowledge_prediction(train_items,
+                                           output_dir,
+                                           pretrained_model="bert-base-chinese",
+                                           eval_items=None,
+                                           tokenizer_params=None,
+                                           data_params=None,
+                                           train_params=None,
+                                           model_params=None
+                                           ):
+    """
+    Parameters
+    ----------
+    train_items: list, required
+        The training corpus, each item could be str or dict
+    output_dir: str, required
+        The directory to save trained model files
+    pretrained_model: str, optional
+        The pretrained model name or path for model and tokenizer
+    eval_items: list, required
+        The evaluating items, each item could be str or dict
+    tokenizer_params: dict, optional, default=None
+        The parameters passed to ElmoTokenizer
+    data_params: dict, optional, default=None
+        The parameters passed to ElmoDataset and ElmoTokenizer
+    model_params: dict, optional, default=None
+        The parameters passed to Trainer
+    train_params: dict, optional, default=None
+    """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
+    # tokenizer configuration
+    tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
+    # dataset configuration
+    train_dataset = BertDataset(tokenizer=tokenizer, items=train_items,
+                                stem_key=data_params.get("stem_key", "ques_content"),
+                                label_key=data_params.get("label_key", "knowledge"))
+    if eval_items is not None:
+        eval_dataset = BertDataset(tokenizer=tokenizer, items=eval_items,
+                                   stem_key=data_params.get("stem_key", "ques_content"),
+                                   label_key=data_params.get("label_key", "knowledge"))
     else:
         eval_dataset = None
     # model configuration

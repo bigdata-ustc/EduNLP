@@ -7,7 +7,8 @@ from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPredic
 from ..ModelZoo.utils import pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer, EduDataset
 
-__all__ = ["ElmoTokenizer", "ElmoDataset", "train_elmo", "train_elmo_for_property_prediction"]
+__all__ = ["ElmoTokenizer", "ElmoDataset", "train_elmo", "train_elmo_for_property_prediction",
+           "train_elmo_for_knowledge_prediction"]
 
 DEFAULT_TRAIN_PARAMS = {
     # default
@@ -273,11 +274,11 @@ def train_elmo_for_knowledge_prediction(
     # dataset configuration
     train_dataset = ElmoDataset(tokenizer=tokenizer, items=train_items,
                                 stem_key=data_params.get("stem_key", "ques_content"),
-                                label_key=data_params.get("label_key", "difficulty"))
+                                label_key=data_params.get("label_key", "knowledge"))
     if eval_items is not None:
         eval_dataset = ElmoDataset(tokenizer=tokenizer, items=eval_items,
                                    stem_key=data_params.get("stem_key", "ques_content"),
-                                   label_key=data_params.get("label_key", "difficulty"))
+                                   label_key=data_params.get("label_key", "knowledge"))
     else:
         eval_dataset = None
     # model configuration
@@ -312,5 +313,3 @@ def train_elmo_for_knowledge_prediction(
     trainer.model.save_config(output_dir)
     tokenizer.save_pretrained(output_dir)
     return output_dir
-
-
