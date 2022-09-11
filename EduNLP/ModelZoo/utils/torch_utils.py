@@ -1,5 +1,6 @@
 import torch
 
+
 def sequence_mask(lengths, max_len=None):
     """Same as tf.sequence_mask, Returns a mask tensor representing the first N positions of each cell.
 
@@ -29,16 +30,15 @@ def sequence_mask(lengths, max_len=None):
 
     lengths_shape = lengths.shape  # torch.size() is a tuple
     lengths = lengths.reshape(-1)
-    
+
     batch_size = lengths.numel()
     max_len = max_len or int(lengths.max())
     lengths_shape += (max_len,)
-    
-    return (torch.arange(0, max_len, device=lengths.device)
-    .type_as(lengths)
-    .unsqueeze(0).expand(batch_size, max_len)
-    .lt(lengths.unsqueeze(1))).reshape(lengths_shape)
 
+    return (torch.arange(0, max_len, device=lengths.device)
+            .type_as(lengths)
+            .unsqueeze(0).expand(batch_size, max_len)
+            .lt(lengths.unsqueeze(1))).reshape(lengths_shape)
 
 
 def gather_nd(params, indices):
@@ -64,7 +64,7 @@ def gather_nd(params, indices):
     ...           indices = [[1],
     ...                      [0]])
     """
-    newshape=indices.shape[:-1]+params.shape[indices.shape[-1]:]
-    indices=indices.view(-1, indices.shape[-1]).tolist()
-    out=torch.cat([params.__getitem__(tuple(i)) for i in indices])
+    newshape = indices.shape[:-1] + params.shape[indices.shape[-1]:]
+    indices = indices.view(-1, indices.shape[-1]).tolist()
+    out = torch.cat([params.__getitem__(tuple(i)) for i in indices])
     return out.reshape(newshape)

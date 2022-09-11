@@ -5,12 +5,14 @@ from baize.torch import load_net
 import torch.nn.functional as F
 import json
 import os
+from typing import List
 from transformers.modeling_outputs import ModelOutput
 from transformers import PretrainedConfig
 from ..base_model import BaseModel
 from ..utils import torch_utils as mytorch
+from .harnn import HAM
 
-__all__ = ["LM", "ElmoLM", "ElmoLMForPreTraining", "ElmoLMForPropertyPrediction"]
+__all__ = ["LM", "ElmoLM", "ElmoLMForPreTraining", "ElmoLMForPropertyPrediction", "ElmoLMForKnowledgePrediction"]
 
 
 class LM(nn.Module):
@@ -290,7 +292,7 @@ class ElmoLMForPreTraining(BaseModel):
         flat_y_backward = seq_idx[idx_backward_mask]
         flat_y_forward = seq_idx[idx_forward_mask]
 
-        diff_forword = torch.sum(flat_pred_idx_forward - flat_y_forward)
+        diff_forward = torch.sum(flat_pred_idx_forward - flat_y_forward)
         diff_backward = torch.sum(flat_pred_idx_backward - flat_y_backward)
 
         forward_loss = self.criterion(flat_pred_forward, flat_y_forward)
@@ -377,4 +379,97 @@ class ElmoLMForPropertyPrediction(BaseModel):
                 dropout_rate=model_config.get('dropout_rate'),
                 batch_first=model_config.get('batch_first'),
                 head_dropout=model_config.get('head_dropout', 0.5),
+            )
+
+
+class KnowledgePredictionOutput(ModelOutput):
+    loss: torch.FloatTensor = None
+    logits: torch.FloatTensor = None
+
+
+class ElmoLMForKnowledgePrediction(BaseModel):
+    base_model_prefix = 'elmo'
+
+    def __init__(self, vocab_size: int,
+                 embedding_dim: int,
+                 hidden_size: int,
+                 num_classes_list: List,
+                 num_total_classes: int,
+                 dropout_rate: float = 0.5,
+                 batch_first=True,
+                 head_dropout: float = 0.5,
+                 flat_cls_weight=0.5,
+                 attention_unit_size=256,
+                 fc_hidden_size=512,
+                 beta=0.5,
+                 **argv):
+        super(ElmoLMForKnowledgePrediction, self).__init__()
+
+        self.elmo = ElmoLM(
+            vocab_size=vocab_size,
+            embedding_dim=embedding_dim,
+            hidden_size=hidden_size,
+            dropout_rate=dropout_rate,
+            batch_first=batch_first
+        )
+        self.head_dropout = head_dropout
+        self.dropout = nn.Dropout(head_dropout)
+        self.sigmoid = nn.Sigmoid()
+        self.criterion = nn.MSELoss()
+        self.flat_classifier = nn.Linear(2 * hidden_size, num_total_classes)
+        self.ham_classifier = HAM(
+            num_classes_list=num_classes_list,
+            num_total_classes=num_total_classes,
+            lstm_hidden_size=hidden_size,
+            attention_unit_size=attention_unit_size,
+            fc_hidden_size=fc_hidden_size,
+            beta=beta,
+            dropout_rate=dropout_rate
+        )
+        self.flat_cls_weight = flat_cls_weight
+
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        config.update(argv)
+        config['architecture'] = 'ElmoLMForPreTraining'
+        self.config = PretrainedConfig.from_dict(config)
+
+    def forward(self, seq_idx=None, seq_len=None, labels=None) -> ModelOutput:
+        outputs = self.elmo(seq_idx, seq_len)
+        item_embeds = torch.cat(
+            (outputs.forward_output[torch.arange(len(seq_len)), torch.tensor(seq_len) - 1],
+             outputs.backward_output[torch.arange(len(seq_len)), 0]),
+            dim=-1)
+        tokens_embeds = torch.cat((outputs.forward_output, outputs.backward_output), dim=-1)
+        item_embeds = self.dropout(item_embeds)
+        tokens_embeds = self.dropout(tokens_embeds)
+        flat_logits = self.sigmoid(self.flat_classifier(item_embeds))
+        ham_outputs = self.sigmoid(self.ham_classifier(tokens_embeds))
+        ham_logits = ham_outputs.scores
+        logits = self.flat_cls_weight * flat_logits + (1 - self.flat_cls_weight) * ham_logits
+        loss = None
+        if labels is not None:
+            loss = self.criterion(logits, labels)
+        return KnowledgePredictionOutput(
+            loss=loss,
+            logits=logits
+        )
+
+    @classmethod
+    def from_config(cls, config_path, **argv):
+        with open(config_path, "r", encoding="utf-8") as rf:
+            model_config = json.load(rf)
+            model_config.update(argv)
+            return cls(
+                vocab_size=model_config.get('vocab_size'),
+                embedding_dim=model_config.get('embedding_dim'),
+                hidden_size=model_config.get('hidden_size'),
+                num_total_classes=model_config.get('total_classes'),
+                num_classes_list=model_config.get('num_classes_list'),
+                dropout_rate=model_config.get('dropout_rate'),
+                batch_first=model_config.get('batch_first'),
+                head_dropout=model_config.get('head_dropout', 0.5),
+                flat_cls_weight=model_config.get('flat_cls_weight', 0.5),
+                attention_unit_size=model_config.get('attention_unit_size', 256),
+                fc_hidden_size=model_config.get('fc_hidden_size', 512),
+                beta=model_config.get('beta', 0.5),
             )

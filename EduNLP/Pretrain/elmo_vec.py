@@ -3,7 +3,7 @@ import os
 from copy import deepcopy
 from transformers import TrainingArguments, Trainer
 from typing import Optional, Union, List
-from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPrediction
+from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPrediction, ElmoLMForKnowledgePrediction
 from ..ModelZoo.utils import pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer, EduDataset
 
@@ -44,6 +44,7 @@ class ElmoTokenizer(PretrainedEduTokenizer):
     >>> len(t)
     18
     """
+
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", add_specials=True, **argv):
         super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method,
                          add_specials=add_specials, **argv)
@@ -186,12 +187,12 @@ def train_elmo_for_property_prediction(
                             key=lambda x: x[data_params.get("stem_key", "ques_content")])
     # dataset configuration
     train_dataset = ElmoDataset(tokenizer=tokenizer, items=train_items,
-                               stem_key=data_params.get("stem_key", "ques_content"),
-                               label_key=data_params.get("label_key", "difficulty"))
+                                stem_key=data_params.get("stem_key", "ques_content"),
+                                label_key=data_params.get("label_key", "difficulty"))
     if eval_items is not None:
         eval_dataset = ElmoDataset(tokenizer=tokenizer, items=eval_items,
-                                  stem_key=data_params.get("stem_key", "ques_content"),
-                                  label_key=data_params.get("label_key", "difficulty"))
+                                   stem_key=data_params.get("stem_key", "ques_content"),
+                                   label_key=data_params.get("label_key", "difficulty"))
     else:
         eval_dataset = None
     # model configuration
@@ -227,3 +228,89 @@ def train_elmo_for_property_prediction(
     trainer.model.save_config(output_dir)
     tokenizer.save_pretrained(output_dir)
     return output_dir
+
+
+def train_elmo_for_knowledge_prediction(
+        train_items: list, output_dir: str, pretrained_dir=None, eval_items=None,
+        tokenizer_params=None, data_params=None, train_params=None, model_params=None
+):
+    """
+    Parameters
+    ----------
+    train_items: list, required
+        The training items, each item could be str or dict
+    output_dir: str, required
+        The directory to save trained model files
+    pretrained_dir: str, optional
+        The pretrained directory for model and tokenizer
+    eval_items: list, required
+        The evaluating items, each item could be str or dict
+    tokenizer_params: dict, optional, default=None
+        The parameters passed to ElmoTokenizer
+    data_params: dict, optional, default=None
+        The parameters passed to ElmoDataset and ElmoTokenizer
+    model_params: dict, optional, default=None
+        The parameters passed to Trainer
+    train_params: dict, optional, default=None
+    """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
+    # tokenizer configuration
+    if pretrained_dir is not None:
+        tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir, **tokenizer_params)
+    else:
+        work_tokenizer_params = {
+            "add_special_tokens": True,
+            "tokenize_method": "pure_text",
+        }
+        work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
+        tokenizer = ElmoTokenizer(**work_tokenizer_params)
+        corpus_items = train_items + eval_items
+        tokenizer.set_vocab(corpus_items,
+                            key=lambda x: x[data_params.get("stem_key", "ques_content")])
+    # dataset configuration
+    train_dataset = ElmoDataset(tokenizer=tokenizer, items=train_items,
+                                stem_key=data_params.get("stem_key", "ques_content"),
+                                label_key=data_params.get("label_key", "difficulty"))
+    if eval_items is not None:
+        eval_dataset = ElmoDataset(tokenizer=tokenizer, items=eval_items,
+                                   stem_key=data_params.get("stem_key", "ques_content"),
+                                   label_key=data_params.get("label_key", "difficulty"))
+    else:
+        eval_dataset = None
+    # model configuration
+    if pretrained_dir is not None:
+        model = ElmoLMForKnowledgePrediction.from_pretrained(pretrained_dir, **model_params)
+    else:
+        work_model_params = {
+            "vocab_size": len(tokenizer),
+            "embedding_dim": 512,
+            "hidden_size": 512
+        }
+        work_model_params.update(model_params if model_params else {})
+        model = ElmoLMForKnowledgePrediction(**work_model_params)
+    model.elmo.LM_layer.rnn.flatten_parameters()
+
+    # training configuration
+    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
+    work_train_params["output_dir"] = output_dir
+    if train_params is not None:
+        work_train_params.update(train_params if train_params else {})
+    work_train_params = TrainingArguments(**work_train_params)
+    trainer = Trainer(
+        model=model,
+        args=work_train_params,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=train_dataset.collate_fn,
+    )
+    trainer.train()
+    assert isinstance(trainer.model, ElmoLMForKnowledgePrediction)
+    trainer.save_model(output_dir)
+    trainer.model.save_config(output_dir)
+    tokenizer.save_pretrained(output_dir)
+    return output_dir
+
+

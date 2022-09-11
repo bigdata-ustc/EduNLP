@@ -5,7 +5,7 @@ from copy import deepcopy
 from torch.utils.data import Dataset
 from transformers import TrainingArguments, Trainer
 import warnings
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union, Any
 from gensim.models import Word2Vec
 from torch.optim.adam import Adam
 from torch.optim.lr_scheduler import StepLR
