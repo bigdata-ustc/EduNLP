@@ -16,7 +16,7 @@ from ..ModelZoo.bert import BertForPropertyPrediction
 from .pretrian_utils import EduDataset
 
 __all__ = ["BertTokenizer", "BertDataset", "finetune_bert", "finetune_bert_for_property_prediction",
-           "finetune_bert_for_knowledge_predition"]
+           "finetune_bert_for_knowledge_prediction"]
 
 DEFAULT_TRAIN_PARAMS = {
     # default
