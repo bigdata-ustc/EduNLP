@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from transformers.modeling_outputs import ModelOutput
-import numpy as np
+from typing import List, Dict
 
 __all__ = ["HAM"]
 
@@ -77,16 +77,17 @@ class HAM(nn.Module):
 
     def __init__(
             self,
-            num_classes_list,
-            num_total_classes,
-            lstm_hidden_size,
-            attention_unit_size,
-            fc_hidden_size,
-            beta=0.0,
+            num_classes_list: List[int],
+            num_total_classes: int,
+            lstm_hidden_size: int,
+            attention_unit_size: Optional[int] = 256,
+            fc_hidden_size: Optional[int] = 512,
+            beta: Optional[float] = 0.5,
             dropout_rate=None):
         super(HAM, self).__init__()
         self.beta = beta
 
+        assert num_total_classes == sum(num_classes_list)
         # First Level
         self.first_attention = AttentionLayer(lstm_hidden_size * 2, attention_unit_size, num_classes_list[0])
         self.first_fc = nn.Linear(lstm_hidden_size * 4, fc_hidden_size)
@@ -103,7 +104,7 @@ class HAM(nn.Module):
         self.third_local = LocalLayer(fc_hidden_size, num_classes_list[2])
 
         # Fully Connected Layer
-        self.fc = nn.Linear(fc_hidden_size * 4, fc_hidden_size)
+        self.fc = nn.Linear(fc_hidden_size * 3, fc_hidden_size)
 
         # Highway Layer
         self.highway_lin = nn.Linear(fc_hidden_size, fc_hidden_size)

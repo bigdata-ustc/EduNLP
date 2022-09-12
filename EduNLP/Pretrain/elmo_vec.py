@@ -274,11 +274,11 @@ def train_elmo_for_knowledge_prediction(
     # dataset configuration
     train_dataset = ElmoDataset(tokenizer=tokenizer, items=train_items,
                                 stem_key=data_params.get("stem_key", "ques_content"),
-                                label_key=data_params.get("label_key", "knowledge"))
+                                label_key=data_params.get("label_key", "know_list"))
     if eval_items is not None:
         eval_dataset = ElmoDataset(tokenizer=tokenizer, items=eval_items,
                                    stem_key=data_params.get("stem_key", "ques_content"),
-                                   label_key=data_params.get("label_key", "knowledge"))
+                                   label_key=data_params.get("label_key", "know_list"))
     else:
         eval_dataset = None
     # model configuration

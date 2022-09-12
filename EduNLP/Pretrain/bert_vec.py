@@ -392,11 +392,11 @@ def finetune_bert_for_knowledge_prediction(train_items,
     # dataset configuration
     train_dataset = BertDataset(tokenizer=tokenizer, items=train_items,
                                 stem_key=data_params.get("stem_key", "ques_content"),
-                                label_key=data_params.get("label_key", "knowledge"))
+                                label_key=data_params.get("label_key", "know_list"))
     if eval_items is not None:
         eval_dataset = BertDataset(tokenizer=tokenizer, items=eval_items,
                                    stem_key=data_params.get("stem_key", "ques_content"),
-                                   label_key=data_params.get("label_key", "knowledge"))
+                                   label_key=data_params.get("label_key", "know_list"))
     else:
         eval_dataset = None
     # model configuration

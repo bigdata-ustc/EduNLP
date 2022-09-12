@@ -94,6 +94,8 @@ class BertForKnowledgePrediction(BaseModel):
             beta=beta,
             dropout_rate=head_dropout
         )
+        self.num_classes_list = num_classes_list
+        self.num_total_classes = num_total_classes
 
         config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
         config['architecture'] = 'BertForKnowledgePrediction'
@@ -115,6 +117,7 @@ class BertForKnowledgePrediction(BaseModel):
         logits = self.flat_cls_weight * flat_logits + (1 - self.flat_cls_weight) * ham_logits
         loss = None
         if labels is not None:
+            labels = torch.sum(torch.nn.functional.one_hot(labels, num_classes=self.num_total_classes), dim=1)
             loss = self.criterion(logits, labels) if labels is not None else None
         return BertForPPOutput(
             loss=loss,

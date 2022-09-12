@@ -393,15 +393,15 @@ class ElmoLMForKnowledgePrediction(BaseModel):
     def __init__(self, vocab_size: int,
                  embedding_dim: int,
                  hidden_size: int,
-                 num_classes_list: List,
+                 num_classes_list: List[int],
                  num_total_classes: int,
                  dropout_rate: float = 0.5,
                  batch_first=True,
-                 head_dropout: float = 0.5,
-                 flat_cls_weight=0.5,
-                 attention_unit_size=256,
-                 fc_hidden_size=512,
-                 beta=0.5,
+                 head_dropout: Optional[float] = 0.5,
+                 flat_cls_weight: Optional[float] = 0.5,
+                 attention_unit_size: Optional[int] = 256,
+                 fc_hidden_size: Optional[int] = 512,
+                 beta: Optional[float] = 0.5,
                  **argv):
         super(ElmoLMForKnowledgePrediction, self).__init__()
 
@@ -427,6 +427,8 @@ class ElmoLMForKnowledgePrediction(BaseModel):
             dropout_rate=dropout_rate
         )
         self.flat_cls_weight = flat_cls_weight
+        self.num_classes_list = num_classes_list
+        self.num_total_classes = num_total_classes
 
         config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
         config.update(argv)
@@ -448,6 +450,7 @@ class ElmoLMForKnowledgePrediction(BaseModel):
         logits = self.flat_cls_weight * flat_logits + (1 - self.flat_cls_weight) * ham_logits
         loss = None
         if labels is not None:
+            labels = torch.sum(torch.nn.functional.one_hot(labels, num_classes=self.num_total_classes), dim=1)
             loss = self.criterion(logits, labels)
         return KnowledgePredictionOutput(
             loss=loss,
