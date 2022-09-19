@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from transformers.modeling_outputs import ModelOutput
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 __all__ = ["HAM"]
 

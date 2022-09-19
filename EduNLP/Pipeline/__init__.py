@@ -1,6 +1,7 @@
 from .base import Pipeline, PreProcessingPipeline
 from .mappings import TASK_MAPPING
 from .property_prediction import PropertyPredictionPipeline
+from .knowledge_prediction import KnowledgePredictionPipeline
 from typing import Optional, Union, List
 from ..Pretrain import PretrainedEduTokenizer
 from ..ModelZoo.base_model import BaseModel
@@ -15,6 +16,10 @@ SUPPORTED_TASKS = {
     "property-prediction": {
         "impl": PropertyPredictionPipeline,
         "default": "elmo_for_property_prediction_test_256"
+    },
+    "knowledge-prediction": {
+        "impl": KnowledgePredictionPipeline,
+        "default": "elmo_for_knowledge_prediction_test_256"
     }
 }
 

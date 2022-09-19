@@ -8,6 +8,7 @@ import os
 from typing import List
 from transformers.modeling_outputs import ModelOutput
 from transformers import PretrainedConfig
+from typing import Optional
 from ..base_model import BaseModel
 from ..utils import torch_utils as mytorch
 from .harnn import HAM
@@ -445,12 +446,13 @@ class ElmoLMForKnowledgePrediction(BaseModel):
         item_embeds = self.dropout(item_embeds)
         tokens_embeds = self.dropout(tokens_embeds)
         flat_logits = self.sigmoid(self.flat_classifier(item_embeds))
-        ham_outputs = self.sigmoid(self.ham_classifier(tokens_embeds))
-        ham_logits = ham_outputs.scores
+        ham_outputs = self.ham_classifier(tokens_embeds)
+        ham_logits = self.sigmoid(ham_outputs.scores)
         logits = self.flat_cls_weight * flat_logits + (1 - self.flat_cls_weight) * ham_logits
         loss = None
         if labels is not None:
             labels = torch.sum(torch.nn.functional.one_hot(labels, num_classes=self.num_total_classes), dim=1)
+            labels = labels.float()
             loss = self.criterion(logits, labels)
         return KnowledgePredictionOutput(
             loss=loss,

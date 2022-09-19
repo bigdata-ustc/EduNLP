@@ -8,6 +8,7 @@ import os
 from ..base_model import BaseModel
 from transformers.modeling_outputs import ModelOutput
 from transformers import PretrainedConfig, BertModel
+from typing import List, Optional
 from ..rnn.harnn import HAM
 
 
@@ -67,10 +68,10 @@ class BertForPropertyPrediction(BaseModel):
 
 class BertForKnowledgePrediction(BaseModel):
     def __init__(self,
+                 num_classes_list: List[int],
+                 num_total_classes: int,
                  pretrained_model_dir=None,
                  head_dropout=0.5,
-                 num_classes_list=num_classes_list,
-                 num_total_classes=total_classesm,
                  flat_cls_weight=0.5,
                  attention_unit_size=256,
                  fc_hidden_size=512,
@@ -112,12 +113,13 @@ class BertForKnowledgePrediction(BaseModel):
         tokens_embeds = outputs.last_hidden_state
         tokens_embeds = self.dropout(tokens_embeds)
         flat_logits = self.sigmoid(self.flat_classifier(item_embeds))
-        ham_outputs = self.sigmoid(self.ham_classifier(tokens_embeds))
-        ham_logits = ham_outputs.scores
+        ham_outputs = self.ham_classifier(tokens_embeds)
+        ham_logits = self.sigmoid(ham_outputs.scores)
         logits = self.flat_cls_weight * flat_logits + (1 - self.flat_cls_weight) * ham_logits
         loss = None
         if labels is not None:
             labels = torch.sum(torch.nn.functional.one_hot(labels, num_classes=self.num_total_classes), dim=1)
+            labels = labels.float()
             loss = self.criterion(logits, labels) if labels is not None else None
         return BertForPPOutput(
             loss=loss,

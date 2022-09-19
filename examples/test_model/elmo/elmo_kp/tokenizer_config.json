@@ -1,0 +1,19 @@
+{
+  "max_length": 250,
+  "tokenize_method": "pure_text",
+  "add_specials": [
+    "[TEXT]",
+    "[FORMULA]",
+    "[FIGURE]",
+    "[MARK]",
+    "[TAG]",
+    "[SEP]",
+    "[TEXT_BEGIN]",
+    "[TEXT_END]",
+    "[FORMULA_BEGIN]",
+    "[FORMULA_END]"
+  ],
+  "argv": {
+    "add_special_tokens": true
+  }
+}
