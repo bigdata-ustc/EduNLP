@@ -101,7 +101,7 @@ class EduVocab(object):
             res = res + [self.to_idx(self.eos_idx)]
         return res
 
-    def convert_sequence_to_token(self, idxs):
+    def convert_sequence_to_token(self, idxs, **argv):
         """convert sentence of indexs to sentence of tokens"""
         return [self.to_token(i) for i in idxs]
 
@@ -191,11 +191,11 @@ class PretrainedEduTokenizer(object):
         - For bool, it means whether to add EDU_SPYMBOLS to vocabulary
         - For list, it means the added special tokens besides EDU_SPYMBOLS
     """
-    def __init__(self, vocab_path: str=None, max_length: int=250, tokenize_method: str="pure_text", add_specials: Tuple[list, bool] = None, **argv):
+    def __init__(self, vocab_path: str=None, max_length: int=250, tokenize_method: str = "pure_text", add_specials: Tuple[list, bool] = False, **argv):
         self._set_basic_tokenizer(tokenize_method, **argv)
         if isinstance(add_specials, bool):
             add_specials = EDU_SPYMBOLS if add_specials else None
-        elif isinstance(add_specials, list):
+        else:
             add_specials = EDU_SPYMBOLS + add_specials
         self.max_length = max_length
         self.vocab = EduVocab(vocab_path=vocab_path, specials=add_specials, **argv)
@@ -291,17 +291,17 @@ class PretrainedEduTokenizer(object):
         else:
             return [self._tokenize(item, key=key) for item in items]
 
-    def encode(self, items: Tuple[list, str, dict], key=lambda x: x):
+    def encode(self, items: Tuple[str, dict, List[str], List[dict]], key=lambda x: x, **argv):
         if isinstance(items, str) or isinstance(items, dict):
-            return self.vocab.convert_sequence_to_idx(key(items))
+            return self.vocab.convert_sequence_to_idx(key(items), **argv)
         else:
-            return [self.vocab.convert_sequence_to_idx(key(item)) for item in items]
+            return [self.vocab.convert_sequence_to_idx(key(item), **argv) for item in items]
 
-    def decode(self, items: Tuple[list, str, dict], key=lambda x: x):
-        if isinstance(items, str) or isinstance(items, dict):
-            return self.vocab.convert_sequence_to_token(key(items))
+    def decode(self, token_ids: list, key=lambda x: x, **argv):
+        if isinstance(token_ids[0], list):
+            return [self.vocab.convert_sequence_to_token(key(item), **argv) for item in token_ids]
         else:
-            return [self.vocab.convert_sequence_to_token(key(item)) for item in items]
+            return self.vocab.convert_sequence_to_token(key(token_ids), **argv)
 
     def _pad(self):
         raise NotImplementedError
