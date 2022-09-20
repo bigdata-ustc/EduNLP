@@ -4,7 +4,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import torch
 from EduNLP.ModelZoo.bert import BertForPropertyPrediction
 from transformers import BertModel as HFBertModel
-from EduNLP.Pretrain import BertTokenizer, finetune_bert, finetune_bert_for_property_prediction
+from EduNLP.Pretrain import BertTokenizer, finetune_bert, finetune_bert_for_property_prediction, finetune_bert_for_knowledge_prediction
 from EduNLP.Vector import T2V, BertModel
 from EduNLP.I2V import Bert, get_pretrained_i2v
 
@@ -100,6 +100,39 @@ class TestPretrainBert:
         )
         model = BertForPropertyPrediction.from_pretrained(pretrained_pp_dir)
         tokenizer = BertTokenizer.from_pretrained(pretrained_pp_dir)
+
+        encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])
+        # TODO: need to handle inference for T2V for batch or single
+        model(**encodes)
+
+    def test_train_kp(self, standard_luna_data, pretrained_kp_dir, pretrained_model_dir):
+        data_params = {
+            "stem_key": "ques_content",
+            "label_key": "know_list"
+        }
+        train_params = {
+            "num_train_epochs": 3,
+            "per_device_train_batch_size": 2,
+            "per_device_eval_batch_size": 2,
+            "no_cuda": not TEST_GPU,
+        }
+        model_params = {
+            "num_classes_list": [10, 27, 963],
+            "num_total_classes": 1000,
+        }
+        train_items = standard_luna_data
+        finetune_bert_for_knowledge_prediction(
+            train_items,
+            pretrained_kp_dir,
+            pretrained_model=pretrained_model_dir,
+
+            eval_items=train_items,
+            train_params=train_params,
+            data_params=data_params,
+            model_params=model_params
+        )
+        model = BertForPropertyPrediction.from_pretrained(pretrained_kp_dir)
+        tokenizer = BertTokenizer.from_pretrained(pretrained_kp_dir)
 
         encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])
         # TODO: need to handle inference for T2V for batch or single

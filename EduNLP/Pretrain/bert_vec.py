@@ -37,6 +37,7 @@ DEFAULT_TRAIN_PARAMS = {
 class BertTokenizer(TokenizerForHuggingface):
     pass
 
+
 class BertDataset(EduDataset):
     pass
 

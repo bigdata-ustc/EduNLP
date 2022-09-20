@@ -405,7 +405,7 @@ class EduDataset(Dataset):
     label_key : Optional[str], optional
         the labels of items to process, by default None
     feature_keys : Optional[List[str]], optional
-        the addional features of items to remain, by default None
+        the additional features of items to remain, by default None
     num_processor : int, optional
         specific the number of cpus for parallel speedup, by default None
     """

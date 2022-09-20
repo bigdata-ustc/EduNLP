@@ -1,6 +1,5 @@
 from .base import Pipeline, GenericTensor
 from typing import Dict, Optional, Union
-from torch import sigmoid
 
 
 class PropertyPredictionPipeline(Pipeline):
