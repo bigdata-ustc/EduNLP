@@ -135,8 +135,8 @@ class DisenQNetForPreTrainingOutput(ModelOutput):
 class DisenQNetForPreTraining(BaseModel):
     base_model_prefix = 'disenq'
 
-    def __init__(self, vocab_size, concept_size, hidden_size, dropout_rate, pos_weight, w_cp, w_mi, w_dis, warmup, n_adversarial,
-                 wv=None, **argv):
+    def __init__(self, vocab_size, concept_size, hidden_size, dropout_rate, pos_weight,
+                 w_cp, w_mi, w_dis, warmup, n_adversarial, wv=None, **argv):
         super(DisenQNetForPreTraining, self).__init__()
         self.disenq = DisenQNet(
             vocab_size=vocab_size,
@@ -151,7 +151,7 @@ class DisenQNetForPreTraining(BaseModel):
         self.w_mi = w_mi
         self.w_dis = w_dis
         self.hidden_size = hidden_size
-        self.warming_up= False
+        self.warming_up = False
         self.params = {
             "vocab_size": vocab_size,
             "concept_size": concept_size,
@@ -173,7 +173,7 @@ class DisenQNetForPreTraining(BaseModel):
 
         model_params = list()
         for params in [list(self.disenq.parameters()),
-                        list(self.mi_estimator.parameters()), list(self.concept_estimator.parameters())]:
+                       list(self.mi_estimator.parameters()), list(self.concept_estimator.parameters())]:
             model_params.extend(params)
         self.model_params = model_params
         self.adv_params = list(self.disen_estimator.parameters())

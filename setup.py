@@ -10,6 +10,7 @@ test_deps = [
     'pytest>=4',
     'pytest-cov>=2.6.0',
     'pytest-flake8',
+    'flake8<5.0.0'
 ]
 docs_deps = [
     'sphinx',

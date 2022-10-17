@@ -5,7 +5,7 @@ from transformers import DataCollatorForLanguageModeling, DataCollatorWithPaddin
 from transformers import Trainer, TrainingArguments
 from copy import deepcopy
 
-from ..ModelZoo.bert import BertForPropertyPrediction
+from ..ModelZoo.bert import BertForPropertyPrediction, BertForKnowledgePrediction
 from .pretrian_utils import EduDataset
 from .hugginface_utils import TokenizerForHuggingface
 
@@ -35,6 +35,28 @@ DEFAULT_TRAIN_PARAMS = {
 
 
 class BertTokenizer(TokenizerForHuggingface):
+    """
+    Examples
+    ----------
+    >>> tokenizer = BertTokenizer(add_special_tokens=True)
+    >>> item = "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
+    ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"
+    >>> token_item = tokenizer(item)
+    >>> print(token_item.input_ids)
+    tensor([[ 101, 1062, 2466, 1963, 1745,  138,  100,  140,  166,  117,  167, 5276,
+             3338, 3340,  816, 1062, 2466,  102,  168,  134,  166,  116,  128,  167,
+             3297, 1920,  966,  138,  100,  140,  102]])
+    >>> print(tokenizer.tokenize(item)[:10])
+    ['公', '式', '如', '图', '[', '[UNK]', ']', 'x', ',', 'y']
+    >>> items = [item, item]
+    >>> token_items = tokenizer(items, return_tensors='pt')
+    >>> print(token_items.input_ids.shape)
+    torch.Size([2, 31])
+    >>> print(len(tokenizer.tokenize(items)))
+    2
+    >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
+    >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
+    """
     pass
 
 
@@ -227,7 +249,7 @@ def finetune_bert_for_knowledge_prediction(train_items,
     else:
         eval_dataset = None
     # model configuration
-    model = BertForPropertyPrediction(pretrained_model, **model_params)
+    model = BertForKnowledgePrediction(pretrained_model_dir=pretrained_model, **model_params)
     model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)

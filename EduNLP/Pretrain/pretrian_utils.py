@@ -1,4 +1,4 @@
-from typing import Optional, Union, List, Dict, Any, Iterable, Tuple, List
+from typing import Optional, Union, List, Dict, Any, Iterable, Tuple
 import traceback
 import torch
 import os
@@ -37,10 +37,10 @@ class EduVocab(object):
         wheather to lower the corpus items, by default False
     trim_min_count : int, optional
         the lower bound number for adding a word into vocabulary, by default 1
-    """  
-    def __init__(self, vocab_path: str=None, corpus_items: List[str]=None, bos_token: str="[BOS]",
-                 eos_token: str="[EOS]", pad_token: str="[PAD]", unk_token: str="[UNK]",
-                 specials: List[str]=None, lower: bool=False, trim_min_count: int=1, **argv):      
+    """
+    def __init__(self, vocab_path: str = None, corpus_items: List[str] = None, bos_token: str = "[BOS]",
+                 eos_token: str = "[EOS]", pad_token: str = "[PAD]", unk_token: str = "[UNK]",
+                 specials: List[str] = None, lower: bool = False, trim_min_count: int = 1, **argv):
         super(EduVocab, self).__init__()
 
         self._tokens = []
@@ -54,7 +54,7 @@ class EduVocab(object):
         self.unk_token = unk_token
         self._special_tokens = [self.pad_token, self.unk_token, self.bos_token, self.eos_token]
 
-        if specials is not None:
+        if specials:
             self._special_tokens += specials
         for st in self._special_tokens:
             self._add(st)
@@ -105,7 +105,7 @@ class EduVocab(object):
         """convert sentence of indexs to sentence of tokens"""
         return [self.to_token(i) for i in idxs]
 
-    def set_vocab(self, corpus_items: List[str], lower: bool=False, trim_min_count: int=1):
+    def set_vocab(self, corpus_items: List[str], lower: bool = False, trim_min_count: int = 1):
         """Update the vocabulary with the tokens in corpus items
 
         Parameters
@@ -191,10 +191,11 @@ class PretrainedEduTokenizer(object):
         - For bool, it means whether to add EDU_SPYMBOLS to vocabulary
         - For list, it means the added special tokens besides EDU_SPYMBOLS
     """
-    def __init__(self, vocab_path: str=None, max_length: int=250, tokenize_method: str = "pure_text", add_specials: Tuple[list, bool] = False, **argv):
+    def __init__(self, vocab_path: str = None, max_length: int = 250, tokenize_method: str = "pure_text",
+                 add_specials: Tuple[list, bool] = False, **argv):
         self._set_basic_tokenizer(tokenize_method, **argv)
         if isinstance(add_specials, bool):
-            add_specials = EDU_SPYMBOLS if add_specials else None
+            add_specials = EDU_SPYMBOLS if add_specials else []
         else:
             add_specials = EDU_SPYMBOLS + add_specials
         self.max_length = max_length
@@ -202,7 +203,7 @@ class PretrainedEduTokenizer(object):
 
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
 
-    def __call__(self, items: Tuple[list, str, dict], key=lambda x: x, padding: Tuple[bool, str]=True,
+    def __call__(self, items: Tuple[list, str, dict], key=lambda x: x, padding: Tuple[bool, str] = True,
                  max_length=None, return_tensors=True, return_text=False, **kwargs) -> Dict[str, Any]:
         """
         Parameters
@@ -354,7 +355,8 @@ class PretrainedEduTokenizer(object):
     def vocab_size(self):
         return len(self.vocab)
 
-    def set_vocab(self, items: list, key=lambda x: x, lower: bool=False, trim_min_count: int=1, do_tokenize: bool=True):
+    def set_vocab(self, items: list, key=lambda x: x, lower: bool = False,
+                  trim_min_count: int = 1, do_tokenize: bool = True):
         """Update the vocabulary with the tokens in corpus items
 
         Parameters
@@ -390,7 +392,7 @@ class PretrainedEduTokenizer(object):
 
 class EduDataset(Dataset):
     """The base class implements a Dataset, which package the `datasets.Dataset`
-    and provide more convenience, including parallel preprocessing, offline loadding and so on. 
+    and provide more convenience, including parallel preprocessing, offline loadding and so on.
 
     Parameters
     ----------
@@ -413,7 +415,7 @@ class EduDataset(Dataset):
                  items: Union[List[dict], List[str]] = None,
                  stem_key: str = "text", label_key: Optional[str] = None,
                  feature_keys: Optional[List[str]] = None,
-                 num_processor: int=None, **argv):
+                 num_processor: int = None, **argv):
         self.tokenizer = tokenizer
         feature_keys = [] if feature_keys is None else feature_keys
         if items is not None:
@@ -441,7 +443,8 @@ class EduDataset(Dataset):
             # 离线加载工作特征
             assert ds_disk_path is not None
             self.ds = load_from_disk(ds_disk_path)
-            reserve_columns = list(tokenizer("edunlp", return_tensors=False).keys()) + feature_keys + ([label_key] if label_key is not None else [])
+            reserve_columns = list(tokenizer("edunlp", return_tensors=False).keys())\
+                + feature_keys + ([label_key] if label_key is not None else [])
             remove_columns = list(set(self.ds.column_names) - set(reserve_columns))
 
         # 工作特征

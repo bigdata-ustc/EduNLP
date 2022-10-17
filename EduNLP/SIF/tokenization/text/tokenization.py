@@ -14,6 +14,7 @@ def is_chinese(word):
             return False
     return True
 
+
 def tokenize(text, granularity="word", stopwords="default"):
     """
     Using jieba library to tokenize item by word or char.
@@ -32,7 +33,7 @@ def tokenize(text, granularity="word", stopwords="default"):
     >>> tokenize("三角函数是基本初等函数之一")
     ['三角函数', '初等', '函数']
     >>> tokenize("三角函数是基本初等函数之一", granularity="char")
-    ['三', '角', '函', '数', '基', '初', '函', '数']
+    ['三', '角', '函', '数', '初', '等', '函', '数']
     """
     stopwords = DEFAULT_STOPWORDS if stopwords == "default" else stopwords
     stopwords = stopwords if stopwords is not None else {}

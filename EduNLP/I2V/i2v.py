@@ -44,7 +44,7 @@ class I2V(object):
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
     >>> model_path = "examples/test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
-    >>> i2v = D2V("text", "d2v", filepath=model_path, pretrained_t2v=False)
+    >>> i2v = D2V("pure_text", "d2v", filepath=model_path, pretrained_t2v=False)
     >>> i2v(item)
     ([array([ ...dtype=float32)], None)
 
@@ -155,7 +155,7 @@ class D2V(I2V):
     ... 直角边$AB$, $AC$.$\\bigtriangleup ABC$的三边所围成的区域记为$I$,黑色部分记为$II$, 其余部分记为$III$.在整个图形中随机取一点，\
     ... 此点取自$I,II,III$的概率分别记为$p_1,p_2,p_3$,则$\\SIFChoice$$\\FigureID{1}$"}
     >>> model_path = "examples/test_model/d2v/d2v_test_256/d2v_test_256.bin"
-    >>> i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
+    >>> i2v = D2V("pure_text","d2v",filepath=model_path, pretrained_t2v = False)
     >>> i2v(item)
     ([array([ ...dtype=float32)], None)
 
@@ -467,7 +467,7 @@ class QuesNet(I2V):
         """ It is a function to switch item to vector. And before using the function, it is nesseary to load model.
         Parameters
         ----------
-        item : str or dict or list
+        items : str or dict or list
             the item of question, or question list
         tokenize : bool, optional
             True: tokenize the item
@@ -488,7 +488,7 @@ class QuesNet(I2V):
         content = input['content_idx']
         meta_idx = input['meta_idx']
         if isinstance(items, list):
-            qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(item))]
+            qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(items))]
         else:
             qs = Question("", content, [0], [[0], [0], [0]], meta_idx)
         return self.t2v.infer_vector(qs), self.t2v.infer_tokens(qs)

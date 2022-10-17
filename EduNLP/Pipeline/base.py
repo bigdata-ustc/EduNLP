@@ -120,8 +120,8 @@ class PreProcessingPipeline(object):
         Notice:
         1. Please try to avoid more than one usages of one same pipe, otherwise you can only modify them with index.
             i.e. `before` and `after` works well only when the pipe is unique.
-        2. The `*args, **kwargs` parameters will be passed to component constructor in `PREPROCESSING_PIPES`, and this only
-            works when you do not give a callable component.
+        2. The `*args, **kwargs` parameters will be passed to component constructor in `PREPROCESSING_PIPES`,
+            and this only works when you do not give a callable component.
 
         Parameters
         ----------

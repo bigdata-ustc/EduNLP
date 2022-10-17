@@ -68,8 +68,8 @@ class BertForPropertyPrediction(BaseModel):
 
 class BertForKnowledgePrediction(BaseModel):
     def __init__(self,
-                 num_classes_list: List[int],
-                 num_total_classes: int,
+                 num_classes_list: List[int] = None,
+                 num_total_classes: int = None,
                  pretrained_model_dir=None,
                  head_dropout=0.5,
                  flat_cls_weight=0.5,

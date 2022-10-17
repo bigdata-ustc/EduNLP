@@ -13,6 +13,7 @@ from .meta import Vector
 import json
 from typing import Dict, List, Tuple
 
+
 class ElmoModel(Vector):
     def __init__(self, pretrained_dir: str):
         """
@@ -29,7 +30,7 @@ class ElmoModel(Vector):
 
     def infer_vector(self, items: Tuple[dict, List[dict]], *args, **kwargs) -> torch.Tensor:
         # TODO: handle batch and unbatch format for inputs and outputs
-        is_batch = isinstance(items, list)
+        # is_batch = isinstance(items, list)
         # items = items if is_batch else [items]
         outputs = self.model(**items)
         item_embeds = torch.cat(

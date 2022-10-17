@@ -15,17 +15,18 @@ def sequence_mask(lengths, max_len=None):
     -------
     _type_
         A mask tensor of shape lengths.shape + (maxlen,)
-    
+
     Examples:
     ---------
-    >>> sequence_mask([1, 3, 2], 5)  # [[True, False, False, False, False],
-                                #  [True, True, True, False, False],
-                                #  [True, True, False, False, False]]
-
-    >>> sequence_mask([[1, 3],[2,0]])  # [[[True, False, False],
-                                    #   [True, True, True]],
-                                    #  [[True, True, False],
-                                    #   [False, False, False]]]
+    >>> sequence_mask(torch.tensor([1, 3, 2]), 5)
+    tensor([[ True, False, False, False, False],
+            [ True,  True,  True, False, False],
+            [ True,  True, False, False, False]])
+    >>> sequence_mask(torch.tensor([[1, 3],[2,0]]))
+    tensor([[[ True, False, False],
+             [ True,  True,  True]],
+            [[ True,  True, False],
+             [False, False, False]]])
     """
 
     lengths_shape = lengths.shape  # torch.size() is a tuple
@@ -55,14 +56,16 @@ def gather_nd(params, indices):
     -------
     _type_
         _description_
-    
+
     Examples:
     ---------
     >>> gather_nd(
-    ...           params = [['a', 'b', 'c'],
-    ...                     ['d', 'e', 'f']]).numpy(),
-    ...           indices = [[1],
-    ...                      [0]])
+    ...           params=torch.tensor([[1, 2, 3],
+    ...                                [4, 5, 6]]),
+    ...           indices=torch.tensor([[1],
+    ...                                 [0]]))
+    tensor([[4, 5, 6],
+            [1, 2, 3]])
     """
     newshape = indices.shape[:-1] + params.shape[indices.shape[-1]:]
     indices = indices.view(-1, indices.shape[-1]).tolist()

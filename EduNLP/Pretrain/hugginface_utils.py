@@ -29,19 +29,22 @@ class TokenizerForHuggingface(object):
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"
     >>> token_item = tokenizer(item)
     >>> print(token_item.input_ids[:10])
-    [101, 1062, 2466, 1963, 1745, 21129, 166, 117, 167, 5276]
+    tensor([[ 101, 1062, 2466, 1963, 1745,  138,  100,  140,  166,  117,  167, 5276,
+             3338, 3340,  816, 1062, 2466,  102,  168,  134,  166,  116,  128,  167,
+             3297, 1920,  966,  138,  100,  140,  102]])
     >>> print(tokenizer.tokenize(item)[:10])
-    ['公', '式', '如', '图', '[FIGURE]', 'x', ',', 'y', '约', '束']
+    ['公', '式', '如', '图', '[', '[UNK]', ']', 'x', ',', 'y']
     >>> items = [item, item]
     >>> token_items = tokenizer(items, return_tensors='pt')
     >>> print(token_items.input_ids.shape)
-    torch.Size([2, 27])
+    torch.Size([2, 31])
     >>> print(len(tokenizer.tokenize(items)))
     2
     >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
     >>> tokenizer = TokenizerForHuggingface.from_pretrained('test_dir') # doctest: +SKIP
     """
-    def __init__(self, pretrained_model="bert-base-chinese", max_length=512, tokenize_method: str = "pure_text", add_specials: Tuple[List[str], bool] = False, **argv):
+    def __init__(self, pretrained_model="bert-base-chinese", max_length=512, tokenize_method: str = "pure_text",
+                 add_specials: Tuple[List[str], bool] = False, **argv):
         self._set_basic_tokenizer(tokenize_method, **argv)
         if isinstance(add_specials, bool):
             add_specials = EDU_SPYMBOLS if add_specials is True else []
@@ -64,8 +67,8 @@ class TokenizerForHuggingface(object):
 
         if isinstance(return_tensors, bool):
             return_tensors = "pt" if return_tensors is True else None
-        
-        encodes = self.bert_tokenizer(text, truncation=True, padding=padding, max_length=self.max_length, return_tensors=return_tensors)
+        encodes = self.bert_tokenizer(text, truncation=True, padding=padding, max_length=self.max_length,
+                                      return_tensors=return_tensors)
         return encodes
 
     def __len__(self):
@@ -83,7 +86,7 @@ class TokenizerForHuggingface(object):
             text = self.text_tokenizer._tokenize(text)
             text = " ".join(text)
         return text
-        
+
     def tokenize(self, items: Union[list, str, dict], key=lambda x: x, **kwargs):
         if isinstance(items, list):
             texts = [self._tokenize(key(i)) for i in items]
@@ -128,7 +131,8 @@ class TokenizerForHuggingface(object):
     def vocab_size(self):
         return len(self.bert_tokenizer)
 
-    def set_vocab(self, items: Tuple[List[str], List[dict]], key=lambda x: x, lower=False, trim_min_count=1, do_tokenize=True):
+    def set_vocab(self, items: Tuple[List[str], List[dict]], key=lambda x: x, lower=False,
+                  trim_min_count=1, do_tokenize=True):
         """
         Parameters
         -----------

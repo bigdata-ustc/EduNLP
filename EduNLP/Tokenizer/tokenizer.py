@@ -65,8 +65,9 @@ class CustomTokenizer(Tokenizer):
             question item
         key : function, optional
             determine how to get the text of item, by default lambdax: x
-        """  
-        return tokenize(seg(key(item), symbol=self.symbol, figures=self.figures), **self.tokenization_params, **kwargs).tokens
+        """
+        return tokenize(seg(key(item), symbol=self.symbol, figures=self.figures),
+                        **self.tokenization_params, **kwargs).tokens
 
 
 class CharTokenizer(Tokenizer):
@@ -77,7 +78,7 @@ class CharTokenizer(Tokenizer):
         ----------
         stop_words : str, optional
             stop_words to skip, by default "default"
-        """        
+        """
         self.stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "punctuations" else stop_words
         self.stop_words = stop_words if stop_words is not None else set()
 
@@ -98,7 +99,7 @@ class SpaceTokenizer(Tokenizer):
         ----------
         stop_words : str, optional
             stop_words to skip, by default "default"
-        """ 
+        """
         stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "punctuations" else stop_words
         self.stop_words = stop_words if stop_words is not None else set()
 
@@ -107,7 +108,6 @@ class SpaceTokenizer(Tokenizer):
             yield self._tokenize(item, key=key, **kwargs)
 
     def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
-      
         tokens = key(item).strip().split(' ')
         if self.stop_words:
             tokens = [w for w in tokens if w != '' and w not in self.stop_words]
@@ -121,7 +121,8 @@ class PureTextTokenizer(Tokenizer):
         Parameters
         ----------
         handle_figure_formula : str, optional
-            whether to skip or symbolize special formulas( $\\FormFigureID{…}$ and $\\FormFigureBase64{…}), by default skip
+            whether to skip or symbolize special formulas( $\\FormFigureID{…}$ and $\\FormFigureBase64{…}),
+            by default skip
 
         Examples
         --------
@@ -131,12 +132,10 @@ class PureTextTokenizer(Tokenizer):
         >>> tokens = tokenizer(items)
         >>> next(tokens)[:10]
         ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z']
-        >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
+        >>> items=["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
         >>> tokens = tokenizer(items)
         >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-        ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-        '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-        '\\quad', 'A', '\\cap', 'B', '=']
+        ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', ...]
         >>> items = [{
         ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
         ... "options": ["1", "2"]
@@ -175,7 +174,7 @@ class PureTextTokenizer(Tokenizer):
             "skip_figure_formula": skip_figure_formula,
             "symbolize_figure_formula": symbolize_figure_formula
         }
-        text_params={
+        text_params = {
             "granularity": "word",
             "stopwords": "default",
         }
@@ -205,7 +204,7 @@ class AstFormulaTokenizer(Tokenizer):
             Elements to symbolize before tokenization, by default "gmas"
         figures : _type_, optional
             Info for figures in items, by default None
-        """        
+        """
         formula_params = {
             "method": "ast",
 
@@ -216,13 +215,13 @@ class AstFormulaTokenizer(Tokenizer):
             "skip_figure_formula": False,
             "symbolize_figure_formula": True
         }
-        text_params={
+        text_params = {
             "granularity": "word",
             "stopwords": "default",
         }
         formula_params.update(argv.pop("formula_params", {}))
         text_params.update(argv.pop("text_params", {}))
-        self.tokenization_params={
+        self.tokenization_params = {
             "formula_params": formula_params,
             "text_params": text_params,
             "figure_params": argv.pop("figure_params", None),
@@ -237,7 +236,7 @@ class AstFormulaTokenizer(Tokenizer):
     def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
         mode = kwargs.pop("mode", 0)
         ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=mode,
-                        tokenization_params=self.tokenization_params, errors="ignore", **kwargs)
+                      tokenization_params=self.tokenization_params, errors="ignore", **kwargs)
         ret = [] if ret is None else ret.tokens
         return ret
 
@@ -268,7 +267,7 @@ def get_tokenizer(name, *args, **kwargs):
     Examples
     --------
     >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
-    >>> tokenizer = get_tokenizer("text")
+    >>> tokenizer = get_tokenizer("pure_text")
     >>> tokens = tokenizer(items)
     >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
     ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',

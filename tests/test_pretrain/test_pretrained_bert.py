@@ -1,10 +1,11 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 import torch
-from EduNLP.ModelZoo.bert import BertForPropertyPrediction
+from EduNLP.ModelZoo.bert import BertForPropertyPrediction, BertForKnowledgePrediction
 from transformers import BertModel as HFBertModel
-from EduNLP.Pretrain import BertTokenizer, finetune_bert, finetune_bert_for_property_prediction, finetune_bert_for_knowledge_prediction
+from EduNLP.Pretrain import BertTokenizer, finetune_bert
+from EduNLP.Pretrain import finetune_bert_for_property_prediction, finetune_bert_for_knowledge_prediction
 from EduNLP.Vector import T2V, BertModel
 from EduNLP.I2V import Bert, get_pretrained_i2v
 
@@ -63,7 +64,7 @@ class TestPretrainBert:
                 "stem_key": "ques_content",
             },
             train_params={
-                "num_train_epochs": 3,
+                "num_train_epochs": 1,
                 "per_device_train_batch_size": 2,
                 "save_steps": 500,
                 "no_cuda": not TEST_GPU,
@@ -83,7 +84,7 @@ class TestPretrainBert:
             "label_key": "difficulty"
         }
         train_params = {
-            "num_train_epochs": 3,
+            "num_train_epochs": 1,
             "per_device_train_batch_size": 2,
             "per_device_eval_batch_size": 2,
             "no_cuda": not TEST_GPU,
@@ -105,13 +106,13 @@ class TestPretrainBert:
         # TODO: need to handle inference for T2V for batch or single
         model(**encodes)
 
-    def test_train_kp(self, standard_luna_data, pretrained_kp_dir, pretrained_model_dir):
+    def test_train_kp(self, standard_luna_data, pretrained_model_dir, pretrained_kp_dir):
         data_params = {
             "stem_key": "ques_content",
             "label_key": "know_list"
         }
         train_params = {
-            "num_train_epochs": 3,
+            "num_train_epochs": 1,
             "per_device_train_batch_size": 2,
             "per_device_eval_batch_size": 2,
             "no_cuda": not TEST_GPU,
@@ -131,7 +132,7 @@ class TestPretrainBert:
             data_params=data_params,
             model_params=model_params
         )
-        model = BertForPropertyPrediction.from_pretrained(pretrained_kp_dir)
+        model = BertForKnowledgePrediction.from_pretrained(pretrained_kp_dir)
         tokenizer = BertTokenizer.from_pretrained(pretrained_kp_dir)
 
         encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])

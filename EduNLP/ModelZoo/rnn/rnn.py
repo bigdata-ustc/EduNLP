@@ -267,7 +267,9 @@ class ElmoLMForPreTraining(BaseModel):
         """
         batch_size, idx_len = seq_idx.shape
         max_len = seq_len.max().item() if self.config.to_dict().get("use_pack_pad", False) is True else idx_len
-        # NOTE: pred_mask matters when LM use pack_pad, but it will break down for parallel GPU because of different seq_len between gpus
+        # Note:
+        # pred_mask matters when LM use pack_pad,
+        # but it will break down for parallel GPU because of different seq_len between gpus
         pred_mask = torch.arange(max_len, device=seq_idx.device)[None, :] < seq_len[:, None]
         idx_mask = torch.arange(idx_len, device=seq_idx.device)[None, :] < seq_len[:, None]
 
@@ -287,14 +289,14 @@ class ElmoLMForPreTraining(BaseModel):
         flat_pred_forward = pred_forward[pred_forward_mask]
         flat_pred_backward = pred_backward[pred_backward_mask]
 
-        _, flat_pred_idx_forward = torch.max(flat_pred_forward, dim=1)
-        _, flat_pred_idx_backward = torch.max(flat_pred_backward, dim=1)
+        # _, flat_pred_idx_forward = torch.max(flat_pred_forward, dim=1)
+        # _, flat_pred_idx_backward = torch.max(flat_pred_backward, dim=1)
 
         flat_y_backward = seq_idx[idx_backward_mask]
         flat_y_forward = seq_idx[idx_forward_mask]
 
-        diff_forward = torch.sum(flat_pred_idx_forward - flat_y_forward)
-        diff_backward = torch.sum(flat_pred_idx_backward - flat_y_backward)
+        # diff_forward = torch.sum(flat_pred_idx_forward - flat_y_forward)
+        # diff_backward = torch.sum(flat_pred_idx_backward - flat_y_backward)
 
         forward_loss = self.criterion(flat_pred_forward, flat_y_forward)
         backward_loss = self.criterion(flat_pred_backward, flat_y_backward)
@@ -417,7 +419,7 @@ class ElmoLMForKnowledgePrediction(BaseModel):
         self.dropout = nn.Dropout(head_dropout)
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
-        self.flat_classifier = nn.Linear(2 * hidden_size, num_total_classes)
+        self.flat_classifier = nn.Linear(in_features=2 * hidden_size, out_features=num_total_classes)
         self.ham_classifier = HAM(
             num_classes_list=num_classes_list,
             num_total_classes=num_total_classes,

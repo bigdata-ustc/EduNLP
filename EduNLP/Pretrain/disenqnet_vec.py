@@ -94,14 +94,15 @@ class DisenQTokenizer(PretrainedEduTokenizer):
     ...     "content": "甲 数 除以 乙 数 的 商 是 1.5 ， 如果 甲 数 增加 20 ， 则 甲 数 是 乙 的 4 倍 ． 原来 甲 数 = ．",
     ...     "knowledge": ["*", "-", "/"], "difficulty": 0.2, "length": 7}]
     >>> tokenizer.set_vocab(test_items,
-    ...     trim_min_count=1, key=lambda x: x["content"], silent=True)
+    ...     key=lambda x: x["content"], trim_min_count=1)
+    [['甲', '数', '除以', '乙', '数', '商', '[NUM]', '甲', '数', '增加', '[NUM]', '甲', '数', '乙', '倍', '甲', '数']]
     >>> token_items = [tokenizer(i, key=lambda x: x["content"]) for i in test_items]
     >>> print(token_items[0].keys())
     dict_keys(['seq_idx', 'seq_len'])
     """
 
-    def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", add_specials: (list, bool) = None,
-                 num_token="[NUM]", **argv):
+    def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text",
+                 add_specials: Tuple[list, bool] = False, num_token="[NUM]", **argv):
         """
         Parameters
         ----------
@@ -116,7 +117,7 @@ class DisenQTokenizer(PretrainedEduTokenizer):
         num_token: str
         """
         if isinstance(add_specials, bool):
-            add_specials = (EDU_SPYMBOLS + [num_token]) if add_specials else None
+            add_specials = (EDU_SPYMBOLS + [num_token]) if add_specials else []
         elif isinstance(add_specials, list):
             add_specials = EDU_SPYMBOLS + [num_token] + add_specials
         super().__init__(vocab_path, max_length, tokenize_method, add_specials=add_specials, **argv)
@@ -205,7 +206,8 @@ def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, t
 
 
 class DisenQDataset(Dataset):
-    def __init__(self, items: List[Dict], tokenizer: DisenQTokenizer, data_formation: Dict, mode="train", concept_to_idx=None, **argv):
+    def __init__(self, items: List[Dict], tokenizer: DisenQTokenizer, data_formation: Dict,
+                 mode="train", concept_to_idx=None, **argv):
         """
         Parameters
         ----------
@@ -261,7 +263,7 @@ class DisenQTrainer(Trainer):
             # stop gradient propagation to encoder
             k_hidden = outputs.k_hidden.detach()
             i_hidden = outputs.i_hidden.detach()
-             # max dis_loss
+            # max dis_loss
             dis_loss = - self.disen_estimator(k_hidden, i_hidden)
             dis_loss = model.params["n_adversarial"] * model.params["w_dis"] * dis_loss
             self.adv_optimizer.zero_grad()
@@ -270,7 +272,6 @@ class DisenQTrainer(Trainer):
             # Lipschitz constrain for Disc of WGAN
             self.disen_estimator.spectral_norm()
         model.warming_up = warming_up
-
 
         with self.compute_loss_context_manager():
             loss = self.compute_loss(model, inputs)
@@ -325,8 +326,8 @@ DEFAULT_TRAIN_PARAMS = {
 }
 
 
-def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, pretrained_dir: str=None, eval_items=None,
-                    tokenizer_params=None, data_params=None, model_params=None, train_params=None):
+def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, pretrained_dir: str = None,
+                    eval_items=None, tokenizer_params=None, data_params=None, model_params=None, train_params=None):
     """
     Parameters
     ----------
@@ -378,14 +379,16 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
 
     # dataset configuration
     items = train_items + ([] if eval_items is None else eval_items)
-    disen_tokenizer, concept_to_idx, word2vec = preprocess_dataset(pretrained_dir, disen_tokenizer, items,
-                                                                data_formation,
-                                                                trim_min_count=train_params["trim_min"],
-                                                                embed_dim=train_params["hidden"],
-                                                                w2v_params=None, silent=False)
-    train_dataset = DisenQDataset(train_items, disen_tokenizer, data_formation, mode="train", concept_to_idx=concept_to_idx)
+    tokenizer, concept_to_idx, word2vec = preprocess_dataset(pretrained_dir, tokenizer, items,
+                                                             data_formation,
+                                                             trim_min_count=train_params["trim_min"],
+                                                             embed_dim=train_params["hidden"],
+                                                             w2v_params=None, silent=False)
+    train_dataset = DisenQDataset(train_items, tokenizer, data_formation,
+                                  mode="train", concept_to_idx=concept_to_idx)
     if eval_items:
-        eval_dataset = DisenQDataset(eval_items, disen_tokenizer, data_formation, mode="test", concept_to_idx=concept_to_idx)
+        eval_dataset = DisenQDataset(eval_items, tokenizer, data_formation,
+                                     mode="test", concept_to_idx=concept_to_idx)
     else:
         eval_dataset = None
 
@@ -394,7 +397,7 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
         model = DisenQNetForPreTraining.from_pretrained(pretrained_dir, **model_params)
     else:
         work_model_params = {
-            "vocab_size": len(disen_tokenizer),
+            "vocab_size": len(tokenizer),
             "hidden_size": 300,
             'concept_size': len(concept_to_idx),
             'dropout_rate': 0.2,

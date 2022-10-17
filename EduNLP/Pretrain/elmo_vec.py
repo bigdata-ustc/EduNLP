@@ -40,10 +40,18 @@ class ElmoTokenizer(PretrainedEduTokenizer):
     >>> t=ElmoTokenizer()
     >>> items = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\\
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
+    >>> len(t)
+    14
     >>> t.tokenize(items[0])
     ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
+    >>> t(items[0])
+    {'seq_idx': tensor([1, 1, 6, 1, 1, 1, 1, 1, 9, 1, 1, 1, 1, 1, 1, 1, 7]), 'seq_len': tensor(17)}
+    >>> t.set_vocab(items[0])
+    ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
     >>> len(t)
-    18
+    45
+    >>> t(items[0])
+    {'seq_idx': tensor([ 1,  1,  6, 26, 27, 28,  1,  1,  9, 35, 36, 26, 37, 38, 28,  1,  7]), 'seq_len': tensor(17)}
     """
 
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", add_specials=True, **argv):

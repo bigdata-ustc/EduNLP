@@ -1,10 +1,11 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 import pytest
 import torch
 from EduNLP.ModelZoo.rnn import ElmoLM
-from EduNLP.Pretrain import ElmoTokenizer, train_elmo, train_elmo_for_property_prediction, train_elmo_for_knowledge_prediction
+from EduNLP.Pretrain import ElmoTokenizer, train_elmo
+from EduNLP.Pretrain import train_elmo_for_property_prediction, train_elmo_for_knowledge_prediction
 from EduNLP.Vector import T2V, ElmoModel
 from EduNLP.I2V import Elmo, get_pretrained_i2v
 
@@ -87,7 +88,7 @@ class TestPretrainEmlo:
             "label_key": "difficulty"
         }
         train_params = {
-            "num_train_epochs": 3,
+            "num_train_epochs": 1,
             "per_device_train_batch_size": 2,
             "per_device_eval_batch_size": 2,
             "no_cuda": not TEST_GPU,
@@ -110,7 +111,7 @@ class TestPretrainEmlo:
         encodes = tokenizer(test_items, lambda x: x['ques_content'])
         model(**encodes)
 
-    def test_train_pp(self, standard_luna_data, pretrained_model_dir, pretrained_kp_dir):
+    def test_train_kp(self, standard_luna_data, pretrained_model_dir, pretrained_kp_dir):
         test_items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
                     如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,\
@@ -118,6 +119,7 @@ class TestPretrainEmlo:
             {'ques_content': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                     若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
+        # train_items = standard_luna_data
         data_params = {
             "stem_key": "ques_content",
             "label_key": "know_list"
@@ -144,7 +146,6 @@ class TestPretrainEmlo:
         )
         model = ElmoLM.from_pretrained(pretrained_kp_dir)
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_kp_dir)
-        
         # TODO: need to handle inference for T2V for batch or single
         # encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
         # model(**encodes)

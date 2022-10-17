@@ -8,7 +8,7 @@ from EduNLP.Vector import W2V, RNNModel
 
 
 def etl():
-    tokenizer = get_tokenizer("text")
+    tokenizer = get_tokenizer("pure_text")
     return tokenizer([item["stem"] for item in load_jsonl("../../../data/OpenLUNA.json")])
 
 
