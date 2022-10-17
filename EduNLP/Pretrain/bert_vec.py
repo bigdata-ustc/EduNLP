@@ -5,7 +5,7 @@ from transformers import DataCollatorForLanguageModeling, DataCollatorWithPaddin
 from transformers import Trainer, TrainingArguments
 from copy import deepcopy
 
-from ..ModelZoo.bert import BertForPropertyPrediction
+from ..ModelZoo.bert import BertForPropertyPrediction, BertForKnowledgePrediction
 from .pretrian_utils import EduDataset
 from .hugginface_utils import TokenizerForHuggingface
 
@@ -227,7 +227,7 @@ def finetune_bert_for_knowledge_prediction(train_items,
     else:
         eval_dataset = None
     # model configuration
-    model = BertForPropertyPrediction(pretrained_model, **model_params)
+    model = BertForKnowledgePrediction(pretrained_model, **model_params)
     model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
