@@ -423,7 +423,7 @@ class ElmoLMForKnowledgePrediction(BaseModel):
         self.ham_classifier = HAM(
             num_classes_list=num_classes_list,
             num_total_classes=num_total_classes,
-            lstm_hidden_size=hidden_size,
+            sequence_model_hidden_size=hidden_size * 2,
             attention_unit_size=attention_unit_size,
             fc_hidden_size=fc_hidden_size,
             beta=beta,
@@ -470,7 +470,7 @@ class ElmoLMForKnowledgePrediction(BaseModel):
                 vocab_size=model_config.get('vocab_size'),
                 embedding_dim=model_config.get('embedding_dim'),
                 hidden_size=model_config.get('hidden_size'),
-                num_total_classes=model_config.get('total_classes'),
+                num_total_classes=model_config.get('num_total_classes'),
                 num_classes_list=model_config.get('num_classes_list'),
                 dropout_rate=model_config.get('dropout_rate'),
                 batch_first=model_config.get('batch_first'),
