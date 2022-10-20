@@ -194,7 +194,6 @@ class DisenQNetForPreTraining(BaseModel):
         embed = outputs.embeded
         k_hidden = outputs.k_hidden
         i_hidden = outputs.i_hidden
-        print(k_hidden.shape, i_hidden.shape)
         hidden = torch.cat((k_hidden, i_hidden), dim=-1)
         # max mi
         mi_loss = - self.mi_estimator(embed, hidden, seq_len)

@@ -2,9 +2,9 @@ import os
 import numpy as np
 import torch
 from copy import deepcopy
-from torch.utils.data import Dataset
 from transformers import TrainingArguments, Trainer
 import warnings
+from .pretrian_utils import EduDataset
 from typing import Dict, List, Tuple, Union, Any
 from gensim.models import Word2Vec
 from torch.optim.adam import Adam
@@ -208,7 +208,7 @@ def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, t
     return disen_tokenizer, concept_to_idx, word2vec
 
 
-class DisenQDataset(Dataset):
+class DisenQDataset(EduDataset):
     def __init__(self, items: List[Dict], tokenizer: DisenQTokenizer, data_formation: Dict,
                  mode="train", concept_to_idx=None, **argv):
         """
@@ -219,7 +219,7 @@ class DisenQDataset(Dataset):
         data_formation: dict
         max_length: int, optional, default=128
         """
-        super(DisenQDataset, self).__init__()
+        # super(DisenQDataset, self).__init__(tokenizer=tokenizer, **argv)
         self.tokenizer = tokenizer
         self.concept_to_idx = concept_to_idx
         self.mode = mode
@@ -265,8 +265,8 @@ class DisenQTrainer(Trainer):
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         model.train()
         inputs = self._prepare_inputs(inputs)
-        print(model.params)
         warming_up = self.state.epoch <= model.params["warmup"]
+        print(self.state)
         if not warming_up:
             # train disc
             outputs = model(**inputs)
@@ -276,9 +276,14 @@ class DisenQTrainer(Trainer):
             # max dis_loss
             dis_loss = - model.disen_estimator(k_hidden, i_hidden)
             dis_loss = model.params["n_adversarial"] * model.params["w_dis"] * dis_loss
-            self.adv_optimizer.zero_grad()
+            if self.args.gradient_accumulation_steps > 1 and not self.deepspeed:
+                dis_loss = dis_loss / self.args.gradient_accumulation_steps
             dis_loss.backward()
-            self.adv_optimizer.step()
+            step = self.state.global_step % (self.state.max_steps / self.state.num_train_epochs)
+            if (step + 1) % self.args.gradient_accumulation_steps or \
+                (step + 1) == self.state.max_steps / self.state.num_train_epochs:
+                self.adv_optimizer.step()
+                self.adv_optimizer.zero_grad()
             # Lipschitz constrain for Disc of WGAN
             model.disen_estimator.spectral_norm()
         model.warming_up = warming_up
