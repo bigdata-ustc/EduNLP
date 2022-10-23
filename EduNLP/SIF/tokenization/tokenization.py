@@ -361,7 +361,7 @@ class TokenList(object):
         return [self._tokens[i] for i in self._formula_tokens]
 
     @contextmanager
-    def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
+    def filter(self, drop: (set | str) = "", keep: (set | str) = "*"):
         """
         Output special element list selective.Drop means not show.Keep means show.
 
