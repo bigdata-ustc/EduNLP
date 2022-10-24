@@ -1,1 +1,1 @@
-from .bert import BertForPropertyPrediction, BertForKnowledgePrediction
+from .bert import *

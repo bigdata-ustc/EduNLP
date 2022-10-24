@@ -11,6 +11,8 @@ from transformers import PretrainedConfig, BertModel
 from typing import List, Optional
 from ..rnn.harnn import HAM
 
+__all__ = ["BertForPropertyPrediction", "BertForKnowledgePrediction"]
+
 
 class BertForPPOutput(ModelOutput):
     loss: torch.FloatTensor = None
