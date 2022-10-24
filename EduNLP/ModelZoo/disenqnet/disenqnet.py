@@ -57,10 +57,20 @@ class DisenQNet(BaseModel):
         self.i_model = AttnModel(hidden_size, dropout_rate)
         self.dropout = nn.Dropout(p=dropout_rate)
         # config
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv" and k!= 'wv'}
         config.update(argv)
         config['architecture'] = 'DisenQNet'
         self.config = PretrainedConfig.from_dict(config)
+
+    def load_wv(self, wv):
+        if isinstance(wv, torch.Tensor):
+            # tensor
+            self.encoder.load_wv(wv)
+        else:
+            # path
+            print(f"load word2vec from {wv}")
+            word2vec = torch.load(wv)
+            self.encoder.load_wv(word2vec)
 
     def forward(self, seq_idx, seq_len, get_vk=True, get_vi=True) -> ModelOutput:
         """
@@ -111,7 +121,6 @@ class DisenQNet(BaseModel):
                 vocab_size=model_config['vocab_size'],
                 hidden_size=model_config['hidden_size'],
                 dropout_rate=model_config['dropout_rate'],
-                wv=model_config['wv']
             )
 
 
@@ -164,9 +173,9 @@ class DisenQNetForPreTraining(BaseModel):
             'warmup': warmup,
             'n_adversarial': n_adversarial,
         }
-        self.modules = (self.disen_q_net, self.mi_estimator, self.concept_estimator, self.disen_estimator)
+        self.modules = (self.disenq, self.mi_estimator, self.concept_estimator, self.disen_estimator)
 
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv" and k!= 'wv'}
         config.update(argv)
         config['architecture'] = 'DisenQNetForPreTraining'
         self.config = PretrainedConfig.from_dict(config)
@@ -180,7 +189,11 @@ class DisenQNetForPreTraining(BaseModel):
 
     def forward(self, seq_idx=None, seq_len=None, concept=None) -> ModelOutput:
         # train enc
-        embed, k_hidden, i_hidden = self.disen_q_net(seq_idx, seq_len)
+        # embed, k_hidden, i_hidden = self.disenq(seq_idx, seq_len)
+        outputs = self.disenq(seq_idx, seq_len)
+        embed = outputs.embeded
+        k_hidden = outputs.k_hidden
+        i_hidden = outputs.i_hidden
         hidden = torch.cat((k_hidden, i_hidden), dim=-1)
         # max mi
         mi_loss = - self.mi_estimator(embed, hidden, seq_len)
@@ -215,5 +228,4 @@ class DisenQNetForPreTraining(BaseModel):
                 w_dis=model_config['w_dis'],
                 warmup=model_config['warmup'],
                 n_adversarial=model_config['n_adversarial'],
-                wv=model_config['wv']
             )

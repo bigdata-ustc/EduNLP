@@ -2,20 +2,23 @@ import os
 import numpy as np
 import torch
 from copy import deepcopy
-from torch.utils.data import Dataset
 from transformers import TrainingArguments, Trainer
 import warnings
+from .pretrian_utils import EduDataset
 from typing import Dict, List, Tuple, Union, Any
 from gensim.models import Word2Vec
 from torch.optim.adam import Adam
 from torch.optim.lr_scheduler import StepLR
 import torch.nn as nn
+from dataclasses import dataclass, field
 
 from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPreTraining
 from ..ModelZoo.utils import load_items, pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer
 from transformers import is_apex_available
+
+os.environ["WANDB_DISABLED"] = "true"
 
 
 if is_apex_available():
@@ -205,7 +208,7 @@ def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, t
     return disen_tokenizer, concept_to_idx, word2vec
 
 
-class DisenQDataset(Dataset):
+class DisenQDataset(EduDataset):
     def __init__(self, items: List[Dict], tokenizer: DisenQTokenizer, data_formation: Dict,
                  mode="train", concept_to_idx=None, **argv):
         """
@@ -216,7 +219,7 @@ class DisenQDataset(Dataset):
         data_formation: dict
         max_length: int, optional, default=128
         """
-        super(DisenQDataset, self).__init__()
+        # super(DisenQDataset, self).__init__(tokenizer=tokenizer, **argv)
         self.tokenizer = tokenizer
         self.concept_to_idx = concept_to_idx
         self.mode = mode
@@ -227,12 +230,19 @@ class DisenQDataset(Dataset):
     def __len__(self):
         return len(self.items)
 
+    def _list_to_onehot(self, item_list, item2index):
+        onehot = np.zeros(len(item2index)).astype(np.int64)
+        for c in item_list:
+            onehot[item2index[c]] = 1
+        return onehot
+
     def __getitem__(self, index):
         item = self.items[index]
         ret = self.tokenizer(item, padding=False, key=lambda x: x[self.data_formation["content"]],
-                             return_tensors=True, return_text=False)
+                             return_tensors=False, return_text=False)
         if self.mode in ["train", "val"]:
-            ret["know_idx"] = self.concept_to_idx[item[self.data_formation["knowledge"]]]
+            ret['concept'] = self._list_to_onehot(item[self.data_formation["knowledge"]], self.concept_to_idx)
+        return ret
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
@@ -255,8 +265,8 @@ class DisenQTrainer(Trainer):
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         model.train()
         inputs = self._prepare_inputs(inputs)
-
-        warming_up = self.state.epoch <= model.params["warm_up"]
+        warming_up = self.state.epoch <= model.params["warmup"]
+        print(self.state)
         if not warming_up:
             # train disc
             outputs = model(**inputs)
@@ -264,17 +274,21 @@ class DisenQTrainer(Trainer):
             k_hidden = outputs.k_hidden.detach()
             i_hidden = outputs.i_hidden.detach()
             # max dis_loss
-            dis_loss = - self.disen_estimator(k_hidden, i_hidden)
+            dis_loss = - model.disen_estimator(k_hidden, i_hidden)
             dis_loss = model.params["n_adversarial"] * model.params["w_dis"] * dis_loss
-            self.adv_optimizer.zero_grad()
+            if self.args.gradient_accumulation_steps > 1 and not self.deepspeed:
+                dis_loss = dis_loss / self.args.gradient_accumulation_steps
             dis_loss.backward()
-            self.adv_optimizer.step()
+            step = self.state.global_step % (self.state.max_steps / self.state.num_train_epochs)
+            if (step + 1) % self.args.gradient_accumulation_steps or \
+                (step + 1) == self.state.max_steps / self.state.num_train_epochs:
+                self.adv_optimizer.step()
+                self.adv_optimizer.zero_grad()
             # Lipschitz constrain for Disc of WGAN
-            self.disen_estimator.spectral_norm()
+            model.disen_estimator.spectral_norm()
         model.warming_up = warming_up
 
-        with self.compute_loss_context_manager():
-            loss = self.compute_loss(model, inputs)
+        loss = self.compute_loss(model, inputs)
 
         if self.args.n_gpu > 1:
             loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -283,22 +297,21 @@ class DisenQTrainer(Trainer):
             # deepspeed handles loss scaling by gradient_accumulation_steps in its `backward`
             loss = loss / self.args.gradient_accumulation_steps
 
-        if self.do_grad_scaling:
-            self.scaler.scale(loss).backward()
-        elif self.use_apex:
-            with amp.scale_loss(loss, self.optimizer) as scaled_loss:
-                scaled_loss.backward()
-        elif self.deepspeed:
-            # loss gets scaled under gradient_accumulation_steps in deepspeed
-            loss = self.deepspeed.backward(loss)
-        else:
-            loss.backward()
+        loss.backward()
 
         # TODO: Not sure. if warming_up, the scheduler should not step?
         if not warming_up:
             self.adv_scheduler.step()
 
         return loss.detach()
+
+
+@dataclass
+class DisenQTrainingArguments(TrainingArguments):
+    step_size: int = field(default=False, metadata={"help": "step_size"})
+    trim_min: int = field(default=False, metadata={"help": "trim"})
+    hidden_size: int = field(default=False, metadata={"help": "hidden_size"})
+    gamma: float = field(default=False, metadata={"help": "gamma"})
 
 
 DEFAULT_TRAIN_PARAMS = {
@@ -322,7 +335,9 @@ DEFAULT_TRAIN_PARAMS = {
     # disable_tqdm: True,
     # no_cuda: True,
     'step_size': 20,
-    'gamma': 0.5
+    'gamma': 0.5,
+    "trim_min": 1,
+    "hidden_size": 300
 }
 
 
@@ -377,13 +392,29 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
             tokenizer.set_vocab(corpus_items,
                                 key=lambda x: x[data_formation['content']])
 
+    # training Configuration
+    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
+    work_train_params["output_dir"] = output_dir
+    if train_params is not None:
+        work_train_params.update(train_params if train_params else {})
+    if model_params:
+        if 'hidden_size' in model_params:
+            work_train_params['hidden_size'] = model_params['hidden']
+
     # dataset configuration
     items = train_items + ([] if eval_items is None else eval_items)
-    tokenizer, concept_to_idx, word2vec = preprocess_dataset(pretrained_dir, tokenizer, items,
-                                                             data_formation,
-                                                             trim_min_count=train_params["trim_min"],
-                                                             embed_dim=train_params["hidden"],
-                                                             w2v_params=None, silent=False)
+    if pretrained_dir:
+        tokenizer, concept_to_idx, word2vec = preprocess_dataset(pretrained_dir, tokenizer, items,
+                                                                data_formation,
+                                                                trim_min_count=work_train_params["trim_min"],
+                                                                embed_dim=work_train_params["hidden_size"],
+                                                                w2v_params=None, silent=False)
+    else:
+        tokenizer, concept_to_idx, word2vec = preprocess_dataset(output_dir, tokenizer, items,
+                                                                data_formation,
+                                                                trim_min_count=work_train_params["trim_min"],
+                                                                embed_dim=work_train_params["hidden_size"],
+                                                                w2v_params=None, silent=False)
     train_dataset = DisenQDataset(train_items, tokenizer, data_formation,
                                   mode="train", concept_to_idx=concept_to_idx)
     if eval_items:
@@ -405,7 +436,7 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
             'w_cp': 1.5,
             'w_mi': 1.0,
             'w_dis': 2.0,
-            'warmup': 5,
+            'warmup': 1,
             'n_adversarial': 10,
             'gamma': 0.5,
             'step_size': 20,
@@ -414,12 +445,8 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
         work_model_params.update(model_params if model_params else {})
         model = DisenQNetForPreTraining(**work_model_params)
 
-    # training Configuration
-    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
-    work_train_params["output_dir"] = output_dir
-    if train_params is not None:
-        work_train_params.update(train_params if train_params else {})
-    work_args = TrainingArguments(**work_train_params)
+    # Train
+    work_args = DisenQTrainingArguments(**work_train_params)
     trainer = DisenQTrainer(
         model=model,
         args=work_args,

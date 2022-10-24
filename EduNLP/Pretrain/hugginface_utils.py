@@ -44,7 +44,7 @@ class TokenizerForHuggingface(object):
     >>> tokenizer = TokenizerForHuggingface.from_pretrained('test_dir') # doctest: +SKIP
     """
     def __init__(self, pretrained_model="bert-base-chinese", max_length=512, tokenize_method: str = "pure_text",
-                 add_specials: Tuple[List[str], bool] = False, **argv):
+                 add_specials: Union[List[str], bool] = False, **argv):
         self._set_basic_tokenizer(tokenize_method, **argv)
         if isinstance(add_specials, bool):
             add_specials = EDU_SPYMBOLS if add_specials is True else []

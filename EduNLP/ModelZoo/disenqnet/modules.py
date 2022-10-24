@@ -48,6 +48,9 @@ class TextEncoder(nn.Module):
         hidden = self.encoder(embed_dp)
         return embed, hidden
 
+    def load_wv(self, wv: torch.Tensor):
+        self.embed.weight.data.copy_(wv)
+
 
 class AttnModel(nn.Module):
     """
@@ -153,9 +156,7 @@ class ConceptEstimator(nn.Module):
             Tensor of (), BCE loss of concept label
         """
         output = self.classifier(hidden)
-        batch_size, concept_size = output.shape
-        label_onehot = F.one_hot(label, num_classes=concept_size)
-        loss = self.loss(output, label_onehot.float())
+        loss = self.loss(output, label.float())
         return loss
 
 

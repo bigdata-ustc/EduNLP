@@ -25,6 +25,7 @@ def sequence_mask(lengths, max_len=None):
     >>> sequence_mask(torch.tensor([[1, 3],[2,0]]))
     tensor([[[ True, False, False],
              [ True,  True,  True]],
+    <BLANKLINE>
             [[ True,  True, False],
              [False, False, False]]])
     """
