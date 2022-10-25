@@ -105,7 +105,7 @@ class EduVocab(object):
         """convert sentence of indexs to sentence of tokens"""
         return [self.to_token(i) for i in idxs]
 
-    def set_vocab(self, corpus_items: List[str], lower: bool = False, trim_min_count: int = 1):
+    def set_vocab(self, corpus_items: List[str], lower: bool = False, trim_min_count: int = 1, silent=True):
         """Update the vocabulary with the tokens in corpus items
 
         Parameters
@@ -125,6 +125,11 @@ class EduVocab(object):
         words = [w for w, c in word2cnt.items() if c >= trim_min_count and w not in self._special_tokens]
         for token in words:
             self._add(token)
+        if not silent:
+            keep_word_cnts = sum(word2cnt[w] for w in words)
+            all_word_cnts = sum(word2cnt.values())
+            print(f"save words(trim_min_count={trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words) / len(word2cnt):.4f}\
+                  with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts / all_word_cnts:.4f}")
 
     def load_vocab(self, vocab_path: str):
         """Load the vocabulary from vocab_file

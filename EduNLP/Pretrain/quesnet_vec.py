@@ -3,7 +3,7 @@ level vectors."""
 
 import os
 import logging
-
+import warnings
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -23,13 +23,13 @@ from torchvision.transforms.functional import to_grayscale
 from torchvision.transforms.functional import to_tensor
 from gensim.models import Word2Vec
 from ..SIF.segment.segment import FigureSegment
-
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
 from ..ModelZoo.quesnet import QuesNet, AE
+from .pretrian_utils import PretrainedEduTokenizer
 from EduNLP import logger
 import linecache
-import subprocess
+from typing import List, Union
 
 Question = namedtuple('Question',
                       ['id', 'content', 'answer', 'false_options', 'labels'])
@@ -43,7 +43,7 @@ def save_list(item2index, path):
     return
 
 
-class QuesNetTokenizer(object):
+class QuesNetTokenizer(PretrainedEduTokenizer):
     """
     Examples
     --------
@@ -55,14 +55,15 @@ class QuesNetTokenizer(object):
     ... trim_min_count=1, key=lambda x: x["ques_content"], silent=True)
     >>> token_items = [tokenizer(i, key=lambda x: x["ques_content"]) for i in test_items]
     >>> print(token_items[0].keys())
-    dict_keys(['content_idx', 'meta_idx'])
+    dict_keys(['seq_idx', 'meta_idx'])
     >>> token_items = tokenizer(test_items, key=lambda x: x["ques_content"])
-    >>> print(len(token_items["content_idx"]))
+    >>> print(len(token_items["seq_idx"]))
     2
     """
 
-    def __init__(self, img_dir=None, vocab_path=None, max_length=250, meta=None,
-                 img_token='<img>', unk_token="<unk>", pad_token="<pad>", *args, **argv):
+    def __init__(self, vocab_path=None, meta_vocab_dir=None, img_dir: str=None,
+                 max_length=250, tokenize_method="pure_text", add_specials: Union[list, bool] = False, meta: List[str] = None,
+                 img_token='<img>', unk_token="<unk>", pad_token="<pad>", **argv):
         """
         Parameters
         ----------
@@ -81,49 +82,31 @@ class QuesNetTokenizer(object):
         pad_token : str, optional
             by default "<pad>"
         """
-
+        if isinstance(add_specials, bool):
+            add_specials = [img_token] if add_specials else []
+        elif isinstance(add_specials, list):
+            add_specials = [img_token] + add_specials
+        super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method,
+                         add_specials=add_specials, unk_token=unk_token, pad_token=pad_token, **argv)
         if meta is None:
             meta = ['know_name']
         self.img_dir = img_dir
         self.img_token = img_token
         self.unk_token = unk_token
         self.pad_token = pad_token
-        self.max_length = max_length
         self.meta = meta
+        self.meta_vocab_dir = meta_vocab_dir
 
         self.stoi = dict()
         self.itos = dict()
-        if vocab_path is not None:
-            self.load_vocab(vocab_path)
-        else:
-            self.secure = False
-
-        self.tokenization_params = {
-            "formula_params": {
-                "method": "linear",
-                "skip_figure_formula": True
-            }
+        self.stoi['word'] = self.vocab.token_to_idx
+        self.itos['word'] = self.vocab.idx_to_token
+        if meta_vocab_dir is not None:
+            self.load_meta_vocab(meta_vocab_dir=meta_vocab_dir)
+        self.config = {
+            k: v for k, v in locals().items()
+                if k not in ["self", "__class__", "vocab_path", 'img_dir', 'meta_vocab_dir']
         }
-
-    def tokenize(self, item: Union[str, dict, list], key=lambda x: x, *args, **kwargs):
-        if not self.secure:
-            raise Exception("Must set the vocab first before tokenize item (either set_vocab() or load_vocab() )")
-        # img保留为\FigureID{}的格式，在__call__中处理为图片
-        if isinstance(item, list):
-            token_text = []
-            for i in item:
-                token_text.append(self._tokenize(i, key, *args, **kwargs))
-        else:
-            token_text = self._tokenize(item, key, *args, **kwargs)
-        return token_text
-
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, *args, **kwargs):
-        token_text = tokenize(seg(key(item), symbol="mas"), **self.tokenization_params).tokens
-        if len(token_text) == 0:
-            token_text = [self.unk_token]
-        if len(token_text) > self.max_length:
-            token_text = token_text[:self.max_length]
-        return token_text
 
     def __call__(self, item: Union[str, dict, list], key=lambda x: x,
                  meta: Optional[list] = None,
@@ -134,13 +117,13 @@ class QuesNetTokenizer(object):
         key: function
             determine how to get the text of each item
         padding: bool
-            whether to pad the content_idx
+            whether to pad the seq_idx
         return_text: bool
             whether to return text tokens
         """
         if isinstance(item, list):
             ret = {
-                "content_idx": [],
+                "seq_idx": [],
                 "meta_idx": []
             }
             if return_text:
@@ -148,7 +131,7 @@ class QuesNetTokenizer(object):
                 ret["meta"] = []
             for i in item:
                 r = self._convert_to_ids(i, key, meta, padding, return_text, *args, **kwargs)
-                ret["content_idx"].append(r["content_idx"])
+                ret["seq_idx"].append(r["seq_idx"])
                 ret["meta_idx"].append(r["meta_idx"])
                 if return_text:
                     ret["content"].append(r["content"])
@@ -171,6 +154,7 @@ class QuesNetTokenizer(object):
                     im = im.resize((56, 56))
                     token_idx.append(to_grayscale(im))
                 except Exception:
+                    warnings.warn('Open image error: wrong im = ', im)
                     token_idx.append(self.stoi['word'][self.img_token])
             else:
                 # word
@@ -197,7 +181,7 @@ class QuesNetTokenizer(object):
                     meta_idx.append(self.stoi[m].get(k) or self.stoi[m][self.unk_token])
             meta_idxs[m] = meta_idx
         ret = {
-            "content_idx": self.padding(token_idx, self.max_length) if padding else token_idx,
+            "seq_idx": self.padding(token_idx, self.max_length) if padding else token_idx,
             "meta_idx": meta_idxs
         }
 
@@ -206,23 +190,10 @@ class QuesNetTokenizer(object):
             ret["meta"] = meta_items
         return ret
 
-    def load_vocab(self, path):
-        """
-
-        Parameters
-        ----------
-        path : str
-            path of vocabulary files
-            it must be a directory containing word.txt (meta.txt is optional)
-        """
-        self.secure = True
-        with open(os.path.join(path, 'word.txt'), "rt", encoding="utf-8") as f:
-            words = f.read().strip().split('\n')
-            self.stoi['word'] = {word: index for index, word in enumerate(words)}
-            self.itos['word'] = {i: s for s, i in self.stoi['word'].items()}
+    def load_meta_vocab(self, meta_vocab_dir):
         for m in self.meta:
             try:
-                with open(os.path.join(path, f'meta_{m}.txt'), "rt", encoding="utf-8") as f:
+                with open(os.path.join(meta_vocab_dir, f'meta_{m}.txt'), "rt", encoding="utf-8") as f:
                     meta = f.read().strip().split('\n')
                     self.stoi[m] = {word: index for index, word in enumerate(meta)}
                     self.itos[m] = {i: s for s, i in self.stoi[m].items()}
@@ -230,38 +201,8 @@ class QuesNetTokenizer(object):
                 self.stoi[m] = None
                 self.itos[m] = None
 
-    def set_vocab(self, items: list, key=lambda x: x, trim_min_count=50, silent=True):
-        """
-        Parameters
-        -----------
-        items: list
-            can be the list of str, or list of dict
-        key: function
-            determine how to get the text of each item
-        trim_min_count
-        silent
-        """
-        self.secure = True
-        # word
-        word2cnt = dict()
-        for item in items:
-            token_item = self.tokenize(item, key=key)
-            for w in token_item:
-                if not isinstance(w, FigureSegment):
-                    word2cnt[w] = word2cnt.get(w, 0) + 1
-        ctrl_tokens = [self.unk_token, self.img_token, self.pad_token]
-        words = [w for w, c in word2cnt.items() if c >= trim_min_count and w not in ctrl_tokens]
-        if not silent:
-            keep_word_cnts = sum(word2cnt[w] for w in words)
-            all_word_cnts = sum(word2cnt.values())
-            print(f"save words({trim_min_count}): {len(words)}/{len(word2cnt)} = {len(words) / len(word2cnt):.4f}\
-                  with frequency {keep_word_cnts}/{all_word_cnts}={keep_word_cnts / all_word_cnts:.4f}")
-
-        vocab = ctrl_tokens + sorted(words)
-        self.stoi['word'] = {word: index for index, word in enumerate(vocab)}
-        self.itos['word'] = {i: s for s, i in self.stoi['word'].items()}
-
-        # meta
+    def set_meta_vocab(self, items: list, meta: List[str] = None, silent=True):
+        self.meta = meta if meta is not None else self.meta
         for m in self.meta:
             meta = set()
             if m in items[0]:
@@ -282,66 +223,71 @@ class QuesNetTokenizer(object):
             self.stoi[m] = {word: index for index, word in enumerate(meta)}
             self.itos[m] = {i: s for s, i in self.stoi[m].items()}
 
-    def save_vocab(self, save_vocab_path):
+    def set_vocab(self, items: list, key=lambda x: x, lower: bool = False,
+                  trim_min_count: int = 1, do_tokenize: bool = True, silent=True):
         """
-
         Parameters
-        ----------
-        save_vocab_path : str
-            path to save word vocabulary and meta vocabulary
+        -----------
+        items: list
+            can be the list of str, or list of dict
+        key: function
+            determine how to get the text of each item
+        trim_min_count
+        silent
         """
-        save_list(self.stoi['word'], os.path.join(save_vocab_path, 'word.txt'))
-        for m in self.meta:
-            save_list(self.stoi[m], os.path.join(save_vocab_path, f'meta_{m}.txt'))
+        token_items = self.tokenize(items, key) if do_tokenize else [key(item) for item in items]
+        self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count, lower=lower, silent=silent)
+        self.stoi['word'] = self.vocab.token_to_idx
+        self.itos['word'] = self.vocab.idx_to_token
 
     @classmethod
-    def from_pretrained(cls, tokenizer_config_dir, img_dir=None):
+    def from_pretrained(cls, tokenizer_config_dir, img_dir=None, **argv):
         """
         Parameters:
         -----------
         tokenizer_config_dir: str
-            must contain tokenizer_config.json and vocab/word.txt vocab/meta_{meta_name}.txt
+            must contain tokenizer_config.json and vocab.txt and meta_{meta_name}.txt
         img_dir: str
             default None
             the path of image directory
         """
         tokenizer_config_path = os.path.join(tokenizer_config_dir, "tokenizer_config.json")
-        pretrained_vocab_path = os.path.join(tokenizer_config_dir, "vocab")
+        pretrained_vocab_path = os.path.join(tokenizer_config_dir, "vocab.txt")
         with open(tokenizer_config_path, "r", encoding="utf-8") as rf:
             tokenizer_config = json.load(rf)
+            tokenizer_config.update(argv)
             return cls(
-                vocab_path=pretrained_vocab_path, max_length=tokenizer_config["max_length"],
-                img_token=tokenizer_config["img_token"], unk_token=tokenizer_config["unk_token"],
-                pad_token=tokenizer_config["pad_token"], meta=tokenizer_config["meta"], img_dir=img_dir)
+                vocab_path=pretrained_vocab_path,
+                meta_vocab_dir=tokenizer_config_dir,
+                img_dir=img_dir,
+                max_length=tokenizer_config["max_length"],
+                tokenize_method=tokenizer_config["tokenize_method"],
+                meta=tokenizer_config["meta"],
+                img_token=tokenizer_config["img_token"],
+                unk_token=tokenizer_config["unk_token"],
+                pad_token=tokenizer_config["pad_token"])
 
     def save_pretrained(self, tokenizer_config_dir):
-        """
+        """Save tokenizer into local files
+
         Parameters:
         -----------
         tokenizer_config_dir: str
-            save tokenizer params in tokenizer_config.json and save words in vocab.list
+            save tokenizer params in `/tokenizer_config.json` and save words in `vocab.txt`
+            and save metas in `meta_{meta_name}.txt`
         """
+        if not os.path.exists(tokenizer_config_dir):
+            os.makedirs(tokenizer_config_dir, exist_ok=True)
         tokenizer_config_path = os.path.join(tokenizer_config_dir, "tokenizer_config.json")
-        save_vocab_path = os.path.join(tokenizer_config_dir, "vocab")
-        os.makedirs(save_vocab_path, exist_ok=True)
-        tokenizer_params = {
-            "img_token": self.img_token,
-            "unk_token": self.unk_token,
-            "pad_token": self.pad_token,
-            "max_length": self.max_length,
-            "meta": self.meta
-        }
-        self.save_vocab(save_vocab_path)
+        self.vocab.save_vocab(os.path.join(tokenizer_config_dir, "vocab.txt"))
+        for m in self.meta:
+            save_list(self.stoi[m], os.path.join(tokenizer_config_dir, f'meta_{m}.txt'))
         with open(tokenizer_config_path, "w", encoding="utf-8") as wf:
-            json.dump(tokenizer_params, wf, ensure_ascii=False, indent=2)
+            json.dump(self.config, wf, ensure_ascii=False, indent=2)
 
     def padding(self, idx, max_length, type='word'):
         padding_idx = idx + [self.stoi[type][self.pad_token]] * (max_length - len(idx))
         return padding_idx
-
-    @property
-    def vocab_size(self):
-        return len(self.stoi['word'])
 
     def set_img_dir(self, path):
         self.img_dir = path
@@ -475,18 +421,18 @@ class QuestionLoader:
             q = json.loads(line)
             qid = q['ques_id']
             token = self.tokenizer(q, key=self.content_key, meta=self.meta)
-            content = token['content_idx']
+            content = token['seq_idx']
             meta = token['meta_idx']
             if self.answer_key(q).isalpha() and len(self.answer_key(q)) == 1 and ord(self.answer_key(q)) < 128 and len(
                     self.option_key(q)) > 0:
                 answer_idx = ord(self.answer_key(q).upper()) - ord('A')
                 options = self.option_key(q)
                 answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)
-                answer = answer['content_idx']
-                false_options = [(self.tokenizer(option, meta=self.meta))['content_idx'] for option in options]
+                answer = answer['seq_idx']
+                false_options = [(self.tokenizer(option, meta=self.meta))['seq_idx'] for option in options]
                 qs.append(Question(qid, content, answer, false_options, meta))
             else:
-                answer = (self.tokenizer(self.answer_key(q), meta=self.meta))['content_idx']
+                answer = (self.tokenizer(self.answer_key(q), meta=self.meta))['seq_idx']
                 qs.append(Question(qid, content, answer, [[0], [0], [0]], meta))
 
         if callable(self.pipeline):

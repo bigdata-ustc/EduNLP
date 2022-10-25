@@ -12,7 +12,6 @@ from torch.optim.lr_scheduler import StepLR
 import torch.nn as nn
 from dataclasses import dataclass, field
 
-from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPreTraining
 from ..ModelZoo.utils import load_items, pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer
@@ -120,14 +119,13 @@ class DisenQTokenizer(PretrainedEduTokenizer):
         num_token: str
         """
         if isinstance(add_specials, bool):
-            add_specials = (EDU_SPYMBOLS + [num_token]) if add_specials else []
+            add_specials = [num_token] if add_specials else []
         elif isinstance(add_specials, list):
-            add_specials = EDU_SPYMBOLS + [num_token] + add_specials
-        super().__init__(vocab_path, max_length, tokenize_method, add_specials=add_specials, **argv)
+            add_specials = [num_token] + add_specials
+        super().__init__(vocab_path=vocab_path, max_length=max_length,
+                         tokenize_method=tokenize_method, add_specials=add_specials, **argv)
         self.num_token = num_token
-        self.config.update({
-            "num_token": num_token
-        })
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
 
     def _tokenize(self, item: Tuple[str, dict], key=lambda x: x):
         token_item = self.text_tokenizer._tokenize(item, key=key)
@@ -281,7 +279,7 @@ class DisenQTrainer(Trainer):
             dis_loss.backward()
             step = self.state.global_step % (self.state.max_steps / self.state.num_train_epochs)
             if (step + 1) % self.args.gradient_accumulation_steps or \
-                (step + 1) == self.state.max_steps / self.state.num_train_epochs:
+                    (step + 1) == self.state.max_steps / self.state.num_train_epochs:
                 self.adv_optimizer.step()
                 self.adv_optimizer.zero_grad()
             # Lipschitz constrain for Disc of WGAN

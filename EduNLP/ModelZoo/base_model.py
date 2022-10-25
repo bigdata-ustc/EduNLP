@@ -13,7 +13,6 @@ class BaseModel(nn.Module):
 
     def __init__(self):
         super(BaseModel, self).__init__()
-        # self.config = {k: v for k, v in locals().items() if k != "self"}
         self.config = PretrainedConfig()
 
     def forward(self, *input):
