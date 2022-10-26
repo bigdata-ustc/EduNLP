@@ -11,7 +11,7 @@ from torch.optim.adam import Adam
 from torch.optim.lr_scheduler import StepLR
 import torch.nn as nn
 from dataclasses import dataclass, field
-
+from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPreTraining
 from ..ModelZoo.utils import load_items, pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer
@@ -104,7 +104,7 @@ class DisenQTokenizer(PretrainedEduTokenizer):
     """
 
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text",
-                 add_specials: Tuple[list, bool] = False, num_token="[NUM]", **argv):
+                 add_specials: list = None, num_token="[NUM]", **argv):
         """
         Parameters
         ----------
@@ -118,9 +118,9 @@ class DisenQTokenizer(PretrainedEduTokenizer):
             when text is raw string format, use Tokenizer defined in get_tokenizer(), such as "pure_text" and "text"
         num_token: str
         """
-        if isinstance(add_specials, bool):
-            add_specials = [num_token] if add_specials else []
-        elif isinstance(add_specials, list):
+        if add_specials is None:
+            add_specials = [num_token]
+        else:
             add_specials = [num_token] + add_specials
         super().__init__(vocab_path=vocab_path, max_length=max_length,
                          tokenize_method=tokenize_method, add_specials=add_specials, **argv)

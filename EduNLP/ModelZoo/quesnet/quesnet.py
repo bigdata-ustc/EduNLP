@@ -10,7 +10,6 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_packed_sequence, PackedSequence
 from torchvision.transforms.functional import to_tensor
 from transformers.modeling_outputs import ModelOutput
-from transformers import PretrainedConfig
 from ..base_model import BaseModel
 
 
@@ -20,23 +19,22 @@ class QuesNetOutput(ModelOutput):
 
     Parameters
     ----------
-    embed: Tensor of (batch_size, seq_len, hidden_size), word embedding
-    k_hidden: Tensor of (batch_size, hidden_size) or None, concept representation of question
-    i_hidden: Tensor of (batch_size, hidden_size) or None, individual representation of question
+    pack_embeded: Tensor of (batch_size, seq_len, hidden_size), word embedding
+    hidden: Tensor of (batch_size, hidden_size) or None
     """
+    pack_embeded: torch.FloatTensor = None
     embeded: torch.FloatTensor = None
-    k_hidden: torch.FloatTensor = None
-    i_hidden: torch.FloatTensor = None
+    hidden: torch.FloatTensor = None
 
 
-class QuesNet(BaseModel):
+class QuesNet(BaseModel, FeatureExtractor):
     base_model_prefix = 'quesnet'
-    def __init__(self, _stoi,
-                 feat_size=256,
-                 emb_size=256,
-                 rnn_type='LSTM',
-                 layers=4):
-        super(QuesNet, self).__init__()
+    def __init__(self, _stoi=None, meta='know_name', pretrained_embs: np.ndarray = None,
+                 pretrained_image: nn.Module = None, pretrained_meta: nn.Module = None,
+                 lambda_input=None,
+                 feat_size=256, emb_size=256, rnn_type='LSTM', layers=4, **argv):
+        BaseModel.__init__(self)
+        FeatureExtractor.__init__(self, feat_size=feat_size)
         self.feat_size = feat_size
         self.rnn_size = feat_size // 2
         self.emb_size = emb_size
@@ -44,11 +42,27 @@ class QuesNet(BaseModel):
 
         self.stoi = _stoi
         self.itos = {v: k for k, v in self.stoi['word'].items()}
-        
+        # Encoder - Word
+        self.we = nn.Embedding(self.vocab_size, emb_size)
+        if pretrained_embs is not None:
+            self.load_emb(pretrained_embs)
+        # Encoder - Image
+        self.ie = ImageAE(emb_size)
+        if pretrained_image is not None:
+            self.load_img(pretrained_image)
+        # Encoder - Mata
+        self.meta = meta
+        self.meta_size = len(_stoi[self.meta])
+        self.me = MetaAE(self.meta_size, emb_size)
+        if pretrained_meta is not None:
+            self.load_meta(pretrained_meta)
+        if lambda_input is None:
+            lambda_input = [1., 1., 1.]
+        self.lambda_input = lambda_input
         self.proj_q = nn.Linear(feat_size, feat_size)
         self.proj_k = nn.Linear(feat_size, feat_size)
         self.proj_v = nn.Linear(feat_size, feat_size)
-
+        self.dropout = nn.Dropout(0.2)
         self.rnn_type = rnn_type
         if rnn_type == 'GRU':
             self.rnn = nn.GRU(emb_size, self.rnn_size, layers,
@@ -61,112 +75,17 @@ class QuesNet(BaseModel):
             self.c0 = nn.Parameter(torch.rand(layers * 2, 1, self.rnn_size))
         else:
             raise ValueError('quesnet only support GRU and LSTM now.')
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv"]}
-        config['architecture'] = 'quesnet'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv"]}
+        # self.config.update(argv)
+        self.config['architecture'] = 'quesnet'
 
     def init_h(self, batch_size):
         size = list(self.h0.size())
         size[1] = batch_size
-        if self.config['rnn'] == 'GRU':
+        if self.config['rnn_type'] == 'GRU':
             return self.h0.expand(size).contiguous()
         else:
             return self.h0.expand(size).contiguous(), self.c0.expand(size).contiguous()
-
-    def forward(self, inputs: SeqBatch):
-        packed = inputs.packed()
-        h = self.init_h(packed.batch_sizes[0])
-        # y: (batch_size, seq_len, 2*rnn_size)
-        y, _ = self.rnn(packed, h)
-
-        hs, lens = pad_packed_sequence(y, batch_first=True)
-        mask = [[1] * lens[i].item() + [0] * (lens[0] - lens[i]).item()
-                for i in range(len(lens))]
-        mask = torch.tensor(mask).byte().to(inputs.device)
-
-        # hs: (B, S, D), mask: (B, S)
-        q, k, v = self.proj_q(hs), self.proj_k(hs), self.proj_v(hs)
-
-        scores = q @ k.transpose(-2, -1) / np.sqrt(k.size(-1))  # (B, S, S)
-        if mask is not None:
-            mask = mask.float()
-            scores -= 1e9 * (1.0 - mask.unsqueeze(1))
-        scores = self.dropout(F.softmax(scores, dim=-1))  # (B, S, S)
-        h = (scores @ v).max(1)[0]  # (B, D)
-
-        return y, inputs.invert(h, 0), hs
-
-
-class QuesNetForPreTraining(BaseModel, FeatureExtractor):
-    base_model_prefix = 'quesnet'
-    """Sequence-to-sequence feature extractor based on RNN. Supports different
-    input forms and different RNN types (LSTM/GRU), """
-    def __init__(self, _stoi, pretrained_embs: np.ndarray = None, pretrained_image: nn.Module = None,
-                 pretrained_meta: nn.Module = None,
-                 meta='know_name',
-                 emb_size=256,
-                 feat_size=512,
-                 rnn_type='LSTM',
-                 lambda_input=None,
-                 lambda_loss=None,
-                 layers=4, **argv):
-        BaseModel.__init__()
-        FeatureExtractor.__init__(**argv)
-        self.quesnet = QuesNet(_stoi,
-                               feat_size=feat_size,
-                               emb_size=emb_size,
-                               rnn_type=rnn_type,
-                               layers=layers, **argv)
-        self.vocab_size = self.quesnet.vocab_size
-        self.feat_size = self.quesnet.feat_size
-        self.emb_size = self.quesnet.emb_size
-        self.rnn_size = self.quesnet.rnn_size
-
-        if lambda_loss is None:
-            lambda_loss = [1., 1.]
-        if lambda_input is None:
-            lambda_input = [1., 1., 1.]
-        # 预训练头 - Word
-        self.we = nn.Embedding(self.vocab_size, emb_size)
-        if pretrained_embs is not None:
-            self.load_emb(pretrained_embs)
-        # 预训练头 - Image
-        self.ie = ImageAE(emb_size)
-        if pretrained_image is not None:
-            self.load_img(pretrained_image)
-        # 预训练头 - Mata
-        self.meta = meta
-        self.meta_size = len(_stoi[self.meta])
-        self.me = MetaAE(self.meta_size, emb_size)
-        if pretrained_meta is not None:
-            self.load_meta(pretrained_meta)
-
-        self.lambda_input = lambda_input
-        self.lambda_loss = lambda_loss
-        # 预训练头 - HLM
-        self.woutput = nn.Linear(self.feat_size, self.vocab_size)
-        self.ioutput = nn.Linear(self.feat_size, self.emb_size)
-        self.moutput = nn.Linear(self.feat_size, self.emb_size)
-
-        self.lwoutput = nn.Linear(self.rnn_size, self.vocab_size)
-        self.lioutput = nn.Linear(self.rnn_size, self.emb_size)
-        self.lmoutput = nn.Linear(self.rnn_size, self.emb_size)
-
-        self.rwoutput = nn.Linear(self.rnn_size, self.vocab_size)
-        self.rioutput = nn.Linear(self.rnn_size, self.emb_size)
-        self.rmoutput = nn.Linear(self.rnn_size, self.emb_size)
-        # 预训练头 - QA
-        self.ans_decode = nn.GRU(self.emb_size, self.feat_size, layers,
-                                 batch_first=True)
-        self.ans_output = nn.Linear(self.feat_size, self.vocab_size)
-        self.ans_judge = nn.Linear(self.feat_size, 1)
-        self.dropout = nn.Dropout(0.2)
-
-        config = {k: v for k, v in locals().items() if k not in [
-            "self", "__class__", "argv", "pretrained_embs", "pretrained_image", "pretrained_meta"]}
-        config.update(argv)
-        config['architecture'] = 'quesnet'
-        self.config = PretrainedConfig.from_dict(config)
 
     def load_emb(self, emb):
         self.we.weight.detach().copy_(torch.from_numpy(emb))
@@ -278,13 +197,117 @@ class QuesNetForPreTraining(BaseModel, FeatureExtractor):
         else:
             return embs
 
-    def pretrain_loss(self, batch):
+
+    def forward(self, inputs: SeqBatch):
+        packed = inputs.packed()
+        h = self.init_h(packed.batch_sizes[0])
+        # y: (batch_size, seq_len, 2*rnn_size)
+        y, _ = self.rnn(packed, h)
+
+        hs, lens = pad_packed_sequence(y, batch_first=True)
+        mask = [[1] * lens[i].item() + [0] * (lens[0] - lens[i]).item()
+                for i in range(len(lens))]
+        mask = torch.tensor(mask).byte().to(inputs.device)
+
+        # hs: (B, S, D), mask: (B, S)
+        q, k, v = self.proj_q(hs), self.proj_k(hs), self.proj_v(hs)
+
+        scores = q @ k.transpose(-2, -1) / np.sqrt(k.size(-1))  # (B, S, S)
+        if mask is not None:
+            mask = mask.float()
+            scores -= 1e9 * (1.0 - mask.unsqueeze(1))
+        scores = self.dropout(F.softmax(scores, dim=-1))  # (B, S, S)
+        h = (scores @ v).max(1)[0]  # (B, D)
+
+        return QuesNetOutput(
+            pack_embeded=y,
+            embeded=hs,
+            hidden=inputs.invert(h, 0)
+        )
+
+    @classmethod
+    def from_config(cls, config_path, **argv):
+        with open(config_path, "r", encoding="utf-8") as rf:
+            model_config = json.load(rf)
+            model_config.update(argv)
+            return cls(_stoi=model_config["_stoi"],
+                       feat_size=model_config["feat_size"],
+                       emb_size=model_config["emb_size"],
+                       rnn_type=model_config["rnn_type"],
+                       layers=model_config["layers"])
+
+
+class QuesNetForPreTrainingOutput(ModelOutput):
+    """
+    Output type of [`DisenQNet`]
+
+    Parameters
+    ----------
+    hidden: Tensor of (batch_size, hidden_size) or None
+    """
+    loss: torch.FloatTensor = None
+    embeded: torch.FloatTensor = None
+    hidden: torch.FloatTensor = None
+
+
+class QuesNetForPreTraining(BaseModel):
+    base_model_prefix = 'quesnet'
+    """Sequence-to-sequence feature extractor based on RNN. Supports different
+    input forms and different RNN types (LSTM/GRU), """
+    def __init__(self, _stoi=None, pretrained_embs: np.ndarray = None, pretrained_image: nn.Module = None,
+                 pretrained_meta: nn.Module = None,
+                 meta='know_name',
+                 emb_size=256,
+                 feat_size=512,
+                 rnn_type='LSTM',
+                 lambda_input=None,
+                 lambda_loss=None,
+                 layers=4, **argv):
+        BaseModel.__init__(self)
+        self.quesnet = QuesNet(_stoi, meta=meta, pretrained_embs=pretrained_embs, pretrained_image=pretrained_image,
+                               pretrained_meta=pretrained_meta, lambda_input=lambda_input, feat_size=feat_size,
+                               emb_size=emb_size, rnn_type=rnn_type, layers=layers, **argv)
+        self.vocab_size = self.quesnet.vocab_size
+        self.feat_size = self.quesnet.feat_size
+        self.emb_size = self.quesnet.emb_size
+        self.rnn_size = self.quesnet.rnn_size
+        if lambda_loss is None:
+            lambda_loss = [1., 1.]
+        self.lambda_loss = lambda_loss
+        # 预训练头 - HLM
+        self.woutput = nn.Linear(self.feat_size, self.vocab_size)
+        self.ioutput = nn.Linear(self.feat_size, self.emb_size)
+        self.moutput = nn.Linear(self.feat_size, self.emb_size)
+
+        self.lwoutput = nn.Linear(self.rnn_size, self.vocab_size)
+        self.lioutput = nn.Linear(self.rnn_size, self.emb_size)
+        self.lmoutput = nn.Linear(self.rnn_size, self.emb_size)
+
+        self.rwoutput = nn.Linear(self.rnn_size, self.vocab_size)
+        self.rioutput = nn.Linear(self.rnn_size, self.emb_size)
+        self.rmoutput = nn.Linear(self.rnn_size, self.emb_size)
+        # 预训练头 - QA
+        self.ans_decode = nn.GRU(self.emb_size, self.feat_size, layers,
+                                 batch_first=True)
+        self.ans_output = nn.Linear(self.feat_size, self.vocab_size)
+        self.ans_judge = nn.Linear(self.feat_size, 1)
+        self.dropout = nn.Dropout(0.2)
+
+        self.config = {k: v for k, v in locals().items() if k not in [
+            "self", "__class__", "argv", "pretrained_embs", "pretrained_image", "pretrained_meta"]}
+        # self.config.update(argv)
+        self.config['architecture'] = 'quesnet'
+
+    def forward(self, batch):
         left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output, false_opt_input = batch
 
         # high-level loss
-        _, h, _ = self.quesnet(inputs)
+        outputs = self.quesnet(inputs)
+        embeded = outputs.embeded
+        h = outputs.hidden
+
         x = ans_input.packed()
-        y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
+        y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x.data), x.batch_sizes),
                                h.repeat(self.config['layers'], 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),
                                 ans_output.packed().data)
@@ -292,13 +315,14 @@ class QuesNetForPreTraining(BaseModel, FeatureExtractor):
                                                     torch.ones_like(self.ans_judge(y.data)))
         for false_opt in false_opt_input:
             x = false_opt.packed()
-            y, _ = self.ans_decode(PackedSequence(self.we(x.data), x.batch_sizes),
+            y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x.data), x.batch_sizes),
                                    h.repeat(self.config['layers'], 1, 1))
             floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
                                                         torch.zeros_like(self.ans_judge(y.data)))
+        loss = floss * self.lambda_loss[1]
         # low-level loss
-        left_hid = self(left)[0].data[:, :self.rnn_size]
-        right_hid = self(right)[0].data[:, self.rnn_size:]
+        left_hid = self.quesnet(left).pack_embeded.data[:, :self.rnn_size]
+        right_hid = self.quesnet(right).pack_embeded.data[:, self.rnn_size:]
 
         wloss = iloss = mloss = None
 
@@ -311,8 +335,9 @@ class QuesNetForPreTraining(BaseModel, FeatureExtractor):
             rout = self.rwoutput(rwfea)
             out = self.woutput(torch.cat([lwfea, rwfea], dim=1))
             wloss = (F.cross_entropy(out, words) + F.cross_entropy(lout, words) + F.
-                     cross_entropy(rout, words)) * self.lambda_input[0] / 3
+                     cross_entropy(rout, words)) * self.quesnet.lambda_input[0] / 3
             wloss *= self.lambda_loss[0]
+            loss += wloss
 
         if ims is not None:
             lifea = torch.masked_select(left_hid, imask.unsqueeze(1).bool()) \
@@ -322,9 +347,10 @@ class QuesNetForPreTraining(BaseModel, FeatureExtractor):
                 .view(-1, self.rnn_size)
             rout = self.rioutput(rifea)
             out = self.ioutput(torch.cat([lifea, rifea], dim=1))
-            iloss = (self.ie.loss(ims, out) + self.ie.loss(ims, lout) + self.ie.
-                     loss(ims, rout)) * self.lambda_input[1] / 3
+            iloss = (self.quesnet.ie.loss(ims, out) + self.quesnet.ie.loss(ims, lout) + self.quesnet.ie.
+                     loss(ims, rout)) * self.quesnet.lambda_input[1] / 3
             iloss *= self.lambda_loss[0]
+            loss += iloss
 
         if metas is not None:
             lmfea = torch.masked_select(left_hid, mmask.unsqueeze(1).bool()) \
@@ -334,24 +360,24 @@ class QuesNetForPreTraining(BaseModel, FeatureExtractor):
                 .view(-1, self.rnn_size)
             rout = self.rmoutput(rmfea)
             out = self.moutput(torch.cat([lmfea, rmfea], dim=1))
-            mloss = (self.me.loss(metas, out) + self.me.loss(metas, lout) + self.me.
-                     loss(metas, rout)) * self.lambda_input[2] / 3
+            mloss = (self.quesnet.me.loss(metas, out) + self.quesnet.me.loss(metas, lout) + self.quesnet.me.
+                     loss(metas, rout)) * self.quesnet.lambda_input[2] / 3
             mloss *= self.lambda_loss[0]
+            loss += mloss
 
-        return {
-            'field_loss': floss * self.lambda_loss[1],
-            'word_loss': wloss,
-            'image_loss': iloss,
-            'meta_loss': mloss
-        }
+        return QuesNetForPreTrainingOutput(
+            loss = loss,
+            embeded = embeded,
+            hidden = h
+        )
 
     @classmethod
-    def from_config(cls, config_path, stoi, **argv):
+    def from_config(cls, config_path, **argv):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
             model_config.update(argv)
             return cls(
-                _stoi=stoi,
+                _stoi=model_config["_stoi"],
                 emb_size=model_config["emb_size"],
                 rnn=model_config["rnn"], lambda_input=model_config["lambda_input"],
                 lambda_loss=model_config["lambda_loss"], layers=model_config["layers"],

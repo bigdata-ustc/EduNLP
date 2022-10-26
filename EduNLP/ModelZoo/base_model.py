@@ -5,7 +5,6 @@ from pathlib import Path
 import torch
 # import logging
 from ..utils import logger
-from transformers import PretrainedConfig, PreTrainedModel
 
 
 class BaseModel(nn.Module):
@@ -13,7 +12,7 @@ class BaseModel(nn.Module):
 
     def __init__(self):
         super(BaseModel, self).__init__()
-        self.config = PretrainedConfig()
+        self.config = {}
 
     def forward(self, *input):
         raise NotImplementedError
@@ -24,7 +23,6 @@ class BaseModel(nn.Module):
         model_path = os.path.join(output_dir, 'pytorch_model.bin')
         model_path = Path(model_path)
         torch.save(self.state_dict(), model_path.open('wb'))
-        # config_path = os.path.join(output_dir, "config.json")
         self.save_config(output_dir)
 
     @classmethod
@@ -80,7 +78,9 @@ class BaseModel(nn.Module):
         return model
 
     def save_config(self, config_dir):
-        self.config.save_pretrained(config_dir)
+        config_path = os.path.join(config_dir, "config.json")
+        with open(config_path, "w", encoding="utf-8") as wf:
+            json.dump(self.config, wf, ensure_ascii=False, indent=2)
 
     @classmethod
     def from_config(cls, config_path, *args, **kwargs):

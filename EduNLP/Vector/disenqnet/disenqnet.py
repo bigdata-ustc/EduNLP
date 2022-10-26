@@ -21,8 +21,8 @@ class DisenQModel(object):
         self.model.to(self.device)
 
     def __call__(self, items: dict, **kwargs):
-        embed, k_hidden, i_hidden = self.model.inference(items)
-        return embed, k_hidden, i_hidden
+        outputs = self.model(items)
+        return outputs.embed, outputs.k_hidden, outputs.i_hidden
 
     def infer_vector(self, items: dict, vector_type=None, **kwargs) -> torch.Tensor:
         """

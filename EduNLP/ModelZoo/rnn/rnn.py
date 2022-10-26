@@ -7,7 +7,6 @@ import json
 import os
 from typing import List
 from transformers.modeling_outputs import ModelOutput
-from transformers import PretrainedConfig
 from typing import Optional
 from ..base_model import BaseModel
 from ..utils import torch_utils as mytorch
@@ -149,10 +148,9 @@ class ElmoLM(BaseModel):
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size
         self.dropout = nn.Dropout(dropout_rate)
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
-        config.update(argv)
-        config['architecture'] = 'ElmoLM'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        self.config.update(argv)
+        self.config['architecture'] = 'ElmoLM'
 
     def forward(self, seq_idx=None, seq_len=None) -> ModelOutput:
         """
@@ -239,10 +237,9 @@ class ElmoLMForPreTraining(BaseModel):
         self.hidden_size = hidden_size
         self.criterion = nn.CrossEntropyLoss()
 
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
-        config.update(argv)
-        config['architecture'] = 'ElmoLMForPreTraining'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        self.config.update(argv)
+        self.config['architecture'] = 'ElmoLMForPreTraining'
 
     def forward(self, seq_idx=None, seq_len=None) -> ModelOutput:
         """
@@ -348,10 +345,9 @@ class ElmoLMForPropertyPrediction(BaseModel):
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
 
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
-        config.update(argv)
-        config['architecture'] = 'ElmoLMForPreTraining'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        self.config.update(argv)
+        self.config['architecture'] = 'ElmoLMForPreTraining'
 
     def forward(self, seq_idx=None, seq_len=None, labels=None) -> ModelOutput:
         outputs = self.elmo(seq_idx, seq_len)
@@ -433,10 +429,9 @@ class ElmoLMForKnowledgePrediction(BaseModel):
         self.num_classes_list = num_classes_list
         self.num_total_classes = num_total_classes
 
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
-        config.update(argv)
-        config['architecture'] = 'ElmoLMForPreTraining'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
+        self.config.update(argv)
+        self.config['architecture'] = 'ElmoLMForPreTraining'
 
     def forward(self, seq_idx=None, seq_len=None, labels=None) -> ModelOutput:
         outputs = self.elmo(seq_idx, seq_len)

@@ -3,7 +3,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 import pytest
 import torch
-# from EduNLP.ModelZoo.disenqnet import DisenQNet, DisenQForPropertyPrediction
+from EduNLP.ModelZoo.disenqnet import DisenQNet
 from EduNLP.Pretrain import DisenQTokenizer, train_disenqnet
 
 # TEST_GPU = torch.cuda.is_available()
@@ -42,3 +42,34 @@ class PretrainDisenQNetTest:
         assert len(res["seq_idx"].shape) == 1
         res = tokenizer(test_items, key=lambda x: x["ques_content"], return_tensors=False, return_text=True)
         assert isinstance(res["seq_idx"], list)
+
+    def test_train_disenq(self, standard_luna_data, pretrained_model_dir):
+        print("[debug] test_train_disenq")
+        test_items = [
+            {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
+                    如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,\
+                    若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'},
+            {'ques_content': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
+                    若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
+        ]
+        train_disenqnet(
+            standard_luna_data,
+            pretrained_model_dir,
+            data_params={
+                "stem_key": "ques_content"
+            },
+            train_params={
+                "num_train_epochs": 3,
+                "per_device_train_batch_size": 2,
+                "per_device_eval_batch_size": 2,
+                "no_cuda": not TEST_GPU,
+            }
+        )
+        model = DisenQNet.from_pretrained(pretrained_model_dir)
+        tokenizer = DisenQTokenizer.from_pretrained(pretrained_model_dir)
+
+        # TODO: need to handle inference for T2V for batch or single
+        # encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
+        # model(**encodes)
+        encodes = tokenizer(test_items, lambda x: x['ques_content'])
+        model(**encodes)

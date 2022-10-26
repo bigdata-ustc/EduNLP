@@ -7,7 +7,7 @@ import json
 import os
 from ..base_model import BaseModel
 from transformers.modeling_outputs import ModelOutput
-from transformers import PretrainedConfig, BertModel
+from transformers import BertModel
 from typing import List, Optional
 from ..rnn.harnn import HAM
 
@@ -30,9 +30,8 @@ class BertForPropertyPrediction(BaseModel):
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
 
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
-        config['architecture'] = 'BertForPropertyPrediction'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
+        self.config['architecture'] = 'BertForPropertyPrediction'
 
     def forward(self,
                 input_ids=None,
@@ -101,9 +100,8 @@ class BertForKnowledgePrediction(BaseModel):
         self.num_classes_list = num_classes_list
         self.num_total_classes = num_total_classes
 
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
-        config['architecture'] = 'BertForKnowledgePrediction'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
+        self.config['architecture'] = 'BertForKnowledgePrediction'
 
     def forward(self,
                 input_ids=None,

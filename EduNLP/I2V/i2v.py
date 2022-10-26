@@ -485,7 +485,7 @@ class QuesNet(I2V):
         question embedding
         """
         input = self.tokenize(items, key=key, meta=meta, *args, **kwargs)
-        content = input['content_idx']
+        content = input['seq_idx']
         meta_idx = input['meta_idx']
         if isinstance(items, list):
             qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(items))]
