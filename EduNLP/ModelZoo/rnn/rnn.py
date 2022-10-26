@@ -176,8 +176,8 @@ class ElmoLM(BaseModel):
         backward_output = lm_output[:, :, self.hidden_size:]
         forward_output = self.dropout(forward_output)
         backward_output = self.dropout(backward_output)
-        pred_forward = F.softmax(input=self.pred_layer(forward_output), dim=-1)
-        pred_backward = F.softmax(input=self.pred_layer(backward_output), dim=-1)
+        pred_forward = self.pred_layer(forward_output)
+        pred_backward = self.pred_layer(backward_output)
 
         return ElmoLMOutput(
             pred_forward=pred_forward,
