@@ -19,7 +19,6 @@ from transformers import is_apex_available
 
 os.environ["WANDB_DISABLED"] = "true"
 
-
 if is_apex_available():
     from apex import amp
 
@@ -139,7 +138,6 @@ class DisenQTokenizer(PretrainedEduTokenizer):
 
 def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, trim_min_count=None, embed_dim=None,
                        w2v_params=None, silent=False):
-
     default_w2v_params = {
         "workers": 1,
     }
