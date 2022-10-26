@@ -56,7 +56,7 @@ class DisenQNet(BaseModel):
         self.i_model = AttnModel(hidden_size, dropout_rate)
         self.dropout = nn.Dropout(p=dropout_rate)
         # config
-        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv" and k != 'wv'}
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv", 'wv']}
         self.config.update(argv)
         self.config['architecture'] = 'DisenQNet'
 
@@ -70,13 +70,13 @@ class DisenQNet(BaseModel):
             word2vec = torch.load(wv)
             self.encoder.load_wv(word2vec)
 
-    def forward(self, seq_idx, seq_len, get_vk=True, get_vi=True) -> ModelOutput:
+    def forward(self, seq_idx=None, seq_len=None, get_vk=True, get_vi=True) -> ModelOutput:
         """
         Parameters
         ----------
-        input: Tensor of (batch_size, seq_len)
+        seq_idx: Tensor of (batch_size, seq_len)
             word index
-        length: Tensor of (batch_size)
+        seq_len: Tensor of (batch_size)
             valid sequence length of each batch
         get_vk: bool
             whether to return vk
@@ -173,7 +173,7 @@ class DisenQNetForPreTraining(BaseModel):
         }
         self.modules = (self.disenq, self.mi_estimator, self.concept_estimator, self.disen_estimator)
 
-        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv" and k != 'wv'}
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv", 'wv']}
         self.config.update(argv)
         self.config['architecture'] = 'DisenQNetForPreTraining'
 

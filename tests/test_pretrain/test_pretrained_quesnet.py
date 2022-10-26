@@ -13,11 +13,10 @@ from EduNLP.Vector.quesnet import QuesNetModel
 from EduNLP.I2V import QuesNet as QuesNetI2V, get_pretrained_i2v
 from EduNLP.utils import abs_current_dir, path_append
 
-TEST_GPU = torch.cuda.is_available()
-# from conftest import TEST_GPU
+from conftest import TEST_GPU
 
 
-class TestPretrainEmlo:
+class TestPretrainQuesNet:
     def test_tokenizer(self, standard_luna_data, pretrained_tokenizer_dir):
         pretrained_dir = pretrained_tokenizer_dir
         test_items = [
@@ -128,12 +127,12 @@ class TestPretrainEmlo:
 
         encodes = tokenizer(items, key=lambda x: x['ques_content'])
         output = t2v(encodes)
-        assert output.shape[1] == t2v.vector_size
+        assert len(output) == 2
 
         t2v = T2V('quesnet', pretrained_model_dir)
         encodes = tokenizer(items, key=lambda x: x['ques_content'])
-        output = t2v(encodes)
-        assert output.shape[-1] == t2v.vector_size
+        output_i = t2v(encodes)
+        assert output_i.shape[1] == t2v.vector_size
         assert t2v.infer_vector(encodes).shape[1] == t2v.vector_size
         assert t2v.infer_tokens(encodes).shape[2] == t2v.vector_size
 
@@ -151,7 +150,7 @@ class TestPretrainEmlo:
         i2v = QuesNetI2V('quesnet', 'quesnet', pretrained_model_dir, tokenizer_kwargs=tokenizer_kwargs,
                          pretrained_t2v=False)
 
-        i_vec, t_vec = i2v(items, key=lambda x: x["stem"])
+        i_vec, t_vec = i2v(items, key=lambda x: x["ques_content"])
         assert len(i_vec[0]) == i2v.vector_size
         assert len(t_vec[0][0]) == i2v.vector_size
         i_vec = i2v.infer_item_vector(items, key=lambda x: x['ques_content'])

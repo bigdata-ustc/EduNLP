@@ -18,7 +18,6 @@ import json
 import math
 import queue
 import random
-from typing import Union, Optional
 from PIL import Image
 from torchvision.transforms.functional import to_grayscale
 from torchvision.transforms.functional import to_tensor
@@ -31,7 +30,7 @@ from ..ModelZoo.quesnet import QuesNetForPreTraining, AE
 from .pretrian_utils import PretrainedEduTokenizer
 from EduNLP import logger
 import linecache
-from typing import List, Union
+from typing import List, Union, Optional
 
 Question = namedtuple('Question',
                       ['id', 'content', 'answer', 'false_options', 'labels'])
@@ -55,6 +54,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
     ... "knowledge": "['*', '-', '/']"}]
     >>> tokenizer.set_vocab(test_items,
     ... trim_min_count=1, key=lambda x: x["ques_content"], silent=True)
+    >>> tokenizer.set_meta_vocab(test_items, silent=True)
     >>> token_items = [tokenizer(i, key=lambda x: x["ques_content"]) for i in test_items]
     >>> print(token_items[0].keys())
     dict_keys(['seq_idx', 'meta_idx'])
@@ -63,9 +63,9 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
     2
     """
 
-    def __init__(self, vocab_path=None, meta_vocab_dir=None, img_dir: str=None,
-                 max_length=250, tokenize_method="custom", symbol="mas", add_specials: list = None, meta: List[str] = None,
-                 img_token='<img>', unk_token="<unk>", pad_token="<pad>", **argv):
+    def __init__(self, vocab_path=None, meta_vocab_dir=None, img_dir: str = None,
+                 max_length=250, tokenize_method="custom", symbol="mas", add_specials: list = None,
+                 meta: List[str] = None, img_token='<img>', unk_token="<unk>", pad_token="<pad>", **argv):
         """
         Parameters
         ----------
@@ -113,8 +113,8 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
         if meta_vocab_dir is not None:
             self.load_meta_vocab(meta_vocab_dir=meta_vocab_dir)
         self.config = {
-            k: v for k, v in locals().items()
-                if k not in ["self", "__class__", "vocab_path", 'img_dir', 'meta_vocab_dir']
+            k: v for k, v in locals().items() if k not in [
+                "self", "__class__", "vocab_path", 'img_dir', 'meta_vocab_dir']
         }
 
     def __call__(self, item: Union[str, dict, list], key=lambda x: x,
@@ -143,7 +143,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                 ret["seq_idx"].append(r["seq_idx"])
                 ret["meta_idx"].append(r["meta_idx"])
                 if return_text:
-                    ret["seq_token"].append(r["content"])
+                    ret["seq_token"].append(r["seq_token"])
                     ret["meta"].append(r["meta"])
         else:
             ret = self._convert_to_ids(item, key, meta, padding, return_text, *args, **kwargs)
@@ -662,8 +662,7 @@ def pretrain_quesnet(path, output_dir, img_dir=None, save_embs=False, train_para
 
     ques_dl = QuestionLoader(items, tokenizer)
     model = QuesNetForPreTraining(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
-                    emb_size=train_params['emb_size']).to(
-        device)
+                                  emb_size=train_params['emb_size']).to(device)
     emb_dict = tokenizer.stoi['word']
     emb_dict_rev = tokenizer.itos['word']
     emb_size = train_params['emb_size']
@@ -686,8 +685,8 @@ def pretrain_quesnet(path, output_dir, img_dir=None, save_embs=False, train_para
         w2v_corpus.append(text_content)
         meta_vector = torch.zeros(meta_size, dtype=torch.float)
         for m in qs.labels[model.quesnet.meta]:
-            meta_vector.add_(
-                torch.nn.functional.one_hot(torch.tensor(m, dtype=torch.int64), model.quesnet.meta_size).to(torch.float))
+            meta_vector.add_(torch.nn.functional.one_hot(torch.tensor(m, dtype=torch.int64),
+                             model.quesnet.meta_size).to(torch.float))
         meta_corpus.append(meta_vector)
 
     # train word2vec for text embedding

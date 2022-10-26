@@ -29,6 +29,7 @@ class QuesNetOutput(ModelOutput):
 
 class QuesNet(BaseModel, FeatureExtractor):
     base_model_prefix = 'quesnet'
+
     def __init__(self, _stoi=None, meta='know_name', pretrained_embs: np.ndarray = None,
                  pretrained_image: nn.Module = None, pretrained_meta: nn.Module = None,
                  lambda_input=None,
@@ -196,7 +197,6 @@ class QuesNet(BaseModel, FeatureExtractor):
             )
         else:
             return embs
-
 
     def forward(self, inputs: SeqBatch):
         packed = inputs.packed()
@@ -366,9 +366,9 @@ class QuesNetForPreTraining(BaseModel):
             loss += mloss
 
         return QuesNetForPreTrainingOutput(
-            loss = loss,
-            embeded = embeded,
-            hidden = h
+            loss=loss,
+            embeded=embeded,
+            hidden=h
         )
 
     @classmethod

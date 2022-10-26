@@ -29,10 +29,9 @@ class QuesNetModel(object):
             encodes from tokenizer
         """
         qs = [Question("", items['seq_idx'][i],
-                       [0], [[0], [0], [0]], items['meta_idx'][i]) for i in range(len(items))]
-        inputs = [qs] if isinstance(qs, Question) else qs
-        outputs = self.model(self.model.make_batch(inputs, device=self.device)).hidden
-        return outputs.embeded, outputs.hidden
+                       [0], [[0], [0], [0]], items['meta_idx'][i]) for i in range(len(items['seq_idx']))]
+        outputs = self.model(self.model.make_batch(qs, device=self.device))
+        return outputs.hidden, outputs.embeded
 
     def infer_vector(self, items: Union[dict, list]) -> torch.Tensor:
         """ get question embedding with quesnet
@@ -42,7 +41,7 @@ class QuesNetModel(object):
         items:
             encodes from tokenizer
         """
-        return self(items)[1]
+        return self(items)[0]
 
     def infer_tokens(self, items: Union[dict, list]) -> torch.Tensor:
         """ get token embeddings with quesnet
