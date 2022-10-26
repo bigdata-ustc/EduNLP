@@ -57,7 +57,7 @@ class DisenQNet(BaseModel):
         self.i_model = AttnModel(hidden_size, dropout_rate)
         self.dropout = nn.Dropout(p=dropout_rate)
         # config
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv" and k!= 'wv'}
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv" and k != 'wv'}
         config.update(argv)
         config['architecture'] = 'DisenQNet'
         self.config = PretrainedConfig.from_dict(config)
@@ -175,7 +175,7 @@ class DisenQNetForPreTraining(BaseModel):
         }
         self.modules = (self.disenq, self.mi_estimator, self.concept_estimator, self.disen_estimator)
 
-        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv" and k!= 'wv'}
+        config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv" and k != 'wv'}
         config.update(argv)
         config['architecture'] = 'DisenQNetForPreTraining'
         self.config = PretrainedConfig.from_dict(config)

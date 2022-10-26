@@ -20,7 +20,6 @@ from transformers import is_apex_available
 
 os.environ["WANDB_DISABLED"] = "true"
 
-
 if is_apex_available():
     from apex import amp
 
@@ -141,7 +140,6 @@ class DisenQTokenizer(PretrainedEduTokenizer):
 
 def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, trim_min_count=None, embed_dim=None,
                        w2v_params=None, silent=False):
-
     default_w2v_params = {
         "workers": 1,
     }
@@ -281,7 +279,7 @@ class DisenQTrainer(Trainer):
             dis_loss.backward()
             step = self.state.global_step % (self.state.max_steps / self.state.num_train_epochs)
             if (step + 1) % self.args.gradient_accumulation_steps or \
-                (step + 1) == self.state.max_steps / self.state.num_train_epochs:
+                    (step + 1) == self.state.max_steps / self.state.num_train_epochs:
                 self.adv_optimizer.step()
                 self.adv_optimizer.zero_grad()
             # Lipschitz constrain for Disc of WGAN
@@ -405,16 +403,16 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
     items = train_items + ([] if eval_items is None else eval_items)
     if pretrained_dir:
         tokenizer, concept_to_idx, word2vec = preprocess_dataset(pretrained_dir, tokenizer, items,
-                                                                data_formation,
-                                                                trim_min_count=work_train_params["trim_min"],
-                                                                embed_dim=work_train_params["hidden_size"],
-                                                                w2v_params=None, silent=False)
+                                                                 data_formation,
+                                                                 trim_min_count=work_train_params["trim_min"],
+                                                                 embed_dim=work_train_params["hidden_size"],
+                                                                 w2v_params=None, silent=False)
     else:
         tokenizer, concept_to_idx, word2vec = preprocess_dataset(output_dir, tokenizer, items,
-                                                                data_formation,
-                                                                trim_min_count=work_train_params["trim_min"],
-                                                                embed_dim=work_train_params["hidden_size"],
-                                                                w2v_params=None, silent=False)
+                                                                 data_formation,
+                                                                 trim_min_count=work_train_params["trim_min"],
+                                                                 embed_dim=work_train_params["hidden_size"],
+                                                                 w2v_params=None, silent=False)
     train_dataset = DisenQDataset(train_items, tokenizer, data_formation,
                                   mode="train", concept_to_idx=concept_to_idx)
     if eval_items:
