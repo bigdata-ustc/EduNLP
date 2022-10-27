@@ -484,14 +484,8 @@ class QuesNet(I2V):
         token embeddings
         question embedding
         """
-        input = self.tokenize(items, key=key, meta=meta, *args, **kwargs)
-        content = input['content_idx']
-        meta_idx = input['meta_idx']
-        if isinstance(items, list):
-            qs = [Question("", content[i], [0], [[0], [0], [0]], meta_idx[i]) for i in range(len(items))]
-        else:
-            qs = Question("", content, [0], [[0], [0], [0]], meta_idx)
-        return self.t2v.infer_vector(qs), self.t2v.infer_tokens(qs)
+        encodes = self.tokenize(items, key=key, meta=meta, *args, **kwargs)
+        return self.t2v.infer_vector(encodes), self.t2v.infer_tokens(encodes)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):

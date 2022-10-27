@@ -7,9 +7,11 @@ import json
 import os
 from ..base_model import BaseModel
 from transformers.modeling_outputs import ModelOutput
-from transformers import PretrainedConfig, BertModel
+from transformers import BertModel
 from typing import List, Optional
 from ..rnn.harnn import HAM
+
+__all__ = ["BertForPropertyPrediction", "BertForKnowledgePrediction"]
 
 
 class BertForPPOutput(ModelOutput):
@@ -28,9 +30,8 @@ class BertForPropertyPrediction(BaseModel):
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
 
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
-        config['architecture'] = 'BertForPropertyPrediction'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
+        self.config['architecture'] = 'BertForPropertyPrediction'
 
     def forward(self,
                 input_ids=None,
@@ -89,18 +90,18 @@ class BertForKnowledgePrediction(BaseModel):
         self.ham_classifier = HAM(
             num_classes_list=num_classes_list,
             num_total_classes=num_total_classes,
-            lstm_hidden_size=self.bert.config.hidden_size,
+            sequence_model_hidden_size=self.bert.config.hidden_size,
             attention_unit_size=attention_unit_size,
             fc_hidden_size=fc_hidden_size,
             beta=beta,
             dropout_rate=head_dropout
         )
+        self.flat_cls_weight = flat_cls_weight
         self.num_classes_list = num_classes_list
         self.num_total_classes = num_total_classes
 
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
-        config['architecture'] = 'BertForKnowledgePrediction'
-        self.config = PretrainedConfig.from_dict(config)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
+        self.config['architecture'] = 'BertForKnowledgePrediction'
 
     def forward(self,
                 input_ids=None,
@@ -135,7 +136,7 @@ class BertForKnowledgePrediction(BaseModel):
                 pretrained_model_dir=model_config['pretrained_model_dir'],
                 head_dropout=model_config.get("head_dropout", 0.5),
                 num_classes_list=model_config.get('num_classes_list'),
-                num_total_classes=model_config.get('total_classes'),
+                num_total_classes=model_config.get('num_total_classes'),
                 flat_cls_weight=model_config.get('flat_cls_weight', 0.5),
                 attention_unit_size=model_config.get('attention_unit_size', 256),
                 fc_hidden_size=model_config.get('fc_hidden_size', 512),

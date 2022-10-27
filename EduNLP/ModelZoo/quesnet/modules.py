@@ -14,10 +14,6 @@ class FeatureExtractor(nn.Module):
     def load_emb(self, emb):
         pass
 
-    def pretrain_loss(self, batch):
-        """Returns pretraining loss on a batch of data"""
-        raise NotImplementedError
-
     def forward(self, *input):
         raise NotImplementedError
 

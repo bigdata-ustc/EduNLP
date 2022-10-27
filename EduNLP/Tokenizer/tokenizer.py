@@ -116,7 +116,8 @@ class SpaceTokenizer(Tokenizer):
 
 class PureTextTokenizer(Tokenizer):
     def __init__(self, handle_figure_formula="skip", symbolize_figure_formula=None, **kwargs):
-        """Treat all elements in SIF item as prue text. Spectially, tokenize formulas as text.
+        """
+        Treat all elements in SIF item as prue text. Spectially, tokenize formulas as text.
 
         Parameters
         ----------
@@ -135,22 +136,20 @@ class PureTextTokenizer(Tokenizer):
         >>> items=["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
         >>> tokens = tokenizer(items)
         >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-        ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', ...]
+        ['已知', '集合', 'A', '=', '\\\\left', '\\\\{', 'x', '\\\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', ...]
         >>> items = [{
         ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
         ... "options": ["1", "2"]
         ... }]
         >>> tokens = tokenizer(items, key=lambda x: x["stem"])
         >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-        ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-        '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-        '\\quad', 'A', '\\cap', 'B', '=']
-        >>> tokenizer = TextTokenizer(symbolize_figure_formula=True)
+        ['已知', '集合', 'A', '=', '\\\\left', '\\\\{', 'x', '\\\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', ...]
+        >>> tokenizer = PureTextTokenizer(symbolize_figure_formula=True)
         >>> items = ["有公式$\\FormFigureID{1}$，如图$\\FigureID{088f15ea-xxx}$,\
         ... 若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
         >>> tokens = tokenizer(items)
         >>> next(tokens)[:10]
-        ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]']
+        ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z']
         >>> items = ["$\\SIFTag{stem_begin}$若复数$z=1+2 i+i^{3}$，则$|z|=$$\\SIFTag{stem_end}$\
         ... $\\SIFTag{options_begin}$$\\SIFTag{list_0}$0$\\SIFTag{list_1}$1$\\SIFTag{list_2}$$\\sqrt{2}$\
         ... $\\SIFTag{list_3}$2$\\SIFTag{options_end}$"]

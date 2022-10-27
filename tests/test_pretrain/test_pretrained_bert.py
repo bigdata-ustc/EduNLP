@@ -9,7 +9,6 @@ from EduNLP.Pretrain import finetune_bert_for_property_prediction, finetune_bert
 from EduNLP.Vector import T2V, BertModel
 from EduNLP.I2V import Bert, get_pretrained_i2v
 
-# TEST_GPU = torch.cuda.is_available()
 from conftest import TEST_GPU
 
 

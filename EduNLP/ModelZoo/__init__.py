@@ -1,4 +1,3 @@
-# coding: utf-8
-# 2021/7/12 @ tongshiwei
-
 from .utils import *
+from .bert import *
+from .rnn import *

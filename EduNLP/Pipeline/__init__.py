@@ -56,7 +56,6 @@ def pipeline(
 
     if task in SUPPORTED_TASKS:
         targeted_task = SUPPORTED_TASKS[task]
-        model_mappings = TASK_MAPPING[task]
     else:
         raise KeyError(f"Unknown task {task}")
     if pipeline_class is None:
@@ -64,7 +63,8 @@ def pipeline(
     if model is None:
         # TODO: Default model and its config.
         #  Specifically, automatically download default pretrained model&tokenizer when users give only `task` as input.
-        pretrained_name = targeted_task["default"]
+        pass
+        # pretrained_name = targeted_task["default"]
     elif isinstance(model, str):
         # TODO: a mapping from name str to model class instance
         pass

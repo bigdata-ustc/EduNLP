@@ -61,7 +61,7 @@ class SegDescribePipe(BasePipe):
 
     def __call__(self, input_: SegmentList):
         print(input_.describe())
-        return input
+        return input_
 
 
 class SegFilterPipe(BasePipe):

@@ -79,7 +79,7 @@ class HAM(nn.Module):
             self,
             num_classes_list: List[int],
             num_total_classes: int,
-            lstm_hidden_size: int,
+            sequence_model_hidden_size: int,
             attention_unit_size: Optional[int] = 256,
             fc_hidden_size: Optional[int] = 512,
             beta: Optional[float] = 0.5,
@@ -89,18 +89,18 @@ class HAM(nn.Module):
 
         assert num_total_classes == sum(num_classes_list)
         # First Level
-        self.first_attention = AttentionLayer(lstm_hidden_size * 2, attention_unit_size, num_classes_list[0])
-        self.first_fc = nn.Linear(lstm_hidden_size * 4, fc_hidden_size)
+        self.first_attention = AttentionLayer(sequence_model_hidden_size, attention_unit_size, num_classes_list[0])
+        self.first_fc = nn.Linear(sequence_model_hidden_size * 2, fc_hidden_size)
         self.first_local = LocalLayer(fc_hidden_size, num_classes_list[0])
 
         # Second Level
-        self.second_attention = AttentionLayer(lstm_hidden_size * 2, attention_unit_size, num_classes_list[1])
-        self.second_fc = nn.Linear(lstm_hidden_size * 4, fc_hidden_size)
+        self.second_attention = AttentionLayer(sequence_model_hidden_size, attention_unit_size, num_classes_list[1])
+        self.second_fc = nn.Linear(sequence_model_hidden_size * 2, fc_hidden_size)
         self.second_local = LocalLayer(fc_hidden_size, num_classes_list[1])
 
         # Third Level
-        self.third_attention = AttentionLayer(lstm_hidden_size * 2, attention_unit_size, num_classes_list[2])
-        self.third_fc = nn.Linear(lstm_hidden_size * 4, fc_hidden_size)
+        self.third_attention = AttentionLayer(sequence_model_hidden_size, attention_unit_size, num_classes_list[2])
+        self.third_fc = nn.Linear(sequence_model_hidden_size * 2, fc_hidden_size)
         self.third_local = LocalLayer(fc_hidden_size, num_classes_list[2])
 
         # Fully Connected Layer
