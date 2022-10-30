@@ -12,7 +12,7 @@ from copy import deepcopy
 import itertools as it
 
 __all__ = ["GensimWordTokenizer", "train_vector", "GensimSegTokenizer"]
-
+ 
 
 class GensimWordTokenizer(object):
     """

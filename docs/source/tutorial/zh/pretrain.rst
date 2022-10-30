@@ -16,7 +16,31 @@
 模型模块的接口定义在 `EduNLP.Pretrain` 中，包含令牌化容器、数据处理、模型定义、模型训练等功能。
 
 
-基本步骤：
+预训练工具
+#######################################
+
+
+语料库词典
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+语料库词典是预训练中为了便于用户进行后续处理而引入的工具。它支持用户导入并自定义词典内容，并对语料库的信息进行一定的处理。例如：
+
+::
+
+   >>> from EduNLP.Pretrain.pretrian_utils import EduVocab
+   >>> vocab = EduVocab()
+   >>> print(vocab.tokens)
+   ['[PAD]', '[UNK]', '[BOS]', '[EOS]']
+
+   >>> token_list = ['An', 'apple', 'a', 'day', 'keeps', 'doctors', 'away']
+   >>> vocab.add_tokens(token_list)
+   >>> test_token_list = ['An', 'banana', 'is', 'a', 'kind', 'of', 'fruit']
+   >>> res = vocab.convert_sequence_to_token(vocab.convert_sequence_to_idx(test_token_list))
+   >>> print(res)
+   ['An', '[UNK]', '[UNK]', 'a', '[UNK]', '[UNK]', '[UNK]']
+
+
+基本步骤
 #######################################
 
 以训练word2vec为例说明：
