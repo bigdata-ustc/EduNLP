@@ -266,7 +266,7 @@ class ElmoLMForPreTraining(BaseModel):
             backward_output: of shape (batch_size, sequence_length, hidden_size)
         """
         batch_size, idx_len = seq_idx.shape
-        max_len = seq_len.max().item() if self.config.get("use_pack_pad", False) is True else idx_len
+        max_len = seq_len.max().item() if self.config.use_pack_pad is True else idx_len
         # Note:
         # pred_mask matters when LM use pack_pad,
         # but it will break down for parallel GPU because of different seq_len between gpus

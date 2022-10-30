@@ -313,7 +313,7 @@ def clip(v, low, high):
 class Lines:
     def __init__(self, filename, skip=0, preserve_newline=False):
         self.filename = filename
-        with open(filename) as f:
+        with open(filename, "r", encoding="utf-8") as f:
             self.length = len(f.readlines()) - skip
         assert self.length > 0, f'{filename} is empty. Or file length is less than skip length.'
         self.skip = skip

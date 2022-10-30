@@ -79,13 +79,13 @@ class QuesNet(BaseModel, FeatureExtractor):
             raise ValueError('quesnet only support GRU and LSTM now.')
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv"]}
         # self.config.update(argv)
-        self.config['architecture'] = 'quesnet'
+        self.config["architecture"] = 'quesnet'
         self.config = PretrainedConfig.from_dict(self.config)
 
     def init_h(self, batch_size):
         size = list(self.h0.size())
         size[1] = batch_size
-        if self.config['rnn_type'] == 'GRU':
+        if self.config.rnn_type == 'GRU':
             return self.h0.expand(size).contiguous()
         else:
             return self.h0.expand(size).contiguous(), self.c0.expand(size).contiguous()
@@ -94,13 +94,13 @@ class QuesNet(BaseModel, FeatureExtractor):
         self.we.weight.detach().copy_(torch.from_numpy(emb))
 
     def load_img(self, img_layer: nn.Module):
-        if self.config['emb_size'] != img_layer.emb_size:
+        if self.config.emb_size != img_layer.emb_size:
             raise ValueError("Unmatched pre-trained ImageAE and embedding size")
         else:
             self.ie.load_state_dict(img_layer.state_dict())
 
     def load_meta(self, meta_layer: nn.Module):
-        if self.config['emb_size'] != meta_layer.emb_size or self.meta_size != meta_layer.meta_size:
+        if self.config.emb_size != meta_layer.emb_size or self.meta_size != meta_layer.meta_size:
             raise ValueError("Unmatched pre-trained MetaAE and embedding size or meta size")
         else:
             self.me.load_state_dict(meta_layer.state_dict())
@@ -311,7 +311,7 @@ class QuesNetForPreTraining(BaseModel):
 
         x = ans_input.packed()
         y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x.data), x.batch_sizes),
-                               h.repeat(self.config['layers'], 1, 1))
+                               h.repeat(self.config.layers, 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),
                                 ans_output.packed().data)
         floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
@@ -319,7 +319,7 @@ class QuesNetForPreTraining(BaseModel):
         for false_opt in false_opt_input:
             x = false_opt.packed()
             y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x.data), x.batch_sizes),
-                                   h.repeat(self.config['layers'], 1, 1))
+                                   h.repeat(self.config.layers, 1, 1))
             floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
                                                         torch.zeros_like(self.ans_judge(y.data)))
         loss = floss * self.lambda_loss[1]
