@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import torch
+from transformers import PretrainedConfig
 # import logging
 from ..utils import logger
 
@@ -12,7 +13,7 @@ class BaseModel(nn.Module):
 
     def __init__(self):
         super(BaseModel, self).__init__()
-        self.config = {}
+        self.config = PretrainedConfig()
 
     def forward(self, *input):
         raise NotImplementedError
@@ -80,7 +81,7 @@ class BaseModel(nn.Module):
     def save_config(self, config_dir):
         config_path = os.path.join(config_dir, "config.json")
         with open(config_path, "w", encoding="utf-8") as wf:
-            json.dump(self.config, wf, ensure_ascii=False, indent=2)
+            json.dump(self.config.to_dict(), wf, ensure_ascii=False, indent=2)
 
     @classmethod
     def from_config(cls, config_path, *args, **kwargs):

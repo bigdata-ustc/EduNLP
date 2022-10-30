@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_packed_sequence, PackedSequence
 from torchvision.transforms.functional import to_tensor
 from transformers.modeling_outputs import ModelOutput
+from transformers import PretrainedConfig
 from ..base_model import BaseModel
 
 
@@ -79,6 +80,7 @@ class QuesNet(BaseModel, FeatureExtractor):
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv"]}
         # self.config.update(argv)
         self.config['architecture'] = 'quesnet'
+        self.config = PretrainedConfig.from_dict(self.config)
 
     def init_h(self, batch_size):
         size = list(self.h0.size())
@@ -297,6 +299,7 @@ class QuesNetForPreTraining(BaseModel):
             "self", "__class__", "argv", "pretrained_embs", "pretrained_image", "pretrained_meta"]}
         # self.config.update(argv)
         self.config['architecture'] = 'quesnet'
+        self.config = PretrainedConfig.from_dict(self.config)
 
     def forward(self, batch):
         left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output, false_opt_input = batch

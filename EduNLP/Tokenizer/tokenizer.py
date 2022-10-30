@@ -71,7 +71,7 @@ class CustomTokenizer(Tokenizer):
 
 
 class CharTokenizer(Tokenizer):
-    def __init__(self, stop_words="punctuations") -> None:
+    def __init__(self, stop_words="punctuations", **argv) -> None:
         """Tokenize text char by char. eg. "题目内容" -> ["题",  "目",  "内", 容"]
 
         Parameters
@@ -92,7 +92,7 @@ class CharTokenizer(Tokenizer):
 
 
 class SpaceTokenizer(Tokenizer):
-    def __init__(self, stop_words="punctuations") -> None:
+    def __init__(self, stop_words="punctuations", **argv) -> None:
         """Tokenize text by space. eg. "题目 内容" -> ["题目", "内容"]
 
         Parameters

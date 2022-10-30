@@ -14,6 +14,7 @@ from .utils import get_mask
 from ..utils import set_device
 from ..base_model import BaseModel
 from transformers.modeling_outputs import ModelOutput
+from transformers import PretrainedConfig
 
 
 class DisenQNetOutput(ModelOutput):
@@ -59,6 +60,7 @@ class DisenQNet(BaseModel):
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv", 'wv']}
         self.config.update(argv)
         self.config['architecture'] = 'DisenQNet'
+        self.config = PretrainedConfig.from_dict(self.config)
 
     def load_wv(self, wv):
         if isinstance(wv, torch.Tensor):
@@ -176,6 +178,7 @@ class DisenQNetForPreTraining(BaseModel):
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv", 'wv']}
         self.config.update(argv)
         self.config['architecture'] = 'DisenQNetForPreTraining'
+        self.config = PretrainedConfig.from_dict(self.config)
 
         model_params = list()
         for params in [list(self.disenq.parameters()),
