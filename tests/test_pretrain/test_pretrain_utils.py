@@ -17,6 +17,7 @@ class TestPretrainUtils:
 # t = TestPretrainUtils()
 # t.test_eduvocab()
 
+
 vocab = EduVocab()
 print(vocab.tokens)
 token_list = ['An', 'apple', 'a', 'day', 'keeps', 'doctors', 'away']
