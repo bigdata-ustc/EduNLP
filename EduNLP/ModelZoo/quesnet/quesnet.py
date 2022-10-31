@@ -217,7 +217,7 @@ class QuesNet(BaseModel, FeatureExtractor):
         scores = q @ k.transpose(-2, -1) / np.sqrt(k.size(-1))  # (B, S, S)
         if mask is not None:
             mask = mask.float()
-            scores -= 1e9 * (1.0 - mask.unsqueeze(1))
+            scores = scores - 1e9 * (1.0 - mask.unsqueeze(1))
         scores = self.dropout(F.softmax(scores, dim=-1))  # (B, S, S)
         h = (scores @ v).max(1)[0]  # (B, D)
 
@@ -314,14 +314,14 @@ class QuesNetForPreTraining(BaseModel):
                                h.repeat(self.config.layers, 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),
                                 ans_output.packed().data)
-        floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
-                                                    torch.ones_like(self.ans_judge(y.data)))
+        floss = floss + F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
+                                                           torch.ones_like(self.ans_judge(y.data)))
         for false_opt in false_opt_input:
             x = false_opt.packed()
             y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x.data), x.batch_sizes),
                                    h.repeat(self.config.layers, 1, 1))
-            floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
-                                                        torch.zeros_like(self.ans_judge(y.data)))
+            floss = floss + F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
+                                                               torch.zeros_like(self.ans_judge(y.data)))
         loss = floss * self.lambda_loss[1]
         # low-level loss
         left_hid = self.quesnet(left).pack_embeded.data[:, :self.rnn_size]
@@ -340,7 +340,7 @@ class QuesNetForPreTraining(BaseModel):
             wloss = (F.cross_entropy(out, words) + F.cross_entropy(lout, words) + F.
                      cross_entropy(rout, words)) * self.quesnet.lambda_input[0] / 3
             wloss *= self.lambda_loss[0]
-            loss += wloss
+            loss = loss + wloss
 
         if ims is not None:
             lifea = torch.masked_select(left_hid, imask.unsqueeze(1).bool()) \
@@ -353,7 +353,7 @@ class QuesNetForPreTraining(BaseModel):
             iloss = (self.quesnet.ie.loss(ims, out) + self.quesnet.ie.loss(ims, lout) + self.quesnet.ie.
                      loss(ims, rout)) * self.quesnet.lambda_input[1] / 3
             iloss *= self.lambda_loss[0]
-            loss += iloss
+            loss = loss + iloss
 
         if metas is not None:
             lmfea = torch.masked_select(left_hid, mmask.unsqueeze(1).bool()) \
@@ -366,7 +366,7 @@ class QuesNetForPreTraining(BaseModel):
             mloss = (self.quesnet.me.loss(metas, out) + self.quesnet.me.loss(metas, lout) + self.quesnet.me.
                      loss(metas, rout)) * self.quesnet.lambda_input[2] / 3
             mloss *= self.lambda_loss[0]
-            loss += mloss
+            loss = loss + mloss
 
         return QuesNetForPreTrainingOutput(
             loss=loss,
