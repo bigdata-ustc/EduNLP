@@ -96,9 +96,9 @@ class EduVocab(object):
         """convert sentence of tokens to sentence of indexs"""
         res = [self.to_idx(t) for t in tokens]
         if bos is True:
-            res = [self.to_idx(self.bos_idx)] + res
+            res = [self.bos_idx] + res
         if eos is True:
-            res = res + [self.to_idx(self.eos_idx)]
+            res = res + [self.eos_idx]
         return res
 
     def convert_sequence_to_token(self, idxs, **argv):
@@ -238,7 +238,6 @@ class PretrainedEduTokenizer(object):
         batch_max_length = None
         max_length = self.max_length if max_length is None else max_length
         if isinstance(padding, str):
-            assert padding == "max_length"
             if padding == "max_length":
                 batch_max_length = max_length
                 padding = True

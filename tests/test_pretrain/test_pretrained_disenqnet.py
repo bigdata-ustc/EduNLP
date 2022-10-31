@@ -70,6 +70,28 @@ class TestPretrainDisenQNet:
         model = DisenQNet.from_pretrained(pretrained_model_dir)
         tokenizer = DisenQTokenizer.from_pretrained(pretrained_model_dir)
 
+        train_disenqnet(
+            standard_luna_data,
+            pretrained_model_dir,
+            data_params={
+                "stem_key": "ques_content",
+                "data_formation": {
+                    "knowledge": "know_name"
+                }
+            },
+            train_params={
+                "num_train_epochs": 1,
+                "per_device_train_batch_size": 2,
+                "per_device_eval_batch_size": 2,
+                "no_cuda": not TEST_GPU,
+                "gradient_accumulation_steps": 2
+            },
+            model_params={
+                "hidden_size": 300
+            },
+            pretrained_dir=pretrained_model_dir
+        )
+
         # TODO: need to handle inference for T2V for batch or single
         # encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
         # model(**encodes)

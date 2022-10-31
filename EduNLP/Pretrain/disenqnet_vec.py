@@ -15,12 +15,6 @@ from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPreTraining
 from ..ModelZoo.utils import load_items, pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer
-from transformers import is_apex_available
-
-os.environ["WANDB_DISABLED"] = "true"
-
-if is_apex_available():
-    from apex import amp
 
 
 def check_num(s):
@@ -396,7 +390,7 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
         work_train_params.update(train_params if train_params else {})
     if model_params:
         if 'hidden_size' in model_params:
-            work_train_params['hidden_size'] = model_params['hidden']
+            work_train_params['hidden_size'] = model_params['hidden_size']
 
     # dataset configuration
     items = train_items + ([] if eval_items is None else eval_items)

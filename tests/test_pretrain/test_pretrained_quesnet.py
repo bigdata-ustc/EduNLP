@@ -1,3 +1,4 @@
+from lib2to3.pgen2 import token
 import os
 
 from bson import encode
@@ -27,7 +28,7 @@ class TestPretrainQuesNet:
                     若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
         img_dir = path_append(abs_current_dir(__file__), "test_data/quesnet_img", to_str=True)
-        tokenizer = QuesNetTokenizer(meta=['know_name'], max_length=10, img_dir=img_dir)
+        tokenizer = QuesNetTokenizer(max_length=10, img_dir=img_dir, add_specials=[])
 
         # set_vocab
         tokenizer_size1 = len(tokenizer)
@@ -42,6 +43,8 @@ class TestPretrainQuesNet:
         assert tokenizer_size1 < tokenizer_size2
         tokenizer.save_pretrained(pretrained_dir)
         tokenizer = QuesNetTokenizer.from_pretrained(pretrained_dir)
+        tokenizer.load_meta_vocab('wrong_path')
+        tokenizer.load_meta_vocab(tokenizer.meta_vocab_dir)
         tokenizer_size3 = len(tokenizer)
         assert tokenizer_size2 == tokenizer_size3
 
