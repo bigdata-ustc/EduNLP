@@ -13,6 +13,7 @@ GenericTensor = Union["torch.Tensor", List["GenericTensor"]]
 class PreProcessingPipeline(object):
     """
     A pipeline for tokenization processing.
+    You should use it by calling pipeline('pre-process'), instead of itself directly.
 
     Parameters
     ----------
@@ -34,8 +35,9 @@ class PreProcessingPipeline(object):
     ['如图所示，则三角形', '[FORMULA]', '的面积是', '[MARK]', '。']
     >>> tkn.rename_pipe(0, 'is_sif_lol')
     >>> tkn.add_pipe('to_sif', component=lambda x:x, first=True) # This won't succeed for the same name pipe exists
+    >>> tkn.add_pipe('identify', component=lambda x:x, before=1)
     >>> tkn.component_names
-    ['is_sif_lol', 'to_sif', 'is_sif_lol', 'seg', 'seg_describe']
+    ['is_sif_lol', 'identify', 'to_sif', 'is_sif_lol', 'seg', 'seg_describe']
     """
 
     def __init__(self,

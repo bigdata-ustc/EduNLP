@@ -48,6 +48,9 @@ class TestPipelines:
             processor.rename_pipe('Im_not_here', 'got_you')
         with pytest.raises(ValueError):
             processor.add_pipe('pipe_running_away')
+        with pytest.raises(ValueError):
+            processor.remove_pipe('I_do_not_exist')
+
         with pytest.raises(RuntimeError):
             pipeline()
         with pytest.raises(RuntimeError):
