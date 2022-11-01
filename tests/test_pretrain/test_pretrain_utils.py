@@ -3,9 +3,8 @@ import pytest
 import os
 
 
-# TODO
 class TestPretrainUtils:
-    def test_eduvocab(self, pretrained_tokenizer_dir):
+    def test_eduvocab(self):
         test = EduVocab(specials=['token1'])
         assert len(test) == 5
         token_list = ['An', 'apple', 'a', 'day', 'keeps', 'doctors', 'away']
