@@ -13,5 +13,3 @@ class TestPretrainUtils:
         res = tokenizer.decode(tokenizer.encode(item))
         right_ans = '[CLS] [UNK] is a test. [SEP]'
         assert res == right_ans, res
-        with pytest.raises(OSError) or pytest.raises(ValueError):
-            tokenizer = TokenizerForHuggingface.from_pretrained('wrong_path')
