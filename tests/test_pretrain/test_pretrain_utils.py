@@ -27,6 +27,7 @@ class TestPretrainUtils:
         test.add_tokens(token_list)
         vocab_path = os.path.join(pretrained_tokenizer_dir, 'vocab.txt')
         test.save_vocab(vocab_path)
+        test = EduVocab(vocab_path=vocab_path)
 
         test = PretrainedEduTokenizer(vocab_path=vocab_path, max_length=100)
         res = test('An apple a day keeps doctors away', padding='max_length')

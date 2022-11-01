@@ -165,7 +165,7 @@ class PureTextTokenizer(Tokenizer):
             skip_figure_formula = False
             symbolize_figure_formula = True
         elif handle_figure_formula is None:
-            handle_figure_formula, symbolize_figure_formula = False, False
+            skip_figure_formula, symbolize_figure_formula = False, False
         else:
             raise ValueError('handle_figure_formula should be one in ["skip", "symbolize", None]')
         formula_params = {
