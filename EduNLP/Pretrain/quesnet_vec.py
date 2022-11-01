@@ -539,7 +539,7 @@ class EmbeddingDataset(Dataset):
         if self.data_type == 'image':
             return to_tensor(self.data[idx])
         elif self.data_type == 'meta':
-            return torch.tensor(self.data[idx])
+            return self.data[idx]
 
 
 def pretrain_iter(ques, batch_size):
