@@ -191,7 +191,7 @@ def train_elmo_for_property_prediction(
         }
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
         tokenizer = ElmoTokenizer(**work_tokenizer_params)
-        corpus_items = train_items + eval_items
+        corpus_items = train_items + eval_items if eval_items else []
         tokenizer.set_vocab(corpus_items,
                             key=lambda x: x[data_params.get("stem_key", "ques_content")])
     # dataset configuration
@@ -276,7 +276,7 @@ def train_elmo_for_knowledge_prediction(
         }
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
         tokenizer = ElmoTokenizer(**work_tokenizer_params)
-        corpus_items = train_items + eval_items
+        corpus_items = train_items + eval_items if eval_items else []
         tokenizer.set_vocab(corpus_items,
                             key=lambda x: x[data_params.get("stem_key", "ques_content")])
     # dataset configuration
