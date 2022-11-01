@@ -73,6 +73,7 @@ class TestPretrainDisenQNet:
         train_disenqnet(
             standard_luna_data,
             pretrained_model_dir,
+            eval_items=standard_luna_data,
             data_params={
                 "stem_key": "ques_content",
                 "data_formation": {
