@@ -53,10 +53,10 @@ class BertForPropertyPrediction(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 pretrained_model_dir=model_config['pretrained_model_dir'],
                 head_dropout=model_config.get("head_dropout", 0.5)
@@ -130,10 +130,10 @@ class BertForKnowledgePrediction(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 pretrained_model_dir=model_config['pretrained_model_dir'],
                 head_dropout=model_config.get("head_dropout", 0.5),

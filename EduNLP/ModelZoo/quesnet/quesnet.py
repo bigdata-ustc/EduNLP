@@ -34,7 +34,7 @@ class QuesNet(BaseModel, FeatureExtractor):
     def __init__(self, _stoi=None, meta='know_name', pretrained_embs: np.ndarray = None,
                  pretrained_image: nn.Module = None, pretrained_meta: nn.Module = None,
                  lambda_input=None,
-                 feat_size=256, emb_size=256, rnn_type='LSTM', layers=4, **argv):
+                 feat_size=256, emb_size=256, rnn_type='LSTM', layers=4, **kwargs):
         BaseModel.__init__(self)
         FeatureExtractor.__init__(self, feat_size=feat_size)
         self.feat_size = feat_size
@@ -77,8 +77,8 @@ class QuesNet(BaseModel, FeatureExtractor):
             self.c0 = nn.Parameter(torch.rand(layers * 2, 1, self.rnn_size))
         else:
             raise ValueError('quesnet only support GRU and LSTM now.')
-        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv"]}
-        # self.config.update(argv)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "kwargs"]}
+        # self.config.update(kwargs)
         self.config["architecture"] = 'quesnet'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -217,7 +217,7 @@ class QuesNet(BaseModel, FeatureExtractor):
         scores = q @ k.transpose(-2, -1) / np.sqrt(k.size(-1))  # (B, S, S)
         if mask is not None:
             mask = mask.float()
-            scores -= 1e9 * (1.0 - mask.unsqueeze(1))
+            scores = scores - 1e9 * (1.0 - mask.unsqueeze(1))
         scores = self.dropout(F.softmax(scores, dim=-1))  # (B, S, S)
         h = (scores @ v).max(1)[0]  # (B, D)
 
@@ -228,10 +228,10 @@ class QuesNet(BaseModel, FeatureExtractor):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(_stoi=model_config["_stoi"],
                        feat_size=model_config["feat_size"],
                        emb_size=model_config["emb_size"],
@@ -264,11 +264,11 @@ class QuesNetForPreTraining(BaseModel):
                  rnn_type='LSTM',
                  lambda_input=None,
                  lambda_loss=None,
-                 layers=4, **argv):
+                 layers=4, **kwargs):
         BaseModel.__init__(self)
         self.quesnet = QuesNet(_stoi, meta=meta, pretrained_embs=pretrained_embs, pretrained_image=pretrained_image,
                                pretrained_meta=pretrained_meta, lambda_input=lambda_input, feat_size=feat_size,
-                               emb_size=emb_size, rnn_type=rnn_type, layers=layers, **argv)
+                               emb_size=emb_size, rnn_type=rnn_type, layers=layers, **kwargs)
         self.vocab_size = self.quesnet.vocab_size
         self.feat_size = self.quesnet.feat_size
         self.emb_size = self.quesnet.emb_size
@@ -296,8 +296,8 @@ class QuesNetForPreTraining(BaseModel):
         self.dropout = nn.Dropout(0.2)
 
         self.config = {k: v for k, v in locals().items() if k not in [
-            "self", "__class__", "argv", "pretrained_embs", "pretrained_image", "pretrained_meta"]}
-        # self.config.update(argv)
+            "self", "__class__", "kwargs", "pretrained_embs", "pretrained_image", "pretrained_meta"]}
+        # self.config.update(kwargs)
         self.config['architecture'] = 'quesnet'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -314,14 +314,14 @@ class QuesNetForPreTraining(BaseModel):
                                h.repeat(self.config.layers, 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),
                                 ans_output.packed().data)
-        floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
-                                                    torch.ones_like(self.ans_judge(y.data)))
+        floss = floss + F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
+                                                           torch.ones_like(self.ans_judge(y.data)))
         for false_opt in false_opt_input:
             x = false_opt.packed()
             y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x.data), x.batch_sizes),
                                    h.repeat(self.config.layers, 1, 1))
-            floss += F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
-                                                        torch.zeros_like(self.ans_judge(y.data)))
+            floss = floss + F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
+                                                               torch.zeros_like(self.ans_judge(y.data)))
         loss = floss * self.lambda_loss[1]
         # low-level loss
         left_hid = self.quesnet(left).pack_embeded.data[:, :self.rnn_size]
@@ -340,7 +340,7 @@ class QuesNetForPreTraining(BaseModel):
             wloss = (F.cross_entropy(out, words) + F.cross_entropy(lout, words) + F.
                      cross_entropy(rout, words)) * self.quesnet.lambda_input[0] / 3
             wloss *= self.lambda_loss[0]
-            loss += wloss
+            loss = loss + wloss
 
         if ims is not None:
             lifea = torch.masked_select(left_hid, imask.unsqueeze(1).bool()) \
@@ -353,7 +353,7 @@ class QuesNetForPreTraining(BaseModel):
             iloss = (self.quesnet.ie.loss(ims, out) + self.quesnet.ie.loss(ims, lout) + self.quesnet.ie.
                      loss(ims, rout)) * self.quesnet.lambda_input[1] / 3
             iloss *= self.lambda_loss[0]
-            loss += iloss
+            loss = loss + iloss
 
         if metas is not None:
             lmfea = torch.masked_select(left_hid, mmask.unsqueeze(1).bool()) \
@@ -366,7 +366,7 @@ class QuesNetForPreTraining(BaseModel):
             mloss = (self.quesnet.me.loss(metas, out) + self.quesnet.me.loss(metas, lout) + self.quesnet.me.
                      loss(metas, rout)) * self.quesnet.lambda_input[2] / 3
             mloss *= self.lambda_loss[0]
-            loss += mloss
+            loss = loss + mloss
 
         return QuesNetForPreTrainingOutput(
             loss=loss,
@@ -375,10 +375,10 @@ class QuesNetForPreTraining(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 _stoi=model_config["_stoi"],
                 emb_size=model_config["emb_size"],

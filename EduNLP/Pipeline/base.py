@@ -13,6 +13,7 @@ GenericTensor = Union["torch.Tensor", List["GenericTensor"]]
 class PreProcessingPipeline(object):
     """
     A pipeline for tokenization processing.
+    You should use it by calling pipeline('pre-process'), instead of itself directly.
 
     Parameters
     ----------
@@ -32,6 +33,11 @@ class PreProcessingPipeline(object):
     True
     {'t': 3, 'f': 1, 'g': 0, 'm': 1}
     ['如图所示，则三角形', '[FORMULA]', '的面积是', '[MARK]', '。']
+    >>> tkn.rename_pipe(0, 'is_sif_lol')
+    >>> tkn.add_pipe('to_sif', component=lambda x:x, first=True) # This won't succeed for the same name pipe exists
+    >>> tkn.add_pipe('identify', component=lambda x:x, before=1)
+    >>> tkn.component_names
+    ['is_sif_lol', 'identify', 'to_sif', 'is_sif_lol', 'seg', 'seg_describe']
     """
 
     def __init__(self,
@@ -39,10 +45,7 @@ class PreProcessingPipeline(object):
                  ):
         self._preproc_components = {}
         self.component_pipeline = []
-        if isinstance(pipe_names, str):
-            self.component_pipeline.append(pipe_names)
-            self._preproc_components[pipe_names] = PREPROCESSING_PIPES[pipe_names]()
-        elif isinstance(pipe_names, list) and len(pipe_names) > 0:
+        if isinstance(pipe_names, list) and len(pipe_names) > 0:
             if any(comp_name not in PREPROCESSING_PIPES for comp_name in pipe_names):
                 logger.error('Some components not existed!')
                 raise ValueError
@@ -86,6 +89,7 @@ class PreProcessingPipeline(object):
         elif isinstance(before, int):
             if before < 0 or before >= len(self.component_pipeline):
                 logger.error('The before index must be greater than 0 and less than current length!')
+                raise ValueError
             else:
                 return before
         elif isinstance(after, str):
@@ -97,6 +101,7 @@ class PreProcessingPipeline(object):
         elif isinstance(after, int):
             if after < 0 or after >= len(self.component_pipeline):
                 logger.error('The after index must be greater than 0 and less than current length!')
+                raise ValueError
             else:
                 return after + 1
         else:
@@ -147,7 +152,8 @@ class PreProcessingPipeline(object):
                 self._preproc_components[name] = PREPROCESSING_PIPES[name](*args, **kwargs)
         else:
             if name in self._preproc_components:
-                logger.warn(f'One preserved component "{name}" has been replaced')
+                logger.warn(f'One preserved component "{name}" has the same name, inserting is stopped.')
+                return
             self._preproc_components[name] = component
         self.component_pipeline.insert(pipe_index, name)
 
@@ -189,7 +195,7 @@ class PreProcessingPipeline(object):
             logger.error(f'Unknown pipe "{old_pipe}"')
             raise ValueError
         self._preproc_components[new_name] = self._preproc_components.pop(old_pipe)
-        self.component_pipeline = list(map(lambda x: x.replace(old_pipe, new_name), self.component_pipeline))
+        self.component_pipeline = [new_name if i == old_pipe else i for i in self.component_pipeline]
 
     @property
     def component_names(self):
@@ -226,10 +232,6 @@ class Pipeline(ABC):
                  ):
         if preproc_pipe_names is None:
             preproc_pipe_names = []
-        if len(preproc_pipe_names) == 0 and model is None:
-            raise KeyError("pre-processing and model can't be both None")
-        if sum(x is not None for x in [model, tokenizer, task]) != 3 or 0:
-            raise KeyError("tokenizer, model and task must be with each other")
         self.preproc_pipeline = PreProcessingPipeline(preproc_pipe_names)
         self.tokenizer = tokenizer
         self.model = model
@@ -241,9 +243,6 @@ class Pipeline(ABC):
         _length = len(self.preproc_pipeline) + sum(
             component is not None for component in [self.tokenizer, self.model, self.task])
         return _length
-
-    def save_pretrained(self, save_dir: str):
-        pass
 
     @abstractmethod
     def _sanitize_parameters(self, **pipeline_parameters: Dict):
@@ -278,19 +277,19 @@ class Pipeline(ABC):
         """
         raise NotImplementedError("postprocess not implemented")
 
-    def add_preproc_pipe(self, *args, **kwargs):
+    def add_pipe(self, *args, **kwargs):
         """
         refer to PreProcessingPipeline.add_pipe
         """
         return self.preproc_pipeline.add_pipe(*args, **kwargs)
 
-    def remove_preproc_pipe(self, *args, **kwargs):
+    def remove_pipe(self, *args, **kwargs):
         """
         refer to PreProcessingPipeline.remove_pipe
         """
         return self.preproc_pipeline.remove_pipe(*args, **kwargs)
 
-    def rename_preproc_pipe(self, *args, **kwargs):
+    def rename_pipe(self, *args, **kwargs):
         """
         refer to PreProcessingPipeline.rename_pipe
         """
@@ -341,10 +340,7 @@ class Pipeline(ABC):
 
     def run_single(self, inputs, tokenize_params, model_params, postprocess_params):
         tokenize_inputs = self.preproc_pipeline(inputs)
-        if not any(component is None for component in [self.tokenizer, self.model, self.task]):
-            model_inputs = self._tokenize([tokenize_inputs], **tokenize_params)
-            model_outputs = self._forward(model_inputs, **model_params)
-            outputs = self.postprocess(model_outputs, **postprocess_params)
-        else:
-            outputs = tokenize_inputs
+        model_inputs = self._tokenize([tokenize_inputs], **tokenize_params)
+        model_outputs = self._forward(model_inputs, **model_params)
+        outputs = self.postprocess(model_outputs, **postprocess_params)
         return outputs

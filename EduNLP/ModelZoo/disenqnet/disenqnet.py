@@ -49,7 +49,7 @@ class DisenQNet(BaseModel):
         Tensor of (vocab_size, hidden_size) or None, initial word embedding, default = None
     """
 
-    def __init__(self, vocab_size: int, hidden_size: int, dropout_rate: float, wv=None, **argv):
+    def __init__(self, vocab_size: int, hidden_size: int, dropout_rate: float, wv=None, **kwargs):
         super(DisenQNet, self).__init__()
         self.hidden_size = hidden_size
         self.encoder = TextEncoder(vocab_size, hidden_size, dropout_rate, wv=wv)
@@ -57,8 +57,8 @@ class DisenQNet(BaseModel):
         self.i_model = AttnModel(hidden_size, dropout_rate)
         self.dropout = nn.Dropout(p=dropout_rate)
         # config
-        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv", 'wv']}
-        self.config.update(argv)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "kwargs", 'wv']}
+        self.config.update(kwargs)
         self.config['architecture'] = 'DisenQNet'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -113,10 +113,10 @@ class DisenQNet(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 vocab_size=model_config['vocab_size'],
                 hidden_size=model_config['hidden_size'],
@@ -145,14 +145,14 @@ class DisenQNetForPreTraining(BaseModel):
     base_model_prefix = 'disenq'
 
     def __init__(self, vocab_size, concept_size, hidden_size, dropout_rate, pos_weight,
-                 w_cp, w_mi, w_dis, warmup, n_adversarial, wv=None, **argv):
+                 w_cp, w_mi, w_dis, warmup, n_adversarial, wv=None, **kwargs):
         super(DisenQNetForPreTraining, self).__init__()
         self.disenq = DisenQNet(
             vocab_size=vocab_size,
             hidden_size=hidden_size,
             dropout_rate=dropout_rate,
             wv=wv,
-            **argv)
+            **kwargs)
         self.mi_estimator = MIEstimator(hidden_size, hidden_size * 2, dropout_rate)
         self.concept_estimator = ConceptEstimator(hidden_size, concept_size, pos_weight, dropout_rate)
         self.disen_estimator = DisenEstimator(hidden_size, dropout_rate)
@@ -175,8 +175,8 @@ class DisenQNetForPreTraining(BaseModel):
         }
         self.modules = (self.disenq, self.mi_estimator, self.concept_estimator, self.disen_estimator)
 
-        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv", 'wv']}
-        self.config.update(argv)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "kwargs", 'wv']}
+        self.config.update(kwargs)
         self.config['architecture'] = 'DisenQNetForPreTraining'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -212,10 +212,10 @@ class DisenQNetForPreTraining(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 vocab_size=model_config['vocab_size'],
                 concept_size=model_config['concept_size'],

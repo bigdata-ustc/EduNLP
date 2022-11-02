@@ -292,6 +292,7 @@ class Elmo(I2V):
     -------
     i2v model: Elmo
     """
+
     def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
                      *args, key=lambda x: x, **kwargs) -> tuple:
         """It is a function to switch item to vector. And before using the function, it is necessary to load model.
@@ -415,6 +416,7 @@ class DisenQ(I2V):
     -------
     i2v model: DisenQ
     """
+
     def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
                      *args, key=lambda x: x, vector_type=None, **kwargs) -> tuple:
         """

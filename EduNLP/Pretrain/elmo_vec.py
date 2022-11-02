@@ -54,14 +54,14 @@ class ElmoTokenizer(PretrainedEduTokenizer):
     {'seq_idx': tensor([ 1,  1,  6, 26, 27, 28,  1,  1,  9, 35, 36, 26, 37, 38, 28,  1,  7]), 'seq_len': tensor(17)}
     """
 
-    def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", add_specials=True, **argv):
+    def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text", add_specials=True, **kwargs):
         super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method,
-                         add_specials=add_specials, **argv)
+                         add_specials=add_specials, **kwargs)
 
 
 class ElmoDataset(EduDataset):
-    def __init__(self, tokenizer: ElmoTokenizer, **argv):
-        super(ElmoDataset, self).__init__(tokenizer=tokenizer, **argv)
+    def __init__(self, tokenizer: ElmoTokenizer, **kwargs):
+        super(ElmoDataset, self).__init__(tokenizer=tokenizer, **kwargs)
 
     def collate_fn(self, batch_data):
         pad_idx = self.tokenizer.vocab.pad_idx
@@ -191,7 +191,7 @@ def train_elmo_for_property_prediction(
         }
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
         tokenizer = ElmoTokenizer(**work_tokenizer_params)
-        corpus_items = train_items + eval_items
+        corpus_items = train_items + eval_items if eval_items else []
         tokenizer.set_vocab(corpus_items,
                             key=lambda x: x[data_params.get("stem_key", "ques_content")])
     # dataset configuration
@@ -276,7 +276,7 @@ def train_elmo_for_knowledge_prediction(
         }
         work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
         tokenizer = ElmoTokenizer(**work_tokenizer_params)
-        corpus_items = train_items + eval_items
+        corpus_items = train_items + eval_items if eval_items else []
         tokenizer.set_vocab(corpus_items,
                             key=lambda x: x[data_params.get("stem_key", "ques_content")])
     # dataset configuration

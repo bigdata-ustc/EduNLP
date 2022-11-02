@@ -13,7 +13,7 @@
     "[FORMULA_BEGIN]",
     "[FORMULA_END]"
   ],
-  "argv": {
+  "kwargs": {
     "add_special_tokens": true
   }
 }

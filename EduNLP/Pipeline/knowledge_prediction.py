@@ -21,8 +21,8 @@ class KnowledgePredictionPipeline(Pipeline):
 
     def postprocess(self, model_outputs, **postprocess_params):
         if 'num_classes_list' not in dir(self.model) or 'num_total_classes' not in dir(self.model):
-            raise ValueError('model is not for knowledge prediction: ', self.model.__name__)
-        outputs = model_outputs["logits"]
+            raise ValueError('model is not for knowledge prediction: ', self.model)
+        outputs = model_outputs["logits"][0]
         start_idx = 0
         knowledge_list = []
         for num_classes in self.model.num_classes_list:
@@ -32,6 +32,6 @@ class KnowledgePredictionPipeline(Pipeline):
         outputs = outputs.detach().numpy()
         dict_knowledge = {
             "knowledge_list": knowledge_list,
-            "knowledge_scores": outputs.item(),
+            "knowledge_scores": outputs.tolist(),
         }
         return dict_knowledge

@@ -44,8 +44,8 @@ class TokenizerForHuggingface(object):
     >>> tokenizer = TokenizerForHuggingface.from_pretrained('test_dir') # doctest: +SKIP
     """
     def __init__(self, pretrained_model="bert-base-chinese", max_length=512, tokenize_method: str = "pure_text",
-                 add_specials: Union[List[str], bool] = False, **argv):
-        self._set_basic_tokenizer(tokenize_method, **argv)
+                 add_specials: Union[List[str], bool] = False, **kwargs):
+        self._set_basic_tokenizer(tokenize_method, **kwargs)
         if isinstance(add_specials, bool):
             add_specials = EDU_SPYMBOLS if add_specials is True else []
         else:
@@ -54,8 +54,8 @@ class TokenizerForHuggingface(object):
         self.max_length = max_length
         self.bert_tokenizer = AutoTokenizer.from_pretrained(pretrained_model)
         self.add_specials(add_specials)
-        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "pretrained_model", "argv"]}
-        config.update(argv)
+        config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "pretrained_model", "kwargs"]}
+        config.update(kwargs)
         self.config = config
 
     def __call__(self, items: Tuple[list, str, dict], key=lambda x: x, padding=True,
@@ -74,10 +74,10 @@ class TokenizerForHuggingface(object):
     def __len__(self):
         return len(self.bert_tokenizer)
 
-    def _set_basic_tokenizer(self, tokenize_method: str = None, **argv):
+    def _set_basic_tokenizer(self, tokenize_method: str = None, **kwargs):
         self.tokenize_method = tokenize_method
         if self.tokenize_method is not None:
-            self.text_tokenizer = get_tokenizer(tokenize_method, **argv)
+            self.text_tokenizer = get_tokenizer(tokenize_method, **kwargs)
         else:
             self.text_tokenizer = None
 
@@ -94,32 +94,32 @@ class TokenizerForHuggingface(object):
         else:
             return self._tokenize(key(items))
 
-    def encode(self, items: Tuple[str, dict, List[str], List[dict]], key=lambda x: x, **argv):
+    def encode(self, items: Tuple[str, dict, List[str], List[dict]], key=lambda x: x, **kwargs):
         if isinstance(items, str) or isinstance(items, dict):
-            return self.bert_tokenizer.encode(key(items), **argv)
+            return self.bert_tokenizer.encode(key(items), **kwargs)
         else:
-            return [self.bert_tokenizer.encode(key(item), **argv) for item in items]
+            return [self.bert_tokenizer.encode(key(item), **kwargs) for item in items]
 
-    def decode(self, token_ids: list, key=lambda x: x, **argv):
+    def decode(self, token_ids: list, key=lambda x: x, **kwargs):
         if isinstance(token_ids[0], list):
-            return [self.bert_tokenizer.decode(key(item), **argv) for item in token_ids]
+            return [self.bert_tokenizer.decode(key(item), **kwargs) for item in token_ids]
         else:
-            return self.bert_tokenizer.decode(key(token_ids), **argv)
+            return self.bert_tokenizer.decode(key(token_ids), **kwargs)
 
     def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
         item = self._pre_tokenize(key(item))
         return self.bert_tokenizer.tokenize(item, **kwargs)
 
     @classmethod
-    def from_pretrained(cls, tokenizer_config_dir, **argv):
+    def from_pretrained(cls, tokenizer_config_dir, **kwargs):
         custom_config_dir = os.path.join(tokenizer_config_dir, 'custom_config.json')
         if os.path.exists(custom_config_dir):
             with open(custom_config_dir, 'r') as f:
                 custom_config = json.load(f)
-                custom_config.update(argv)
+                custom_config.update(kwargs)
             return cls(tokenizer_config_dir, **custom_config)
         else:
-            return cls(tokenizer_config_dir, **argv)
+            return cls(tokenizer_config_dir, **kwargs)
 
     def save_pretrained(self, tokenizer_config_dir):
         self.bert_tokenizer.save_pretrained(tokenizer_config_dir)

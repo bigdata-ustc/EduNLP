@@ -72,6 +72,16 @@ def test_PuretextTokenizer():
     ret = next(tokens)
     ans = ['文具店', '600', '练习本', '卖出', '剩', '4', '包', '每包', '25', '卖出']
     assert ret == ans
+    tokenizer = get_tokenizer("pure_text", stop_words=[], handle_figure_formula=None)
+    tokens = tokenizer(items)
+    ret = next(tokens)
+    assert ret == ans
+    tokenizer = get_tokenizer("pure_text", stop_words=[], handle_figure_formula='symbolize')
+    tokens = tokenizer(items)
+    ret = next(tokens)
+    assert ret == ans
+    with pytest.raises(ValueError):
+        tokenizer = get_tokenizer("pure_text", stop_words=[], handle_figure_formula='wrong')
 
 
 def test_CustomTokenizer():

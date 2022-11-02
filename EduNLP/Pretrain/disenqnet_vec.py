@@ -15,12 +15,6 @@ from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPreTraining
 from ..ModelZoo.utils import load_items, pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer
-from transformers import is_apex_available
-
-os.environ["WANDB_DISABLED"] = "true"
-
-if is_apex_available():
-    from apex import amp
 
 
 def check_num(s):
@@ -103,7 +97,7 @@ class DisenQTokenizer(PretrainedEduTokenizer):
     """
 
     def __init__(self, vocab_path=None, max_length=250, tokenize_method="pure_text",
-                 add_specials: list = None, num_token="[NUM]", **argv):
+                 add_specials: list = None, num_token="[NUM]", **kwargs):
         """
         Parameters
         ----------
@@ -122,7 +116,7 @@ class DisenQTokenizer(PretrainedEduTokenizer):
         else:
             add_specials = [num_token] + add_specials
         super().__init__(vocab_path=vocab_path, max_length=max_length,
-                         tokenize_method=tokenize_method, add_specials=add_specials, **argv)
+                         tokenize_method=tokenize_method, add_specials=add_specials, **kwargs)
         self.num_token = num_token
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
 
@@ -207,7 +201,7 @@ def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, t
 
 class DisenQDataset(EduDataset):
     def __init__(self, items: List[Dict], tokenizer: DisenQTokenizer, data_formation: Dict,
-                 mode="train", concept_to_idx=None, **argv):
+                 mode="train", concept_to_idx=None, **kwargs):
         """
         Parameters
         ----------
@@ -216,7 +210,7 @@ class DisenQDataset(EduDataset):
         data_formation: dict
         max_length: int, optional, default=128
         """
-        # super(DisenQDataset, self).__init__(tokenizer=tokenizer, **argv)
+        # super(DisenQDataset, self).__init__(tokenizer=tokenizer, **kwargs)
         self.tokenizer = tokenizer
         self.concept_to_idx = concept_to_idx
         self.mode = mode
@@ -396,7 +390,7 @@ def train_disenqnet(train_items: Union[List[dict], List[str]], output_dir: str, 
         work_train_params.update(train_params if train_params else {})
     if model_params:
         if 'hidden_size' in model_params:
-            work_train_params['hidden_size'] = model_params['hidden']
+            work_train_params['hidden_size'] = model_params['hidden_size']
 
     # dataset configuration
     items = train_items + ([] if eval_items is None else eval_items)

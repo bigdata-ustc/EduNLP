@@ -65,6 +65,23 @@ class TestPretrainEmlo:
                 "no_cuda": not TEST_GPU,
             }
         )
+
+        # train with a pretrained model
+        train_elmo(
+            standard_luna_data,
+            pretrained_model_dir,
+            data_params={
+                "stem_key": "ques_content"
+            },
+            train_params={
+                "num_train_epochs": 1,
+                "per_device_train_batch_size": 2,
+                "per_device_eval_batch_size": 2,
+                "no_cuda": not TEST_GPU,
+            },
+            pretrained_dir=pretrained_model_dir
+        )
+
         model = ElmoLM.from_pretrained(pretrained_model_dir)
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_model_dir)
 
@@ -92,6 +109,14 @@ class TestPretrainEmlo:
             "per_device_eval_batch_size": 2,
             "no_cuda": not TEST_GPU,
         }
+        # train without a pretrained model
+        train_elmo_for_property_prediction(
+            standard_luna_data,
+            pretrained_pp_dir,
+            train_params=train_params,
+            data_params=data_params
+        )
+        # train with a pretrained model
         train_elmo_for_property_prediction(
             standard_luna_data,
             pretrained_pp_dir,
@@ -124,7 +149,7 @@ class TestPretrainEmlo:
             "label_key": "know_list"
         }
         train_params = {
-            "num_train_epochs": 3,
+            "num_train_epochs": 1,
             "per_device_train_batch_size": 2,
             "per_device_eval_batch_size": 2,
             "no_cuda": not TEST_GPU,
@@ -133,6 +158,15 @@ class TestPretrainEmlo:
             "num_classes_list": [10, 27, 963],
             "num_total_classes": 1000,
         }
+        # train without pretrained model
+        train_elmo_for_knowledge_prediction(
+            standard_luna_data,
+            pretrained_kp_dir,
+            train_params=train_params,
+            data_params=data_params,
+            model_params=model_params
+        )
+        # train with pretrained model
         train_elmo_for_knowledge_prediction(
             standard_luna_data,
             pretrained_kp_dir,
