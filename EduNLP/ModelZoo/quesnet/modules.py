@@ -29,7 +29,7 @@ class AE(nn.Module):
 
     def loss(self, item, emb=None):
         if emb is None:
-            emb = self.enc(item)
+            emb = self(item)
             out = self.dec(emb)
         else:
             out = self.dec(emb)

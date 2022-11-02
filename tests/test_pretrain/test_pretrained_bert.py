@@ -77,6 +77,21 @@ class TestPretrainBert:
         encodes = tokenizer(items, lambda x: x['ques_content'])
         model(**encodes)
 
+        finetune_bert(
+            standard_luna_data,
+            pretrained_model_dir,
+            pretrained_model=pretrained_model_dir,
+            data_params={
+                "stem_key": "ques_content",
+            },
+            train_params={
+                "num_train_epochs": 1,
+                "per_device_train_batch_size": 2,
+                "save_steps": 500,
+                "no_cuda": not TEST_GPU,
+            }
+        )
+
     def test_train_pp(self, standard_luna_data, pretrained_pp_dir, pretrained_model_dir):
         data_params = {
             "stem_key": "ques_content",

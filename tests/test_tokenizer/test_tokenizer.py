@@ -22,7 +22,10 @@ def test_disenQTokenizer():
         "5 % 2 + 3.14",
         "3.x",
         ".",
-        ""
+        "",
+        "-1/2",
+        "/",
+        "1.2%",
     ]
     tokenizer.set_vocab(test_items)
     print(tokenizer.vocab_size)

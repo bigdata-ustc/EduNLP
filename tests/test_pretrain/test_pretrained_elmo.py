@@ -67,24 +67,25 @@ class TestPretrainEmlo:
         )
 
         # train with a pretrained model
+        str_items = [item["ques_content"] for item in standard_luna_data]
         train_elmo(
-            standard_luna_data,
+            str_items,
             pretrained_model_dir,
+            pretrained_dir=pretrained_model_dir,
             data_params={
-                "stem_key": "ques_content"
+                "stem_key": None
             },
             train_params={
                 "num_train_epochs": 1,
                 "per_device_train_batch_size": 2,
                 "per_device_eval_batch_size": 2,
                 "no_cuda": not TEST_GPU,
-            },
-            pretrained_dir=pretrained_model_dir
+            }
         )
-
         model = ElmoLM.from_pretrained(pretrained_model_dir)
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_model_dir)
-
+        model.save_pretrained(f"{pretrained_model_dir}/save")
+        tokenizer.save_pretrained(f"{pretrained_model_dir}/save")
         # TODO: need to handle inference for T2V for batch or single
         # encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
         # model(**encodes)
@@ -122,9 +123,9 @@ class TestPretrainEmlo:
             pretrained_pp_dir,
             pretrained_dir=pretrained_model_dir,
 
-            # eval_items=standard_luna_data,
+            eval_items=standard_luna_data,
             train_params=train_params,
-            data_params=data_params
+            data_params=data_params,
         )
         model = ElmoLM.from_pretrained(pretrained_pp_dir)
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_pp_dir)
@@ -175,7 +176,7 @@ class TestPretrainEmlo:
             eval_items=standard_luna_data,
             train_params=train_params,
             data_params=data_params,
-            model_params=model_params
+            model_params=model_params,
         )
         model = ElmoLM.from_pretrained(pretrained_kp_dir)
         tokenizer = ElmoTokenizer.from_pretrained(pretrained_kp_dir)

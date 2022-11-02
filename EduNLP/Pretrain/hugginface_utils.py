@@ -144,8 +144,6 @@ class TokenizerForHuggingface(object):
         word2cnt = dict()
         for item in items:
             tokens = self._pre_tokenize(key(item)).split() if do_tokenize else key(item)
-            if not tokens:
-                continue
             for word in tokens:
                 word = word.lower() if lower else word
                 word2cnt[word] = word2cnt.get(word, 0) + 1

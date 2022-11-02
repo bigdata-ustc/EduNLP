@@ -430,7 +430,7 @@ class EduDataset(Dataset):
             if isinstance(items[0], str):
                 assert stem_key is None and label_key is None
                 stem_key = "text"
-                raw_columns = [stem_key]
+                raw_columns = set([stem_key])
             work_columns = set([stem_key] + feature_keys + ([label_key] if label_key is not None else []))
             redundant_columns = raw_columns - work_columns
             # 在线预处理特征

@@ -25,7 +25,7 @@ class TextEncoder(nn.Module):
         super(TextEncoder, self).__init__()
         self.embed = nn.Embedding(vocab_size, hidden_dim)
         if wv is not None:
-            self.embed.weight.data.copy_(wv)
+            self.load_wv(wv)
         self.encoder = TextCNN(hidden_dim, hidden_dim)
         self.dropout = nn.Dropout(p=dropout)
         return

@@ -119,8 +119,8 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR, **kwargs):
     --------
     >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
     ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
-    >>> i2v = get_pretrained_t2v("d2v_test_256", "examples/test_model/d2v") # doctest: +ELLIPSIS
-    >>> print(i2v(item)) # doctest: +ELLIPSIS
+    >>> i2v = get_pretrained_t2v("d2v_test_256", "examples/test_model/d2v") # doctest: +SKIP
+    >>> print(i2v(item)) # doctest: +SKIP
     [array([...dtype=float32)]
     """
     pretrained_models = get_all_pretrained_models()

@@ -62,16 +62,6 @@ class DisenQNet(BaseModel):
         self.config['architecture'] = 'DisenQNet'
         self.config = PretrainedConfig.from_dict(self.config)
 
-    def load_wv(self, wv):
-        if isinstance(wv, torch.Tensor):
-            # tensor
-            self.encoder.load_wv(wv)
-        else:
-            # path
-            print(f"load word2vec from {wv}")
-            word2vec = torch.load(wv)
-            self.encoder.load_wv(word2vec)
-
     def forward(self, seq_idx=None, seq_len=None, get_vk=True, get_vi=True) -> ModelOutput:
         """
         Parameters
