@@ -140,17 +140,17 @@ class ElmoLM(BaseModel):
     base_model_prefix = 'elmo'
 
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, num_layers: int = 2,
-                 dropout_rate: float = 0.5, use_pack_pad=False, **argv):
+                 dropout_rate: float = 0.5, use_pack_pad=False, **kwargs):
         super(ElmoLM, self).__init__()
         self.LM_layer = LM("BiLSTM", vocab_size, embedding_dim, hidden_size, num_layers=num_layers,
-                           use_pack_pad=use_pack_pad, **argv)
+                           use_pack_pad=use_pack_pad, **kwargs)
         self.pred_layer = nn.Linear(hidden_size, vocab_size)
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size
         self.dropout = nn.Dropout(dropout_rate)
-        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
-        self.config.update(argv)
+        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "kwargs"}
+        self.config.update(kwargs)
         self.config['architecture'] = 'ElmoLM'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -187,10 +187,10 @@ class ElmoLM(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 vocab_size=model_config['vocab_size'],
                 embedding_dim=model_config['embedding_dim'],
@@ -223,7 +223,7 @@ class ElmoLMForPreTraining(BaseModel):
     base_model_prefix = 'elmo'
 
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
-                 batch_first=True, use_pack_pad=False, **argv):
+                 batch_first=True, use_pack_pad=False, **kwargs):
         super(ElmoLMForPreTraining, self).__init__()
         self.elmo = ElmoLM(
             vocab_size=vocab_size,
@@ -232,15 +232,15 @@ class ElmoLMForPreTraining(BaseModel):
             dropout_rate=dropout_rate,
             batch_first=batch_first,
             use_pack_pad=use_pack_pad,
-            **argv
+            **kwargs
         )
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.hidden_size = hidden_size
         self.criterion = nn.CrossEntropyLoss()
 
-        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
-        self.config.update(argv)
+        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "kwargs"}
+        self.config.update(kwargs)
         self.config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -310,10 +310,10 @@ class ElmoLMForPreTraining(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 vocab_size=model_config['vocab_size'],
                 embedding_dim=model_config['embedding_dim'],
@@ -332,7 +332,7 @@ class ElmoLMForPropertyPrediction(BaseModel):
     base_model_prefix = 'elmo'
 
     def __init__(self, vocab_size: int, embedding_dim: int, hidden_size: int, dropout_rate: float = 0.5,
-                 batch_first=True, head_dropout=0.5, **argv):
+                 batch_first=True, head_dropout=0.5, **kwargs):
         super(ElmoLMForPropertyPrediction, self).__init__()
 
         self.elmo = ElmoLM(
@@ -348,8 +348,8 @@ class ElmoLMForPropertyPrediction(BaseModel):
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
 
-        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
-        self.config.update(argv)
+        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "kwargs"}
+        self.config.update(kwargs)
         self.config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -371,10 +371,10 @@ class ElmoLMForPropertyPrediction(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 vocab_size=model_config.get('vocab_size'),
                 embedding_dim=model_config.get('embedding_dim'),
@@ -405,7 +405,7 @@ class ElmoLMForKnowledgePrediction(BaseModel):
                  attention_unit_size: Optional[int] = 256,
                  fc_hidden_size: Optional[int] = 512,
                  beta: Optional[float] = 0.5,
-                 **argv):
+                 **kwargs):
         super(ElmoLMForKnowledgePrediction, self).__init__()
 
         self.elmo = ElmoLM(
@@ -433,8 +433,8 @@ class ElmoLMForKnowledgePrediction(BaseModel):
         self.num_classes_list = num_classes_list
         self.num_total_classes = num_total_classes
 
-        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "argv"}
-        self.config.update(argv)
+        self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "kwargs"}
+        self.config.update(kwargs)
         self.config['architecture'] = 'ElmoLMForPreTraining'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -462,10 +462,10 @@ class ElmoLMForKnowledgePrediction(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 vocab_size=model_config.get('vocab_size'),
                 embedding_dim=model_config.get('embedding_dim'),

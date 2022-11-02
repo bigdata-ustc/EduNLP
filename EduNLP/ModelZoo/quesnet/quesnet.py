@@ -34,7 +34,7 @@ class QuesNet(BaseModel, FeatureExtractor):
     def __init__(self, _stoi=None, meta='know_name', pretrained_embs: np.ndarray = None,
                  pretrained_image: nn.Module = None, pretrained_meta: nn.Module = None,
                  lambda_input=None,
-                 feat_size=256, emb_size=256, rnn_type='LSTM', layers=4, **argv):
+                 feat_size=256, emb_size=256, rnn_type='LSTM', layers=4, **kwargs):
         BaseModel.__init__(self)
         FeatureExtractor.__init__(self, feat_size=feat_size)
         self.feat_size = feat_size
@@ -77,8 +77,8 @@ class QuesNet(BaseModel, FeatureExtractor):
             self.c0 = nn.Parameter(torch.rand(layers * 2, 1, self.rnn_size))
         else:
             raise ValueError('quesnet only support GRU and LSTM now.')
-        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "argv"]}
-        # self.config.update(argv)
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "kwargs"]}
+        # self.config.update(kwargs)
         self.config["architecture"] = 'quesnet'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -228,10 +228,10 @@ class QuesNet(BaseModel, FeatureExtractor):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(_stoi=model_config["_stoi"],
                        feat_size=model_config["feat_size"],
                        emb_size=model_config["emb_size"],
@@ -264,11 +264,11 @@ class QuesNetForPreTraining(BaseModel):
                  rnn_type='LSTM',
                  lambda_input=None,
                  lambda_loss=None,
-                 layers=4, **argv):
+                 layers=4, **kwargs):
         BaseModel.__init__(self)
         self.quesnet = QuesNet(_stoi, meta=meta, pretrained_embs=pretrained_embs, pretrained_image=pretrained_image,
                                pretrained_meta=pretrained_meta, lambda_input=lambda_input, feat_size=feat_size,
-                               emb_size=emb_size, rnn_type=rnn_type, layers=layers, **argv)
+                               emb_size=emb_size, rnn_type=rnn_type, layers=layers, **kwargs)
         self.vocab_size = self.quesnet.vocab_size
         self.feat_size = self.quesnet.feat_size
         self.emb_size = self.quesnet.emb_size
@@ -296,8 +296,8 @@ class QuesNetForPreTraining(BaseModel):
         self.dropout = nn.Dropout(0.2)
 
         self.config = {k: v for k, v in locals().items() if k not in [
-            "self", "__class__", "argv", "pretrained_embs", "pretrained_image", "pretrained_meta"]}
-        # self.config.update(argv)
+            "self", "__class__", "kwargs", "pretrained_embs", "pretrained_image", "pretrained_meta"]}
+        # self.config.update(kwargs)
         self.config['architecture'] = 'quesnet'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -375,10 +375,10 @@ class QuesNetForPreTraining(BaseModel):
         )
 
     @classmethod
-    def from_config(cls, config_path, **argv):
+    def from_config(cls, config_path, **kwargs):
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
-            model_config.update(argv)
+            model_config.update(kwargs)
             return cls(
                 _stoi=model_config["_stoi"],
                 emb_size=model_config["emb_size"],

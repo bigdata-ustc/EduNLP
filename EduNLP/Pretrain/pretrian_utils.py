@@ -40,7 +40,7 @@ class EduVocab(object):
     """
     def __init__(self, vocab_path: str = None, corpus_items: List[str] = None, bos_token: str = "[BOS]",
                  eos_token: str = "[EOS]", pad_token: str = "[PAD]", unk_token: str = "[UNK]",
-                 specials: List[str] = None, lower: bool = False, trim_min_count: int = 1, **argv):
+                 specials: List[str] = None, lower: bool = False, trim_min_count: int = 1, **kwargs):
         super(EduVocab, self).__init__()
 
         self._tokens = []
@@ -101,7 +101,7 @@ class EduVocab(object):
             res = res + [self.eos_idx]
         return res
 
-    def convert_sequence_to_token(self, idxs, **argv):
+    def convert_sequence_to_token(self, idxs, **kwargs):
         """convert sentence of indexs to sentence of tokens"""
         return [self.to_token(i) for i in idxs]
 
@@ -197,14 +197,14 @@ class PretrainedEduTokenizer(object):
         - For list, it means the added special tokens besides EDU_SPYMBOLS
     """
     def __init__(self, vocab_path: str = None, max_length: int = 250, tokenize_method: str = "pure_text",
-                 add_specials: Tuple[list, bool] = False, **argv):
-        self._set_basic_tokenizer(tokenize_method, **argv)
+                 add_specials: Tuple[list, bool] = False, **kwargs):
+        self._set_basic_tokenizer(tokenize_method, **kwargs)
         if isinstance(add_specials, bool):
             add_specials = EDU_SPYMBOLS if add_specials else []
         else:
             add_specials = EDU_SPYMBOLS + add_specials
         self.max_length = max_length
-        self.vocab = EduVocab(vocab_path=vocab_path, specials=add_specials, **argv)
+        self.vocab = EduVocab(vocab_path=vocab_path, specials=add_specials, **kwargs)
 
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
 
@@ -273,9 +273,9 @@ class PretrainedEduTokenizer(object):
     def __len__(self):
         return len(self.vocab)
 
-    def _set_basic_tokenizer(self, tokenize_method: str, **argv):
+    def _set_basic_tokenizer(self, tokenize_method: str, **kwargs):
         self.tokenize_method = tokenize_method
-        self.text_tokenizer = get_tokenizer(tokenize_method, **argv)
+        self.text_tokenizer = get_tokenizer(tokenize_method, **kwargs)
 
     def tokenize(self, items: Tuple[list, str, dict], key=lambda x: x, **kwargs):
         """
@@ -296,17 +296,17 @@ class PretrainedEduTokenizer(object):
         else:
             return [self._tokenize(item, key=key) for item in items]
 
-    def encode(self, items: Tuple[str, dict, List[str], List[dict]], key=lambda x: x, **argv):
+    def encode(self, items: Tuple[str, dict, List[str], List[dict]], key=lambda x: x, **kwargs):
         if isinstance(items, str) or isinstance(items, dict):
-            return self.vocab.convert_sequence_to_idx(key(items), **argv)
+            return self.vocab.convert_sequence_to_idx(key(items), **kwargs)
         else:
-            return [self.vocab.convert_sequence_to_idx(key(item), **argv) for item in items]
+            return [self.vocab.convert_sequence_to_idx(key(item), **kwargs) for item in items]
 
-    def decode(self, token_ids: list, key=lambda x: x, **argv):
+    def decode(self, token_ids: list, key=lambda x: x, **kwargs):
         if isinstance(token_ids[0], list):
-            return [self.vocab.convert_sequence_to_token(key(item), **argv) for item in token_ids]
+            return [self.vocab.convert_sequence_to_token(key(item), **kwargs) for item in token_ids]
         else:
-            return self.vocab.convert_sequence_to_token(key(token_ids), **argv)
+            return self.vocab.convert_sequence_to_token(key(token_ids), **kwargs)
 
     def _pad(self):
         raise NotImplementedError
@@ -320,7 +320,7 @@ class PretrainedEduTokenizer(object):
         return token_item
 
     @classmethod
-    def from_pretrained(cls, tokenizer_config_dir: str, **argv):
+    def from_pretrained(cls, tokenizer_config_dir: str, **kwargs):
         """Load tokenizer from local files
 
         Parameters:
@@ -333,7 +333,7 @@ class PretrainedEduTokenizer(object):
 
         with open(tokenizer_config_path, "r", encoding="utf-8") as rf:
             tokenizer_config = json.load(rf)
-            tokenizer_config.update(argv)
+            tokenizer_config.update(kwargs)
             return cls(
                 vocab_path=pretrained_vocab_path,
                 **tokenizer_config)
@@ -419,7 +419,7 @@ class EduDataset(Dataset):
                  items: Union[List[dict], List[str]] = None,
                  stem_key: str = "text", label_key: Optional[str] = None,
                  feature_keys: Optional[List[str]] = None,
-                 num_processor: int = None, **argv):
+                 num_processor: int = None, **kwargs):
         self.tokenizer = tokenizer
         feature_keys = [] if feature_keys is None else feature_keys
         if items is not None:

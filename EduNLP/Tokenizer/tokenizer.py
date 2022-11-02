@@ -71,7 +71,7 @@ class CustomTokenizer(Tokenizer):
 
 
 class CharTokenizer(Tokenizer):
-    def __init__(self, stop_words="punctuations", **argv) -> None:
+    def __init__(self, stop_words="punctuations", **kwargs) -> None:
         """Tokenize text char by char. eg. "题目内容" -> ["题",  "目",  "内", 容"]
 
         Parameters
@@ -92,7 +92,7 @@ class CharTokenizer(Tokenizer):
 
 
 class SpaceTokenizer(Tokenizer):
-    def __init__(self, stop_words="punctuations", **argv) -> None:
+    def __init__(self, stop_words="punctuations", **kwargs) -> None:
         """Tokenize text by space. eg. "题目 内容" -> ["题目", "内容"]
 
         Parameters
@@ -194,7 +194,7 @@ class PureTextTokenizer(Tokenizer):
 
 
 class AstFormulaTokenizer(Tokenizer):
-    def __init__(self, symbol="gmas", figures=None, **argv):
+    def __init__(self, symbol="gmas", figures=None, **kwargs):
         """Tokenize formulas in SIF items by AST parser.
 
         Parameters
@@ -218,12 +218,12 @@ class AstFormulaTokenizer(Tokenizer):
             "granularity": "word",
             "stopwords": "default",
         }
-        formula_params.update(argv.pop("formula_params", {}))
-        text_params.update(argv.pop("text_params", {}))
+        formula_params.update(kwargs.pop("formula_params", {}))
+        text_params.update(kwargs.pop("text_params", {}))
         self.tokenization_params = {
             "formula_params": formula_params,
             "text_params": text_params,
-            "figure_params": argv.pop("figure_params", None),
+            "figure_params": kwargs.pop("figure_params", None),
         }
         self.symbol = symbol
         self.figures = figures

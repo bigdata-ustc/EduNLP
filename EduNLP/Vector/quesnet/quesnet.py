@@ -5,7 +5,7 @@ from EduNLP.Pretrain import Question, QuesNetTokenizer
 
 
 class QuesNetModel(object):
-    def __init__(self, pretrained_dir, img_dir=None, device="cpu", **argv):
+    def __init__(self, pretrained_dir, img_dir=None, device="cpu", **kwargs):
         """
         Parameters
         ----------
