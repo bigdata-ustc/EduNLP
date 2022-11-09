@@ -630,7 +630,7 @@ def pretrain_quesnet(path, output_dir, img_dir=None, save_embs=False, train_para
     ... "know_name": "['代数', '集合', '集合的相等']"
     ... }]
     >>> tokenizer.set_vocab(items, key=lambda x: x['ques_content'], trim_min_count=1, silent=True)
-    >>> pretrain_quesnet('./data/quesnet_data.json', './testQuesNet', tokenizer) # doctest: +SKIP
+    >>> pretrain_quesnet('./data/standard_luna_data.json', './testQuesNet', tokenizer) # doctest: +SKIP
     """
     default_train_params = {
         # train params

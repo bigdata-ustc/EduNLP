@@ -47,9 +47,13 @@ class T2V(object):
     --------
     >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
     ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
-    >>> path = "examples/test_model/d2v/d2v_test_256/d2v_test_256.bin"
+    >>> model_dir = "examples/test_model/d2v"
+    >>> url, model_name, *args = get_pretrained_model_info('d2v_test_256')
+    >>> (); path = get_data(url, model_dir); () # doctest: +ELLIPSIS
+    (...)
+    >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
     >>> t2v = T2V('d2v',filepath=path)
-    >>> print(t2v(item)) # doctest: +ELLIPSIS
+    >>> print(t2v(item))
     [array([...dtype=float32)]
     """
 

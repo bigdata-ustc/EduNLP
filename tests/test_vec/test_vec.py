@@ -14,7 +14,7 @@ from EduNLP.Tokenizer import get_tokenizer
 def stem_data(data):
     _data = []
     for e in data[:10]:
-        d = e["stem"]
+        d = e["ques_content"]
         _data.append(d)
     assert _data
     return _data
@@ -45,16 +45,16 @@ def stem_text_tokens(stem_data):
 @pytest.fixture(scope="module")
 def stem_data_general(data):
     test_items = [
-        {'stem': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
+        {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
             如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'},
-        {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
+        {'ques_content': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
             若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
     ]
     data = test_items + data
     _data = []
     tokenizer = GensimWordTokenizer(symbol="gmas", general=True)
     for e in data[:10]:
-        d = tokenizer(e["stem"])
+        d = tokenizer(e["ques_content"])
         if d is not None:
             _data.append(d.tokens)
     assert _data

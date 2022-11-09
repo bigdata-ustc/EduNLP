@@ -79,7 +79,7 @@ class TestPretrainQuesNet:
         ]
 
         ques_file = path_append(abs_current_dir(__file__),
-                                "../../static/test_data/quesnet_data.json", to_str=True)
+                                "../../static/test_data/standard_luna_data.json", to_str=True)
         img_dir = path_append(abs_current_dir(__file__),
                               "../../static/test_data/quesnet_img", to_str=True)
         pretrain_quesnet(
