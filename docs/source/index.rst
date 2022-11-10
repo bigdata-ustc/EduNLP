@@ -148,6 +148,7 @@ If this repository is helpful for you, please cite our work
    tutorial/en/tokenization
    tutorial/en/pretrain
    tutorial/en/vectorization
+   tutorial/en/pipeline
 
 .. toctree::
    :maxdepth: 1
@@ -161,6 +162,7 @@ If this repository is helpful for you, please cite our work
    tutorial/zh/tokenization
    tutorial/zh/pretrain
    tutorial/zh/vectorization
+   tutorial/zh/pipeline
 
 
 .. toctree::
@@ -169,12 +171,13 @@ If this repository is helpful for you, please cite our work
    :hidden:
    :glob:
 
-   api/sif
    api/utils
+   api/sif
    api/formula
    api/tokenizer
-   api/pretrain
    api/ModelZoo
-   api/i2v
+   api/pretrain
    api/vector
-   
+   api/i2v
+   api/pipeline
+

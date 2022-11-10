@@ -53,10 +53,14 @@
 
 通用化的基础令牌化容器
 
-- TextTokenizer
+- CharTokenizer
+- SpaceTokenizer
+- CustomTokenizer
 - PureTextTokenizer
+- AstFormulaTokenizer
 - GensimSegTokenizer
 - GensimWordTokenizer
+
 
 适配特定模型的令牌化容器
 
@@ -67,47 +71,89 @@
 
 .. note::
 
-   “适配特定模型的令牌化容器” 需要与相应的T2V容器配合使用，本节仅介绍 “通用化的基础令牌化容器” 的使用方法。
-   如需查询ElmoTokenizer等令牌化容器，请前往预训练或向量化部分进行学习。
+   “适配特定模型的令牌化容器” 需要与相应的 T2V 容器配合使用，本节仅介绍 “通用化的基础令
+   牌化容器” 的使用方法。如需查询 ElmoTokenizer 等令牌化容器，请前往预训练或向量化部分
+   进行学习。
 
 
-TextTokenizer
+
+CharTokenizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-即文本令牌解析器，此令牌解析器同一般的文本分词器一样，采用线性解析方法得到令牌序列。其中，公式成分被视为文本，不关心公式的语法结构，作线性解析处理；而图片、标签、分隔符、题目空缺符等成分被转换成特殊字符，作符号化处理。此外，提供key参数用于选择传入的item中待处理的内容。
+字符令牌解析器。此令牌解析器将文本的每个字符单独提取出来组成令牌序列。
+
+此外，提供 key 参数用于选择传入的 item 中待处理的内容。你也可以指定自己的停用词以过滤一部分文本信息。
 
 ::
 
-   >>> tokenizer = TextTokenizer()
-
-   >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
-   >>> tokens = tokenizer(items)
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
-   
    >>> items = [{
-   ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
-   ... "options": ["1", "2"]
+   ...     "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+   ...     "options": ["1", "2"]
    ... }]
-   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
 
-   >>> items = ["有公式$\\FormFigureID{1}$，如图$\\FigureID{088f15ea-xxx}$,若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
-   >>> tokenizer = get_tokenizer("text") # tokenizer = TextTokenizer()
-   >>> tokens = tokenizer(items)
+   >>> tokenizer = get_tokenizer("char")
+   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
    >>> print(next(tokens))
-   ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
+   ['文', '具', '店', '有', '$', '600', '$', '本', '练', '习', '本', '卖', '出', '一', '些', '后', 
+   '还', '剩', '$', '4', '$', '包', '每', '包', '$', '25', '$', '本', '卖', '出', '多', '少', '本']
+
+
+SpaceTokenizer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+空格令牌解析器。此令牌解析器将根据空格对文本进行分词，得到令牌序列。
+
+此外，提供 key 参数用于选择传入的 item 中待处理的内容。你也可以指定自己的停用词以过滤一部分文本信息。
+
+::
+
+   >>> items = [{
+   ...  "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+   ...  "options": ["1", "2"]
+   ...  }]
+
+   >>> tokenizer = get_tokenizer("space", stop_words = [])
+   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
+   >>> print(next(tokens))
+   ['已知集合$A=\\left\\{x', '\\mid', 'x^{2}-3', 'x-4<0\\right\\},', '\\quad', 
+    'B=\\{-4,1,3,5\\},', '\\quad$', '则', '$A', '\\cap', 'B=$']
+
+
+CustomTokenizer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+自定义令牌解析器。此令牌解析器同一般的文本分词器一样，采用线性解析方法得到令牌序列。你可以指定文本、公式、图片、标签、分隔符、题目空缺符等成分是否被转换成特殊字符，并作符号化处理。
+
+此外，提供 key 参数用于选择传入的 item 中待处理的内容。你也可以指定自己的停用词以过滤一部分文本信息。
+
+::
+
+   >>> items = [{
+   ...  "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+   ...  "options": ["1", "2"]
+   ...  }]
+
+   >>> tokenizer_t = get_tokenizer("custom", symbol='t')
+   >>> tokens = tokenizer_t(items, key=lambda x: x["stem"])
+   >>> print(next(tokens))
+   ['[TEXT]', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', 
+    '-', '4', '<', '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', 
+    ',', '3', ',', '5', '\\}', ',', '\\quad', '[TEXT]', 'A', '\\cap', 'B', '=']
+
+   >>> tokenizer_f = get_tokenizer("custom", symbol='f')
+   >>> tokens = tokenizer_f(items, key=lambda x: x["stem"])
+   >>> print(next(tokens))
+   ['已知', '集合', '[FORMULA]', '[FORMULA]']
+
+
 
 
 PureTextTokenizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-功能同 `TextTokenizer` , 且它会过滤掉经特殊处理的公式（例如：`$\\FormFigureID{...}$` ， `$\\FormFigureBase64{...}$` ），仅保留文本格式的公式。
+纯文本令牌解析器。此令牌解析器会过滤掉经特殊处理的公式（例如：`$\\FormFigureID{...}$` ， `$\\FormFigureBase64{...}$` ），仅保留文本格式的公式。
+
+此外，提供 key 参数用于选择传入的 item 中待处理的内容。你也可以指定自己的停用词以过滤一部分文本信息。
 
 ::
 
@@ -119,6 +165,26 @@ PureTextTokenizer
    >>> tokens = tokenizer(items)
    >>> print(next(tokens))
    ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
+
+
+
+AstFormulaTokenizer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+抽象公式解析器。此令牌解析器在文本中抽象出数学公式，并进行一系列处理。例如，将出现的变量将依次记录和标记，而表达式和图片等对象被转换成特殊字符，并作符号化处理。
+
+此外，提供 key 参数用于选择传入的 item 中待处理的内容。你也可以指定自己的停用词以过滤一部分文本信息。
+
+::
+   
+   >>> items = ["有公式$\\FormFigureID{1}$，如图$\\FigureID{088f15ea-xxx}$,若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
+
+   >>> tokenizer = get_tokenizer("ast_formula") 
+   >>> tokens = tokenizer(items)
+   >>> print(next(tokens))
+   ['公式', '[FORMULA]', '如图', '[FIGURE]', 'mathord_0', ',', 'mathord_1', '约束条件', '公式', 
+    '[FORMULA]', '[SEP]', 'mathord_2', '=', 'mathord_0', '+', 'textord', 'mathord_1', '最大值', '[MARK]']
+
 
 
 

@@ -1,5 +1,4 @@
-import numpy as np
-from pathlib import PurePath
+# from transformers import BertModel as HFBertModel
 from transformers import AutoModel
 from .const import UNK, PAD
 from .meta import Vector

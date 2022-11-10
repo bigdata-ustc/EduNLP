@@ -5,7 +5,7 @@ from EduNLP.Pretrain import Question, QuesNetTokenizer
 
 
 class QuesNetModel(object):
-    def __init__(self, pretrained_dir, tokenizer=None, device="cpu"):
+    def __init__(self, pretrained_dir, img_dir=None, device="cpu", **kwargs):
         """
         Parameters
         ----------
@@ -13,42 +13,50 @@ class QuesNetModel(object):
             the dirname to pretrained model
         device: str
             cpu or cuda, default is cpu
-        tokenizer: QuesNetTokenizer
-            quesnet  tokenzier
+        img_dir: str
+            image dir
         """
         self.device = torch.device(device)
-        if tokenizer is None:
-            tokenizer = QuesNetTokenizer.from_pretrained(pretrained_dir)
-        self.model = QuesNet.from_pretrained(pretrained_dir, tokenizer).to(device)
+        self.model = QuesNet.from_pretrained(pretrained_dir, img_dir=img_dir).to(device)
+        self.model.eval()
 
-    def infer_vector(self, items: Union[Question, list]) -> torch.Tensor:
+    def __call__(self, items: dict, **kwargs):
         """ get question embedding with quesnet
 
         Parameters
         ----------
-        items : (Question, list)
-            namedtuple, ['id', 'content', 'answer', 'false_options', 'labels']
-            or a list of Questions
+        items:
+            encodes from tokenizer
         """
-        inputs = [items] if isinstance(items, Question) else items
-        vector = self.model(self.model.make_batch(inputs, device=self.device))[1]
-        return vector
+        qs = [Question("", items['seq_idx'][i],
+                       [0], [[0], [0], [0]], items['meta_idx'][i]) for i in range(len(items['seq_idx']))]
+        outputs = self.model(self.model.make_batch(qs, device=self.device))
+        return outputs.hidden, outputs.embeded
 
-    def infer_tokens(self, items: Union[Question, list]) -> torch.Tensor:
+    def infer_vector(self, items: Union[dict, list]) -> torch.Tensor:
+        """ get question embedding with quesnet
+
+        Parameters
+        ----------
+        items:
+            encodes from tokenizer
+        """
+        return self(items)[0]
+
+    def infer_tokens(self, items: Union[dict, list]) -> torch.Tensor:
         """ get token embeddings with quesnet
 
         Parameters
         ----------
-        items : Question
-            namedtuple, ['id', 'content', 'answer', 'false_options', 'labels']
-            or a list of Questions
+        items:
+            encodes from tokenizer
         Returns
         -------
         torch.Tensor
-            meta_emb + word_embs
+            word_embs + meta_emb
         """
-        inputs = [items] if isinstance(items, Question) else items
-        vector = self.model(self.model.make_batch(inputs, device=self.device))[2]
+        vector = self(items)[1]
+        """ Please note that output vector is like 0 0 seq_idx(text with image) 0 meta_idx 0 0"""
         return vector[:, 2:-2, :]
 
     @property

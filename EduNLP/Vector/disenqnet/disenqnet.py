@@ -1,7 +1,3 @@
-import imp
-from pickle import NONE
-import numpy as np
-from pathlib import PurePath
 import torch
 from EduNLP.ModelZoo.disenqnet.disenqnet import DisenQNet
 
@@ -21,8 +17,8 @@ class DisenQModel(object):
         self.model.to(self.device)
 
     def __call__(self, items: dict, **kwargs):
-        embed, k_hidden, i_hidden = self.model.inference(items)
-        return embed, k_hidden, i_hidden
+        outputs = self.model(**items)
+        return outputs.embeded, outputs.k_hidden, outputs.i_hidden
 
     def infer_vector(self, items: dict, vector_type=None, **kwargs) -> torch.Tensor:
         """
@@ -45,9 +41,9 @@ class DisenQModel(object):
             raise KeyError("vector_type must be one of (None, 'k', 'i') ")
 
     def infer_tokens(self, items: dict, **kwargs) -> torch.Tensor:
-        embed, _, _ = self(items)
-        return embed
+        embeded, _, _ = self(items)
+        return embeded
 
     @property
     def vector_size(self):
-        return self.model.hidden_dim
+        return self.model.hidden_size

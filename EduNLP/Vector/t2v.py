@@ -47,9 +47,13 @@ class T2V(object):
     --------
     >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
     ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
-    >>> path = "examples/test_model/d2v/d2v_test_256/d2v_test_256.bin"
+    >>> model_dir = "examples/test_model/d2v"
+    >>> url, model_name, *args = get_pretrained_model_info('d2v_test_256')
+    >>> (); path = get_data(url, model_dir); () # doctest: +ELLIPSIS
+    (...)
+    >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
     >>> t2v = T2V('d2v',filepath=path)
-    >>> print(t2v(item)) # doctest: +ELLIPSIS
+    >>> print(t2v(item))
     [array([...dtype=float32)]
     """
 
@@ -92,7 +96,7 @@ def get_all_pretrained_models():
     return r['name']
 
 
-def get_pretrained_t2v(name, model_dir=MODEL_DIR):
+def get_pretrained_t2v(name, model_dir=MODEL_DIR, **kwargs):
     """
     It is a good idea if you want to switch token list to vector earily.
 
@@ -119,8 +123,8 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     --------
     >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
     ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
-    >>> i2v = get_pretrained_t2v("d2v_test_256", "examples/test_model/d2v") # doctest: +ELLIPSIS
-    >>> print(i2v(item)) # doctest: +ELLIPSIS
+    >>> i2v = get_pretrained_t2v("d2v_test_256", "examples/test_model/d2v") # doctest: +SKIP
+    >>> print(i2v(item)) # doctest: +SKIP
     [array([...dtype=float32)]
     """
     pretrained_models = get_all_pretrained_models()
@@ -134,4 +138,4 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR):
     if model_name in ["d2v", "w2v"]:
         postfix = ".bin" if model_name == "d2v" else ".kv"
         model_path = path_append(model_path, os.path.basename(model_path) + postfix, to_str=True)
-    return T2V(model_name, model_path, *args)
+    return T2V(model_name, model_path, *args, **kwargs)
