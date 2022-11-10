@@ -1,8 +1,8 @@
 v0.0.9
-    1. Refactor tokenizer `Basic Tokenizer` and `Pretrained Tokenizer`
-    2. Refactor model structures following huggingface styles for `Elmo`, `BERT`, `DisenQNet` and `QuesNet` (#128)
-    3. Add PreprocessingPipeline and Pipeline (#127)
-    4. Add downstream task: knowledge prediction and property prediction (#129)
+    1. Refactor tokenizer Basic Tokenizer and Pretrained Tokenizer
+    2. Refactor model structures following huggingface styles for Elmo, BERT, DisenQNet and QuesNet
+    3. Add PreprocessingPipeline and Pipeline
+    4. Add downstream task: knowledge prediction and property prediction
     5. Fix a bug in RNN which causes ELMo not converging
     6. Move all the test models to modelhub
     7. Update test data files
