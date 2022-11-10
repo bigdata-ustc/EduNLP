@@ -298,9 +298,9 @@ class PretrainedEduTokenizer(object):
 
     def encode(self, items: Tuple[str, dict, List[str], List[dict]], key=lambda x: x, **kwargs):
         if isinstance(items, str) or isinstance(items, dict):
-            return self.vocab.convert_sequence_to_idx(key(items), **kwargs)
+            return self.vocab.convert_sequence_to_idx(self.tokenize(key(items)), **kwargs)
         else:
-            return [self.vocab.convert_sequence_to_idx(key(item), **kwargs) for item in items]
+            return [self.vocab.convert_sequence_to_idx(self.tokenize(key(item)), **kwargs) for item in items]
 
     def decode(self, token_ids: list, key=lambda x: x, **kwargs):
         if isinstance(token_ids[0], list):

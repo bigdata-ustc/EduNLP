@@ -7,21 +7,24 @@
 
 * 如何从零开始用一份语料训练得到一个预训练模型
 * 如何加载预训练模型
-* 公开的预训练模型
 
 
 训练模型
 -----------------------
 
-模型模块的接口定义在 `EduNLP.Pretrain` 中，包含令牌化容器、数据处理、模型定义、模型训练等功能。
+训练模块的接口定义在 `EduNLP.Pretrain` 中，包含令牌化容器、数据处理、模型训练等功能。
 
 
 预训练工具
 #######################################
+为了方便研究人员构造自定义的训练过程，我们提供了机模型训练的常用功能，包括：
 
+* 语料库词典 (Vocab)
+* 预训练令牌化容器 (Tokenizer)
+* 数据容器 (Datasets)
 
 语料库词典
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+>>>>>>>>>>>>>>>>>>>>>>>>
 
 语料库词典是预训练中为了便于用户进行后续处理而引入的工具。它支持用户导入并自定义词典内容，并对语料库的信息进行一定的处理。例如：
 
@@ -40,8 +43,37 @@
    ['An', '[UNK]', '[UNK]', 'a', '[UNK]', '[UNK]', '[UNK]']
 
 
+预训练令牌化容器
+>>>>>>>>>>>>>>>>>>>>>>>>
+
+在训练模型前, 需要将题目文本进行分词, 并将其转化为语料库字典中的词ID, 同时进行必要的预处理, 如OOV、Padding等常见操作。
+我们将 `EduNLP` 的令牌化操作和通用的预处理操作封装在了自定义的基类 `PretrainedEduTokenizer` 中。
+
+此外, 为了兼容Huggingface的预训练库 `Transformers`, 我们提供了基类 `TokenizerForHuggingface`。例如 `EduNLP.Pretrin.BertTokenizer` 兼容 `transformers.BertTokenizer`
+具体用法参考如下。
+
+.. nbgallery::
+    :caption: This is a thumbnail gallery:
+    :name: pretrained_tokenizer_gallery
+    :glob:
+
+    自定义分词器  <../../build/blitz/pretrain/pretrained_tokenizer.ipynb>
+    
+    Huggingface分词器  <../../build/blitz/pretrain/hugginface_tokenizer.ipynb>
+
+
+预训练Dataset
+>>>>>>>>>>>>>>>>>>>>>>>>
+我们提供EduDataset基类, 封装了对教育数据的预处理，此外，考虑到教育数据规模巨大的特点, 我们提供并行处理操作和本地保存、加载等操作，加速数据预处理过程。
+详细使用参考API文档 `Pretrain.pretrian_utils` 部分。
+
+
+
 基本步骤
 #######################################
+
+训练模型
+-----------------------
 
 以训练word2vec为例说明：
 
@@ -85,7 +117,6 @@ Examples：
    i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
 
 
-
 更多模型训练案例
 -----------------------
 
@@ -124,20 +155,20 @@ gensim模型w2v例子
 ########################################
 
 .. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: pretrain_gallery1
-    :glob:
+   :caption: This is a thumbnail gallery:
+   :name: pretrain_gallery1
+   :glob:
 
-    Elmo预训练  <../../build/blitz/pretrain/elmo.ipynb>
+   Elmo预训练  <../../build/blitz/pretrain/elmo.ipynb>
 
-    Bert预训练  <../../build/blitz/pretrain/bert.ipynb>
+   Bert预训练  <../../build/blitz/pretrain/bert.ipynb>
 
 
 .. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: pretrain_gallery2
-    :glob:
+   :caption: This is a thumbnail gallery:
+   :name: pretrain_gallery2
+   :glob:
 
-    DisenQNet预训练  <../../build/blitz/pretrain/disenq.ipynb>
-    
-    QuesNet预训练  <../../build/blitz/pretrain/quesnet.ipynb>
+   DisenQNet预训练  <../../build/blitz/pretrain/disenq.ipynb>
+   
+   QuesNet预训练  <../../build/blitz/pretrain/quesnet.ipynb>

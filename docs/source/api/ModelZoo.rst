@@ -6,7 +6,6 @@ base_model
 
 .. automodule:: EduNLP.ModelZoo.base_model
    :members:
-   :imported-members:
 
 rnn
 -----------
@@ -25,7 +24,7 @@ disenqnet
 quesnet
 -----------
 
-.. automodule:: EduNLP.ModelZoo.quesnet.quesnet
+.. automodule:: EduNLP.ModelZoo.quesnet
    :members:
    :imported-members:
 

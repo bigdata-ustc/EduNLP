@@ -132,7 +132,7 @@ class TokenizerForHuggingface(object):
         return len(self.bert_tokenizer)
 
     def set_vocab(self, items: Tuple[List[str], List[dict]], key=lambda x: x, lower=False,
-                  trim_min_count=1, do_tokenize=True):
+                  trim_min_count: int = 1, do_tokenize: bool = True):
         """
         Parameters
         -----------
@@ -140,6 +140,10 @@ class TokenizerForHuggingface(object):
             can be the list of str, or list of dict
         key: function
             determine how to get the text of each item
+        trim_min_count : int, optional
+            the lower bound number for adding a word into vocabulary, by default 1
+        do_tokenize : bool, optional
+            wheather tokenize items before updating vocab, by default True
         """
         word2cnt = dict()
         for item in items:
@@ -147,9 +151,9 @@ class TokenizerForHuggingface(object):
             for word in tokens:
                 word = word.lower() if lower else word
                 word2cnt[word] = word2cnt.get(word, 0) + 1
-        added_words = [w for w, c in word2cnt.items() if c >= trim_min_count]
-        added_num = self.add_tokens(added_words)
-        return added_words, added_num
+        remain_tokens = [w for w, c in word2cnt.items() if c >= trim_min_count]
+        added_num = self.add_tokens(remain_tokens)
+        return remain_tokens, added_num
 
     def add_specials(self, added_spectials: List[str]):
         for tok in added_spectials:

@@ -92,14 +92,14 @@ class CharTokenizer(Tokenizer):
 
 
 class SpaceTokenizer(Tokenizer):
-    def __init__(self, stop_words="punctuations", **kwargs) -> None:
-        """Tokenize text by space. eg. "题目 内容" -> ["题目", "内容"]
+    """Tokenize text by space. eg. "题目 内容" -> ["题目", "内容"]
 
-        Parameters
-        ----------
-        stop_words : str, optional
-            stop_words to skip, by default "default"
-        """
+    Parameters
+    ----------
+    stop_words : str, optional
+        stop_words to skip, by default "default"
+    """
+    def __init__(self, stop_words="punctuations", **kwargs) -> None:
         stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "punctuations" else stop_words
         self.stop_words = stop_words if stop_words is not None else set()
 
@@ -115,7 +115,7 @@ class SpaceTokenizer(Tokenizer):
 
 
 class PureTextTokenizer(Tokenizer):
-    def __init__(self, handle_figure_formula="skip", symbolize_figure_formula=None, **kwargs):
+    def __init__(self, handle_figure_formula="skip", **kwargs):
         """
         Treat all elements in SIF item as prue text. Spectially, tokenize formulas as text.
 

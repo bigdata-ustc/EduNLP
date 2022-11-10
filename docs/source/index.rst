@@ -148,6 +148,7 @@ If this repository is helpful for you, please cite our work
    tutorial/en/tokenization
    tutorial/en/pretrain
    tutorial/en/vectorization
+   tutorial/en/pipeline
 
 .. toctree::
    :maxdepth: 1
@@ -161,6 +162,7 @@ If this repository is helpful for you, please cite our work
    tutorial/zh/tokenization
    tutorial/zh/pretrain
    tutorial/zh/vectorization
+   tutorial/zh/pipeline
 
 
 .. toctree::

@@ -241,7 +241,8 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
             can be the list of str, or list of dict
         key: function
             determine how to get the text of each item
-        trim_min_count
+        trim_min_count : int, optional
+            the lower bound number for adding a word into vocabulary, by default 1
         silent
         """
         token_items = self.tokenize(items, key) if do_tokenize else [key(item) for item in items]
