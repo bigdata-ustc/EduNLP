@@ -64,6 +64,7 @@
 
 预训练Dataset
 >>>>>>>>>>>>>>>>>>>>>>>>
+
 我们提供EduDataset基类, 封装了对教育数据的预处理，此外，考虑到教育数据规模巨大的特点, 我们提供并行处理操作和本地保存、加载等操作，加速数据预处理过程。
 详细使用参考API文档 `Pretrain.pretrian_utils` 部分。
 
@@ -73,7 +74,7 @@
 #######################################
 
 训练模型
------------------------
+>>>>>>>>>>>>>>>>>>>>>>>>
 
 以训练word2vec为例说明：
 
@@ -105,7 +106,7 @@ Examples：
 
 
 加载预训练模型
------------------------
+>>>>>>>>>>>>>>>>>>>>>>>>
 
 我们提供三种加载方式
 
@@ -119,7 +120,8 @@ Examples：
 Examples：
 
 ::
-
+   from EduNLP.I2V import D2V
+   
    model_path = "../test_model/d2v/test_gensim_luna_stem_tf_d2v_256.bin"
    i2v = D2V("text","d2v",filepath=model_path, pretrained_t2v = False)
 
