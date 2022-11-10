@@ -1,7 +1,3 @@
-import imp
-from pickle import NONE
-import numpy as np
-from pathlib import PurePath
 import torch
 from EduNLP.ModelZoo.disenqnet.disenqnet import DisenQNet
 

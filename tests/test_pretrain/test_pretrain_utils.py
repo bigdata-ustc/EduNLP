@@ -42,13 +42,13 @@ class TestPretrainUtils:
             res = tokenizer(text, padding='wrong_pad')
         tokenizer.add_tokens("[token]")
         tokenizer.add_specials("[special]")
-        res = tokenizer.decode(tokenizer.encode({'content': ['An', 'banana']}, key=lambda x: x['content']))
+        res = tokenizer.decode(tokenizer.encode({'content': 'An banana'}, key=lambda x: x['content']))
         right_ans = ['An', '[UNK]']
         print(res)
         assert res == right_ans, res
 
-        res = tokenizer.decode(tokenizer.encode([token_list]))
-        assert res == [token_list]
+        res = tokenizer.decode(tokenizer.encode(['An banana']))
+        assert res == [['An', '[UNK]']]
         tokenizer.save_pretrained(f"{pretrained_tokenizer_dir}/save_dir")
 
     def test_edu_dateset(self, standard_luna_data, pretrained_tokenizer_dir):
