@@ -13,6 +13,8 @@
 
 *  `向量化 <vectorization.rst>`_ 
 
+*  `流水线 <pipeline.rst>`_ 
+
 主要流程
 ----------
 
@@ -25,7 +27,6 @@
 * `令牌化 <tokenization.rst>`_：根据成分分解和语法解析的结果，获取试题不同成分的令牌化序列，最终得到试题的多模态令牌序列。
 
 * `向量化 <vectorization.rst>`_：将令牌序列送入预训练模型，得到试题相应的表征向量。
-
 
 * **下游模型**：将预训练模型得到的试题表征应用于各种下游任务（如难度预测、知识点预测、相似题检索等）。
 
@@ -42,3 +43,5 @@
     令牌化  <../../build/blitz/sif/sif4sci.ipynb>
     
     向量化  <../../build/blitz/i2v/get_pretrained_i2v.ipynb>
+
+    流水线 <../../build/blitz/pipeline/pipeline.ipynb>

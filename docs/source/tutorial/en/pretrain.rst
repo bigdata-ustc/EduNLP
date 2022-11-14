@@ -21,6 +21,32 @@ Train a model
 
 The module interface definition is in `EduNLP.Pretrain`, including tokenization, data processing, model definition, model training.
 
+
+Pretrain tools
+#######################################
+
+
+Corpus dictionary
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+The corpus dictionary is a tool introduced in pre-training to facilitate user post-processing. It allows users to import and customize dictionary content and process the information of the corpus. For example:
+
+::
+
+   >>> from EduNLP.Pretrain.pretrian_utils import EduVocab
+   >>> vocab = EduVocab()
+   >>> print(vocab.tokens)
+   ['[PAD]', '[UNK]', '[BOS]', '[EOS]']
+
+   >>> token_list = ['An', 'apple', 'a', 'day', 'keeps', 'doctors', 'away']
+   >>> vocab.add_tokens(token_list)
+   >>> test_token_list = ['An', 'banana', 'is', 'a', 'kind', 'of', 'fruit']
+   >>> res = vocab.convert_sequence_to_token(vocab.convert_sequence_to_idx(test_token_list))
+   >>> print(res)
+   ['An', '[UNK]', '[UNK]', 'a', '[UNK]', '[UNK]', '[UNK]']
+
+
+
 Basic Steps
 ##################
 

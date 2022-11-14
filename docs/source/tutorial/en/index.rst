@@ -13,6 +13,8 @@ Get Started
 
 *  `Vectorization <vectorization.rst>`_
 
+*  `Pipeline <pipeline.rst>`_
+
 Main process
 ---------------
 
@@ -37,15 +39,11 @@ To help you quickly understand the functions of this project, this section only 
 
 .. nbgallery::
     :caption: This is a thumbnail gallery:
-    :name: tokenization_gallery
+    :name: start_galler
     :glob:
     
     Tokenization  <../../build/blitz/sif/sif4sci.ipynb>
 
-
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: vectorization_gallery
-    :glob:
-    
     Vectorization  <../../build/blitz/i2v/get_pretrained_i2v.ipynb>
+
+    Pipeline <../../build/blitz/pipeline/pipeline.ipynb>

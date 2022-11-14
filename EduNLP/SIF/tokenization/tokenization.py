@@ -3,6 +3,7 @@
 
 from contextlib import contextmanager
 from copy import deepcopy
+from typing import Union
 from EduNLP.Formula import link_formulas as _link_formulas, Formula
 from ..constants import (
     Symbol, TEXT_SYMBOL, FIGURE_SYMBOL, FORMULA_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL,
@@ -45,13 +46,8 @@ class TokenList(object):
         self.text_params = text_params if text_params is not None else {}
 
         self.formula_params = deepcopy(formula_params) if formula_params is not None else {"method": "linear"}
-
-        self.symbolize_figure_formula = False
-        self.skip_figure_formula = False
-        if "symbolize_figure_formula" in self.formula_params:
-            self.symbolize_figure_formula = self.formula_params.pop("symbolize_figure_formula")
-        if "skip_figure_formula" in self.formula_params:
-            self.skip_figure_formula = self.formula_params.pop("skip_figure_formula")
+        self.symbolize_figure_formula = self.formula_params.pop("symbolize_figure_formula", False)
+        self.skip_figure_formula = self.formula_params.pop("skip_figure_formula", False)
         self.formula_tokenize_method = self.formula_params.get("method")
 
         self.figure_params = figure_params if figure_params is not None else {}
@@ -322,7 +318,8 @@ class TokenList(object):
         """classify token to tokens"""
         if isinstance(token, Formula):
             if self.formula_params.get("return_type") == "list":
-                tokens.extend(formula.traversal_formula(token.ast_graph, **self.formula_params))
+                ret = formula.traversal_formula(token.ast_graph, **self.formula_params)
+                tokens.extend([i for i in ret if i is not None])
             elif self.formula_params.get("return_type") == "ast":
                 tokens.append(token.ast_graph)
             else:
@@ -365,7 +362,7 @@ class TokenList(object):
         return [self._tokens[i] for i in self._formula_tokens]
 
     @contextmanager
-    def filter(self, drop: (set, str) = "", keep: (set, str) = "*"):
+    def filter(self, drop: Union[set, str] = "", keep: Union[set, str] = "*"):
         """
         Output special element list selective.Drop means not show.Keep means show.
 

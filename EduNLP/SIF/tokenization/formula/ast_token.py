@@ -48,7 +48,7 @@ def traversal_formula(ast, ord2token=False, var_numbering=False, strategy="post"
         raise ValueError("Unknown traversal strategy: %s" % strategy)
     for i in order:
         node = ast.nodes[i]
-        if node["type"] == "ignore":
+        if node.get("type", "ignore") == "ignore":
             continue
         if ord2token is True and node["type"] in ["mathord", "textord", "text"]:
             if var_numbering is True and node["type"] == "mathord":

@@ -29,17 +29,17 @@ class Figure(object):
 
 class FigureFormulaSegment(Figure):
     """Duel with figureformula, especially coding in base64"""
-    def __init__(self, src, is_base64=False, figure_instance: (dict, bool) = None):
+    def __init__(self, src, is_base64=False, figure_instances: dict = None):
         super(FigureFormulaSegment, self).__init__(is_base64)
         self.src = src
         if self.base64 is True:
             self.figure = self.src[len(r"\FormFigureBase64") + 1: -1]
-            if figure_instance is True or (isinstance(figure_instance, dict) and figure_instance.get("base64") is True):
+            if figure_instances is not None:
                 self.figure = self.base64_to_numpy(self.figure)
         else:
             self.figure = self.src[len(r"\FormFigureID") + 1: -1]
-            if isinstance(figure_instance, dict):
-                self.figure = figure_instance[self.figure]
+            if figure_instances is not None:
+                self.figure = figure_instances[self.figure]
 
     def __repr__(self):
         if self.base64 is True:
@@ -49,17 +49,17 @@ class FigureFormulaSegment(Figure):
 
 class FigureSegment(Figure):
     """Duel with figure, especially coding in base64"""
-    def __init__(self, src, is_base64=False, figure_instance: (dict, bool) = None):
+    def __init__(self, src, is_base64=False, figure_instances: dict = None):
         super(FigureSegment, self).__init__(is_base64)
         self.src = src
         if self.base64 is True:
             self.figure = self.src[len(r"\FigureBase64") + 1: -1]
-            if figure_instance is True or (isinstance(figure_instance, dict) and figure_instance.get("base64") is True):
+            if figure_instances is not None:
                 self.figure = self.base64_to_numpy(self.figure)
         else:
             self.figure = self.src[len(r"\FigureID") + 1: -1]
-            if isinstance(figure_instance, dict):
-                self.figure = figure_instance[self.figure]
+            if figure_instances is not None:
+                self.figure = figure_instances[self.figure]
 
     def __repr__(self):
         if self.base64 is True:
@@ -112,13 +112,13 @@ class SegmentList(object):
             if not re.match(r"\$.+?\$", segment):
                 self.append(TextSegment(segment))
             elif re.match(r"\$\\FormFigureID\{.+?}\$", segment):
-                self.append(FigureFormulaSegment(segment[1:-1], is_base64=False, figure_instance=figures))
+                self.append(FigureFormulaSegment(segment[1:-1], is_base64=False, figure_instances=figures))
             elif re.match(r"\$\\FormFigureBase64\{.+?}\$", segment):
-                self.append(FigureFormulaSegment(segment[1:-1], is_base64=True, figure_instance=figures))
+                self.append(FigureFormulaSegment(segment[1:-1], is_base64=True, figure_instances=figures))
             elif re.match(r"\$\\FigureID\{.+?}\$", segment):
-                self.append(FigureSegment(segment[1:-1], is_base64=False, figure_instance=figures))
+                self.append(FigureSegment(segment[1:-1], is_base64=False, figure_instances=figures))
             elif re.match(r"\$\\FigureBase64\{.+?}\$", segment):
-                self.append(FigureSegment(segment[1:-1], is_base64=True, figure_instance=figures))
+                self.append(FigureSegment(segment[1:-1], is_base64=True, figure_instances=figures))
             elif re.match(r"\$\\(SIFBlank|SIFChoice)\$", segment):
                 self.append(QuesMarkSegment(segment[1:-1]))
             elif re.match(r"\$\\SIFTag\{.+?}\$", segment):
