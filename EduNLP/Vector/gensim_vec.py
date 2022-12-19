@@ -23,7 +23,7 @@ class W2V(Vector):
         other(Word2Vec)
     binary: bool
     """
-    def __init__(self, filepath, method=None, binary=None):
+    def __init__(self, filepath, method=None, binary=None, **kwargs):
         fp = PurePath(filepath)
         self.binary = binary if binary is not None else (True if fp.suffix == ".bin" else False)
         if self.binary is True:
@@ -152,7 +152,7 @@ class D2V(Vector):
     ---------
     d2v model:D2V
     """
-    def __init__(self, filepath, method="d2v"):
+    def __init__(self, filepath, method="d2v", **kwargs):
         self._method = method
         self._filepath = filepath
         if self._method == "d2v":

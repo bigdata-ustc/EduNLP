@@ -33,6 +33,9 @@ class ElmoModel(Vector):
         # TODO: handle batch and unbatch format for inputs and outputs
         # is_batch = isinstance(items, list)
         # items = items if is_batch else [items]
+        for k, v in items.items():
+            if isinstance(v, torch.Tensor):
+                items[k] = v.to(self.device)
         outputs = self.model(**items)
         item_embeds = torch.cat(
             (outputs.forward_output[torch.arange(len(items["seq_len"])), torch.tensor(items["seq_len"]) - 1],
