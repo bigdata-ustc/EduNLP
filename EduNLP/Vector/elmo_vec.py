@@ -15,14 +15,15 @@ from typing import Dict, List, Tuple
 
 
 class ElmoModel(Vector):
-    def __init__(self, pretrained_dir: str):
+    def __init__(self, pretrained_dir: str, device="cpu"):
         """
         Parameters
         ----------
         pretrained_model_path: str
         """
         super(ElmoModel, self).__init__()
-        self.model = ElmoLM.from_pretrained(pretrained_dir)
+        self.device = torch.device(device)
+        self.model = ElmoLM.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
     def __call__(self, *args, **kwargs):

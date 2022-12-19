@@ -12,9 +12,9 @@ class DisenQModel(object):
         device: str
             cpu or cuda, default is cpu
         """
-        self.device = device
-        self.model = DisenQNet.from_pretrained(pretrained_dir)
-        self.model.to(self.device)
+        self.device = torch.device(device)
+        self.model = DisenQNet.from_pretrained(pretrained_dir).to(self.device)
+        self.model.eval()
 
     def __call__(self, items: dict, **kwargs):
         outputs = self.model(**items)
