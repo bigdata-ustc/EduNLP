@@ -1,6 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
+os.environ["WANDB_DISABLED"] = "true"
 import torch
 from EduNLP.ModelZoo.bert import BertForPropertyPrediction, BertForKnowledgePrediction
 from transformers import BertModel as HFBertModel

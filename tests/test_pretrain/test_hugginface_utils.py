@@ -1,7 +1,7 @@
 from EduNLP.Pretrain.hugginface_utils import TokenizerForHuggingface
 from transformers import AutoTokenizer
 import os
-
+os.environ["WANDB_DISABLED"] = "true"
 
 # TODO
 class TestPretrainUtils:

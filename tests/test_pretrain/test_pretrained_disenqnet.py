@@ -1,6 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
+os.environ["WANDB_DISABLED"] = "true"
 import pytest
 import torch
 from EduNLP.ModelZoo.disenqnet import DisenQNet

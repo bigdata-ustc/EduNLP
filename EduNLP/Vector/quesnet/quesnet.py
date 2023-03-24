@@ -2,9 +2,10 @@ import torch
 from typing import Union
 from EduNLP.ModelZoo.quesnet import QuesNet
 from EduNLP.Pretrain import Question, QuesNetTokenizer
+from EduNLP.Vector.meta import Vector
 
 
-class QuesNetModel(object):
+class QuesNetModel(Vector):
     def __init__(self, pretrained_dir, img_dir=None, device="cpu", **kwargs):
         """
         Parameters

@@ -62,7 +62,7 @@ class I2V(object):
                  pretrained_t2v=False, model_dir=MODEL_DIR, **kwargs):
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
-            self.t2v = get_t2v_pretrained_model(t2v, model_dir)
+            self.t2v = get_t2v_pretrained_model(t2v, model_dir, **kwargs)
         else:
             self.t2v = T2V(t2v, *args, **kwargs)
         if tokenizer == 'bert':
@@ -386,6 +386,8 @@ class Bert(I2V):
         --------
         vector:list
         """
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
         inputs = self.tokenize(items, key=key, return_tensors=return_tensors)
         return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
@@ -495,6 +497,8 @@ class QuesNet(I2V):
         token embeddings
         question embedding
         """
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
         encodes = self.tokenize(items, key=key, meta=meta, *args, **kwargs)
         return self.t2v.infer_vector(encodes), self.t2v.infer_tokens(encodes)
 

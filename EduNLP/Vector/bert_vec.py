@@ -29,11 +29,14 @@ class BertModel(Vector):
     torch.Size([2, 768])
     """
 
-    def __init__(self, pretrained_model):
-        self.model = AutoModel.from_pretrained(pretrained_model)
+    def __init__(self, pretrained_model, device="cpu"):
+        self.device = device
+        self.model = AutoModel.from_pretrained(pretrained_model).to(device)
+        self.model.eval()
 
     def __call__(self, items: dict):
         # batch_size, sent_len, embedding_size
+        self.cuda_tensor(items)
         tokens = self.model(**items).last_hidden_state
         return tokens
 
