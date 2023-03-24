@@ -96,7 +96,7 @@ def get_all_pretrained_models():
     return r['name']
 
 
-def get_pretrained_t2v(name, model_dir=MODEL_DIR, **kwargs):
+def get_pretrained_t2v(name, model_dir=MODEL_DIR, device='cpu', **kwargs):
     """
     It is a good idea if you want to switch token list to vector earily.
 
@@ -138,4 +138,4 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR, **kwargs):
     if model_name in ["d2v", "w2v"]:
         postfix = ".bin" if model_name == "d2v" else ".kv"
         model_path = path_append(model_path, os.path.basename(model_path) + postfix, to_str=True)
-    return T2V(model_name, model_path, *args, **kwargs)
+    return T2V(model_name, model_path, device=device, *args, **kwargs)

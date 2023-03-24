@@ -1,17 +1,6 @@
-from pathlib import PurePath
-import os
 import torch
-import torch.optim as optim
-import torch.nn as nn
-import torch.utils.data as tud
-import numpy as np
-from torch.nn.utils.rnn import pad_sequence
-import torch.nn.functional as F
-from EduNLP.Pretrain import train_elmo, ElmoTokenizer
 from EduNLP.ModelZoo.rnn import ElmoLM
 from .meta import Vector
-import json
-from typing import Dict, List, Tuple
 
 
 class ElmoModel(Vector):

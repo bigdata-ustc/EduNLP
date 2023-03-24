@@ -18,7 +18,7 @@ class QuesNetModel(Vector):
             image dir
         """
         self.device = torch.device(device)
-        self.model = QuesNet.from_pretrained(pretrained_dir, img_dir=img_dir).to(device)
+        self.model = QuesNet.from_pretrained(pretrained_dir, img_dir=img_dir).to(self.device)
         self.model.eval()
 
     def __call__(self, items: dict, **kwargs):
