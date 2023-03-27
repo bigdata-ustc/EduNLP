@@ -227,7 +227,7 @@ class DisenQNetForPropertyPrediction(BaseModel):
     base_model_prefix = 'disenq'
 
     def __init__(self, vocab_size: int, hidden_size: int, dropout_rate: float, wv=None,
-                head_dropout=0.5, **kwargs):
+                 head_dropout=0.5, **kwargs):
         super(DisenQNetForPropertyPrediction, self).__init__()
         self.disenq = DisenQNet(
             vocab_size=vocab_size,
