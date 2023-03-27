@@ -11,6 +11,7 @@ from transformers import PretrainedConfig
 from typing import Optional
 from ..base_model import BaseModel
 from ..utils import torch_utils as mytorch
+from ..utils import PropertyPredictionOutput, KnowledgePredictionOutput
 from .harnn import HAM
 
 __all__ = ["LM", "ElmoLM", "ElmoLMForPreTraining", "ElmoLMForPropertyPrediction", "ElmoLMForKnowledgePrediction"]
@@ -323,11 +324,6 @@ class ElmoLMForPreTraining(BaseModel):
             )
 
 
-class PropertyPredictionOutput(ModelOutput):
-    loss: torch.FloatTensor = None
-    logits: torch.FloatTensor = None
-
-
 class ElmoLMForPropertyPrediction(BaseModel):
     base_model_prefix = 'elmo'
 
@@ -385,11 +381,6 @@ class ElmoLMForPropertyPrediction(BaseModel):
             )
 
 
-class KnowledgePredictionOutput(ModelOutput):
-    loss: torch.FloatTensor = None
-    logits: torch.FloatTensor = None
-
-
 class ElmoLMForKnowledgePrediction(BaseModel):
     base_model_prefix = 'elmo'
 
@@ -435,7 +426,7 @@ class ElmoLMForKnowledgePrediction(BaseModel):
 
         self.config = {k: v for k, v in locals().items() if k != "self" and k != "__class__" and k != "kwargs"}
         self.config.update(kwargs)
-        self.config['architecture'] = 'ElmoLMForPreTraining'
+        self.config['architecture'] = 'ElmoLMForKnowledgePrediction'
         self.config = PretrainedConfig.from_dict(self.config)
 
     def forward(self, seq_idx=None, seq_len=None, labels=None) -> ModelOutput:
