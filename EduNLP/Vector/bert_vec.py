@@ -28,7 +28,7 @@ class BertModel(Vector):
     torch.Size([2, 768])
     """
 
-    def __init__(self, pretrained_model, device="cpu"):
+    def __init__(self, pretrained_dir, device="cpu"):
         self.device = device
         self.model = AutoModel.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
