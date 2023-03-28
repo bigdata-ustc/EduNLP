@@ -3,7 +3,7 @@ from transformers import AutoTokenizer
 import os
 os.environ["WANDB_DISABLED"] = "true"
 
-# TODO
+
 class TestPretrainUtils:
     def test_hf_tokenzier(self, pretrained_tokenizer_dir):
         tokenizer = TokenizerForHuggingface(tokenize_method=None)

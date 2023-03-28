@@ -2,6 +2,7 @@ import torch
 from EduNLP.ModelZoo.disenqnet.disenqnet import DisenQNet
 from EduNLP.Vector.meta import Vector
 
+
 class DisenQModel(Vector):
     def __init__(self, pretrained_dir, device="cpu"):
         """

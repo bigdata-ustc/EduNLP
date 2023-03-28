@@ -19,7 +19,7 @@ class ElmoModel(Vector):
         self.cuda_tensor(items)
         outputs = self.model(**items)
         return outputs
-    
+
     def infer_vector(self, items: dict, *args, **kwargs) -> torch.Tensor:
         outputs = self(items)
         item_embeds = torch.cat(
