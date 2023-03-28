@@ -34,10 +34,6 @@ class BertModel(Vector):
         self.model.eval()
 
     def __call__(self, items: dict):
-        for k, v in items.items():
-            if isinstance(v, torch.Tensor):
-                items[k] = v.to(self.device)
-        # batch_size, sent_len, embedding_size
         self.cuda_tensor(items)
         tokens = self.model(**items).last_hidden_state
         return tokens

@@ -201,7 +201,7 @@ class TestPretrainEmlo:
         t2v = T2V('elmo', pretrained_model_dir)
         encodes = tokenizer(items, key=lambda x: x['stem'])
         output = t2v(encodes)
-        assert output.forward_output.shape[-1] == t2v.vector_size // 2
+        assert output.shape[-1] == t2v.vector_size
         assert t2v.infer_vector(encodes).shape[1] == t2v.vector_size
         assert t2v.infer_tokens(encodes).shape[2] == t2v.vector_size
 
