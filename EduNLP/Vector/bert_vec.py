@@ -38,7 +38,7 @@ class BertModel(Vector):
         tokens = self.model(**items).last_hidden_state
         return tokens
 
-    def infer_vector(self, items: dict, pooling_strategy='CLS') -> torch.Tensor:
+    def infer_vector(self, items: dict, pooling_strategy='CLS', **kwargs) -> torch.Tensor:
         vector = self(items)
         if pooling_strategy == 'CLS':
             return vector[:, 0, :]
@@ -50,7 +50,7 @@ class BertModel(Vector):
             # batch_size, embedding_dim
             return mul_mask.sum(1) / (mask.sum(1) + 1e-10)
 
-    def infer_tokens(self, items: dict, return_special_tokens=False) -> torch.Tensor:
+    def infer_tokens(self, items: dict, return_special_tokens=False, **kwargs) -> torch.Tensor:
         tokens = self(items)
         if return_special_tokens:
             # include embedding of [CLS] and [SEP]

@@ -65,12 +65,12 @@ class W2V(Vector):
         index = self.key_to_index(item)
         return self.wv[item] if index not in self.constants.values() else np.zeros((self.vector_size,))
 
-    def infer_vector(self, items, agg="mean", *args, **kwargs) -> list:
-        token_vectors = self.infer_tokens(items, *args, **kwargs)
+    def infer_vector(self, items, agg="mean", **kwargs) -> list:
+        token_vectors = self.infer_tokens(items, **kwargs)
         # return [eval("np.%s" % agg)(item, axis=0) if item else np.array([]) for item in token_vectors]
         return [eval("np.%s" % agg)(item, axis=0) if item else np.zeros(self.vector_size,) for item in token_vectors]
 
-    def infer_tokens(self, items, *args, **kwargs) -> list:
+    def infer_tokens(self, items, **kwargs) -> list:
         return [list(self(*item)) for item in items]
 
 

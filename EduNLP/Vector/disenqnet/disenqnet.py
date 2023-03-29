@@ -17,7 +17,7 @@ class DisenQModel(Vector):
         self.model = DisenQNet.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
-    def __call__(self, items: dict, **kwargs):
+    def __call__(self, items: dict):
         self.cuda_tensor(items)
         outputs = self.model(**items)
         return outputs.embeded, outputs.k_hidden, outputs.i_hidden

@@ -21,7 +21,7 @@ class QuesNetModel(Vector):
         self.model = QuesNet.from_pretrained(pretrained_dir, img_dir=img_dir).to(self.device)
         self.model.eval()
 
-    def __call__(self, items: dict, **kwargs):
+    def __call__(self, items: dict):
         """ get question embedding with quesnet
 
         Parameters
@@ -34,7 +34,7 @@ class QuesNetModel(Vector):
         outputs = self.model(self.model.make_batch(qs, device=self.device))
         return outputs.hidden, outputs.embeded
 
-    def infer_vector(self, items: Union[dict, list]) -> torch.Tensor:
+    def infer_vector(self, items: Union[dict, list], **kwargs) -> torch.Tensor:
         """ get question embedding with quesnet
 
         Parameters
@@ -44,7 +44,7 @@ class QuesNetModel(Vector):
         """
         return self(items)[0]
 
-    def infer_tokens(self, items: Union[dict, list]) -> torch.Tensor:
+    def infer_tokens(self, items: Union[dict, list], **kwargs) -> torch.Tensor:
         """ get token embeddings with quesnet
 
         Parameters

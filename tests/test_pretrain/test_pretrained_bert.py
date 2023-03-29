@@ -206,6 +206,8 @@ class TestPretrainBert:
 
         i_vec = i2v.infer_item_vector(items, key=lambda x: x['stem'])
         assert len(i_vec[0]) == i2v.vector_size
+        i_vec = i2v.infer_item_vector(items, key=lambda x: x['stem'], pooling_strategy='average')
+        assert len(i_vec[0]) == i2v.vector_size
         t_vec = i2v.infer_token_vector(items, key=lambda x: x['stem'])
         assert len(t_vec[0][0]) == i2v.vector_size
 
