@@ -15,14 +15,15 @@ from typing import Dict, List, Tuple
 
 
 class ElmoModel(Vector):
-    def __init__(self, pretrained_dir: str):
+    def __init__(self, pretrained_dir: str, device="cpu"):
         """
         Parameters
         ----------
         pretrained_model_path: str
         """
         super(ElmoModel, self).__init__()
-        self.model = ElmoLM.from_pretrained(pretrained_dir)
+        self.device = torch.device(device)
+        self.model = ElmoLM.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
     def __call__(self, *args, **kwargs):
@@ -32,6 +33,9 @@ class ElmoModel(Vector):
         # TODO: handle batch and unbatch format for inputs and outputs
         # is_batch = isinstance(items, list)
         # items = items if is_batch else [items]
+        for k, v in items.items():
+            if isinstance(v, torch.Tensor):
+                items[k] = v.to(self.device)
         outputs = self.model(**items)
         item_embeds = torch.cat(
             (outputs.forward_output[torch.arange(len(items["seq_len"])), torch.tensor(items["seq_len"]) - 1],

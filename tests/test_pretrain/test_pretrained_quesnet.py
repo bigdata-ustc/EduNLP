@@ -1,7 +1,6 @@
 from lib2to3.pgen2 import token
 import os
 
-from bson import encode
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 import pytest

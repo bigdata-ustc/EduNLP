@@ -12,11 +12,14 @@ class DisenQModel(object):
         device: str
             cpu or cuda, default is cpu
         """
-        self.device = device
-        self.model = DisenQNet.from_pretrained(pretrained_dir)
-        self.model.to(self.device)
+        self.device = torch.device(device)
+        self.model = DisenQNet.from_pretrained(pretrained_dir).to(self.device)
+        self.model.eval()
 
     def __call__(self, items: dict, **kwargs):
+        for k, v in items.items():
+            if isinstance(v, torch.Tensor):
+                items[k] = v.to(self.device)
         outputs = self.model(**items)
         return outputs.embeded, outputs.k_hidden, outputs.i_hidden
 
