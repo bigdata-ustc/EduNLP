@@ -1,8 +1,9 @@
 import torch
 from EduNLP.ModelZoo.disenqnet.disenqnet import DisenQNet
+from EduNLP.Vector.meta import Vector
 
 
-class DisenQModel(object):
+class DisenQModel(Vector):
     def __init__(self, pretrained_dir, device="cpu"):
         """
         Parameters
@@ -12,14 +13,12 @@ class DisenQModel(object):
         device: str
             cpu or cuda, default is cpu
         """
-        self.device = torch.device(device)
+        self.device = device
         self.model = DisenQNet.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
-    def __call__(self, items: dict, **kwargs):
-        for k, v in items.items():
-            if isinstance(v, torch.Tensor):
-                items[k] = v.to(self.device)
+    def __call__(self, items: dict):
+        self.cuda_tensor(items)
         outputs = self.model(**items)
         return outputs.embeded, outputs.k_hidden, outputs.i_hidden
 

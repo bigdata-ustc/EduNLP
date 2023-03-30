@@ -83,11 +83,12 @@ class I2V(object):
                                                       **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         self.params = {
             "tokenizer": tokenizer,
-            "tokenizer_kwargs": tokenizer_kwargs,
             "t2v": t2v,
             "args": args,
+            "tokenizer_kwargs": tokenizer_kwargs,
+            "pretrained_t2v": pretrained_t2v,
+            "model_dir": model_dir,
             "kwargs": kwargs,
-            "pretrained_t2v": pretrained_t2v
         }
         self.device = torch.device(device)
 
@@ -388,6 +389,8 @@ class Bert(I2V):
         --------
         vector:list
         """
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
         inputs = self.tokenize(items, key=key, return_tensors=return_tensors)
         return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
@@ -497,6 +500,8 @@ class QuesNet(I2V):
         token embeddings
         question embedding
         """
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
         encodes = self.tokenize(items, key=key, meta=meta, *args, **kwargs)
         return self.t2v.infer_vector(encodes), self.t2v.infer_tokens(encodes)
 

@@ -2,7 +2,7 @@ from lib2to3.pgen2 import token
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
+os.environ["WANDB_DISABLED"] = "true"
 import pytest
 import torch
 from EduNLP.ModelZoo.quesnet import QuesNet

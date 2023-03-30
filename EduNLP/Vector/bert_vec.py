@@ -1,6 +1,5 @@
 # from transformers import BertModel as HFBertModel
 from transformers import AutoModel
-from .const import UNK, PAD
 from .meta import Vector
 import torch
 
@@ -30,19 +29,16 @@ class BertModel(Vector):
     """
 
     def __init__(self, pretrained_dir, device="cpu"):
-        self.device = torch.device(device)
+        self.device = device
         self.model = AutoModel.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
     def __call__(self, items: dict):
-        for k, v in items.items():
-            if isinstance(v, torch.Tensor):
-                items[k] = v.to(self.device)
-        # batch_size, sent_len, embedding_size
+        self.cuda_tensor(items)
         tokens = self.model(**items).last_hidden_state
         return tokens
 
-    def infer_vector(self, items: dict, pooling_strategy='CLS') -> torch.Tensor:
+    def infer_vector(self, items: dict, pooling_strategy='CLS', **kwargs) -> torch.Tensor:
         vector = self(items)
         if pooling_strategy == 'CLS':
             return vector[:, 0, :]
@@ -54,7 +50,7 @@ class BertModel(Vector):
             # batch_size, embedding_dim
             return mul_mask.sum(1) / (mask.sum(1) + 1e-10)
 
-    def infer_tokens(self, items: dict, return_special_tokens=False) -> torch.Tensor:
+    def infer_tokens(self, items: dict, return_special_tokens=False, **kwargs) -> torch.Tensor:
         tokens = self(items)
         if return_special_tokens:
             # include embedding of [CLS] and [SEP]
