@@ -1,23 +1,15 @@
 import torch
 from torch import nn
-from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
-from baize.torch import load_net
-import torch.nn.functional as F
 import json
 import os
 from ..base_model import BaseModel
-from transformers.modeling_outputs import ModelOutput
+from ..utils import PropertyPredictionOutput, KnowledgePredictionOutput
 from transformers import BertModel, PretrainedConfig, BertConfig
-from typing import List, Optional
+from typing import List
 from ..rnn.harnn import HAM
-import logging
+
 
 __all__ = ["BertForPropertyPrediction", "BertForKnowledgePrediction"]
-
-
-class BertForPPOutput(ModelOutput):
-    loss: torch.FloatTensor = None
-    logits: torch.FloatTensor = None
 
 
 class BertForPropertyPrediction(BaseModel):
@@ -54,7 +46,7 @@ class BertForPropertyPrediction(BaseModel):
         loss = None
         if labels is not None:
             loss = self.criterion(logits, labels) if labels is not None else None
-        return BertForPPOutput(
+        return PropertyPredictionOutput(
             loss=loss,
             logits=logits,
         )
@@ -141,7 +133,7 @@ class BertForKnowledgePrediction(BaseModel):
             labels = torch.sum(torch.nn.functional.one_hot(labels, num_classes=self.num_total_classes), dim=1)
             labels = labels.float()
             loss = self.criterion(logits, labels) if labels is not None else None
-        return BertForPPOutput(
+        return KnowledgePredictionOutput(
             loss=loss,
             logits=logits,
         )
