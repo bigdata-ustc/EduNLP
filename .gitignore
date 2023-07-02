@@ -111,3 +111,9 @@ venv.bak/
 
 # User Definition
 data/
+deprecated/
+tmp*/
+jieba.cache
+*.kv
+*.zip
+examples/test_model
