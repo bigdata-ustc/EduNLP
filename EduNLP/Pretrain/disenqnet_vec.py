@@ -156,7 +156,6 @@ def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, t
     if not os.path.exists(concept_list_path):
         concepts = set()
         for data in items:
-            print(data)
             concept = data[data_formation["knowledge"]]
             for c in concept:
                 if c not in concepts:
