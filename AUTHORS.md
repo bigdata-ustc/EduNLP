@@ -20,5 +20,6 @@
 
 [Jundong Wu](https://github.com/wintermelon008)
 
+[Shangzi Xue](https://github.com/ShangziXue)
 
 The stared contributors are the corresponding authors. 
