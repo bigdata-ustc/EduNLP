@@ -159,7 +159,14 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
             if isinstance(w, FigureSegment):
                 # image
                 try:
-                    im = Image.open(os.path.join(self.img_dir, f'{w.src[10:-1]}.png'))
+                    if self.img_dir != '':
+                        # Warnings: you should make sure the figure exists!
+                        im = Image.open(os.path.join(self.img_dir, f'{w.src[10:-1]}.png'))
+                    else:
+                        fig_id = f"{w.src[10:-1]}"
+                        fig_index = item['ques_figure_ids'].index(fig_id)
+                        fig_src = item['ques_figure_paths'][fig_index]
+                        im = Image.open(fig_src)
                     im = im.resize((56, 56))
                     token_idx.append(to_grayscale(im))
                 except Exception:
