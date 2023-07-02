@@ -23,7 +23,7 @@ class W2V(Vector):
         other(Word2Vec)
     binary: bool
     """
-    def __init__(self, filepath, method=None, binary=None):
+    def __init__(self, filepath, method=None, binary=None, **kwargs):
         fp = PurePath(filepath)
         self.binary = binary if binary is not None else (True if fp.suffix == ".bin" else False)
         if self.binary is True:
@@ -65,11 +65,12 @@ class W2V(Vector):
         index = self.key_to_index(item)
         return self.wv[item] if index not in self.constants.values() else np.zeros((self.vector_size,))
 
-    def infer_vector(self, items, agg="mean", *args, **kwargs) -> list:
-        token_vectors = self.infer_tokens(items, *args, **kwargs)
-        return [eval("np.%s" % agg)(item, axis=0) for item in token_vectors]
+    def infer_vector(self, items, agg="mean", **kwargs) -> list:
+        token_vectors = self.infer_tokens(items, **kwargs)
+        # return [eval("np.%s" % agg)(item, axis=0) if item else np.array([]) for item in token_vectors]
+        return [eval("np.%s" % agg)(item, axis=0) if item else np.zeros(self.vector_size,) for item in token_vectors]
 
-    def infer_tokens(self, items, *args, **kwargs) -> list:
+    def infer_tokens(self, items, **kwargs) -> list:
         return [list(self(*item)) for item in items]
 
 
@@ -152,7 +153,7 @@ class D2V(Vector):
     ---------
     d2v model:D2V
     """
-    def __init__(self, filepath, method="d2v"):
+    def __init__(self, filepath, method="d2v", **kwargs):
         self._method = method
         self._filepath = filepath
         if self._method == "d2v":

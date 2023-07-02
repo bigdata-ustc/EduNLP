@@ -1,8 +1,0 @@
-{
-  "tokenize_method": "space",
-  "num_token": "<num>",
-  "unk_token": "<unk>",
-  "pad_token": "<pad>",
-  "max_length": 250,
-  "vocab_path": "/home/qlh/data_pretrain/data/disenq/disenq_s/vocab.list"
-}

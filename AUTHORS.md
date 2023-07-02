@@ -18,5 +18,7 @@
 
 [Yuting Ning](https://github.com/nnnyt)
 
+[Jundong Wu](https://github.com/wintermelon008)
+
 
 The stared contributors are the corresponding authors. 

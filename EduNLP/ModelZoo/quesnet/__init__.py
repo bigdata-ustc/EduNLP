@@ -1,2 +1,2 @@
-from .quesnet import BiHRNN as QuesNet
+from .quesnet import QuesNet, QuesNetForPreTraining
 from .modules import AE, ImageAE, MetaAE

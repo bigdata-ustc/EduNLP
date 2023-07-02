@@ -48,12 +48,16 @@ Tokenization container
 We provide various encapsulated tokenization containers for simple using, please check `EduNLP.Tokenizer` and `EduNLP.Pretrain` for more instances. Here is a tokenization container list:
 Generalized base tokenization containers:
 
-- TextTokenizer
+- CharTokenizer
+- SpaceTokenizer
+- CustomTokenizer
 - PureTextTokenizer
+- AstFormulaTokenizer
 - GensimSegTokenizer
 - GensimWordTokenizer
 
 Adapted tokenization containers for specific models:
+
 - ElmoTokenizer
 - BertTokenizer
 - DisenQTokenizer
@@ -64,44 +68,83 @@ Adapted tokenization containers for specific models:
    "Adapted tokenization containers for specific models" are used with corresponding T2V container, more discussion is in vectorization and pretrain parts.
 
 
-TextTokenizer
+CharTokenizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Like the general tokenizer, `TextTokenizer` obtain token sequence with linear parsing method. Specifically, formula is parsed as pure text, and figure, tag and others and parsed as special tokens.
-Besides, we provide parameter `key` for selecting content in item.
+Character token parser. This token parser extracts each character of the text individually to form a token sequence.
+
+In addition, we provide a key parameter to select the pending content in the incoming item. You can also specify your own stop words to filter some text messages.
 
 ::
 
-   >>> tokenizer = TextTokenizer()
+   >>> items = [{
+   ...     "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+   ...     "options": ["1", "2"]
+   ... }]
 
-   >>> items = ["已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$"]
-   >>> tokens = tokenizer(items)
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
+   >>> tokenizer = get_tokenizer("char")
+   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
+   >>> print(next(tokens))
+   ['文', '具', '店', '有', '$', '600', '$', '本', '练', '习', '本', '卖', '出', '一', '些', '后', 
+   '还', '剩', '$', '4', '$', '包', '每', '包', '$', '25', '$', '本', '卖', '出', '多', '少', '本']
+
+
+SpaceTokenizer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Space token parser. This token parser will tokenize the text based on the space to get the token sequence.
+
+In addition, we provide a key parameter to select the pending content in the incoming item. You can also specify your own stop words to filter some text messages.
+
+::
 
    >>> items = [{
-   ... "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
-   ... "options": ["1", "2"]
-   ... }]
-   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
-   >>> next(tokens)  # doctest: +NORMALIZE_WHITESPACE
-   ['已知', '集合', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', '-', '4', '<',
-   '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', ',', '3', ',', '5', '\\}', ',',
-   '\\quad', 'A', '\\cap', 'B', '=']
+   ...  "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+   ...  "options": ["1", "2"]
+   ...  }]
 
-   >>> items = ["有公式$\\FormFigureID{1}$，如图$\\FigureID{088f15ea-xxx}$,若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
-   >>> tokenizer = get_tokenizer("text") # tokenizer = TextTokenizer()
-   >>> tokens = tokenizer(items)
+   >>> tokenizer = get_tokenizer("space", stop_words = [])
+   >>> tokens = tokenizer(items, key=lambda x: x["stem"])
    >>> print(next(tokens))
-   ['公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
+   ['已知集合$A=\\left\\{x', '\\mid', 'x^{2}-3', 'x-4<0\\right\\},', '\\quad', 
+    'B=\\{-4,1,3,5\\},', '\\quad$', '则', '$A', '\\cap', 'B=$']
+
+
+CustomTokenizer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Custom token parser. This token parser uses a linear parsing method to obtain a sequence of tokens. You can specify whether text, formulas, images, labels, separators, question gaps, etc. are converted into special characters and symbolized.
+
+In addition, we provide a key parameter to select the pending content in the incoming item. You can also specify your own stop words to filter some text messages.
+
+::
+
+   >>> items = [{
+   ...  "stem": "已知集合$A=\\left\\{x \\mid x^{2}-3 x-4<0\\right\\}, \\quad B=\\{-4,1,3,5\\}, \\quad$ 则 $A \\cap B=$",
+   ...  "options": ["1", "2"]
+   ...  }]
+
+   >>> tokenizer_t = get_tokenizer("custom", symbol='t')
+   >>> tokens = tokenizer_t(items, key=lambda x: x["stem"])
+   >>> print(next(tokens))
+   ['[TEXT]', 'A', '=', '\\left', '\\{', 'x', '\\mid', 'x', '^', '{', '2', '}', '-', '3', 'x', 
+    '-', '4', '<', '0', '\\right', '\\}', ',', '\\quad', 'B', '=', '\\{', '-', '4', ',', '1', 
+    ',', '3', ',', '5', '\\}', ',', '\\quad', '[TEXT]', 'A', '\\cap', 'B', '=']
+
+   >>> tokenizer_f = get_tokenizer("custom", symbol='f')
+   >>> tokens = tokenizer_f(items, key=lambda x: x["stem"])
+   >>> print(next(tokens))
+   ['已知', '集合', '[FORMULA]', '[FORMULA]']
+
+
 
 
 PureTextTokenizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`PureTextTokenizer` is similar to `TextTokenizer`, however, it ignores SIF special formula (e.g. `$\\FormFigureID{...}$` ， `$\\FormFigureBase64{...}$`), with text kept only.
+Plain text token parser. This token parser filters out specially processed formulas (e.g. '$FormFigureID{...} $` ， `$FormFigureBase64{...} $`) and preserves only text formatting formula.
+
+In addition, we provide a key parameter to select the pending content in the incoming item. You can also specify your own stop words to filter some text messages.
 
 ::
 
@@ -113,6 +156,25 @@ PureTextTokenizer
    >>> tokens = tokenizer(items)
    >>> print(next(tokens))
    ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
+
+
+
+AstFormulaTokenizer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Abstract formula parser. This token parser abstracts mathematical formulas from text and performs a series of processing. For example, variables that appear are recorded and marked in turn, while objects such as expressions and pictures are converted to special characters and symbolized.
+
+In addition, we provide a key parameter to select the pending content in the incoming item. You can also specify your own stop words to filter some text messages.
+
+::
+   
+   >>> items = ["有公式$\\FormFigureID{1}$，如图$\\FigureID{088f15ea-xxx}$,若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"]
+
+   >>> tokenizer = get_tokenizer("ast_formula") 
+   >>> tokens = tokenizer(items)
+   >>> print(next(tokens))
+   ['公式', '[FORMULA]', '如图', '[FIGURE]', 'mathord_0', ',', 'mathord_1', '约束条件', '公式', 
+    '[FORMULA]', '[SEP]', 'mathord_2', '=', 'mathord_0', '+', 'textord', 'mathord_1', '最大值', '[MARK]']
 
 
 

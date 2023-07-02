@@ -10,6 +10,7 @@ test_deps = [
     'pytest>=4',
     'pytest-cov>=2.6.0',
     'pytest-flake8',
+    'flake8<5.0.0'
 ]
 docs_deps = [
     'sphinx',
@@ -30,16 +31,20 @@ except ModuleNotFoundError:
     import sys
 
     if 5 <= sys.version_info[1]:
-        ml_pytorch_deps = ["torch"]
+        ml_pytorch_deps = ["torch<=1.12.1"]
     else:
         ml_pytorch_deps = []
         logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
 
-vec_deps = ['gensim'] + ml_pytorch_deps + ['transformers'] + ['torchvision']
+vec_deps = [
+    'gensim',
+    'transformers',
+    'torchvision',
+    'datasets'] + ml_pytorch_deps
 
 setup(
     name='EduNLP',
-    version='0.0.8',
+    version='0.0.9',
     extras_require={
         'test': test_deps,
         'doc': docs_deps,

@@ -1,7 +1,0 @@
-{
-  "tokenize_method": "space",
-  "num_token": "<num>",
-  "unk_token": "<unk>",
-  "pad_token": "<pad>",
-  "max_length": 250
-}
