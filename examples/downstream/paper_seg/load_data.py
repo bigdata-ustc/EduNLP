@@ -22,6 +22,7 @@ class PaperI2V():
         self.pretrained_model_type = pretrained_model_type
         self.pretrained_model_dir = pretrained_model_dir
         self.device = device
+        self.language = language
         
         tokenizer_kwargs = {"tokenizer_config_dir": pretrained_model_dir}
         

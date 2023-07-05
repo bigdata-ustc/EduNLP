@@ -118,14 +118,3 @@ def metric(TP, FP, FN, TN):
     micro_f1 = _f1_score(precision, recall)
     acc = (TP + TN) / (TP + FP + FN + TN)
     return precision, recall, micro_f1, acc
-
-
-def metric_ood(Ex_in_joint: torch.FloatTensor, Ex_out_joint: torch.FloatTensor, quantile_value: float):
-    assert len(Ex_in_joint.shape) == 1 and len(Ex_out_joint.shape) == 1
-    pred_ood_in = torch.sum((Ex_in_joint <= quantile_value).float()).item()
-    pred_ood_out = torch.sum((Ex_out_joint <= quantile_value).float()).item()
-    true_ood_num = Ex_out_joint.shape[0]
-    TP = pred_ood_out
-    FP = pred_ood_in
-    FN = true_ood_num - pred_ood_out
-    return metric(TP, FP, FN, 0)
