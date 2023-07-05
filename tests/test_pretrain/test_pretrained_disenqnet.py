@@ -4,6 +4,9 @@ os.environ["WANDB_DISABLED"] = "true"
 import pytest
 import torch
 from EduNLP.ModelZoo.disenqnet import DisenQNet
+from EduNLP.ModelZoo.disenqnet import DisenQNetForKnowledgePrediction, DisenQNetForPropertyPrediction
+from EduNLP.Pretrain import finetune_disenqnet_for_knowledge_prediction
+from EduNLP.Pretrain import finetune_disenqnet_for_property_prediction
 from EduNLP.Pretrain import DisenQTokenizer, train_disenqnet
 from EduNLP.Vector import T2V, DisenQModel
 from EduNLP.I2V import DisenQ, get_pretrained_i2v
@@ -100,6 +103,84 @@ class TestPretrainDisenQNet:
         # encodes = tokenizer(test_items[0], lambda x: x['ques_content'])
         # model(**encodes)
         encodes = tokenizer(test_items, lambda x: x['ques_content'])
+        model(**encodes)
+
+    def test_train_pp(self, standard_luna_data, pretrained_pp_dir, pretrained_model_dir):
+        data_params = {
+            "stem_key": "ques_content",
+            "label_key": "difficulty"
+        }
+        train_params = {
+            "num_train_epochs": 1,
+            "per_device_train_batch_size": 2,
+            "per_device_eval_batch_size": 2,
+            "no_cuda": not TEST_GPU,
+        }
+        train_items = standard_luna_data
+        # train without eval_items
+        finetune_disenqnet_for_property_prediction(
+            train_items,
+            pretrained_pp_dir,
+            pretrained_model=pretrained_model_dir,
+            train_params=train_params,
+            data_params=data_params
+        )
+        # train with eval_items
+        finetune_disenqnet_for_property_prediction(
+            train_items,
+            pretrained_pp_dir,
+            pretrained_model=pretrained_model_dir,
+            eval_items=train_items,
+            train_params=train_params,
+            data_params=data_params
+        )
+        model = DisenQNetForPropertyPrediction.from_pretrained(pretrained_pp_dir)
+        tokenizer = DisenQTokenizer.from_pretrained(pretrained_pp_dir)
+
+        encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])
+        # TODO: need to handle inference for T2V for batch or single
+        model(**encodes)
+
+    def test_train_kp(self, standard_luna_data, pretrained_model_dir, pretrained_kp_dir):
+        data_params = {
+            "stem_key": "ques_content",
+            "label_key": "know_list"
+        }
+        train_params = {
+            "num_train_epochs": 1,
+            "per_device_train_batch_size": 2,
+            "per_device_eval_batch_size": 2,
+            "no_cuda": not TEST_GPU,
+        }
+        model_params = {
+            "num_classes_list": [10, 27, 963],
+            "num_total_classes": 1000,
+        }
+        train_items = standard_luna_data
+        # train without eval_items
+        finetune_disenqnet_for_knowledge_prediction(
+            train_items,
+            pretrained_kp_dir,
+            pretrained_model=pretrained_model_dir,
+            train_params=train_params,
+            data_params=data_params,
+            model_params=model_params
+        )
+        # train with eval_items
+        finetune_disenqnet_for_knowledge_prediction(
+            train_items,
+            pretrained_kp_dir,
+            pretrained_model=pretrained_model_dir,
+            eval_items=train_items,
+            train_params=train_params,
+            data_params=data_params,
+            model_params=model_params
+        )
+        model = DisenQNetForKnowledgePrediction.from_pretrained(pretrained_kp_dir)
+        tokenizer = DisenQTokenizer.from_pretrained(pretrained_kp_dir)
+
+        encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])
+        # TODO: need to handle inference for T2V for batch or single
         model(**encodes)
 
     def test_disenq_t2v(self, pretrained_model_dir):
