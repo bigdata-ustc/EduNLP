@@ -1,6 +1,3 @@
-from torch.utils.data import Dataset
-import torch
-from tqdm import tqdm
 import json
 import pandas as pd
 
@@ -47,32 +44,6 @@ def get_val(val):
         start = end
     return test_data, test_gap
     
-class Dataset_bert(Dataset):
-    def __init__(self, items, tokenizer):
-        self.tokenizer = tokenizer
-        self.items = items
-        self.preprocess()
 
-    def preprocess(self):
-        for item in tqdm(self.items):
-            content_vector = self.tokenizer(str(item['content']), return_tensors="pt",  max_length=512, truncation=True)
-            #content_vector = str()
-            item["content"] = content_vector
-
-    def __getitem__(self, index):
-        item = self.items[index]
-        return item
-    
-    def __len__(self):
-        return len(self.items)
-    
-    def collate_fn(self, batch_data):
-        first =  batch_data[0]
-        batch = {
-            k: [item[k] for item in batch_data] for k in first.keys()
-        }
-        batch["content"] = self.tokenizer(str(batch["content"]), return_tensors='pt', max_length=512, truncation=True)  
-        batch["labels"] = torch.as_tensor(batch["labels"])
-        return batch
 
     
