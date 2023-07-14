@@ -115,7 +115,7 @@ class SpaceTokenizer(Tokenizer):
 
 
 class PureTextTokenizer(Tokenizer):
-    def __init__(self, handle_figure_formula="skip", **kwargs):
+    def __init__(self, symbol="gmas", handle_figure_formula="skip", **kwargs):
         """
         Treat all elements in SIF item as prue text. Spectially, tokenize formulas as text.
 
@@ -184,13 +184,14 @@ class PureTextTokenizer(Tokenizer):
             "text_params": text_params,
             "figure_params": kwargs.get("figure_params", None)
         }
+        self.symbol = symbol
 
     def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
         for item in items:
             yield self._tokenize(item, key=key, **kwargs)
 
     def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
-        return tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params, **kwargs).tokens
+        return tokenize(seg(key(item), symbol=self.symbol), **self.tokenization_params, **kwargs).tokens
 
 
 class AstFormulaTokenizer(Tokenizer):
