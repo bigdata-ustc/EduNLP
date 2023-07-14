@@ -20,6 +20,7 @@ import logging
 import signal
 import os
 import json
+import copy
 import linecache
 import numpy as np
 from PIL import Image
@@ -307,104 +308,85 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
     def set_img_dir(self, path):
         self.img_dir = path
         
-        
-        
-class Lines:
-    '''
-        原始数据行读取。这玩意删不掉，因为要先读取数据喂给 tokenizer，
-        再用 tokenizer 过一遍数据得到 Dataset，就很难绷
-    '''
-    def __init__(self, filename, skip=0, preserve_newline=False):
-        self.filename = filename
-        with open(filename, "r", encoding="utf-8") as f:
-            self.length = len(f.readlines()) - skip
-        assert self.length > 0, f'{filename} is empty. Or file length is less than skip length.'
-        self.skip = skip
-        self.preserve_newline = preserve_newline
-
-    def __len__(self):
-        return self.length
-
-    def __iter__(self):
-        for i in range(len(self)):
-            yield self[i]
-
-    def __getitem__(self, item):
-        d = self.skip + 1
-        if isinstance(item, int):
-            if item < self.length:
-                line = linecache.getline(self.filename,
-                                         item % len(self) + d)
-                if self.preserve_newline:
-                    return json.loads(line)
-                else:
-                    return json.loads(line.strip('\r\n'))
-
-        elif isinstance(item, slice):
-            low = 0 if item.start is None else item.start
-            low = clip(low, -len(self), len(self) - 1)
-            if low < 0:
-                low += len(self)
-            high = len(self) if item.stop is None else item.stop
-            high = clip(high, -len(self), len(self))
-            if high < 0:
-                high += len(self)
-            ls = []
-            for i in range(low, high):
-                line = linecache.getline(self.filename, i + d)
-                if not self.preserve_newline:
-                    line = line.strip('\r\n')
-                ls.append(json.loads(line))
-
-            return ls
-
-        raise IndexError('index must be int or slice')
-    
-        
     
 class QuesnetDataset(Dataset):
     '''
-        对 Question Loader 的重构，删除了一些不太用得到的接口
-        TODO: 这里需要重写逻辑，不然和原来的区别不大，还是想要把 Lines 给合并过来
+        对 Question Loader 与 Lines 的重构，删除了一些不太用得到的接口
     '''
-    def __init__(self, questions: Lines, 
-                 tokenizer: QuesNetTokenizer, 
-                 content_key=lambda x: x['ques_content'],
-                 meta_key=lambda x: x['know_name'],
-                 answer_key=lambda x: x['ques_answer'],
-                 option_key=lambda x: x['ques_options'],
-                 pipeline = None,
-                 skip=0):
-        self.questions = questions
+    def __init__(self,  filename: str,
+                        tokenizer: QuesNetTokenizer = None,
+                        img_dir: str = "", 
+                        meta: Optional[list] = None,
+                        content_key=lambda x: x['ques_content'],
+                        meta_key=lambda x: x['know_name'],
+                        answer_key=lambda x: x['ques_answer'],
+                        option_key=lambda x: x['ques_options'],
+                        pipeline=None,
+                        skip=0
+                ):
+        self.filename = filename
         self.skip = skip
-        self.tokenizer = tokenizer
+        self.img_dir = img_dir
         self.content_key = content_key
         self.meta_key = meta_key
         self.answer_key = answer_key
         self.option_key = option_key
         self.pipeline = pipeline
+        
+        if tokenizer == None:
+            tokenizer = QuesNetTokenizer(meta=['know_name'],
+                                 img_dir=img_dir)
+        self.tokenizer = tokenizer
+        self.meta = meta if meta else tokenizer.meta
+        self.load_data_lines()
+        tokenizer.set_vocab(self.lines, key=lambda x: x['ques_content'],
+                        trim_min_count=2, silent=False)
+        tokenizer.set_meta_vocab(self.lines, silent=False) 
 
+    
+    def load_data_lines(self):
+        '''从 Json 文件中按行读取数据'''
+        # TODO: 暂时全部读取到内存中，不考虑分块
+        data_dir = self.filename
+        skip = self.skip        # 从第 skip + 1 行开始读
+        self.lines = []
+        self.length = 0
 
+        with open(data_dir, "r", encoding="utf-8") as f:
+            row = 0
+            while True:
+                row += 1
+                line = f.readline()
+                if row <= skip:
+                    continue
+                if not line:
+                    break
+                self.lines.append(json.loads(line.strip()))
+                
+            self.length = row - skip - 1
+        assert self.length > 0, f'{data_dir} is empty. Or file length is less than skip length.'
+
+        
     def __len__(self):
-        return len(self.questions)
+        return len(self.lines)
 
 
     def __getitem__(self, index):
         if isinstance(index, int):
-            line = self.questions[index]
+            line = self.lines[index]
 
             # 进行后续处理
             qid = line['ques_id']
-            token = self.tokenizer(line, key=self.content_key, meta=self.meta_key)
+            token = self.tokenizer(line, key=self.content_key, meta=self.meta)
             content = token['seq_idx']
             meta = token['meta_idx']
             if self.answer_key(line).isalpha() and len(self.answer_key(line)) == 1 and ord(self.answer_key(line)) < 128 and len(self.option_key(line)) > 0:
                 answer_idx = ord(self.answer_key(line).upper()) - ord('A')
                 options = self.option_key(line)
-                answer = self.tokenizer(options.pop(answer_idx), meta=self.meta_key)['seq_idx']
-                false_options = [(self.tokenizer(option, meta=self.meta_key))['seq_idx'] for option in options]
+                answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)['seq_idx']
+                false_options = [(self.tokenizer(option, meta=self.meta))['seq_idx'] for option in options]
             else:
-                answer = (self.tokenizer(self.answer_key(line), meta=self.meta_key))['seq_idx']
+                answer = (self.tokenizer(self.answer_key(line), meta=self.meta))['seq_idx']
                 false_options = [[0], [0], [0]]
                 
             qs = Question(id=qid, content=content, answer=answer,
@@ -569,7 +551,7 @@ def optimizer(*models, **kwargs):
         return _cur_optim   
         
         
-def train_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save_embs = False, train_params = None):
+def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save_embs = False, train_params = None):
     """ pretrain quesnet
 
     Parameters
@@ -634,13 +616,9 @@ def train_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save_em
     train_params = default_train_params
     # 参数设定完成
     
-    tokenizer = QuesNetTokenizer(meta=['know_name'], img_dir=img_dir)
-    lines = Lines(path)
-    tokenizer.set_vocab(lines, key=lambda x: x['ques_content'],
-                        trim_min_count=2, silent=False)
-    tokenizer.set_meta_vocab(lines, silent=False)
+    dataset = QuesnetDataset(path)
+    tokenizer = dataset.tokenizer
     tokenizer.save_pretrained(output_dir)
-    data = QuesnetDataset(lines, tokenizer)
     model = QuesNetForPreTraining(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
                                   emb_size=train_params['emb_size']).to(device)
 
@@ -652,7 +630,7 @@ def train_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save_em
     w2v_corpus = []
     img_corpus = []
     meta_corpus = []
-    for _, qs in enumerate(tqdm(data)):
+    for _, qs in enumerate(tqdm(dataset)):
         text_content = []
         for c in qs.content:
             if isinstance(c, int):
@@ -727,12 +705,12 @@ def train_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save_em
     # 下面的代码还没有完整测试
     
     # HLM and DOO training
-    data.pipeline = partial(model.quesnet.make_batch, device=device, pretrain=True)
+    dataset.pipeline = partial(model.quesnet.make_batch, device=device, pretrain=True)
     model.train()
     optim = optimizer(model, lr=train_params['lr'])
     n_batches = 0
     for epoch in range(0, train_params['n_epochs']):
-        train_iter = PrefetchIter(data, train_params['batch_size'])
+        train_iter = PrefetchIter(dataset, train_params['batch_size'])
         bar = enumerate(tqdm(train_iter, initial=train_iter.pos),
                         train_iter.pos)
         for i, batch in critical(bar):
