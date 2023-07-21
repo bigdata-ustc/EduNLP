@@ -1,10 +1,7 @@
-from lib2to3.pgen2 import token
 import os
-
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ["WANDB_DISABLED"] = "true"
 import pytest
-import torch
 from EduNLP.ModelZoo.quesnet import QuesNet
 from EduNLP.Pretrain import QuesNetTokenizer, Question, pretrain_quesnet
 # from EduNLP.Pretrain import train_quesnet_for_property_prediction, train_quesnet_for_knowledge_prediction
@@ -12,7 +9,6 @@ from EduNLP.Vector import T2V
 from EduNLP.Vector.quesnet import QuesNetModel
 from EduNLP.I2V import QuesNet as QuesNetI2V, get_pretrained_i2v
 from EduNLP.utils import abs_current_dir, path_append
-
 from conftest import TEST_GPU
 
 
