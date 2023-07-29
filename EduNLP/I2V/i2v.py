@@ -94,19 +94,39 @@ class I2V(object):
         return self.infer_vector(items, *args, **kwargs)
 
     def tokenize(self, items, *args, key=lambda x: x, **kwargs) -> list:
-        # """tokenize item"""
+        """
+        tokenize item
+        
+        Parameter:
+        ----------
+        items: a list of questions
+        """
         return self.tokenizer(items, *args, key=key, **kwargs)
 
     def infer_vector(self, items, key=lambda x: x, **kwargs) -> tuple:
+        """
+        get question embedding
+        
+        NotImplemented
+        """
         raise NotImplementedError
 
     def infer_item_vector(self, tokens, *args, **kwargs) -> ...:
+        """NotImplemented"""
         return self.infer_vector(tokens, *args, **kwargs)[0]
 
     def infer_token_vector(self, tokens, *args, **kwargs) -> ...:
+        """NotImplemented"""
         return self.infer_vector(tokens, *args, **kwargs)[1]
 
     def save(self, config_path):
+        """
+        save model weights in config_path
+        
+        Parameter:
+        ----------
+        config_path: str
+        """
         with open(config_path, "w", encoding="utf-8") as wf:
             json.dump(self.params, wf, ensure_ascii=False, indent=2)
 
@@ -123,6 +143,7 @@ class I2V(object):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        """NotImplemented"""
         raise NotImplementedError
 
     @property
@@ -201,6 +222,14 @@ class D2V(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        """
+        download model from pretrained source with given name to model_dir
+        
+        Parameters:
+        -----------
+        name: str, the model name you want to download
+        model_dir: str, the path you want to save the model
+        """
         return cls("pure_text", name, pretrained_t2v=True, model_dir=model_dir)
 
 
@@ -328,6 +357,14 @@ class Elmo(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        """
+        download model from pretrained source with given name to model_dir
+        
+        Parameters:
+        -----------
+        name: str, the model name you want to download
+        model_dir: str, the path you want to save the model
+        """
         model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
@@ -391,6 +428,14 @@ class Bert(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        """
+        download model from pretrained source with given name to model_dir
+        
+        Parameters:
+        -----------
+        name: str, the model name you want to download
+        model_dir: str, the path you want to save the model
+        """
         model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
@@ -453,6 +498,14 @@ class DisenQ(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, **kwargs):
+        """
+        download model from pretrained source with given name to model_dir
+        
+        Parameters:
+        -----------
+        name: str, the model name you want to download
+        model_dir: str, the path you want to save the model
+        """
         model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
@@ -500,6 +553,14 @@ class QuesNet(I2V):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        """
+        download model from pretrained source with given name to model_dir
+        
+        Parameters:
+        -----------
+        name: str, the model name you want to download
+        model_dir: str, the path you want to save the model
+        """
         model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
