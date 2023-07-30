@@ -2,9 +2,7 @@
 Pipleine
 =======
 
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: pipleine_gallery
-    :glob:
+.. nbinfo::
+    :notebook: <../../build/blitz/pipeline/pipeline.ipynb>
 
-    Pipleine  <../../build/blitz/pipeline/pipeline.ipynb>
+    Pipleine 

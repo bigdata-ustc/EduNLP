@@ -246,11 +246,7 @@ T2V 向量化容器
    # 或
    # t2v = W2V(path)
 
-<<<<<<< HEAD
    item_vector = t2v.infer_vector(token_items)
-=======
-   tem_vector = t2v.infer_vector(token_items)
->>>>>>> upstream/dev
    # [array(), ..., array()]
    token_vector = t2v.infer_tokens(token_items)
    # [[array(), ..., array()], [...], [...]]
