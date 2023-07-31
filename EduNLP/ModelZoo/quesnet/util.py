@@ -11,7 +11,11 @@ class SeqBatch:
         self.dtype = dtype
         self.device = device
         self.seqs = seqs
-        self.lens = [len(x) for x in seqs]
+
+        if not seqs:
+            self.lens = [0]
+        else:
+            self.lens = [len(x) for x in seqs]
 
         self.ind = argsort(self.lens)[::-1]
         self.inv = argsort(self.ind)
@@ -19,6 +23,7 @@ class SeqBatch:
         self._prefix = [0]
         self._index = {}
         c = 0
+        
         for i in range(self.lens[0]):
             for j in range(len(self.lens)):
                 if self.lens[j] <= i:
@@ -28,10 +33,15 @@ class SeqBatch:
 
     def packed(self):
         ind = torch.tensor(self.ind, dtype=torch.long, device=self.device)
+        if not ind.numel() or ind.max() >= self.padded()[0].size(1):
+            return None, None
         padded = self.padded()[0].index_select(1, ind)
         return pack_padded_sequence(padded, torch.tensor(self.lens))
 
     def padded(self, max_len=None, batch_first=False):
+        if not self.seqs:
+            return torch.empty((0, 0), dtype=self.dtype, device=self.device), torch.empty((0, 0), dtype=torch.bool, device=self.device)
+    
         seqs = [torch.tensor(s, dtype=self.dtype, device=self.device)
                 if not isinstance(s, torch.Tensor) else s
                 for s in self.seqs]

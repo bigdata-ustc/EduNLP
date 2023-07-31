@@ -114,6 +114,10 @@ class QuesNet(BaseModel, FeatureExtractor):
         ans_input = []
         ans_output = []
         false_options = [[] for i in range(3)]
+
+        if not isinstance(data, list):
+            data = [data]
+
         for q in data:
             meta = torch.zeros(len(self.stoi[self.meta])).to(device)
             meta[q.labels.get(self.meta) or []] = 1
@@ -156,7 +160,7 @@ class QuesNet(BaseModel, FeatureExtractor):
 
             for i, fo in enumerate(q.false_options):
                 false_options[i].append([0] + fo)
-
+     
         lembs = SeqBatch(lembs, device=device)
         rembs = SeqBatch(rembs, device=device)
         embs = SeqBatch(embs, device=device)
@@ -192,6 +196,23 @@ class QuesNet(BaseModel, FeatureExtractor):
         words = torch.cat(words, dim=0) if words else None
         ims = torch.cat(ims, dim=0) if ims else None
         metas = torch.cat(metas, dim=0) if metas else None
+        
+        
+        # print("debug1")
+        # print(lembs)
+        # print(rembs)
+        # print(words)
+        # print(ims)
+        # print(metas)
+        # print(wmask)
+        # print(imask)
+        # print(mmask)
+        # print(embs)
+        # print(ans_input)
+        # print(ans_output)
+        # print(false_opt_input)
+        
+        
         if pretrain:
             return (
                 lembs, rembs, words, ims, metas, wmask, imask, mmask,
@@ -302,7 +323,7 @@ class QuesNetForPreTraining(BaseModel):
         self.config = PretrainedConfig.from_dict(self.config)
 
     def forward(self, batch):
-        left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output, false_opt_input = batch
+        left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output, false_opt_input = batch[0]
 
         # high-level loss
         outputs = self.quesnet(inputs)
@@ -310,7 +331,8 @@ class QuesNetForPreTraining(BaseModel):
         h = outputs.hidden
 
         x = ans_input.packed()
-        y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x.data), x.batch_sizes),
+        
+        y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x[0].data), x.batch_sizes),
                                h.repeat(self.config.layers, 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),
                                 ans_output.packed().data)
@@ -318,51 +340,53 @@ class QuesNetForPreTraining(BaseModel):
                                                            torch.ones_like(self.ans_judge(y.data)))
         for false_opt in false_opt_input:
             x = false_opt.packed()
-            y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x.data), x.batch_sizes),
+            if x == (None, None):
+                continue
+            y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x[0].data), x.batch_sizes),
                                    h.repeat(self.config.layers, 1, 1))
             floss = floss + F.binary_cross_entropy_with_logits(self.ans_judge(y.data),
                                                                torch.zeros_like(self.ans_judge(y.data)))
         loss = floss * self.lambda_loss[1]
         # low-level loss
-        left_hid = self.quesnet(left).pack_embeded.data[:, :self.rnn_size]
-        right_hid = self.quesnet(right).pack_embeded.data[:, self.rnn_size:]
+        left_hid = self.quesnet(left).pack_embeded.data[:, :self.rnn_size].clone()
+        right_hid = self.quesnet(right).pack_embeded.data[:, self.rnn_size:].clone()
 
         wloss = iloss = mloss = None
 
         if words is not None:
-            lwfea = torch.masked_select(left_hid, wmask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size)
-            lout = self.lwoutput(lwfea)
-            rwfea = torch.masked_select(right_hid, wmask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size)
-            rout = self.rwoutput(rwfea)
-            out = self.woutput(torch.cat([lwfea, rwfea], dim=1))
+            lwfea = torch.masked_select(left_hid.clone(), wmask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size).clone()
+            lout = self.lwoutput(lwfea.clone())
+            rwfea = torch.masked_select(right_hid.clone(), wmask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size).clone()
+            rout = self.rwoutput(rwfea.clone())
+            out = self.woutput(torch.cat([lwfea.clone(), rwfea.clone()], dim=1).clone())
             wloss = (F.cross_entropy(out, words) + F.cross_entropy(lout, words) + F.
                      cross_entropy(rout, words)) * self.quesnet.lambda_input[0] / 3
             wloss *= self.lambda_loss[0]
             loss = loss + wloss
 
         if ims is not None:
-            lifea = torch.masked_select(left_hid, imask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size)
-            lout = self.lioutput(lifea)
-            rifea = torch.masked_select(right_hid, imask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size)
-            rout = self.rioutput(rifea)
-            out = self.ioutput(torch.cat([lifea, rifea], dim=1))
+            lifea = torch.masked_select(left_hid.clone(), imask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size).clone()
+            lout = self.lioutput(lifea.clone())
+            rifea = torch.masked_select(right_hid.clone(), imask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size).clone()
+            rout = self.rioutput(rifea.clone())
+            out = self.ioutput(torch.cat([lifea.clone(), rifea.clone()], dim=1).clone())
             iloss = (self.quesnet.ie.loss(ims, out) + self.quesnet.ie.loss(ims, lout) + self.quesnet.ie.
                      loss(ims, rout)) * self.quesnet.lambda_input[1] / 3
             iloss *= self.lambda_loss[0]
             loss = loss + iloss
 
         if metas is not None:
-            lmfea = torch.masked_select(left_hid, mmask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size)
-            lout = self.lmoutput(lmfea)
-            rmfea = torch.masked_select(right_hid, mmask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size)
-            rout = self.rmoutput(rmfea)
-            out = self.moutput(torch.cat([lmfea, rmfea], dim=1))
+            lmfea = torch.masked_select(left_hid.clone(), mmask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size).clone()
+            lout = self.lmoutput(lmfea.clone())
+            rmfea = torch.masked_select(right_hid.clone(), mmask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size).clone()
+            rout = self.rmoutput(rmfea.clone())
+            out = self.moutput(torch.cat([lmfea.clone(), rmfea.clone()], dim=1).clone())
             mloss = (self.quesnet.me.loss(metas, out) + self.quesnet.me.loss(metas, lout) + self.quesnet.me.
                      loss(metas, rout)) * self.quesnet.lambda_input[2] / 3
             mloss *= self.lambda_loss[0]

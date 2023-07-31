@@ -156,8 +156,9 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
         token_item = self.tokenize(item, key)
         token_idx = []
         for _, w in enumerate(token_item):
-            if isinstance(w, FigureSegment):
+            if isinstance(w, FigureSegment) and 'ques_figure_ids' in item.keys():
                 # image                
+
                 try:
                     fig_id = f"{w.src[10:-1]}"
                     fig_index = item['ques_figure_ids'].index(fig_id)
@@ -171,11 +172,13 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                     else:
                         fig_src = item['ques_figure_paths'][fig_index]
                     
+                    print(f"Open figure {fig_src}")
                     im = Image.open(fig_src)
                     im = im.resize((56, 56))
                     token_idx.append(to_grayscale(im))
+                    
                 except Exception:
-                    warnings.warn('Open image error! path = ' + fig_src)
+                    warnings.warn('Open image error!')
                     token_idx.append(self.stoi['word'][self.img_token])
             else:
                 # word
@@ -390,6 +393,7 @@ class QuesnetDataset(Dataset):
             token = self.tokenizer(line, key=self.content_key, meta=self.meta)
             content = token['seq_idx']
             meta = token['meta_idx']
+            
             if self.answer_key(line).isalpha() and len(self.answer_key(line)) == 1 and ord(self.answer_key(line)) < 128 and len(self.option_key(line)) > 0:
                 answer_idx = ord(self.answer_key(line).upper()) - ord('A')
                 options = self.option_key(line)
@@ -441,7 +445,7 @@ class PrefetchIter:
         self.batch_size = batch_size
         self.queue = queue.Queue(maxsize=8)
         self.length = length if length is not None else len(data)
-
+        
         assert all(self.length == len(lab) for lab in label), \
             'data and label must have same lengths'
 
@@ -545,7 +549,7 @@ def optimizer(*models, **kwargs):
         return _cur_optim   
         
         
-def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save_embs = False, train_params = None):
+def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save_embs = False, load_embs = False, train_params = None):
     """ pretrain quesnet
 
     Parameters
@@ -558,6 +562,8 @@ def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save
         quesnet tokenizer
     save_embs : bool, optional
         whether to save pretrained word/image/meta embeddings seperately
+    load_embs : bool, optional
+        whether to load pretrained word/image/meta embeddings seperately
     train_params : dict, optional
         the training parameters and model parameters, by default None
         - "n_epochs": int, default = 1
@@ -609,7 +615,7 @@ def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save
         default_train_params.update(train_params)
     train_params = default_train_params
 
-    dataset = QuesnetDataset(path)
+    dataset = QuesnetDataset(path, img_dir=img_dir)
     tokenizer = dataset.tokenizer
     tokenizer.save_pretrained(output_dir)
     model = QuesNetForPreTraining(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
@@ -642,7 +648,7 @@ def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save
         meta_corpus.append(meta_vector)
 
     # train word2vec for text embedding
-    if pretrain_dir != None:
+    if pretrain_dir != None and load_embs:
         model.quesnet.load_emb(np.load(os.path.join(output_dir, 'w2v_embs.npy')))
     else:
         gensim_w2v = Word2Vec(sentences=[[item] for item in emb_dict.keys()], min_count=1,
@@ -661,7 +667,7 @@ def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save
     logger.info('quesnet Word Embedding loaded')
 
     # train auto-encoder loss for image embedding
-    if pretrain_dir != None:
+    if pretrain_dir != None and load_embs:
         model.quesnet.load_img(torch.load(os.path.join(pretrain_dir, 'trained_ie.pt')))
     else:
         img_dataset = EmbeddingDataset(data=img_corpus, data_type='image')
@@ -675,7 +681,7 @@ def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save
     
 
     # train auto-encoder loss for meta embedding
-    if pretrain_dir != None:
+    if pretrain_dir != None and load_embs:
         model.quesnet.load_meta(torch.load(os.path.join(pretrain_dir, 'trained_me.pt')))
     else:
         meta_dateset = EmbeddingDataset(data=meta_corpus, data_type='meta')
@@ -696,7 +702,7 @@ def pretrain_quesnet(path, output_dir, pretrain_dir = None, img_dir = None, save
     optim = optimizer(model, lr=train_params['lr'])
     n_batches = 0
     for epoch in range(0, train_params['n_epochs']):
-        train_iter = PrefetchIter(dataset, train_params['batch_size'])
+        train_iter = PrefetchIter(dataset, batch_size=train_params['batch_size'])
         bar = enumerate(tqdm(train_iter, initial=train_iter.pos),
                         train_iter.pos)
         for i, batch in critical(bar):

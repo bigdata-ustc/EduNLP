@@ -83,6 +83,7 @@ class TestPretrainQuesNet:
             pretrained_model_dir,
             img_dir=img_dir,
             save_embs=True,
+            load_embs=False,
             # data_params={
             #     "stem_key": "ques_content"
             # },
