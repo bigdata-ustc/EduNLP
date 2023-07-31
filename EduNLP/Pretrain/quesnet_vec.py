@@ -161,12 +161,21 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                 try:
                     fig_id = f"{w.src[10:-1]}"
                     fig_index = item['ques_figure_ids'].index(fig_id)
-                    fig_src = item['ques_figure_paths'][fig_index]
+                    
+                    if self.img_dir != "":
+                        fig_src = os.path.join(self.img_dir, fig_id)
+                        if '.png' in item['ques_figure_paths'][fig_index]:
+                            fig_src += '.png'
+                        elif '.jpg' in item['ques_figure_paths'][fig_index]:
+                            fig_src += '.jpg'
+                    else:
+                        fig_src = item['ques_figure_paths'][fig_index]
+                    
                     im = Image.open(fig_src)
                     im = im.resize((56, 56))
                     token_idx.append(to_grayscale(im))
                 except Exception:
-                    warnings.warn('Open image error!')
+                    warnings.warn('Open image error! path = ' + fig_src)
                     token_idx.append(self.stoi['word'][self.img_token])
             else:
                 # word

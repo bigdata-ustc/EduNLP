@@ -9,7 +9,8 @@ from EduNLP.Vector import T2V
 from EduNLP.Vector.quesnet import QuesNetModel
 from EduNLP.I2V import QuesNet as QuesNetI2V, get_pretrained_i2v
 from EduNLP.utils import abs_current_dir, path_append
-from conftest import TEST_GPU
+
+TEST_GPU = False
 
 
 class TestPretrainQuesNet:

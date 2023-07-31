@@ -10,7 +10,8 @@ from EduNLP.Pretrain import finetune_disenqnet_for_property_prediction
 from EduNLP.Pretrain import DisenQTokenizer, train_disenqnet
 from EduNLP.Vector import T2V, DisenQModel
 from EduNLP.I2V import DisenQ, get_pretrained_i2v
-from conftest import TEST_GPU
+
+TEST_GPU = False
 
 
 # TODO
