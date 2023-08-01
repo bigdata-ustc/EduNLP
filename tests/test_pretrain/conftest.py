@@ -9,7 +9,6 @@ from EduNLP.ModelZoo import load_items
 # TEST_GPU = torch.cuda.is_available()
 
 
-
 @pytest.fixture(scope="module")
 def standard_luna_data():
     data_path = path_append(abs_current_dir(__file__), "../../static/test_data/standard_luna_data.json", to_str=True)
