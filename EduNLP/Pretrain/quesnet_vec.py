@@ -361,7 +361,7 @@ class QuesnetDataset(Dataset):
             silent=False
         )
         tokenizer.set_meta_vocab(self.lines, silent=False)
-    
+
     def load_data_lines(self):
         '''Read data by row from a JSON file
 

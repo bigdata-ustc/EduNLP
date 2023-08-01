@@ -195,7 +195,7 @@ class QuesNet(BaseModel, FeatureExtractor):
 
         words = torch.cat(words, dim=0) if words else None
         ims = torch.cat(ims, dim=0) if ims else None
-        metas = torch.cat(metas, dim=0) if metas else None      
+        metas = torch.cat(metas, dim=0) if metas else None
 
         if pretrain:
             return (
