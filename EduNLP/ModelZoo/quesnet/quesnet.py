@@ -160,7 +160,7 @@ class QuesNet(BaseModel, FeatureExtractor):
 
             for i, fo in enumerate(q.false_options):
                 false_options[i].append([0] + fo)
-     
+
         lembs = SeqBatch(lembs, device=device)
         rembs = SeqBatch(rembs, device=device)
         embs = SeqBatch(embs, device=device)
@@ -195,24 +195,8 @@ class QuesNet(BaseModel, FeatureExtractor):
 
         words = torch.cat(words, dim=0) if words else None
         ims = torch.cat(ims, dim=0) if ims else None
-        metas = torch.cat(metas, dim=0) if metas else None
-        
-        
-        # print("debug1")
-        # print(lembs)
-        # print(rembs)
-        # print(words)
-        # print(ims)
-        # print(metas)
-        # print(wmask)
-        # print(imask)
-        # print(mmask)
-        # print(embs)
-        # print(ans_input)
-        # print(ans_output)
-        # print(false_opt_input)
-        
-        
+        metas = torch.cat(metas, dim=0) if metas else None      
+
         if pretrain:
             return (
                 lembs, rembs, words, ims, metas, wmask, imask, mmask,
@@ -331,7 +315,7 @@ class QuesNetForPreTraining(BaseModel):
         h = outputs.hidden
 
         x = ans_input.packed()
-        
+
         y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x[0].data), x.batch_sizes),
                                h.repeat(self.config.layers, 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),

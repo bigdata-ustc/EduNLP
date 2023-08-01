@@ -39,6 +39,7 @@ def save_list(item2index, path):
 def clip(v, low, high):
     return max(low, min(v, high))
 
+
 # Basic unit of Dataset
 Question = namedtuple('Question',
                       ['id', 'content', 'answer', 'false_options', 'labels'])
@@ -334,7 +335,7 @@ class QuesnetDataset(Dataset):
         option_key=lambda x: x['ques_options'],
         pipeline=None,
         skip=0
-        ):
+    ):
 
         self.filename = filename
         self.skip = skip
@@ -349,7 +350,7 @@ class QuesnetDataset(Dataset):
             tokenizer = QuesNetTokenizer(
                 meta=['know_name'],
                 img_dir=img_dir
-                )
+            )
         self.tokenizer = tokenizer
         self.meta = meta if meta else tokenizer.meta
         self.load_data_lines()
@@ -358,16 +359,15 @@ class QuesnetDataset(Dataset):
             key=lambda x: x['ques_content'],
             trim_min_count=2,
             silent=False
-            )
+        )
         tokenizer.set_meta_vocab(self.lines, silent=False)
-
     
     def load_data_lines(self):
         '''Read data by row from a JSON file
-        
+
         Important: the data file is loaded during initialization.
         '''
-        
+
         # TODO: All data is read into memory without chunking.
         #       This may lead to low efficiency.
         data_dir = self.filename
@@ -402,7 +402,7 @@ class QuesnetDataset(Dataset):
             meta = token['meta_idx']
 
             if self.answer_key(line).isalpha() and len(self.answer_key(line)) == 1 \
-                and ord(self.answer_key(line)) < 128 and len(self.option_key(line)) > 0:
+                    and ord(self.answer_key(line)) < 128 and len(self.option_key(line)) > 0:
                 answer_idx = ord(self.answer_key(line).upper()) - ord('A')
                 options = self.option_key(line)
                 answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)['seq_idx']
@@ -417,7 +417,7 @@ class QuesnetDataset(Dataset):
                 answer=answer,
                 false_options=false_options,
                 labels=meta
-                )
+            )
 
             if callable(self.pipeline):
                 qs = self.pipeline(qs)
@@ -556,17 +556,25 @@ def pretrain_embedding_layer(dataset: EmbeddingDataset, ae: AE, lr: float = 1e-3
 
 def optimizer(*models, **kwargs):
     _cur_optim = [
-        m.optim_cls(m.parameters(), **kwargs) 
-        if hasattr(m, 'optim_cls') 
+        m.optim_cls(m.parameters(), **kwargs)
+        if hasattr(m, 'optim_cls')
         else torch.optim.Adam(m.parameters(), **kwargs) for m in models
-        ]
+    ]
     if len(_cur_optim) == 1:
         return _cur_optim[0]
     else:
         return _cur_optim
 
-        
-def pretrain_quesnet(path, output_dir, pretrain_dir=None, img_dir=None, save_embs=False, load_embs=False, train_params=None):
+
+def pretrain_quesnet(
+    path,
+    output_dir,
+    pretrain_dir=None,
+    img_dir=None,
+    save_embs=False,
+    load_embs=False,
+    train_params=None
+):
     """ pretrain quesnet
 
     Parameters
@@ -672,7 +680,7 @@ def pretrain_quesnet(path, output_dir, pretrain_dir=None, img_dir=None, save_emb
             sentences=[[item] for item in emb_dict.keys()],
             min_count=1,
             vector_size=emb_size
-            )
+        )
         gensim_w2v.init_weights()
         gensim_w2v.train(corpus_iterable=w2v_corpus, total_examples=len(w2v_corpus), epochs=train_params['n_epochs'])
         w2v_emb = gensim_w2v.syn1neg
@@ -699,7 +707,7 @@ def pretrain_quesnet(path, output_dir, pretrain_dir=None, img_dir=None, save_emb
             batch_size=train_params['batch_size'],
             epochs=train_params['n_epochs'],
             device=device
-            )
+        )
         if save_embs:
             torch.save(trained_ie.state_dict(), os.path.join(output_dir, 'trained_ie.pt'))
         model.quesnet.load_img(trained_ie)
@@ -718,7 +726,7 @@ def pretrain_quesnet(path, output_dir, pretrain_dir=None, img_dir=None, save_emb
             batch_size=train_params['batch_size'],
             epochs=train_params['n_epochs'],
             device=device
-            )
+        )
         if save_embs:
             torch.save(trained_me.state_dict(), os.path.join(output_dir, 'trained_me.pt'))
         model.quesnet.load_meta(trained_me)

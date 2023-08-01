@@ -23,7 +23,7 @@ class SeqBatch:
         self._prefix = [0]
         self._index = {}
         c = 0
-        
+
         for i in range(self.lens[0]):
             for j in range(len(self.lens)):
                 if self.lens[j] <= i:
@@ -40,8 +40,9 @@ class SeqBatch:
 
     def padded(self, max_len=None, batch_first=False):
         if not self.seqs:
-            return torch.empty((0, 0), dtype=self.dtype, device=self.device), torch.empty((0, 0), dtype=torch.bool, device=self.device)
-    
+            return torch.empty((0, 0), dtype=self.dtype, device=self.device), \
+                torch.empty((0, 0), dtype=torch.bool, device=self.device)
+
         seqs = [torch.tensor(s, dtype=self.dtype, device=self.device)
                 if not isinstance(s, torch.Tensor) else s
                 for s in self.seqs]
