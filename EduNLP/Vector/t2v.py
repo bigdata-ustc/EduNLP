@@ -45,14 +45,13 @@ class T2V(object):
 
     Examples
     --------
-    >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
-    ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
+    >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$， \
+    ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$
+        \\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
     >>> model_dir = "examples/test_model/d2v"
     >>> url, model_name, *args = get_pretrained_model_info('d2v_test_256')
     >>> path = get_data(url, model_dir); # doctest: +ELLIPSIS
-    downloader, INFO http://base.ustc.edu.cn/data/model_zoo/modelhub/doc2vec_pub/1/d2v_test_256.zip is saved as examples\test_model\d2v\d2v_test_256.zip
-    Downloading examples\test_model\d2v\d2v_test_256.zip 100.00%: 4.73MB | 4.73MB
-    downloader, INFO examples\test_model\d2v\d2v_test_256.zip is unzip to examples\test_model\d2v\d2v_test_256
+    downloader, INFO ...
     >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
     >>> t2v = T2V('d2v',filepath=path)
     >>> print(t2v(item))
@@ -73,24 +72,20 @@ class T2V(object):
     def infer_vector(self, items, *args, **kwargs):
         """
         get question embedding with T2V
-        
         Parameters
         ----------
         items:list
-            a list of question 
-        
+            a list of question
         Returns
         -------
         vector:list
             numpy.ndarray([dtype=float32)]
-        
         """
         return self.i2v.infer_vector(items, *args, **kwargs)
 
     def infer_tokens(self, items, *args, **kwargs):
         """
         get token embeddings with T2V
-        
         NotImplemented
         """
         return self.i2v.infer_tokens(items, *args, **kwargs)
@@ -103,7 +98,6 @@ class T2V(object):
 def get_pretrained_model_info(name):
     """
     get the pretrained model information with the given name
-    
     Parameters
     ----------
     name:str
@@ -116,11 +110,9 @@ def get_pretrained_model_info(name):
         bert_taledu_768
         disenq_math_256
         quesnet_math_512
-    
     Returns
     --------
     list: [model url (where to download),  model name]
-    
     """
     url = MODELHUB_URL + 'getPretrainedModel'
     param = {'name': name}

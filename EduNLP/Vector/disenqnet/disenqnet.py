@@ -49,7 +49,8 @@ class DisenQModel(Vector):
         
         Parameters
         ----------
-        items: dict, {'content_idx': tensor(),'content_len': tensor()}, the tokens about question items after tokenizer processing
+        items: dict
+            {'content_idx': tensor(),'content_len': tensor()}, the tokens about question after tokenizer processing
 
         Returns:
             torch.Tensor: token embedding
