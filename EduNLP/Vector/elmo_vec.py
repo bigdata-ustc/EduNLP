@@ -23,7 +23,6 @@ class ElmoModel(Vector):
     def infer_vector(self, items: dict, **kwargs) -> torch.Tensor:
         """
         get sentence vector embedding with ElmoModel
-        
         Parameters
         ----------
         items: dict, {'seq_idx': tensor(),'seq_len':tensor()}, the tokens about question after tokenizer processing
@@ -41,7 +40,6 @@ class ElmoModel(Vector):
     def infer_tokens(self, items, **kwargs) -> torch.Tensor:
         """
         get tokens embedding with ElmoModel
-        
         Parameters
         ----------
         items: dict, {'seq_idx': tensor()}, the tokens about question after tokenizer processing

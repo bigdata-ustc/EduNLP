@@ -46,7 +46,6 @@ class DisenQModel(Vector):
         embeded, _, _ = self(items)
         """
         get tokens embedding with DisenQModel
-        
         Parameters
         ----------
         items: dict

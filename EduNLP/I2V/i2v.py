@@ -97,11 +97,9 @@ class I2V(object):
     def tokenize(self, items, *args, key=lambda x: x, **kwargs) -> list:
         """
         tokenize item
-        
         Parameter
         ----------
         items: a list of questions
-        
         Return
         ----------
         tokens: list
@@ -111,7 +109,6 @@ class I2V(object):
     def infer_vector(self, items, key=lambda x: x, **kwargs) -> tuple:
         """
         get question embedding
-        
         NotImplemented
         """
         raise NotImplementedError
@@ -127,7 +124,6 @@ class I2V(object):
     def save(self, config_path):
         """
         save model weights in config_path
-        
         Parameter:
         ----------
         config_path: str
