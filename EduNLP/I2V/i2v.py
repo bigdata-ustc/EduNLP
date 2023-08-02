@@ -8,8 +8,9 @@ from EduNLP.constant import MODEL_DIR
 from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model
 from ..Vector import get_pretrained_model_info, get_all_pretrained_models
 from longling import path_append
+from EduData import get_data
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer  
+from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
 __all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "DisenQ", "QuesNet", "get_pretrained_i2v"]
