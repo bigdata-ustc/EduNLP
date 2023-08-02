@@ -3,6 +3,7 @@
 
 import torch
 import json
+import os.path
 from typing import List, Tuple
 from EduNLP.constant import MODEL_DIR
 from ..Vector import T2V, get_pretrained_t2v as get_t2v_pretrained_model

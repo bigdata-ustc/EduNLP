@@ -1,6 +1,7 @@
 # coding: utf-8
 # 2021/8/1 @ tongshiwei
 
+from pickle import NONE
 from typing import Iterable, Union
 from ..SIF.segment import seg
 from ..SIF.tokenization import tokenize
