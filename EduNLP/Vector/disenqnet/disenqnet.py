@@ -44,6 +44,16 @@ class DisenQModel(Vector):
 
     def infer_tokens(self, items: dict, **kwargs) -> torch.Tensor:
         embeded, _, _ = self(items)
+        """
+        get tokens embedding with DisenQModel
+        
+        Parameters
+        ----------
+        items: dict, {'content_idx': tensor(),'content_len': tensor()}, the tokens about question items after tokenizer processing
+
+        Returns:
+            torch.Tensor: token embedding
+        """
         return embeded
 
     @property

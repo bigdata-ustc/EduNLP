@@ -2,9 +2,7 @@
 流水线
 =======
 
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: pipleine_gallery
-    :glob:
+.. nbinfo::
+    notebook: 
 
-    流水线  <../../build/blitz/pipeline/pipeline.ipynb>
+    `流水线 <../../build/blitz/pipeline/pipeline.ipynb>`_
