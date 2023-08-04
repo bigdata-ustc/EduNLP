@@ -6,7 +6,7 @@ from EduNLP.Vector.meta import Vector
 
 
 class QuesNetModel(Vector):
-    def __init__(self, pretrained_dir, img_dir=None, device="cpu", **kwargs):
+    def __init__(self, pretrained_dir, device="cpu", **kwargs):
         """
         Parameters
         ----------
@@ -18,7 +18,7 @@ class QuesNetModel(Vector):
             image dir
         """
         self.device = torch.device(device)
-        self.model = QuesNet.from_pretrained(pretrained_dir, img_dir=img_dir).to(self.device)
+        self.model = QuesNet.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
     def __call__(self, items: dict):
