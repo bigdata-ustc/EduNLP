@@ -10,13 +10,13 @@ EduNLP.Vector.t2v
 
 
 EduNLP.Vector.disenqnet
---------------------
+-------------------------
 
 .. automodule:: EduNLP.Vector.disenqnet.disenqnet
    :members:
 
 EduNLP.Vector.quesnet
---------------------
+-------------------------
 
 .. automodule:: EduNLP.Vector.quesnet.quesnet
    :members:

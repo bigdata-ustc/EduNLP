@@ -114,3 +114,5 @@ autodoc_default_options = {
     'undoc-members': True,
 }
 autodoc_member_order = 'bysource'
+
+nbsphinx_allow_errors = True

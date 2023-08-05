@@ -66,11 +66,32 @@ class W2V(Vector):
         return self.wv[item] if index not in self.constants.values() else np.zeros((self.vector_size,))
 
     def infer_vector(self, items, agg="mean", **kwargs) -> list:
+        """
+        get sentence embedding with word2vec model
+        Parameters
+        ----------
+        item: list, the tokens after tokenizer processing
+        Return
+        ------
+        vector: list
+            [array(), ..., array()]
+        """
         token_vectors = self.infer_tokens(items, **kwargs)
         # return [eval("np.%s" % agg)(item, axis=0) if item else np.array([]) for item in token_vectors]
         return [eval("np.%s" % agg)(item, axis=0) if item else np.zeros(self.vector_size,) for item in token_vectors]
 
     def infer_tokens(self, items, **kwargs) -> list:
+        """
+        get token embedding with word2vec model
+        Parameters
+        ----------
+        item: list
+            the tokens after tokenizer processing
+        Return
+        ------
+        vector: list
+            [[array(), ..., array()], [...], [...]]
+        """
         return [list(self(*item)) for item in items]
 
 
@@ -95,6 +116,17 @@ class BowLoader(object):
         self.dictionary = corpora.Dictionary.load(filepath)
 
     def infer_vector(self, item, return_vec=False):
+        """
+        get Bow vector
+        Parameters
+        ----------
+        item: list
+            the tokens after tokenizer processing
+        Return
+        ------
+        vector: list
+            [array(), ..., array()]
+        """
         item = self.dictionary.doc2bow(item)
         if not return_vec:
             return item  # return dic as default
@@ -121,6 +153,17 @@ class TfidfLoader(object):
         self.dictionary = corpora.Dictionary.load(dictionary_path)
 
     def infer_vector(self, item, return_vec=False):
+        """
+        get Tf-idf vector
+        Parameters
+        ----------
+        item: list
+            the tokens after tokenizer processing
+        Return
+        ------
+        vector: list
+            [array(), ..., array()]
+        """
         dic_item = self.dictionary.doc2bow(item)
         tfidf_item = self.tfidf_model[dic_item]
         # return dic as default
@@ -181,7 +224,22 @@ class D2V(Vector):
             return self.d2v.vector_size
 
     def infer_vector(self, items, *args, **kwargs) -> list:
+        """
+        get vector with D2V model
+        Parameters
+        ----------
+        item: list
+            the tokens after tokenizer processing
+        Return
+        ------
+        vector: list
+            [array(), ..., array()]
+        """
         return [self(item) for item in items]
 
     def infer_tokens(self, item, *args, **kwargs) -> ...:
+        """
+        get token embeddings with D2V
+        NotImplemented
+        """
         raise NotImplementedError

@@ -133,29 +133,18 @@ I2V 向量化容器
 
 更多I2V容器使用示例
 ------------------------------------
+    
+`W2V向量化  <../../build/blitz/i2v/i2v_w2v.ipynb>`_
 
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: i2v_gallery1
-    :glob:
-    
-    W2V向量化  <../../build/blitz/i2v/i2v_w2v.ipynb>
-    
-    D2V向量化  <../../build/blitz/i2v/i2v_d2v.ipynb>
-    
-    Elmo向量化  <../../build/blitz/i2v/i2v_elmo.ipynb>
+`D2V向量化  <../../build/blitz/i2v/i2v_d2v.ipynb>`_
 
+`Elmo向量化  <../../build/blitz/i2v/i2v_elmo.ipynb>`_
 
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: i2v_gallery2
-    :glob:
-    
-    Bert向量化  <../../build/blitz/i2v/i2v_bert.ipynb>
-    
-    DisenQNet向量化  <../../build/blitz/i2v/i2v_disenq.ipynb>
-    
-    QuesNet向量化  <../../build/blitz/i2v/i2v_quesnet.ipynb>
+`Bert向量化  <../../build/blitz/i2v/i2v_bert.ipynb>`_
+
+`DisenQNet向量化  <../../build/blitz/i2v/i2v_disenq.ipynb>`_
+
+`QuesNet向量化  <../../build/blitz/i2v/i2v_quesnet.ipynb>`_
 
 
 
@@ -246,11 +235,7 @@ T2V 向量化容器
    # 或
    # t2v = W2V(path)
 
-<<<<<<< HEAD
    item_vector = t2v.infer_vector(token_items)
-=======
-   tem_vector = t2v.infer_vector(token_items)
->>>>>>> upstream/dev
    # [array(), ..., array()]
    token_vector = t2v.infer_tokens(token_items)
    # [[array(), ..., array()], [...], [...]]
@@ -264,25 +249,15 @@ T2V 向量化容器
 更多T2V容器使用示例
 ------------------------------------
 
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: t2v_gallery1
-    :glob:
-    
-    W2V向量化  <../../build/blitz/t2v/t2v_w2v.ipynb>
 
-    D2V向量化  <../../build/blitz/t2v/t2v_d2v.ipynb>
+`W2V向量化  <../../build/blitz/t2v/t2v_w2v.ipynb>`_
 
-    Elmo向量化  <../../build/blitz/t2v/t2v_elmo.ipynb>
+`D2V向量化  <../../build/blitz/t2v/t2v_d2v.ipynb>`_
 
+`Elmo向量化  <../../build/blitz/t2v/t2v_elmo.ipynb>`_
 
-.. nbgallery::
-    :caption: This is a thumbnail gallery:
-    :name: t2v_gallery2
-    :glob:
+`Bert向量化  <../../build/blitz/t2v/t2v_bert.ipynb>`_
     
-    Bert向量化  <../../build/blitz/t2v/t2v_bert.ipynb>
+`DisenQNet向量化  <../../build/blitz/t2v/t2v_disenq.ipynb>`_
     
-    DisenQNet向量化  <../../build/blitz/t2v/t2v_disenq.ipynb>
-    
-    QuesNet向量化  <../../build/blitz/t2v/t2v_quesnet.ipynb>
+`QuesNet向量化  <../../build/blitz/t2v/t2v_quesnet.ipynb>`_
