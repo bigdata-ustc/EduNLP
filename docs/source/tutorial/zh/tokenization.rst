@@ -30,6 +30,31 @@
    >>> tokenize(seg(items), formula_params={"method": "ast"})
    ['如图所示', '三角形', <Formula: ABC>, '面积', '\\\\SIFBlank', \\FigureID{1}]
 
+::
+   EduNLP.SIF.tokenize的函数形式及参数定义如下：
+   def tokenize(segment_list: SegmentList, text_params=None, formula_params=None, figure_params=None):
+    """
+    an actual api to tokenize item
+
+    Parameters
+    ----------
+    segment_list:list
+        segmented item
+    text_params:dict
+        the method to duel with text
+    formula_params:dict
+        the method to duel with formula
+    figure_params:dict
+        the method to duel with figure
+
+    Returns
+    ----------
+    list
+        tokenized item
+
+    """
+    return TokenList(segment_list, text_params, formula_params, figure_params)
+
 
 标准接口
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -97,6 +122,28 @@ CharTokenizer
    ['文', '具', '店', '有', '$', '600', '$', '本', '练', '习', '本', '卖', '出', '一', '些', '后', 
    '还', '剩', '$', '4', '$', '包', '每', '包', '$', '25', '$', '本', '卖', '出', '多', '少', '本']
 
+::
+
+   CharTokenizer定义如下：
+   class CharTokenizer(Tokenizer):
+    def __init__(self, stop_words="punctuations", **kwargs) -> None:
+        """Tokenize text char by char. eg. "题目内容" -> ["题",  "目",  "内", 容"]
+
+        Parameters
+        ----------
+        stop_words : str, optional
+            stop_words to skip, by default "default"
+        """
+        self.stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "punctuations" else stop_words
+        self.stop_words = stop_words if stop_words is not None else set()
+
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
+        for item in items:
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        tokens = tokenize_text(key(item).strip(), granularity="char", stopwords=self.stop_words)
+        return tokens
 
 SpaceTokenizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -118,6 +165,30 @@ SpaceTokenizer
    ['已知集合$A=\\left\\{x', '\\mid', 'x^{2}-3', 'x-4<0\\right\\},', '\\quad', 
     'B=\\{-4,1,3,5\\},', '\\quad$', '则', '$A', '\\cap', 'B=$']
 
+:: 
+   
+   SpaceTokenizer定义如下：
+   class SpaceTokenizer(Tokenizer):
+    """Tokenize text by space. eg. "题目 内容" -> ["题目", "内容"]
+
+    Parameters
+    ----------
+    stop_words : str, optional
+        stop_words to skip, by default "default"
+    """
+    def __init__(self, stop_words="punctuations", **kwargs) -> None:
+        stop_words = set("\n\r\t .,;?\"\'。．，、；？“”‘’（）") if stop_words == "punctuations" else stop_words
+        self.stop_words = stop_words if stop_words is not None else set()
+
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
+        for item in items:
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        tokens = key(item).strip().split(' ')
+        if self.stop_words:
+            tokens = [w for w in tokens if w != '' and w not in self.stop_words]
+        return tokens
 
 CustomTokenizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -145,6 +216,55 @@ CustomTokenizer
    >>> print(next(tokens))
    ['已知', '集合', '[FORMULA]', '[FORMULA]']
 
+::
+   
+   CustomTokenizer定义如下：
+   class CustomTokenizer(Tokenizer):
+    def __init__(self, symbol="gmas", figures=None, **kwargs):
+        """Tokenize SIF items by customized configuration
+
+        Parameters
+        ----------
+        symbol : str, optional
+            Elements to symbolize before tokenization, by default "gmas"
+        figures : _type_, optional
+            Info for figures in items, by default None
+        kwargs: addtional configuration for SIF items
+            including text_params, formula_params, figure_params, more details could be found in `EduNLP.SIF.sif4sci`
+        """
+        self.tokenization_params = {
+            "text_params": kwargs.get("text_params", None),
+            "formula_params": kwargs.get("formula_params", None),
+            "figure_params": kwargs.get("figure_params", None)
+        }
+        self.symbol = symbol
+        self.figures = figures
+
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
+        """Tokenize items, return iterator genetator
+
+        Parameters
+        ----------
+        item : Iterable
+            question items
+        key : function, optional
+            determine how to get the text of items, by default lambdax: x
+        """
+        for item in items:
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        """Tokenize one item, return token list
+
+        Parameters
+        ----------
+        item : Union[str, dict]
+            question item
+        key : function, optional
+            determine how to get the text of item, by default lambdax: x
+        """
+        return tokenize(seg(key(item), symbol=self.symbol, figures=self.figures),
+                        **self.tokenization_params, **kwargs).tokens
 
 
 
@@ -166,6 +286,55 @@ PureTextTokenizer
    >>> print(next(tokens))
    ['公式', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
 
+::
+   
+   PureTextTokenizer定义如下：
+   class PureTextTokenizer(Tokenizer):
+    def __init__(self, handle_figure_formula="skip", **kwargs):
+        """
+        Treat all elements in SIF item as prue text. Spectially, tokenize formulas as text.
+
+        Parameters
+        ----------
+        handle_figure_formula : str, optional
+            whether to skip or symbolize special formulas( $\\FormFigureID{…}$ and $\\FormFigureBase64{…}),
+            by default skip
+
+        """
+        # Formula images are skipped by default
+        if handle_figure_formula == "skip":
+            skip_figure_formula = True
+            symbolize_figure_formula = False
+        elif handle_figure_formula == "symbolize":
+            skip_figure_formula = False
+            symbolize_figure_formula = True
+        elif handle_figure_formula is None:
+            skip_figure_formula, symbolize_figure_formula = False, False
+        else:
+            raise ValueError('handle_figure_formula should be one in ["skip", "symbolize", None]')
+        formula_params = {
+            "method": "linear",
+            "skip_figure_formula": skip_figure_formula,
+            "symbolize_figure_formula": symbolize_figure_formula
+        }
+        text_params = {
+            "granularity": "word",
+            "stopwords": "default",
+        }
+        formula_params.update(kwargs.pop("formula_params", {}))
+        text_params.update(kwargs.pop("text_params", {}))
+        self.tokenization_params = {
+            "formula_params": formula_params,
+            "text_params": text_params,
+            "figure_params": kwargs.get("figure_params", None)
+        }
+
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
+        for item in items:
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        return tokenize(seg(key(item), symbol="gmas"), **self.tokenization_params, **kwargs).tokens
 
 
 AstFormulaTokenizer
@@ -184,6 +353,54 @@ AstFormulaTokenizer
    >>> print(next(tokens))
    ['公式', '[FORMULA]', '如图', '[FIGURE]', 'mathord_0', ',', 'mathord_1', '约束条件', '公式', 
     '[FORMULA]', '[SEP]', 'mathord_2', '=', 'mathord_0', '+', 'textord', 'mathord_1', '最大值', '[MARK]']
+
+::
+   AstFormulaTokenizer定义如下：
+   class AstFormulaTokenizer(Tokenizer):
+    def __init__(self, symbol="gmas", figures=None, **kwargs):
+        """Tokenize formulas in SIF items by AST parser.
+
+        Parameters
+        ----------
+        symbol : str, optional
+            Elements to symbolize before tokenization, by default "gmas"
+        figures : _type_, optional
+            Info for figures in items, by default None
+        """
+        formula_params = {
+            "method": "ast",
+
+            "ord2token": True,
+            "return_type": "list",
+            "var_numbering": True,
+
+            "skip_figure_formula": False,
+            "symbolize_figure_formula": True
+        }
+        text_params = {
+            "granularity": "word",
+            "stopwords": "default",
+        }
+        formula_params.update(kwargs.pop("formula_params", {}))
+        text_params.update(kwargs.pop("text_params", {}))
+        self.tokenization_params = {
+            "formula_params": formula_params,
+            "text_params": text_params,
+            "figure_params": kwargs.pop("figure_params", None),
+        }
+        self.symbol = symbol
+        self.figures = figures
+
+    def __call__(self, items: Iterable, key=lambda x: x, **kwargs):
+        for item in items:
+            yield self._tokenize(item, key=key, **kwargs)
+
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+        mode = kwargs.pop("mode", 0)
+        ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=mode,
+                      tokenization_params=self.tokenization_params, errors="ignore", **kwargs)
+        ret = [] if ret is None else ret.tokens
+        return ret
 
 
 
@@ -213,6 +430,59 @@ GensimWordTokenizer
    >>> print(token_item.tokens)
    ['已知', '公式', '[FORMULA]', '如图', '[FIGURE]', 'x', ',', 'y', '约束条件', '公式', '[FORMULA]', '[SEP]', 'z', '=', 'x', '+', '7', 'y', '最大值', '[MARK]']
 
+::
+   
+   GensimWordTokenizer定义如下：
+   class GensimWordTokenizer(object):
+    """
+
+    Parameters
+    ----------
+    symbol: str
+        select the methods to symbolize:
+            "t": text,
+            "f": formula,
+            "g": figure,
+            "m": question mark,
+            "a": tag,
+            "s": sep,
+        e.g.: gm, fgm, gmas, fgmas
+    general: bool
+
+        True: when item isn't in standard format, and want to tokenize formulas(except formulas in figure) linearly.
+
+        False: when use 'ast' mothed to tokenize formulas instead of 'linear'.
+
+    Returns
+    ----------
+    tokenizer: Tokenizer
+
+    """
+    def __init__(self, symbol="gm", general=False):
+        self.symbol = symbol
+        if general is True:
+            self.tokenization_params = {
+                "formula_params": {
+                    "method": "linear",
+                    "symbolize_figure_formula": True
+                }
+            }
+        else:
+            self.tokenization_params = {
+                "formula_params": {
+                    "method": "ast",
+                    "return_type": "list",
+                    "ord2token": True
+                }
+            }
+
+    def batch_process(self, *items):
+        pass
+
+    def __call__(self, item):
+        return sif4sci(
+            item, symbol=self.symbol, tokenization_params=self.tokenization_params, errors="ignore"
+        )
 
 
 
@@ -244,6 +514,71 @@ GensimSegTokenizer
    token_item = tokenizer(item)
    print(len(token_item), token_item)
    # 2 [['[TEXT_BEGIN]', '已知', '公式', '[FORMULA_BEGIN]', \FormFigureID{1}, '[TEXT_BEGIN]', '如图', '[FIGURE]', '[FORMULA_BEGIN]', 'mathord', ',', 'mathord', '[TEXT_BEGIN]', '约束条件', '公式', '[FORMULA_BEGIN]', [FORMULA], '[SEP]'], ['[FORMULA_BEGIN]', 'mathord', '=', 'mathord', '+', 'textord', 'mathord', '[TEXT_BEGIN]', '最大值', '[MARK]']]
+
+::
+
+   GensimSegTokenizer定义如下：
+   class GensimSegTokenizer(object):  # pragma: no cover
+    """
+
+    Parameters
+    ----------
+    symbol:str
+        select the methods to symbolize:
+            "t": text,
+            "f": formula,
+            "g": figure,
+            "m": question mark,
+            "a": tag,
+            "s": sep,
+        e.g. gms, fgm
+
+    depth: int or None
+
+        0: only separate at \\SIFSep ;
+        1: only separate at \\SIFTag ;
+        2: separate at \\SIFTag and \\SIFSep ;
+        otherwise, separate all segments ;
+
+    Returns
+    ----------
+    tokenizer: Tokenizer
+
+    """
+    def __init__(self, symbol="gms", depth=None, flatten=False, **kwargs):
+        self.symbol = symbol
+        self.tokenization_params = {
+            "formula_params": {
+                "method": "ast",
+                "return_type": "list",
+                "ord2token": True
+            }
+        }
+        self.kwargs = dict(
+            add_seg_type=True if depth in {0, 1, 2} else False,
+            add_seg_mode="head",
+            depth=depth,
+            drop="s" if depth not in {0, 1, 2} else ""
+        )
+        self.kwargs.update(kwargs)
+        self.flatten = flatten
+
+    def __call__(self, item, flatten=None, **kwargs):
+        flatten = self.flatten if flatten is None else flatten
+        tl = sif4sci(
+            item, symbol=self.symbol, tokenization_params=self.tokenization_params, errors="ignore"
+        )
+        if kwargs:
+            _kwargs = deepcopy(self.kwargs)
+            _kwargs.update(kwargs)
+        else:
+            _kwargs = self.kwargs
+        if tl:
+            ret = tl.get_segments(**_kwargs)
+            if flatten is True:
+                return it.chain(*ret)
+            return ret
+        return tl
 
 
 更多示例
