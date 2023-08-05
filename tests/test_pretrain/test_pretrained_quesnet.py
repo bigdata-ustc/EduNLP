@@ -9,7 +9,8 @@ from EduNLP.Vector import T2V
 from EduNLP.Vector.quesnet import QuesNetModel
 from EduNLP.I2V import QuesNet as QuesNetI2V, get_pretrained_i2v
 from EduNLP.utils import abs_current_dir, path_append
-from conftest import TEST_GPU
+
+TEST_GPU = False
 
 
 class TestPretrainQuesNet:
@@ -67,10 +68,11 @@ class TestPretrainQuesNet:
     def test_train_quesnet(self, standard_luna_data, pretrained_model_dir):
         test_items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
-                    如图$\\FigureID{000004d6-0479-11ec-829b-797d5eb43535}$,\
-                    若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'},
+            如图$\\FigureID{000004d6-0479-11ec-829b-797d5eb43535}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'},
             {'ques_content': '如图$\\FigureID{000004d6-0479-11ec-829b-797d5eb43535}$, \
-                    若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
+                若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$',
+             "ques_figure_ids": ["000004d6-0479-11ec-829b-797d5eb43535"],
+             "ques_figure_paths": ["../../static/test_data/quesnet_img/000004d6-0479-11ec-829b-797d5eb43535.png"]}
         ]
 
         ques_file = path_append(abs_current_dir(__file__),
@@ -82,6 +84,7 @@ class TestPretrainQuesNet:
             pretrained_model_dir,
             img_dir=img_dir,
             save_embs=True,
+            load_embs=False,
             # data_params={
             #     "stem_key": "ques_content"
             # },
@@ -137,7 +140,9 @@ class TestPretrainQuesNet:
     def test_quesnet_i2v(self, pretrained_model_dir):
         items = [
             {'ques_content': '如图$\\FigureID{000004d6-0479-11ec-829b-797d5eb43535}$, \
-                若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
+                若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$',
+             "ques_figure_ids": ["000004d6-0479-11ec-829b-797d5eb43535"],
+             "ques_figure_paths": ["../../static/test_data/quesnet_img/000004d6-0479-11ec-829b-797d5eb43535.png"]}
         ]
         img_dir = path_append(abs_current_dir(__file__),
                               "../../static/test_data/quesnet_img", to_str=True)

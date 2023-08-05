@@ -9,7 +9,7 @@ from EduNLP.Pretrain import train_elmo_for_property_prediction, train_elmo_for_k
 from EduNLP.Vector import T2V, ElmoModel
 from EduNLP.I2V import Elmo, get_pretrained_i2v
 
-from conftest import TEST_GPU
+TEST_GPU = False
 
 
 class TestPretrainEmlo:
