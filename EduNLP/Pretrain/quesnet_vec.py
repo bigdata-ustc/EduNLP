@@ -164,7 +164,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                     fig_id = f"{w.src[10:-1]}"
                     fig_index = item['ques_figure_ids'].index(fig_id)
 
-                    if self.img_dir != None:
+                    if self.img_dir is not None:
                         fig_src = os.path.join(self.img_dir, fig_id)
                         if '.png' in item['ques_figure_paths'][fig_index]:
                             fig_src += '.png'
