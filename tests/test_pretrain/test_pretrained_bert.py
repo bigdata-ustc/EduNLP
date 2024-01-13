@@ -1,6 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
+os.environ["WANDB_DISABLED"] = "true"
 import torch
 from EduNLP.ModelZoo.bert import BertForPropertyPrediction, BertForKnowledgePrediction
 from transformers import BertModel as HFBertModel
@@ -9,7 +9,7 @@ from EduNLP.Pretrain import finetune_bert_for_property_prediction, finetune_bert
 from EduNLP.Vector import T2V, BertModel
 from EduNLP.I2V import Bert, get_pretrained_i2v
 
-from conftest import TEST_GPU
+TEST_GPU = False
 
 
 class TestPretrainBert:
@@ -205,6 +205,8 @@ class TestPretrainBert:
         assert len(t_vec[0][0]) == i2v.vector_size
 
         i_vec = i2v.infer_item_vector(items, key=lambda x: x['stem'])
+        assert len(i_vec[0]) == i2v.vector_size
+        i_vec = i2v.infer_item_vector(items, key=lambda x: x['stem'], pooling_strategy='average')
         assert len(i_vec[0]) == i2v.vector_size
         t_vec = i2v.infer_token_vector(items, key=lambda x: x['stem'])
         assert len(t_vec[0][0]) == i2v.vector_size

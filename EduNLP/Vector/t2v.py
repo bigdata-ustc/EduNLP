@@ -45,7 +45,7 @@ class T2V(object):
 
     Examples
     --------
-    >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
+    >>> item = [{'ques_content':'有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$， \
     ... 如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}]
     >>> model_dir = "examples/test_model/d2v"
     >>> url, model_name, *args = get_pretrained_model_info('d2v_test_256')
@@ -69,9 +69,24 @@ class T2V(object):
         return self.i2v.infer_vector(items, *args, **kwargs)
 
     def infer_vector(self, items, *args, **kwargs):
+        """
+        get question embedding with T2V
+        Parameters
+        ----------
+        items:list
+            a list of question
+        Returns
+        -------
+        vector:list
+            numpy.ndarray([dtype=float32)]
+        """
         return self.i2v.infer_vector(items, *args, **kwargs)
 
     def infer_tokens(self, items, *args, **kwargs):
+        """
+        get token embeddings with T2V
+        NotImplemented
+        """
         return self.i2v.infer_tokens(items, *args, **kwargs)
 
     @property
@@ -80,6 +95,24 @@ class T2V(object):
 
 
 def get_pretrained_model_info(name):
+    """
+    get the pretrained model information with the given name
+    Parameters
+    ----------
+    name:str
+        select the pretrained model
+        e.g.:
+        d2v_math_300
+        w2v_math_300
+        elmo_math_2048
+        bert_math_768
+        bert_taledu_768
+        disenq_math_256
+        quesnet_math_512
+    Returns
+    --------
+    list: [model url (where to download),  model name]
+    """
     url = MODELHUB_URL + 'getPretrainedModel'
     param = {'name': name}
     r = requests.get(url, params=param)
@@ -89,6 +122,14 @@ def get_pretrained_model_info(name):
 
 
 def get_all_pretrained_models():
+    """
+    get all pretrained models' name
+
+    Returns
+    -------
+    the pretrained models' name:list
+        e.g.['bert_bio_ptc', 'bert_geo_ptc', 'bert_math_768', ... ]
+    """
     url = MODELHUB_URL + 'getPretrainedModelList'
     r = requests.get(url)
     assert r.status_code == 200, r.status_code
@@ -96,7 +137,7 @@ def get_all_pretrained_models():
     return r['name']
 
 
-def get_pretrained_t2v(name, model_dir=MODEL_DIR, **kwargs):
+def get_pretrained_t2v(name, model_dir=MODEL_DIR, device='cpu', **kwargs):
     """
     It is a good idea if you want to switch token list to vector earily.
 
@@ -138,4 +179,4 @@ def get_pretrained_t2v(name, model_dir=MODEL_DIR, **kwargs):
     if model_name in ["d2v", "w2v"]:
         postfix = ".bin" if model_name == "d2v" else ".kv"
         model_path = path_append(model_path, os.path.basename(model_path) + postfix, to_str=True)
-    return T2V(model_name, model_path, *args, **kwargs)
+    return T2V(model_name, model_path, device=device, *args, **kwargs)

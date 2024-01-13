@@ -1,3 +1,9 @@
+v1.0.0
+    1. Support cuda for I2V and T2V.
+    2. Add demos for downstream tasks including knowledge & difficulty & discrimination prediction, similarity prediction and paper segmentation.
+    3. Refactor quesnet for pretrain and vectorization.
+    4. Update documents about tutorials and API.
+
 v0.0.9
     1. Refactor tokenizer Basic Tokenizer and Pretrained Tokenizer
     2. Refactor model structures following huggingface styles for Elmo, BERT, DisenQNet and QuesNet

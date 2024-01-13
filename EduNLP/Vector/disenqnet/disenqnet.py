@@ -1,8 +1,9 @@
 import torch
 from EduNLP.ModelZoo.disenqnet.disenqnet import DisenQNet
+from EduNLP.Vector.meta import Vector
 
 
-class DisenQModel(object):
+class DisenQModel(Vector):
     def __init__(self, pretrained_dir, device="cpu"):
         """
         Parameters
@@ -13,10 +14,11 @@ class DisenQModel(object):
             cpu or cuda, default is cpu
         """
         self.device = device
-        self.model = DisenQNet.from_pretrained(pretrained_dir)
-        self.model.to(self.device)
+        self.model = DisenQNet.from_pretrained(pretrained_dir).to(self.device)
+        self.model.eval()
 
-    def __call__(self, items: dict, **kwargs):
+    def __call__(self, items: dict):
+        self.cuda_tensor(items)
         outputs = self.model(**items)
         return outputs.embeded, outputs.k_hidden, outputs.i_hidden
 
@@ -42,6 +44,16 @@ class DisenQModel(object):
 
     def infer_tokens(self, items: dict, **kwargs) -> torch.Tensor:
         embeded, _, _ = self(items)
+        """
+        get tokens embedding with DisenQModel
+        Parameters
+        ----------
+        items: dict
+            {'content_idx': tensor(),'content_len': tensor()}, the tokens about question after tokenizer processing
+
+        Returns:
+            torch.Tensor: token embedding
+        """
         return embeded
 
     @property

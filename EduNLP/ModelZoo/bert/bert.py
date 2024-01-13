@@ -1,28 +1,27 @@
 import torch
 from torch import nn
-from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
-from baize.torch import load_net
-import torch.nn.functional as F
 import json
 import os
 from ..base_model import BaseModel
-from transformers.modeling_outputs import ModelOutput
-from transformers import BertModel, PretrainedConfig
-from typing import List, Optional
+from ..utils import PropertyPredictionOutput, KnowledgePredictionOutput
+from transformers import BertModel, PretrainedConfig, BertConfig
+from typing import List
 from ..rnn.harnn import HAM
+
 
 __all__ = ["BertForPropertyPrediction", "BertForKnowledgePrediction"]
 
 
-class BertForPPOutput(ModelOutput):
-    loss: torch.FloatTensor = None
-    logits: torch.FloatTensor = None
-
-
 class BertForPropertyPrediction(BaseModel):
-    def __init__(self, pretrained_model_dir=None, head_dropout=0.5):
+    def __init__(self, pretrained_model_dir=None, head_dropout=0.5, init=True):
         super(BertForPropertyPrediction, self).__init__()
-        self.bert = BertModel.from_pretrained(pretrained_model_dir)
+        bert_config = BertConfig.from_pretrained(pretrained_model_dir)
+        if init:
+            print(f'Load BertModel from checkpoint: {pretrained_model_dir}')
+            self.bert = BertModel.from_pretrained(pretrained_model_dir)
+        else:
+            print(f'Load BertModel from config: {pretrained_model_dir}')
+            self.bert = BertModel(bert_config)
         self.hidden_size = self.bert.config.hidden_size
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
@@ -30,7 +29,7 @@ class BertForPropertyPrediction(BaseModel):
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
 
-        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "bert_config"]}
         self.config['architecture'] = 'BertForPropertyPrediction'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -47,44 +46,54 @@ class BertForPropertyPrediction(BaseModel):
         loss = None
         if labels is not None:
             loss = self.criterion(logits, labels) if labels is not None else None
-        return BertForPPOutput(
+        return PropertyPredictionOutput(
             loss=loss,
             logits=logits,
         )
 
     @classmethod
     def from_config(cls, config_path, **kwargs):
+        config_path = os.path.join(os.path.dirname(config_path), 'model_config.json')
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
+            model_config['pretrained_model_dir'] = os.path.dirname(config_path)
             model_config.update(kwargs)
             return cls(
                 pretrained_model_dir=model_config['pretrained_model_dir'],
-                head_dropout=model_config.get("head_dropout", 0.5)
+                head_dropout=model_config.get("head_dropout", 0.5),
+                init=model_config.get('init', False)
             )
 
-    # @classmethod
-    # def from_pretrained(cls):
-    #     NotImplementedError
-    #     # 需要验证是否和huggingface的模型兼容
+    def save_config(self, config_dir):
+        config_path = os.path.join(config_dir, "model_config.json")
+        with open(config_path, "w", encoding="utf-8") as wf:
+            json.dump(self.config.to_dict(), wf, ensure_ascii=False, indent=2)
+        self.bert.config.save_pretrained(config_dir)
 
 
 class BertForKnowledgePrediction(BaseModel):
     def __init__(self,
+                 pretrained_model_dir=None,
                  num_classes_list: List[int] = None,
                  num_total_classes: int = None,
-                 pretrained_model_dir=None,
                  head_dropout=0.5,
                  flat_cls_weight=0.5,
                  attention_unit_size=256,
                  fc_hidden_size=512,
                  beta=0.5,
+                 init=True
                  ):
         super(BertForKnowledgePrediction, self).__init__()
-        self.bert = BertModel.from_pretrained(pretrained_model_dir)
+        bert_config = BertConfig.from_pretrained(pretrained_model_dir)
+        if init:
+            print(f'Load BertModel from checkpoint: {pretrained_model_dir}')
+            self.bert = BertModel.from_pretrained(pretrained_model_dir)
+        else:
+            print(f'Load BertModel from config: {pretrained_model_dir}')
+            self.bert = BertModel(bert_config)
         self.hidden_size = self.bert.config.hidden_size
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
-        self.classifier = nn.Linear(self.hidden_size, 1)
         self.sigmoid = nn.Sigmoid()
         self.criterion = nn.MSELoss()
         self.flat_classifier = nn.Linear(self.hidden_size, num_total_classes)
@@ -101,7 +110,7 @@ class BertForKnowledgePrediction(BaseModel):
         self.num_classes_list = num_classes_list
         self.num_total_classes = num_total_classes
 
-        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__"]}
+        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "bert_config"]}
         self.config['architecture'] = 'BertForKnowledgePrediction'
         self.config = PretrainedConfig.from_dict(self.config)
 
@@ -124,15 +133,17 @@ class BertForKnowledgePrediction(BaseModel):
             labels = torch.sum(torch.nn.functional.one_hot(labels, num_classes=self.num_total_classes), dim=1)
             labels = labels.float()
             loss = self.criterion(logits, labels) if labels is not None else None
-        return BertForPPOutput(
+        return KnowledgePredictionOutput(
             loss=loss,
             logits=logits,
         )
 
     @classmethod
     def from_config(cls, config_path, **kwargs):
+        config_path = os.path.join(os.path.dirname(config_path), 'model_config.json')
         with open(config_path, "r", encoding="utf-8") as rf:
             model_config = json.load(rf)
+            model_config['pretrained_model_dir'] = os.path.dirname(config_path)
             model_config.update(kwargs)
             return cls(
                 pretrained_model_dir=model_config['pretrained_model_dir'],
@@ -143,9 +154,11 @@ class BertForKnowledgePrediction(BaseModel):
                 attention_unit_size=model_config.get('attention_unit_size', 256),
                 fc_hidden_size=model_config.get('fc_hidden_size', 512),
                 beta=model_config.get('beta', 0.5),
+                init=model_config.get('init', False)
             )
 
-    # @classmethod
-    # def from_pretrained(cls):
-    #     NotImplementedError
-    #     # 需要验证是否和huggingface的模型兼容
+    def save_config(self, config_dir):
+        config_path = os.path.join(config_dir, "model_config.json")
+        with open(config_path, "w", encoding="utf-8") as wf:
+            json.dump(self.config.to_dict(), wf, ensure_ascii=False, indent=2)
+        self.bert.config.save_pretrained(config_dir)

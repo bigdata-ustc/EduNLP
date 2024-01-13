@@ -38,7 +38,7 @@ except ModuleNotFoundError:
 
 vec_deps = [
     'gensim',
-    'transformers',
+    'transformers<4.29.0',
     'torchvision',
     'datasets'] + ml_pytorch_deps
 

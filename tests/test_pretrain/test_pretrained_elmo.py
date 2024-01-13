@@ -1,6 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
-
+os.environ["WANDB_DISABLED"] = "true"
 import pytest
 import torch
 from EduNLP.ModelZoo.rnn import ElmoLM
@@ -9,7 +9,7 @@ from EduNLP.Pretrain import train_elmo_for_property_prediction, train_elmo_for_k
 from EduNLP.Vector import T2V, ElmoModel
 from EduNLP.I2V import Elmo, get_pretrained_i2v
 
-from conftest import TEST_GPU
+TEST_GPU = False
 
 
 class TestPretrainEmlo:
@@ -196,7 +196,7 @@ class TestPretrainEmlo:
         t2v = ElmoModel(pretrained_model_dir)
         encodes = tokenizer(items, key=lambda x: x['stem'])
         output = t2v(encodes)
-        assert output.shape[1] == t2v.vector_size
+        assert output.forward_output.shape[-1] == t2v.vector_size // 2
 
         t2v = T2V('elmo', pretrained_model_dir)
         encodes = tokenizer(items, key=lambda x: x['stem'])

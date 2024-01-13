@@ -1,6 +1,7 @@
 # coding: utf-8
 # 2021/8/1 @ tongshiwei
 
+import torch
 import json
 import os.path
 from typing import List, Tuple
@@ -59,12 +60,12 @@ class I2V(object):
     """
 
     def __init__(self, tokenizer, t2v, *args, tokenizer_kwargs: dict = None,
-                 pretrained_t2v=False, model_dir=MODEL_DIR, **kwargs):
+                 pretrained_t2v=False, model_dir=MODEL_DIR, device='cpu', **kwargs):
         if pretrained_t2v:
             logger.info("Use pretrained t2v model %s" % t2v)
-            self.t2v = get_t2v_pretrained_model(t2v, model_dir)
+            self.t2v = get_t2v_pretrained_model(t2v, model_dir, device)
         else:
-            self.t2v = T2V(t2v, *args, **kwargs)
+            self.t2v = T2V(t2v, device=device, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer.from_pretrained(
                 **tokenizer_kwargs if tokenizer_kwargs is not None else {})
@@ -82,31 +83,53 @@ class I2V(object):
                                                       **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         self.params = {
             "tokenizer": tokenizer,
-            "tokenizer_kwargs": tokenizer_kwargs,
             "t2v": t2v,
             "args": args,
+            "tokenizer_kwargs": tokenizer_kwargs,
+            "pretrained_t2v": pretrained_t2v,
+            "model_dir": model_dir,
             "kwargs": kwargs,
-            "pretrained_t2v": pretrained_t2v
         }
+        self.device = torch.device(device)
 
     def __call__(self, items, *args, **kwargs):
         """transfer item to vector"""
         return self.infer_vector(items, *args, **kwargs)
 
     def tokenize(self, items, *args, key=lambda x: x, **kwargs) -> list:
-        # """tokenize item"""
+        """
+        tokenize item
+        Parameter
+        ----------
+        items: a list of questions
+        Return
+        ----------
+        tokens: list
+        """
         return self.tokenizer(items, *args, key=key, **kwargs)
 
     def infer_vector(self, items, key=lambda x: x, **kwargs) -> tuple:
+        """
+        get question embedding
+        NotImplemented
+        """
         raise NotImplementedError
 
     def infer_item_vector(self, tokens, *args, **kwargs) -> ...:
+        """NotImplemented"""
         return self.infer_vector(tokens, *args, **kwargs)[0]
 
     def infer_token_vector(self, tokens, *args, **kwargs) -> ...:
+        """NotImplemented"""
         return self.infer_vector(tokens, *args, **kwargs)[1]
 
     def save(self, config_path):
+        """
+        save model weights in config_path
+        Parameter:
+        ----------
+        config_path: str
+        """
         with open(config_path, "w", encoding="utf-8") as wf:
             json.dump(self.params, wf, ensure_ascii=False, indent=2)
 
@@ -123,6 +146,7 @@ class I2V(object):
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+        """NotImplemented"""
         raise NotImplementedError
 
     @property
@@ -327,13 +351,13 @@ class Elmo(I2V):
         return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
     @classmethod
-    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, device='cpu', *args, **kwargs):
         model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
         tokenizer_kwargs = {"tokenizer_config_dir": model_path}
-        return cls("elmo", name, pretrained_t2v=True, model_dir=model_dir,
+        return cls("elmo", name, pretrained_t2v=True, model_dir=model_dir, device=device,
                    tokenizer_kwargs=tokenizer_kwargs)
 
 
@@ -386,17 +410,19 @@ class Bert(I2V):
         --------
         vector:list
         """
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
         inputs = self.tokenize(items, key=key, return_tensors=return_tensors)
         return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
 
     @classmethod
-    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, device='cpu', *args, **kwargs):
         model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
         tokenizer_kwargs = {"tokenizer_config_dir": model_path}
-        return cls("bert", name, pretrained_t2v=True, model_dir=model_dir,
+        return cls("bert", name, pretrained_t2v=True, model_dir=model_dir, device=device,
                    tokenizer_kwargs=tokenizer_kwargs)
 
 
@@ -452,7 +478,7 @@ class DisenQ(I2V):
         return i_vec, t_vec
 
     @classmethod
-    def from_pretrained(cls, name, model_dir=MODEL_DIR, **kwargs):
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, device='cpu', **kwargs):
         model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
@@ -461,7 +487,7 @@ class DisenQ(I2V):
         tokenizer_kwargs = {
             "tokenizer_config_dir": model_path,
         }
-        return cls("disenq", name, pretrained_t2v=True, model_dir=model_dir,
+        return cls("disenq", name, pretrained_t2v=True, model_dir=model_dir, device=device,
                    tokenizer_kwargs=tokenizer_kwargs, **kwargs)
 
 
@@ -495,18 +521,20 @@ class QuesNet(I2V):
         token embeddings
         question embedding
         """
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
         encodes = self.tokenize(items, key=key, meta=meta, *args, **kwargs)
         return self.t2v.infer_vector(encodes), self.t2v.infer_tokens(encodes)
 
     @classmethod
-    def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, device='cpu', *args, **kwargs):
         model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
         for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
             model_path = model_path.replace(i, "")
         logger.info("model_path: %s" % model_path)
         tokenizer_kwargs = {
             "tokenizer_config_dir": model_path}
-        return cls("quesnet", name, pretrained_t2v=True, model_dir=model_dir,
+        return cls("quesnet", name, pretrained_t2v=True, model_dir=model_dir, device=device,
                    tokenizer_kwargs=tokenizer_kwargs)
 
 
@@ -520,7 +548,7 @@ MODEL_MAP = {
 }
 
 
-def get_pretrained_i2v(name, model_dir=MODEL_DIR):
+def get_pretrained_i2v(name, model_dir=MODEL_DIR, device='cpu'):
     """
     It is a good idea if you want to switch item to vector earily.
 
@@ -560,4 +588,4 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR):
         )
     _, t2v = get_pretrained_model_info(name)
     _class, *params = MODEL_MAP[t2v], name
-    return _class.from_pretrained(*params, model_dir=model_dir)
+    return _class.from_pretrained(*params, model_dir=model_dir, device=device)

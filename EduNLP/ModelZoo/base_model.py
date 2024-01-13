@@ -31,7 +31,7 @@ class BaseModel(nn.Module):
         config_path = os.path.join(pretrained_model_path, "config.json")
         model_path = os.path.join(pretrained_model_path, "pytorch_model.bin")
         model = cls.from_config(config_path, *args, **kwargs)
-        loaded_state_dict = torch.load(model_path)
+        loaded_state_dict = torch.load(model_path, map_location=torch.device('cpu'))
         loaded_keys = loaded_state_dict.keys()
         expected_keys = model.state_dict().keys()
 

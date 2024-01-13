@@ -13,8 +13,13 @@ import torch.nn as nn
 from dataclasses import dataclass, field
 from ..SIF import EDU_SPYMBOLS
 from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPreTraining
+from ..ModelZoo.disenqnet.disenqnet import DisenQNetForPropertyPrediction, DisenQNetForKnowledgePrediction
 from ..ModelZoo.utils import load_items, pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer
+
+
+__all__ = ["DisenQTokenizer", "DisenQDataset", "train_disenqnet", "finetune_disenqnet_for_property_prediction",
+           "finetune_disenqnet_for_knowledge_prediction"]
 
 
 def check_num(s):
@@ -156,7 +161,6 @@ def preprocess_dataset(pretrained_dir, disen_tokenizer, items, data_formation, t
     if not os.path.exists(concept_list_path):
         concepts = set()
         for data in items:
-            print(data)
             concept = data[data_formation["knowledge"]]
             for c in concept:
                 if c not in concepts:
@@ -226,6 +230,8 @@ class DisenQDataset(EduDataset):
                              return_tensors=False, return_text=False)
         if self.mode in ["train", "val"]:
             ret['concept'] = self._list_to_onehot(item[self.data_formation["knowledge"]], self.concept_to_idx)
+        if self.mode in ['finetune']:
+            ret['labels'] = item[self.data_formation["labels"]]
         return ret
 
     def collate_fn(self, batch_data):
@@ -443,3 +449,155 @@ def train_disenqnet(train_items: List[dict], output_dir: str, pretrained_dir: st
     trainer.model.save_config(output_dir)
     tokenizer.save_pretrained(output_dir)
     return output_dir
+
+
+def finetune_disenqnet_for_property_prediction(train_items,
+                                               output_dir,
+                                               pretrained_model,
+                                               eval_items=None,
+                                               tokenizer_params=None,
+                                               data_params=None,
+                                               train_params=None,
+                                               model_params=None
+                                               ):
+    """
+    Parameters
+    ----------
+    train_items: list, required
+        The training corpus, each item could be str or dict
+    output_dir: str, required
+        The directory to save trained model files
+    pretrained_model: str, optional
+        The pretrained model name or path for model and tokenizer
+    eval_items: list, required
+        The evaluating items, each item could be str or dict
+    tokenizer_params: dict, optional, default=None
+        The parameters passed to ElmoTokenizer
+    data_params: dict, optional, default=None
+        The parameters passed to ElmoDataset and ElmoTokenizer
+    model_params: dict, optional, default=None
+        The parameters passed to Trainer
+    train_params: dict, optional, default=None
+    """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
+    default_data_formation = {
+        "ques_content": "ques_content",
+        "knowledge": "knowledge",
+        "labels": "difficulty"
+    }
+    data_formation = data_params.get("data_formation", None)
+    if data_formation is not None:
+        default_data_formation.update(data_formation)
+    data_formation = default_data_formation
+    # tokenizer configuration
+    tokenizer = DisenQTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
+    # dataset configuration
+    train_dataset = DisenQDataset(train_items, tokenizer, data_formation,
+                                  mode="finetune")
+    if eval_items:
+        eval_dataset = DisenQDataset(eval_items, tokenizer, data_formation,
+                                     mode="finetune")
+    else:
+        eval_dataset = None
+    # model configuration
+    model = DisenQNetForPropertyPrediction.from_pretrained(pretrained_model, **model_params)
+    # training configuration
+    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
+    work_train_params["output_dir"] = output_dir
+    if train_params is not None:
+        work_train_params.update(train_params if train_params else {})
+    if model_params:
+        if 'hidden_size' in model_params:
+            work_train_params['hidden_size'] = model_params['hidden_size']
+    work_args = DisenQTrainingArguments(**work_train_params)
+    trainer = Trainer(
+        model=model,
+        args=work_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=train_dataset.collate_fn,
+    )
+    trainer.train()
+    # trainer.model.save_pretrained(output_dir)
+    trainer.save_model(output_dir)
+    trainer.model.save_config(output_dir)
+    tokenizer.save_pretrained(output_dir)
+
+
+def finetune_disenqnet_for_knowledge_prediction(train_items,
+                                                output_dir,
+                                                pretrained_model="bert-base-chinese",
+                                                eval_items=None,
+                                                tokenizer_params=None,
+                                                data_params=None,
+                                                train_params=None,
+                                                model_params=None
+                                                ):
+    """
+    Parameters
+    ----------
+    train_items: list, required
+        The training corpus, each item could be str or dict
+    output_dir: str, required
+        The directory to save trained model files
+    pretrained_model: str, optional
+        The pretrained model name or path for model and tokenizer
+    eval_items: list, required
+        The evaluating items, each item could be str or dict
+    tokenizer_params: dict, optional, default=None
+        The parameters passed to ElmoTokenizer
+    data_params: dict, optional, default=None
+        The parameters passed to ElmoDataset and ElmoTokenizer
+    model_params: dict, optional, default=None
+        The parameters passed to Trainer
+    train_params: dict, optional, default=None
+    """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
+    default_data_formation = {
+        "ques_content": "ques_content",
+        "knowledge": "knowledge",
+        "labels": "know_list"
+    }
+    data_formation = data_params.get("data_formation", None)
+    if data_formation is not None:
+        default_data_formation.update(data_formation)
+    data_formation = default_data_formation
+    # tokenizer configuration
+    tokenizer = DisenQTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
+    # dataset configuration
+    train_dataset = DisenQDataset(train_items, tokenizer, data_formation,
+                                  mode="finetune")
+    if eval_items:
+        eval_dataset = DisenQDataset(eval_items, tokenizer, data_formation,
+                                     mode="finetune")
+    else:
+        eval_dataset = None
+    # model configuration
+    model = DisenQNetForKnowledgePrediction.from_pretrained(pretrained_model, **model_params)
+    # training configuration
+    work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
+    work_train_params["output_dir"] = output_dir
+    if train_params is not None:
+        work_train_params.update(train_params if train_params else {})
+    if model_params:
+        if 'hidden_size' in model_params:
+            work_train_params['hidden_size'] = model_params['hidden_size']
+    work_args = DisenQTrainingArguments(**work_train_params)
+    trainer = Trainer(
+        model=model,
+        args=work_args,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
+        data_collator=train_dataset.collate_fn,
+    )
+    trainer.train()
+    # trainer.model.save_pretrained(output_dir)
+    trainer.save_model(output_dir)
+    trainer.model.save_config(output_dir)
+    tokenizer.save_pretrained(output_dir)
