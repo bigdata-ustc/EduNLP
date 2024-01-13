@@ -80,6 +80,7 @@ class QuesNet(BaseModel, FeatureExtractor):
         self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "kwargs"]}
         # self.config.update(kwargs)
         self.config["architecture"] = 'quesnet'
+        self.config["hidden_size"] = self.hidden_size = feat_size
         self.config = PretrainedConfig.from_dict(self.config)
 
     def init_h(self, batch_size):
