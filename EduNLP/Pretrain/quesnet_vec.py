@@ -157,14 +157,14 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
         token_item = self.tokenize(item, key)
         token_idx = []
         for _, w in enumerate(token_item):
-            if isinstance(w, FigureSegment) and 'ques_figure_ids' in item.keys():
+            if isinstance(w, FigureSegment) and isinstance(item, dict) and 'ques_figure_ids' in item.keys():
                 # image
 
                 try:
                     fig_id = f"{w.src[10:-1]}"
                     fig_index = item['ques_figure_ids'].index(fig_id)
 
-                    if self.img_dir != "":
+                    if self.img_dir is not None:
                         fig_src = os.path.join(self.img_dir, fig_id)
                         if '.png' in item['ques_figure_paths'][fig_index]:
                             fig_src += '.png'
