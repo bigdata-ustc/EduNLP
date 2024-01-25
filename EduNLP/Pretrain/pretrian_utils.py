@@ -5,6 +5,7 @@ import os
 import json
 import pandas as pd
 from datasets import Dataset as HFDataset, load_from_disk
+from tqdm import tqdm
 from torch.utils.data import Dataset
 from ..Tokenizer import get_tokenizer
 from ..ModelZoo.utils import pad_sequence
@@ -439,15 +440,20 @@ class EduDataset(Dataset):
             df.drop(columns=list(redundant_columns), inplace=True)
             self.ds = HFDataset.from_pandas(df)
             """Note: map will break down for super large data which is greater than 4GB """
-            self.ds = self.ds.map(lambda sample: tokenizer(sample[stem_key], return_tensors=False),
-                                  num_proc=num_processor,
-                                  batched=True, batch_size=1000)
+            if num_processor <= 1:
+                res = self.tokenizer(self.ds[stem_key], return_tensors=False)
+                for k, v in res.items():
+                    self.ds = self.ds.add_column(k, v)
+            else:
+                self.ds = self.ds.map(lambda sample: self.tokenizer(sample[stem_key], return_tensors=False),
+                                    num_proc=num_processor,
+                                    batched=True, batch_size=1000)
             remove_columns = [stem_key]
         else:
             # 离线加载工作特征
             assert ds_disk_path is not None
             self.ds = load_from_disk(ds_disk_path)
-            reserve_columns = list(tokenizer("edunlp", return_tensors=False).keys())\
+            reserve_columns = list(self.tokenizer("edunlp", return_tensors=False).keys())\
                 + feature_keys + ([label_key] if label_key is not None else [])
             remove_columns = list(set(self.ds.column_names) - set(reserve_columns))
 
