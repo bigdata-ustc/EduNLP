@@ -201,6 +201,8 @@ class D2V(Vector):
         self._filepath = filepath
         if self._method == "d2v":
             self.d2v = Doc2Vec.load(filepath)
+            self.constants = {UNK: 0, PAD: 1}
+            self.wv = self.d2v.wv
         elif self._method == "bow":
             self.d2v = BowLoader(filepath)
         elif self._method == "tfidf":
@@ -223,6 +225,21 @@ class D2V(Vector):
         elif self._method == "tfidf":
             return self.d2v.vector_size
 
+    def key_to_index(self, word):
+        assert self._method == "d2v"
+        if word in self.constants:
+            return self.constants[word]
+        else:
+            if word in self.wv.key_to_index:
+                return self.wv.key_to_index[word] + len(self.constants)
+            else:
+                return self.constants[UNK]
+
+    def get_item_wv(self, item):
+        assert self._method == "d2v"
+        index = self.key_to_index(item)
+        return self.wv[item] if index not in self.constants.values() else np.zeros((self.vector_size,))
+
     def infer_vector(self, items, *args, **kwargs) -> list:
         """
         get vector with D2V model
@@ -237,9 +254,14 @@ class D2V(Vector):
         """
         return [self(item) for item in items]
 
-    def infer_tokens(self, item, *args, **kwargs) -> ...:
+    def infer_tokens(self, items, *args, **kwargs) -> ...:
         """
         get token embeddings with D2V
         NotImplemented
         """
-        raise NotImplementedError
+        # raise NotImplementedError
+        if self._method == "d2v":
+            return [list([self.get_item_wv(x) for x in item]) for item in items]
+        else:
+            return None
+        

@@ -9,7 +9,8 @@ from ..ModelZoo.hf_model import HfModelForPropertyPrediction, HfModelForKnowledg
 from .pretrian_utils import EduDataset
 from .hugginface_utils import TokenizerForHuggingface
 
-__all__ = ["HfAutoTokenizer", "HfAutoDataset", "finetune_hf_auto_model", "finetune_hf_auto_model_for_property_prediction",
+__all__ = ["HfAutoTokenizer", "HfAutoDataset", "finetune_hf_auto_model",
+           "finetune_hf_auto_model_for_property_prediction",
            "finetune_hf_auto_model_for_knowledge_prediction"]
 
 DEFAULT_TRAIN_PARAMS = {
@@ -65,7 +66,7 @@ class HfAutoDataset(EduDataset):
 
 
 def finetune_hf_auto_model(items: Union[List[dict], List[str]], output_dir: str, pretrained_model="bert-base-chinese",
-                  tokenizer_params=None, data_params=None, model_params=None, train_params=None):
+                           tokenizer_params=None, data_params=None, model_params=None, train_params=None):
     """
     Parameters
     ----------
@@ -114,7 +115,7 @@ def finetune_hf_auto_model(items: Union[List[dict], List[str]], output_dir: str,
 
     # dataset configuration
     dataset = HfAutoDataset(tokenizer, items=items,
-                          stem_key=data_params.get("stem_key", None))
+                            stem_key=data_params.get("stem_key", None))
     mlm_probability = train_params.pop('mlm_probability', 0.15)
     data_collator = DataCollatorForLanguageModeling(
         tokenizer=tokenizer.bert_tokenizer, mlm=True, mlm_probability=mlm_probability
@@ -137,14 +138,14 @@ def finetune_hf_auto_model(items: Union[List[dict], List[str]], output_dir: str,
 
 
 def finetune_hf_auto_model_for_property_prediction(train_items,
-                                          output_dir,
-                                          pretrained_model="bert-base-chinese",
-                                          eval_items=None,
-                                          tokenizer_params=None,
-                                          data_params=None,
-                                          train_params=None,
-                                          model_params=None
-                                          ):
+                                                   output_dir,
+                                                   pretrained_model="bert-base-chinese",
+                                                   eval_items=None,
+                                                   tokenizer_params=None,
+                                                   data_params=None,
+                                                   train_params=None,
+                                                   model_params=None
+                                                   ):
     """
     Parameters
     ----------
@@ -172,12 +173,12 @@ def finetune_hf_auto_model_for_property_prediction(train_items,
     tokenizer = HfAutoTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
     train_dataset = HfAutoDataset(tokenizer=tokenizer, items=train_items,
-                                stem_key=data_params.get("stem_key", "ques_content"),
-                                label_key=data_params.get("label_key", "difficulty"))
+                                  stem_key=data_params.get("stem_key", "ques_content"),
+                                  label_key=data_params.get("label_key", "difficulty"))
     if eval_items is not None:
         eval_dataset = HfAutoDataset(tokenizer=tokenizer, items=eval_items,
-                                   stem_key=data_params.get("stem_key", "ques_content"),
-                                   label_key=data_params.get("label_key", "difficulty"))
+                                     stem_key=data_params.get("stem_key", "ques_content"),
+                                     label_key=data_params.get("label_key", "difficulty"))
     else:
         eval_dataset = None
     # model configuration
@@ -205,14 +206,14 @@ def finetune_hf_auto_model_for_property_prediction(train_items,
 
 
 def finetune_hf_auto_model_for_knowledge_prediction(train_items,
-                                           output_dir,
-                                           pretrained_model="bert-base-chinese",
-                                           eval_items=None,
-                                           tokenizer_params=None,
-                                           data_params=None,
-                                           train_params=None,
-                                           model_params=None
-                                           ):
+                                                    output_dir,
+                                                    pretrained_model="bert-base-chinese",
+                                                    eval_items=None,
+                                                    tokenizer_params=None,
+                                                    data_params=None,
+                                                    train_params=None,
+                                                    model_params=None
+                                                    ):
     """
     Parameters
     ----------
@@ -240,12 +241,12 @@ def finetune_hf_auto_model_for_knowledge_prediction(train_items,
     tokenizer = HfAutoTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
     train_dataset = HfAutoDataset(tokenizer=tokenizer, items=train_items,
-                                stem_key=data_params.get("stem_key", "ques_content"),
-                                label_key=data_params.get("label_key", "know_list"))
+                                  stem_key=data_params.get("stem_key", "ques_content"),
+                                  label_key=data_params.get("label_key", "know_list"))
     if eval_items is not None:
         eval_dataset = HfAutoDataset(tokenizer=tokenizer, items=eval_items,
-                                   stem_key=data_params.get("stem_key", "ques_content"),
-                                   label_key=data_params.get("label_key", "know_list"))
+                                     stem_key=data_params.get("stem_key", "ques_content"),
+                                     label_key=data_params.get("label_key", "know_list"))
     else:
         eval_dataset = None
     # model configuration

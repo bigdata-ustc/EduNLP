@@ -221,7 +221,7 @@ class D2V(I2V):
         """
         tokens = self.tokenize(items, key=key) if tokenize is True else items
         tokens = [token for token in tokens]
-        return self.t2v(tokens, *args, **kwargs), None
+        return self.t2v(tokens, *args, **kwargs), self.t2v.infer_tokens(tokens, *args, **kwargs)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):

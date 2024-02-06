@@ -42,6 +42,8 @@ def traversal_formula(ast, ord2token=False, var_numbering=False, strategy="post"
     tokens = []
     if strategy == "post":
         order = nx.dfs_postorder_nodes(ast)
+    elif strategy == "pre":
+        order = nx.dfs_preorder_nodes(ast)
     elif strategy == "linear":  # pragma: no cover
         order = ast.nodes
     else:  # pragma: no cover
@@ -50,17 +52,29 @@ def traversal_formula(ast, ord2token=False, var_numbering=False, strategy="post"
         node = ast.nodes[i]
         if node.get("type", "ignore") == "ignore":
             continue
-        if ord2token is True and node["type"] in ["mathord", "textord", "text"]:
+        if ord2token is True and node["type"] in ["mathord", "textord"]:  # , "text"]:
             if var_numbering is True and node["type"] == "mathord":
-                tokens.append("%s_%s" % (node["type"], node.get("var", "con")))
+                var_token = node.get("var", "con")
+                if var_token != "con":
+                    tokens.append("%s_%s" % (node["type"], var_token))
+                else:
+                    tokens.append("%s_%s" % (var_token, node["text"]))
+            elif var_numbering is False and node["type"] == "mathord":
+                var_token = node.get("var", "con")
+                if var_token != "con":
+                    tokens.append(node["type"])
+                else:
+                    tokens.append("%s_%s" % (node["type"], "con"))
             else:
-                tokens.append(node["type"])
+                # tokens.append(node["type"])
+                tokens.append(node["text"])
         else:
             tokens.append(node["text"])
     return tokens
 
 
-def ast_tokenize(formula, ord2token=False, var_numbering=False, return_type="formula", *args, **kwargs):
+def ast_tokenize(formula, return_type="formula",
+                 ord2token=False, var_numbering=False, strategy="post", *args, **kwargs):
     """
     According to return type, tokenizing formula by different methods.
 
@@ -81,11 +95,11 @@ def ast_tokenize(formula, ord2token=False, var_numbering=False, return_type="for
     >>> ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x", return_type="list")
     ['x', '+', 'y', '{ }', '\\\\pi', '{ }', '2', '{ }', '\\\\frac', '\\\\supsub', '+', '1', '=', 'x']
     >>> ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x", return_type="list", ord2token=True)
-    ['mathord', '+', 'mathord', '{ }', 'mathord', '{ }', 'textord', '{ }', '\\\\frac', '\\\\supsub', '+', 'textord', \
-'=', 'mathord']
+    ['mathord', '+', 'mathord', '{ }', 'mathord_con', '{ }', '2', '{ }', '\\\\frac', '\\\\supsub', '+', '1', '=', \
+'mathord']
     >>> ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x", return_type="list", ord2token=True, var_numbering=True)
-    ['mathord_0', '+', 'mathord_1', '{ }', 'mathord_con', '{ }', 'textord', '{ }', '\\\\frac', '\\\\supsub', \
-'+', 'textord', '=', 'mathord_0']
+    ['mathord_0', '+', 'mathord_1', '{ }', 'con_\\\\pi', '{ }', '2', '{ }', '\\\\frac', '\\\\supsub', \
+'+', '1', '=', 'mathord_0']
     >>> len(ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x", return_type="ast").nodes)
     14
     >>> ast_tokenize(r"{x + y}^\\frac{\\pi}{2} + 1 = x")
@@ -93,7 +107,7 @@ def ast_tokenize(formula, ord2token=False, var_numbering=False, return_type="for
     """
     if return_type == "list":
         ast = Formula(formula, variable_standardization=True).ast_graph
-        return traversal_formula(ast, ord2token=ord2token, var_numbering=var_numbering)
+        return traversal_formula(ast, ord2token=ord2token, var_numbering=var_numbering, strategy=strategy)
     elif return_type == "formula":
         return Formula(formula)
     elif return_type == "ast":

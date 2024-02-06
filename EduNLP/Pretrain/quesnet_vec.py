@@ -53,7 +53,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
     >>> test_items = [{"ques_content": "$\\triangle A B C$ 的内角为 $A, \\quad B, $\\FigureID{test_id}$",
     ... "knowledge": "['*', '-', '/']"}, {"ques_content": "$\\triangle A B C$ 的内角为 $A, \\quad B",
     ... "knowledge": "['*', '-', '/']"}]
-    >>> tokenizer.set_vocab(test_items,
+    >>> tokenizer.set_text_vocab(test_items,
     ... trim_min_count=1, key=lambda x: x["ques_content"], silent=True)
     >>> tokenizer.set_meta_vocab(test_items, silent=True)
     >>> token_items = [tokenizer(i, key=lambda x: x["ques_content"]) for i in test_items]
@@ -95,9 +95,9 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                 "skip_figure_formula": True
             }
         }
-        kwargs.update(self.tokenization_params)
+        self.tokenization_params.update(kwargs)
         super().__init__(vocab_path=vocab_path, max_length=max_length, tokenize_method=tokenize_method,
-                         add_specials=add_specials, unk_token=unk_token, pad_token=pad_token, symbol=symbol, **kwargs)
+                         add_specials=add_specials, unk_token=unk_token, pad_token=pad_token, symbol=symbol, **self.tokenization_params)
         if meta is None:
             meta = ['know_name']
         self.img_dir = img_dir
@@ -115,7 +115,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
             self.load_meta_vocab(meta_vocab_dir=meta_vocab_dir)
         self.config = {
             k: v for k, v in locals().items() if k not in [
-                "self", "__class__", "vocab_path", 'img_dir', 'meta_vocab_dir']
+                "self", "__class__", 'img_dir']
         }
 
     def __call__(self, item: Union[str, dict, list], key=lambda x: x,
@@ -223,6 +223,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                     self.stoi[m] = {word: index for index, word in enumerate(meta)}
                     self.itos[m] = {i: s for s, i in self.stoi[m].items()}
             except Exception:
+                warnings.warn(f"load_meta_vocab Error!!!, SET stoi[{m}] = None")
                 self.stoi[m] = None
                 self.itos[m] = None
 
@@ -248,8 +249,8 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
             self.stoi[m] = {word: index for index, word in enumerate(meta)}
             self.itos[m] = {i: s for s, i in self.stoi[m].items()}
 
-    def set_vocab(self, items: list, key=lambda x: x, lower: bool = False,
-                  trim_min_count: int = 1, do_tokenize: bool = True, silent=True):
+    def set_text_vocab(self, items: list, key=lambda x: x, lower: bool = False,
+                  trim_min_count: int = 1, do_tokenize: bool = True, symbol=None, silent=True):
         """
         Parameters
         -----------
@@ -261,11 +262,17 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
             the lower bound number for adding a word into vocabulary, by default 1
         silent
         """
-        token_items = self.tokenize(items, key) if do_tokenize else [key(item) for item in items]
+        token_items = self.tokenize(items, key=key, symbol=symbol) if do_tokenize else [key(item) for item in items]
         self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count, lower=lower, silent=silent)
         self.stoi['word'] = self.vocab.token_to_idx
         self.itos['word'] = self.vocab.idx_to_token
 
+    def set_vocab(self, items: list, key=lambda x: x, lower: bool = False, meta: List[str] = None,
+                  trim_min_count: int = 1, do_tokenize: bool = True, symbol=None, silent=True,):
+        self.set_text_vocab(items, key=key, lower=lower, trim_min_count=trim_min_count, do_tokenize=do_tokenize,
+                            symbol=symbol, silent=silent)
+        self.set_meta_vocab(items, meta=False)
+        
     @classmethod
     def from_pretrained(cls, tokenizer_config_dir, img_dir=None, **kwargs):
         """
@@ -325,42 +332,28 @@ class QuesnetDataset(Dataset):
     '''
     def __init__(
         self,
-        filename: str,
-        tokenizer: QuesNetTokenizer = None,
-        img_dir: str = "",
-        meta: Optional[list] = None,
+        items=None,
+        filename: str=None,
+        tokenizer: str=None,
         content_key=lambda x: x['ques_content'],
-        meta_key=lambda x: x['know_name'],
         answer_key=lambda x: x['ques_answer'],
         option_key=lambda x: x['ques_options'],
         pipeline=None,
         skip=0
     ):
-
         self.filename = filename
         self.skip = skip
-        self.img_dir = img_dir
         self.content_key = content_key
-        self.meta_key = meta_key
         self.answer_key = answer_key
         self.option_key = option_key
         self.pipeline = pipeline
-
-        if tokenizer is None:
-            tokenizer = QuesNetTokenizer(
-                meta=['know_name'],
-                img_dir=img_dir
-            )
+        if items is None and filename is not None:
+            self.load_data_lines()
+        else:
+            self.lines = items
+        
         self.tokenizer = tokenizer
-        self.meta = meta if meta else tokenizer.meta
-        self.load_data_lines()
-        tokenizer.set_vocab(
-            self.lines,
-            key=lambda x: x['ques_content'],
-            trim_min_count=2,
-            silent=False
-        )
-        tokenizer.set_meta_vocab(self.lines, silent=False)
+        self.meta = tokenizer.meta
 
     def load_data_lines(self):
         '''Read data by row from a JSON file
@@ -567,20 +560,25 @@ def optimizer(*models, **kwargs):
 
 
 def pretrain_quesnet(
-    path,
+    train_items,
     output_dir,
     pretrain_dir=None,
     img_dir=None,
     save_embs=False,
     load_embs=False,
-    train_params=None
+    train_params=None,
+    data_params=None,
+    model_params=None,
+    tokenizer_params=None,
+    dataset=None,
+    tokenizer=None
 ):
     """ pretrain quesnet
 
     Parameters
     ----------
-    path : str
-        path of question file
+    train_items : str
+        questions
     output_dir : str
         output path·
     tokenizer : QuesNetTokenizer
@@ -617,9 +615,24 @@ def pretrain_quesnet(
     ... "ques_id": "726cdbec-33a9-11ec-909c-98fa9b625adb",
     ... "know_name": "['代数', '集合', '集合的相等']"
     ... }]
-    >>> tokenizer.set_vocab(items, key=lambda x: x['ques_content'], trim_min_count=1, silent=True)
+    >>> tokenizer.set_text_vocab(items, key=lambda x: x['ques_content'], trim_min_count=1, silent=True)
     >>> pretrain_quesnet('./data/standard_luna_data.json', './testQuesNet', tokenizer) # doctest: +SKIP
     """
+    tokenizer_params = tokenizer_params if tokenizer_params else {}
+    data_params = data_params if data_params is not None else {}
+    model_params = model_params if model_params is not None else {}
+    train_params = train_params if train_params is not None else {}
+    w2v_params = w2v_params if w2v_params is not None else {}
+    
+    data_formation = {
+        "ques_content": "ques_content",
+        "know_name": "know_name",
+        "ques_answer": "ques_answer",
+        "ques_options": "ques_options",
+        "meta": ['know_name']
+    }
+    data_formation.update(data_params.get("data_formation", {}))
+
     os.makedirs(output_dir, exist_ok=True)
     device = torch.device(train_params['device'])
 
@@ -640,9 +653,31 @@ def pretrain_quesnet(
         default_train_params.update(train_params)
     train_params = default_train_params
 
-    dataset = QuesnetDataset(path, img_dir=img_dir)
-    tokenizer = dataset.tokenizer
+    if tokenizer is None:
+        tokenizer = QuesNetTokenizer(
+            meta=data_formation["meta"],
+            img_dir=img_dir,
+            **tokenizer_params,
+        )
+        tokenizer.set_vocab(items=train_items,
+                            key=data_formation["ques_content"],
+                            trim_min_count=data_params.get("trim_min_count", 2),
+                            silent=False,
+                            meta=data_formation["meta"]
+                            )
+    elif img_dir is not None:
+        tokenizer.set_img_dir(img_dir)
+    
     tokenizer.save_pretrained(output_dir)
+
+    if dataset is None:
+        dataset = QuesnetDataset(items=train_items,
+                                 tokenizer=tokenizer,
+                                 content_key=lambda x : x[data_formation["ques_content"]],
+                                 option_key=lambda x : x[data_formation["ques_options"]],
+                                 answer_key=lambda x : x[data_formation["ques_answer"]],
+                                 )
+    
     model = QuesNetForPreTraining(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
                                   emb_size=train_params['emb_size']).to(device)
 
@@ -672,6 +707,7 @@ def pretrain_quesnet(
                              model.quesnet.meta_size).to(torch.float))
         meta_corpus.append(meta_vector)
 
+    logger.info("train start!")
     # train word2vec for text embedding
     if pretrain_dir is not None and load_embs:
         model.quesnet.load_emb(np.load(os.path.join(output_dir, 'w2v_embs.npy')))

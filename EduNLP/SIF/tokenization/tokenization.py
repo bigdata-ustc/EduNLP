@@ -49,6 +49,7 @@ class TokenList(object):
         self.symbolize_figure_formula = self.formula_params.pop("symbolize_figure_formula", False)
         self.skip_figure_formula = self.formula_params.pop("skip_figure_formula", False)
         self.formula_tokenize_method = self.formula_params.get("method")
+        self.remain_foramula_tag = self.formula_params.get("remain_foramula_tag", False)
 
         self.figure_params = figure_params if figure_params is not None else {}
         self.extend(segment_list.segments)
@@ -219,10 +220,14 @@ class TokenList(object):
                 self._formula_tokens.append(len(self._tokens))
                 self._tokens.append(segment)
             elif self.formula_params.get("method") == "ast":
+                # Remain as Formula for 'ast'
                 self._formula_tokens.append(len(self._tokens))
                 self._tokens.append(Formula(segment, init=init))
             else:
+                # Remain as list for 'linear'
                 tokens = formula.tokenize(segment, **self.formula_params)
+                if self.remain_foramula_tag is True:
+                    tokens = ["$"] + tokens + ["$"]
                 for token in tokens:
                     self._formula_tokens.append(len(self._tokens))
                     self._tokens.append(token)
@@ -319,7 +324,10 @@ class TokenList(object):
         if isinstance(token, Formula):
             if self.formula_params.get("return_type") == "list":
                 ret = formula.traversal_formula(token.ast_graph, **self.formula_params)
-                tokens.extend([i for i in ret if i is not None])
+                f_tokens = [i for i in ret if i is not None]
+                if self.remain_foramula_tag is True:
+                    f_tokens = ["$"] + f_tokens + ["$"]
+                tokens.extend(f_tokens)
             elif self.formula_params.get("return_type") == "ast":
                 tokens.append(token.ast_graph)
             else:

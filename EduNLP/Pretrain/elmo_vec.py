@@ -6,6 +6,7 @@ from typing import Optional, Union, List
 from ..ModelZoo.rnn import ElmoLM, ElmoLMForPreTraining, ElmoLMForPropertyPrediction, ElmoLMForKnowledgePrediction
 from ..ModelZoo.utils import pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer, EduDataset
+from ..utils import logger
 
 __all__ = ["ElmoTokenizer", "ElmoDataset", "train_elmo", "train_elmo_for_property_prediction",
            "train_elmo_for_knowledge_prediction"]
@@ -74,12 +75,12 @@ class ElmoDataset(EduDataset):
         return batch
 
 
-def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrained_dir: str = None,
-               tokenizer_params=None, data_params=None, model_params=None, train_params=None):
+def train_elmo(train_items: Union[List[dict], List[str]] = None, output_dir: str = None, pretrained_dir: str = None,
+               tokenizer_params=None, tokenizer=None, data_params=None, model_params=None, train_params=None):
     """
     Parameters
     ----------
-    items: list, required
+    train_items: list, required
         The training corpus, each item could be str or dict
     output_dir: str, required
         The directory to save trained model files
@@ -100,26 +101,28 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrained_
     model_params = model_params if model_params is not None else {}
     train_params = train_params if train_params is not None else {}
     # tokenizer configuration
-    if pretrained_dir is not None and os.path.exists(pretrained_dir):
-        tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir, **tokenizer_params)
-    else:
-        work_tokenizer_params = {
-            "add_specials": True,
-            "tokenize_method": "pure_text",
-        }
-        work_tokenizer_params.update(tokenizer_params if tokenizer_params else {})
-        tokenizer = ElmoTokenizer(**work_tokenizer_params)
-        corpus_items = items
-        if isinstance(items[0], str):
-            tokenizer.set_vocab(corpus_items)
+    if tokenizer is None:
+        if pretrained_dir is not None and os.path.exists(pretrained_dir):
+            tokenizer = ElmoTokenizer.from_pretrained(pretrained_dir, **tokenizer_params)
         else:
-            tokenizer.set_vocab(corpus_items,
-                                key=lambda x: x[data_params.get("stem_key", "ques_content")])
-
+            work_tokenizer_params = {
+                "add_specials": True,
+                "tokenize_method": "pure_text",
+            }
+            work_tokenizer_params.update(tokenizer_params)
+            tokenizer = ElmoTokenizer(**work_tokenizer_params)
+            corpus_items = train_items
+            if isinstance(corpus_items[0], str):
+                tokenizer.set_vocab(corpus_items, trim_min_count=data_params.get('trim_min_count', 2))
+            else:
+                tokenizer.set_vocab(corpus_items,
+                                    key=lambda x: x[data_params.get("stem_key", "ques_content")],
+                                    trim_min_count=data_params.get('trim_min_count', 2))
+    logger.info("prepare ElmoDataset")
     # dataset configuration
-    dataset = ElmoDataset(tokenizer=tokenizer, items=items,
+    dataset = ElmoDataset(tokenizer=tokenizer, items=train_items,
                           stem_key=data_params.get("stem_key", "ques_content"))
-
+    logger.info("prepare ElmoLMForPreTraining")
     # model configuration
     if pretrained_dir:
         model = ElmoLMForPreTraining.from_pretrained(pretrained_dir, **model_params)
@@ -133,6 +136,7 @@ def train_elmo(items: Union[List[dict], List[str]], output_dir: str, pretrained_
         model = ElmoLMForPreTraining(**work_model_params)
     model.elmo.LM_layer.rnn.flatten_parameters()
 
+    logger.info("train start!")
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
     work_train_params["output_dir"] = output_dir
@@ -217,6 +221,7 @@ def train_elmo_for_property_prediction(
         model = ElmoLMForPropertyPrediction(**work_model_params)
     model.elmo.LM_layer.rnn.flatten_parameters()
 
+    logger.info("train start!")
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
     work_train_params["output_dir"] = output_dir

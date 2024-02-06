@@ -119,7 +119,7 @@ class EduVocab(object):
             the lower bound number for adding a word into vocabulary, by default 1
         """
         word2cnt = dict()
-        for item in corpus_items:
+        for item in tqdm(corpus_items):
             for word in item:
                 word = word.lower() if lower else word
                 word2cnt[word] = word2cnt.get(word, 0) + 1
@@ -201,13 +201,14 @@ class PretrainedEduTokenizer(object):
                  add_specials: Tuple[list, bool] = False, **kwargs):
         self._set_basic_tokenizer(tokenize_method, **kwargs)
         if isinstance(add_specials, bool):
-            add_specials = EDU_SPYMBOLS if add_specials else []
+            tmp_add_specials = EDU_SPYMBOLS if add_specials else []
         else:
-            add_specials = EDU_SPYMBOLS + add_specials
+            tmp_add_specials = EDU_SPYMBOLS + add_specials
         self.max_length = max_length
-        self.vocab = EduVocab(vocab_path=vocab_path, specials=add_specials, **kwargs)
+        self.vocab = EduVocab(vocab_path=vocab_path, specials=tmp_add_specials, **kwargs)
 
-        self.config = {k: v for k, v in locals().items() if k not in ["self", "__class__", "vocab_path"]}
+        self.config = {k: v for k, v in locals().items() if k not in [
+            "self", "__class__", "vocab_path", "tmp_add_specials"]}
 
     def __call__(self, items: Tuple[list, str, dict], key=lambda x: x, padding: Tuple[bool, str] = True,
                  max_length=None, return_tensors=True, return_text=False, **kwargs) -> Dict[str, Any]:
@@ -293,9 +294,9 @@ class PretrainedEduTokenizer(object):
             the token of items
         """
         if isinstance(items, str) or isinstance(items, dict):
-            return self._tokenize(items, key=key)
+            return self._tokenize(items, key=key, **kwargs)
         else:
-            return [self._tokenize(item, key=key) for item in items]
+            return [self._tokenize(item, key=key, **kwargs) for item in items]
 
     def encode(self, items: Tuple[str, dict, List[str], List[dict]], key=lambda x: x, **kwargs):
         if isinstance(items, str) or isinstance(items, dict):
@@ -312,8 +313,8 @@ class PretrainedEduTokenizer(object):
     def _pad(self):
         raise NotImplementedError
 
-    def _tokenize(self, item: Tuple[str, dict], key=lambda x: x):
-        token_item = self.text_tokenizer._tokenize(item, key=key)
+    def _tokenize(self, item: Tuple[str, dict], key=lambda x: x, **argv):
+        token_item = self.text_tokenizer._tokenize(item, key=key, **argv)
         if len(token_item) == 0:
             token_item = [self.vocab.unk_token]
         if len(token_item) > self.max_length:
@@ -361,7 +362,7 @@ class PretrainedEduTokenizer(object):
         return len(self.vocab)
 
     def set_vocab(self, items: list, key=lambda x: x, lower: bool = False,
-                  trim_min_count: int = 1, do_tokenize: bool = True):
+                  trim_min_count: int = 1, do_tokenize: bool = True, symbol=None):
         """Update the vocabulary with the tokens in corpus items
 
         Parameters
@@ -382,7 +383,7 @@ class PretrainedEduTokenizer(object):
         list
             token_items
         """
-        token_items = self.tokenize(items, key) if do_tokenize else [key(item) for item in items]
+        token_items = self.tokenize(items, key=key, symbol=symbol) if do_tokenize else [key(item) for item in items]
         self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count, lower=lower)
         return token_items
 
@@ -420,7 +421,7 @@ class EduDataset(Dataset):
                  items: Union[List[dict], List[str]] = None,
                  stem_key: str = "text", label_key: Optional[str] = None,
                  feature_keys: Optional[List[str]] = None,
-                 num_processor: int = None, **kwargs):
+                 num_processor: int = 1, **kwargs):
         self.tokenizer = tokenizer
         feature_keys = [] if feature_keys is None else feature_keys
         if items is not None:
@@ -446,8 +447,7 @@ class EduDataset(Dataset):
                     self.ds = self.ds.add_column(k, v)
             else:
                 self.ds = self.ds.map(lambda sample: self.tokenizer(sample[stem_key], return_tensors=False),
-                                    num_proc=num_processor,
-                                    batched=True, batch_size=1000)
+                                      num_proc=num_processor, batched=True, batch_size=1000)
             remove_columns = [stem_key]
         else:
             # 离线加载工作特征
