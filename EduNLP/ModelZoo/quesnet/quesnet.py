@@ -95,16 +95,10 @@ class QuesNet(BaseModel, FeatureExtractor):
         self.we.weight.detach().copy_(torch.from_numpy(emb))
 
     def load_img(self, img_layer: nn.Module):
-        if self.config.emb_size != img_layer.emb_size:
-            raise ValueError("Unmatched pre-trained ImageAE and embedding size")
-        else:
-            self.ie.load_state_dict(img_layer.state_dict())
+        self.ie.load_state_dict(img_layer)
 
     def load_meta(self, meta_layer: nn.Module):
-        if self.config.emb_size != meta_layer.emb_size or self.meta_size != meta_layer.meta_size:
-            raise ValueError("Unmatched pre-trained MetaAE and embedding size or meta size")
-        else:
-            self.me.load_state_dict(meta_layer.state_dict())
+        self.me.load_state_dict(meta_layer)
 
     def make_batch(self, data, device, pretrain=False):
         """Returns embeddings"""

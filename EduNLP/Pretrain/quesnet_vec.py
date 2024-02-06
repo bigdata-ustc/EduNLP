@@ -8,7 +8,7 @@ from torchvision.transforms.functional import to_grayscale
 from torchvision.transforms.functional import to_tensor
 from gensim.models import Word2Vec
 import torch
-
+import re
 import warnings
 import queue
 import random
@@ -85,10 +85,11 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
         pad_token : str, optional
             by default "<pad>"
         """
-        if add_specials is None:
+        if add_specials is None or isinstance(add_specials, bool):
             add_specials = [img_token]
         else:
             add_specials = [img_token] + add_specials
+
         self.tokenization_params = {
             "formula_params": {
                 "method": "linear",
@@ -115,7 +116,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
             self.load_meta_vocab(meta_vocab_dir=meta_vocab_dir)
         self.config = {
             k: v for k, v in locals().items() if k not in [
-                "self", "__class__", 'img_dir']
+                "self", "__class__", 'img_dir', 'vocab_path', 'meta_vocab_dir']
         }
 
     def __call__(self, item: Union[str, dict, list], key=lambda x: x,
@@ -172,12 +173,11 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                             fig_src += '.jpg'
                     else:
                         fig_src = item['ques_figure_paths'][fig_index]
-
-                    print(f"Open figure {fig_src}")
+                    
                     im = Image.open(fig_src)
                     im = im.resize((56, 56))
                     token_idx.append(to_grayscale(im))
-
+                    logger.info(f"Open figure {fig_src}")
                 except Exception:
                     warnings.warn('Open image error!')
                     token_idx.append(self.stoi['word'][self.img_token])
@@ -266,12 +266,14 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
         self.vocab.set_vocab(corpus_items=token_items, trim_min_count=trim_min_count, lower=lower, silent=silent)
         self.stoi['word'] = self.vocab.token_to_idx
         self.itos['word'] = self.vocab.idx_to_token
+        return token_items
 
     def set_vocab(self, items: list, key=lambda x: x, lower: bool = False, meta: List[str] = None,
                   trim_min_count: int = 1, do_tokenize: bool = True, symbol=None, silent=True,):
-        self.set_text_vocab(items, key=key, lower=lower, trim_min_count=trim_min_count, do_tokenize=do_tokenize,
+        token_items = self.set_text_vocab(items, key=key, lower=lower, trim_min_count=trim_min_count, do_tokenize=do_tokenize,
                             symbol=symbol, silent=silent)
-        self.set_meta_vocab(items, meta=False)
+        self.set_meta_vocab(items, meta=meta, silent=silent)
+        return token_items
         
     @classmethod
     def from_pretrained(cls, tokenizer_config_dir, img_dir=None, **kwargs):
@@ -293,12 +295,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                 vocab_path=pretrained_vocab_path,
                 meta_vocab_dir=tokenizer_config_dir,
                 img_dir=img_dir,
-                max_length=tokenizer_config["max_length"],
-                tokenize_method=tokenizer_config["tokenize_method"],
-                meta=tokenizer_config["meta"],
-                img_token=tokenizer_config["img_token"],
-                unk_token=tokenizer_config["unk_token"],
-                pad_token=tokenizer_config["pad_token"])
+                **tokenizer_config)
 
     def save_pretrained(self, tokenizer_config_dir):
         """Save tokenizer into local files
@@ -398,8 +395,13 @@ class QuesnetDataset(Dataset):
                     and ord(self.answer_key(line)) < 128 and len(self.option_key(line)) > 0:
                 answer_idx = ord(self.answer_key(line).upper()) - ord('A')
                 options = self.option_key(line)
-                answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)['seq_idx']
-                false_options = [(self.tokenizer(option, meta=self.meta))['seq_idx'] for option in options]
+                if len(options) <= answer_idx:
+                    logger.info(f"[warn: Not GOOD OPTIONS and ANSWER] answer={self.answer_key(line)}, options={options}")
+                    answer = (self.tokenizer(self.answer_key(line), meta=self.meta))['seq_idx']
+                    false_options = [[0], [0], [0]]
+                else:
+                    answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)['seq_idx']
+                    false_options = [(self.tokenizer(option, meta=self.meta))['seq_idx'] for option in options]
             else:
                 answer = (self.tokenizer(self.answer_key(line), meta=self.meta))['seq_idx']
                 false_options = [[0], [0], [0]]
@@ -564,9 +566,11 @@ def pretrain_quesnet(
     output_dir,
     pretrain_dir=None,
     img_dir=None,
-    save_embs=False,
+    save_embs=True,
     load_embs=False,
     train_params=None,
+    w2v_params=None, 
+    pretrained_wv=None,
     data_params=None,
     model_params=None,
     tokenizer_params=None,
@@ -623,6 +627,7 @@ def pretrain_quesnet(
     model_params = model_params if model_params is not None else {}
     train_params = train_params if train_params is not None else {}
     w2v_params = w2v_params if w2v_params is not None else {}
+    pretrain_dir = "" if pretrain_dir is None else pretrain_dir
     
     data_formation = {
         "ques_content": "ques_content",
@@ -634,9 +639,17 @@ def pretrain_quesnet(
     data_formation.update(data_params.get("data_formation", {}))
 
     os.makedirs(output_dir, exist_ok=True)
-    device = torch.device(train_params['device'])
 
-    default_train_params = {
+    default_w2v_params = {
+        "epochs": 1,
+        "min_count": 2,
+        "workers": 2,
+    }
+    if w2v_params is not None:
+        default_w2v_params.update(w2v_params)
+    w2v_params = default_w2v_params
+
+    work_train_params = {
         # train params
         "n_epochs": 1,
         "batch_size": 8,
@@ -649,16 +662,24 @@ def pretrain_quesnet(
         'emb_size': 256,
         'feat_size': 256,
     }
-    if train_params is not None:
-        default_train_params.update(train_params)
-    train_params = default_train_params
+    work_train_params.update(train_params)
 
+
+    work_model_params = {
+        'emb_size': 256,
+        'feat_size': 256,
+    }
+    work_model_params.update(model_params)
+
+    device = torch.device(work_train_params['device'])
+    token_items = None
     if tokenizer is None:
         tokenizer = QuesNetTokenizer(
             meta=data_formation["meta"],
             img_dir=img_dir,
             **tokenizer_params,
         )
+        # token_items = 
         tokenizer.set_vocab(items=train_items,
                             key=data_formation["ques_content"],
                             trim_min_count=data_params.get("trim_min_count", 2),
@@ -668,6 +689,15 @@ def pretrain_quesnet(
     elif img_dir is not None:
         tokenizer.set_img_dir(img_dir)
     
+    # if token_items is None:
+    #     # Note that: must set symbol = 'g...' to tokenize Figure as []
+    #     symbol = tokenizer.config["symbol"]
+    #     if not re.findall(r"g", symbol):
+    #         symbol = "g" + symbol
+    #     token_items = tokenizer.tokenize(train_items,
+    #                                      key=lambda x: x[data_formation["ques_content"]],
+    #                                      symbol=symbol)
+
     tokenizer.save_pretrained(output_dir)
 
     if dataset is None:
@@ -677,17 +707,19 @@ def pretrain_quesnet(
                                  option_key=lambda x : x[data_formation["ques_options"]],
                                  answer_key=lambda x : x[data_formation["ques_answer"]],
                                  )
-    
-    model = QuesNetForPreTraining(_stoi=tokenizer.stoi, feat_size=train_params['feat_size'],
-                                  emb_size=train_params['emb_size']).to(device)
+    logger.info(f"dataset: {len(dataset.lines)}")
+    logger.info(f"dataset[0]: {dataset[0]}")
 
-    emb_dict = tokenizer.stoi['word']
+    model = QuesNetForPreTraining(_stoi=tokenizer.stoi, feat_size=work_model_params['feat_size'],
+                                  emb_size=work_model_params['emb_size']).to(device)
+
     emb_dict_rev = tokenizer.itos['word']
-    emb_size = train_params['emb_size']
+    emb_size = work_model_params['emb_size']
     meta_size = model.quesnet.meta_size
     w2v_corpus = []
     img_corpus = []
     meta_corpus = []
+
     for _, qs in enumerate(tqdm(dataset)):
         text_content = []
         for c in qs.content:
@@ -709,93 +741,122 @@ def pretrain_quesnet(
 
     logger.info("train start!")
     # train word2vec for text embedding
-    if pretrain_dir is not None and load_embs:
-        model.quesnet.load_emb(np.load(os.path.join(output_dir, 'w2v_embs.npy')))
+    w2v_auto_model_path=os.path.join(pretrain_dir, 'w2v_embs.npy')
+    if pretrain_dir is not None and load_embs and os.path.exists(w2v_auto_model_path):
+        model.quesnet.load_emb(np.load(w2v_auto_model_path))
     else:
-        gensim_w2v = Word2Vec(
-            sentences=[[item] for item in emb_dict.keys()],
-            min_count=1,
-            vector_size=emb_size
-        )
-        gensim_w2v.init_weights()
-        gensim_w2v.train(corpus_iterable=w2v_corpus, total_examples=len(w2v_corpus), epochs=train_params['n_epochs'])
-        w2v_emb = gensim_w2v.syn1neg
-        emb_weights = []
-        for key, item in emb_dict.items():
-            w2v_index = gensim_w2v.wv.key_to_index[key]
-            emb_weights.append(w2v_emb[w2v_index])
-        emb_weights = np.array(emb_weights)
-        model.quesnet.load_emb(emb_weights)
+        # gensim_w2v = Word2Vec(
+        #     sentences=[[item] for item in emb_dict.keys()],
+        #     vector_size=emb_size,
+        #     min_count=w2v_params["min_count"],
+        #     workers=w2v_params["workers"]
+        # )
+        # gensim_w2v.init_weights()
+        # gensim_w2v.train(corpus_iterable=w2v_corpus, total_examples=len(w2v_corpus), epochs=w2v_params['epochs'])
+        # w2v_emb = gensim_w2v.syn1neg
+        # emb_weights = []
+        # for key, item in emb_dict.items():
+        #     w2v_index = gensim_w2v.wv.key_to_index[key]
+        #     emb_weights.append(w2v_emb[w2v_index])
+
+        words = tokenizer.vocab.tokens
+        # unk_token = tokenizer.vocab.unk_token
+        # corpus = list()
+        # word_set = set(words)
+        # for text in token_items:
+        #     text = [w if w in word_set else unk_token for w in text]
+        #     corpus.append(text)
+        
+        logger.info(f"w2v_corpus: {len(w2v_corpus)}")
+        # logger.info(f"token_items: {len(token_items)}")
+        # logger.info(f"corpus: {len(corpus)}")
+        if pretrained_wv is None:
+            wv = Word2Vec(w2v_corpus, vector_size=emb_size, **w2v_params).wv
+            logger.info("train new pretrained_wv !")
+        else:
+            wv = pretrained_wv
+            logger.info("load edunlp pretrained_wv !")
+        # 按照 vocab 中的词序 来保存
+        emb_weights = [wv[w] if w in wv.key_to_index else np.random.rand(emb_size) for w in words]
+        model.quesnet.load_emb(np.array(emb_weights))
         if save_embs:
-            np.save(os.path.join(output_dir, 'w2v_embs.npy'), emb_weights)
+            np.save(w2v_auto_model_path, emb_weights)
     logger.info('quesnet Word Embedding loaded')
 
     # train auto-encoder loss for image embedding
-    if pretrain_dir is not None and load_embs:
-        model.quesnet.load_img(torch.load(os.path.join(pretrain_dir, 'trained_ie.pt')))
+    img_auto_model_path=os.path.join(pretrain_dir, 'trained_ie.pt')
+    if pretrain_dir is not None and load_embs and os.path.exists(img_auto_model_path):
+        model.quesnet.load_img(torch.load(img_auto_model_path))
     else:
+        logger.info(f"img_corpus: {len(img_corpus)}")
         img_dataset = EmbeddingDataset(data=img_corpus, data_type='image')
         trained_ie = pretrain_embedding_layer(
             dataset=img_dataset,
             ae=model.quesnet.ie,
-            lr=train_params['lr'],
-            log_step=train_params['log_steps'],
-            batch_size=train_params['batch_size'],
-            epochs=train_params['n_epochs'],
+            lr=work_train_params['lr'],
+            log_step=work_train_params['log_steps'],
+            batch_size=work_train_params['batch_size'],
+            epochs=work_train_params['n_epochs'],
             device=device
         )
         if save_embs:
-            torch.save(trained_ie.state_dict(), os.path.join(output_dir, 'trained_ie.pt'))
+            torch.save(trained_ie.state_dict(), img_auto_model_path)
         model.quesnet.load_img(trained_ie)
     logger.info('quesnet Image Embedding loaded')
 
     # train auto-encoder loss for meta embedding
-    if pretrain_dir is not None and load_embs:
-        model.quesnet.load_meta(torch.load(os.path.join(pretrain_dir, 'trained_me.pt')))
+    meta_auto_model_path = os.path.join(pretrain_dir, 'trained_me.pt')
+    if pretrain_dir is not None and load_embs and os.path.exists(meta_auto_model_path):
+        model.quesnet.load_meta(torch.load(meta_auto_model_path))
     else:
+        logger.info(f"meta_corpus: {len(meta_corpus)}")
         meta_dateset = EmbeddingDataset(data=meta_corpus, data_type='meta')
         trained_me = pretrain_embedding_layer(
             dataset=meta_dateset,
             ae=model.quesnet.me,
-            lr=train_params['lr'],
-            log_step=train_params['log_steps'],
-            batch_size=train_params['batch_size'],
-            epochs=train_params['n_epochs'],
+            lr=work_train_params['lr'],
+            log_step=work_train_params['log_steps'],
+            batch_size=work_train_params['batch_size'],
+            epochs=work_train_params['n_epochs'],
             device=device
         )
         if save_embs:
-            torch.save(trained_me.state_dict(), os.path.join(output_dir, 'trained_me.pt'))
+            torch.save(trained_me.state_dict(), meta_auto_model_path)
         model.quesnet.load_meta(trained_me)
     logger.info('quesnet Meta Embedding loaded')
 
     logger.info("quesnet Word, Image and Meta Embeddings training is done")
     # DONE for datasets
 
+    # debug
+    # device = torch.device("cpu")
+
     # HLM and DOO training
     dataset.pipeline = partial(model.quesnet.make_batch, device=device, pretrain=True)
     model.train()
-    optim = optimizer(model, lr=train_params['lr'])
+    optim = optimizer(model, lr=work_train_params['lr'])
     n_batches = 0
-    for epoch in range(0, train_params['n_epochs']):
-        train_iter = PrefetchIter(dataset, batch_size=train_params['batch_size'])
+    for epoch in range(0, work_train_params['n_epochs']):
+        train_iter = PrefetchIter(dataset, batch_size=work_train_params['batch_size'])
         bar = enumerate(tqdm(train_iter, initial=train_iter.pos),
                         train_iter.pos)
         for i, batch in critical(bar):
             n_batches += 1
-            loss = model(batch).loss
-            optim.zero_grad()
-            loss.backward()
-            optim.step()
+            with torch.autograd.set_detect_anomaly(True):
+                loss = model(batch).loss
+                optim.zero_grad()
+                loss.backward()
+                optim.step()
 
-            if train_params['save_every'] > 0 and i % train_params['save_every'] == 0:
-                # model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
-                model.save_pretrained(output_dir)
+                if work_train_params['save_every'] > 0 and i % work_train_params['save_every'] == 0:
+                    # model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
+                    model.save_pretrained(f"{output_dir}/checkpoint-{i}")
 
-            if train_params['log_steps'] > 0 and i % train_params['log_steps'] == 0:
-                logger.info(f"{epoch}.{i}---loss: {loss.item()}")
+                if work_train_params['log_steps'] > 0 and i % work_train_params['log_steps'] == 0:
+                    logger.info(f"{epoch}.{i}---loss: {loss.item()}")
 
-            if train_params['max_steps'] > 0 and n_batches % train_params['max_steps'] == 0:
-                break
+                if work_train_params['max_steps'] > 0 and n_batches % work_train_params['max_steps'] == 0:
+                    break
 
         # model.save(os.path.join(output_dir, f'QuesNet_{epoch}'))
 
