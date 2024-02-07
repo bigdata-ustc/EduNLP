@@ -26,6 +26,7 @@ from typing import List, Union, Optional
 from collections import namedtuple
 from functools import partial
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 
 def save_list(item2index, path):
@@ -177,7 +178,7 @@ class QuesNetTokenizer(PretrainedEduTokenizer):
                     im = Image.open(fig_src)
                     im = im.resize((56, 56))
                     token_idx.append(to_grayscale(im))
-                    logger.info(f"Open figure {fig_src}")
+                    # logger.info(f"Open figure {fig_src}")
                 except Exception:
                     warnings.warn('Open image error!')
                     token_idx.append(self.stoi['word'][self.img_token])
@@ -390,20 +391,23 @@ class QuesnetDataset(Dataset):
             token = self.tokenizer(line, key=self.content_key, meta=self.meta)
             content = token['seq_idx']
             meta = token['meta_idx']
-
-            if self.answer_key(line).isalpha() and len(self.answer_key(line)) == 1 \
-                    and ord(self.answer_key(line)) < 128 and len(self.option_key(line)) > 0:
-                answer_idx = ord(self.answer_key(line).upper()) - ord('A')
+            raw_answer = self.answer_key(line)
+            # Fliter $A$
+            raw_answer = raw_answer.strip("$") if isinstance(raw_answer, str) else raw_answer
+            if raw_answer.isalpha() and len(raw_answer) == 1 \
+                    and ord(raw_answer) < 128 and len(self.option_key(line)) > 0:
+                answer_idx = ord(raw_answer.upper()) - ord('A')
                 options = self.option_key(line)
-                if len(options) <= answer_idx:
-                    logger.info(f"[warn: Not GOOD OPTIONS and ANSWER] answer={self.answer_key(line)}, options={options}")
-                    answer = (self.tokenizer(self.answer_key(line), meta=self.meta))['seq_idx']
-                    false_options = [[0], [0], [0]]
-                else:
+                # Only Suport A,B,C,D FORMAT
+                if len(options) == 4 and answer_idx <=3 and  answer_idx>=0:
                     answer = self.tokenizer(options.pop(answer_idx), meta=self.meta)['seq_idx']
                     false_options = [(self.tokenizer(option, meta=self.meta))['seq_idx'] for option in options]
+                else:
+                    # logger.info(f"[warn: Not GOOD OPTIONS and ANSWER] answer={raw_answer}, options={options}")
+                    answer = self.tokenizer(raw_answer, meta=self.meta)['seq_idx']
+                    false_options = [[0], [0], [0]]  
             else:
-                answer = (self.tokenizer(self.answer_key(line), meta=self.meta))['seq_idx']
+                answer = self.tokenizer(raw_answer, meta=self.meta)['seq_idx']
                 false_options = [[0], [0], [0]]
 
             qs = Question(
@@ -413,9 +417,8 @@ class QuesnetDataset(Dataset):
                 false_options=false_options,
                 labels=meta
             )
-
-            if callable(self.pipeline):
-                qs = self.pipeline(qs)
+            # if callable(self.pipeline):
+            #     qs = self.pipeline(qs)
 
             return qs
 
@@ -454,6 +457,7 @@ class PrefetchIter:
         self.batch_size = batch_size
         self.queue = queue.Queue(maxsize=8)
         self.length = length if length is not None else len(data)
+        self.pipeline = data.pipeline
 
         assert all(self.length == len(lab) for lab in label), \
             'data and label must have same lengths'
@@ -497,6 +501,9 @@ class PrefetchIter:
                 else:
                     data_batch = self.data[index * bs:(index + 1) * bs]
 
+                # if callable(self.pipeline):
+                #     data_batch = self.pipeline(data_batch)
+
                 label_batch = [label[index * bs:(index + 1) * bs]
                                for label in self.label]
                 if label_batch:
@@ -531,7 +538,7 @@ def critical(f):
             break
 
 
-def pretrain_embedding_layer(dataset: EmbeddingDataset, ae: AE, lr: float = 1e-3, log_step: int = 1, epochs: int = 3,
+def pretrain_embedding_layer(dataset: EmbeddingDataset, ae: AE, lr: float = 1e-3, log_step: int = 10, epochs: int = 3,
                              batch_size: int = 4, device=torch.device('cpu')):
     train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     optim = torch.optim.Adam(ae.parameters(), lr=lr)
@@ -639,6 +646,9 @@ def pretrain_quesnet(
     data_formation.update(data_params.get("data_formation", {}))
 
     os.makedirs(output_dir, exist_ok=True)
+    tensorboard_dir = f'{output_dir}/tensorboard'
+    os.makedirs(tensorboard_dir, exist_ok=True)
+    tensorboard_writer = SummaryWriter(tensorboard_dir)
 
     default_w2v_params = {
         "epochs": 1,
@@ -654,7 +664,8 @@ def pretrain_quesnet(
         "n_epochs": 1,
         "batch_size": 8,
         "lr": 1e-3,
-        'save_every': 0,
+        'save_every_steps': 0,
+        'save_every_epochs': 1,
         'log_steps': 10,
         'device': 'cpu',
         'max_steps': 0,
@@ -742,7 +753,7 @@ def pretrain_quesnet(
     logger.info("train start!")
     # train word2vec for text embedding
     w2v_auto_model_path=os.path.join(pretrain_dir, 'w2v_embs.npy')
-    if pretrain_dir is not None and load_embs and os.path.exists(w2v_auto_model_path):
+    if pretrain_dir and load_embs and os.path.exists(w2v_auto_model_path):
         model.quesnet.load_emb(np.load(w2v_auto_model_path))
     else:
         # gensim_w2v = Word2Vec(
@@ -778,14 +789,14 @@ def pretrain_quesnet(
             logger.info("load edunlp pretrained_wv !")
         # 按照 vocab 中的词序 来保存
         emb_weights = [wv[w] if w in wv.key_to_index else np.random.rand(emb_size) for w in words]
-        model.quesnet.load_emb(np.array(emb_weights))
         if save_embs:
             np.save(w2v_auto_model_path, emb_weights)
+        model.quesnet.load_emb(np.array(emb_weights))
     logger.info('quesnet Word Embedding loaded')
 
     # train auto-encoder loss for image embedding
     img_auto_model_path=os.path.join(pretrain_dir, 'trained_ie.pt')
-    if pretrain_dir is not None and load_embs and os.path.exists(img_auto_model_path):
+    if pretrain_dir and load_embs and os.path.exists(img_auto_model_path):
         model.quesnet.load_img(torch.load(img_auto_model_path))
     else:
         logger.info(f"img_corpus: {len(img_corpus)}")
@@ -801,12 +812,12 @@ def pretrain_quesnet(
         )
         if save_embs:
             torch.save(trained_ie.state_dict(), img_auto_model_path)
-        model.quesnet.load_img(trained_ie)
+        model.quesnet.load_img(trained_ie.state_dict())
     logger.info('quesnet Image Embedding loaded')
 
     # train auto-encoder loss for meta embedding
     meta_auto_model_path = os.path.join(pretrain_dir, 'trained_me.pt')
-    if pretrain_dir is not None and load_embs and os.path.exists(meta_auto_model_path):
+    if pretrain_dir and load_embs and os.path.exists(meta_auto_model_path):
         model.quesnet.load_meta(torch.load(meta_auto_model_path))
     else:
         logger.info(f"meta_corpus: {len(meta_corpus)}")
@@ -822,7 +833,7 @@ def pretrain_quesnet(
         )
         if save_embs:
             torch.save(trained_me.state_dict(), meta_auto_model_path)
-        model.quesnet.load_meta(trained_me)
+        model.quesnet.load_meta(trained_me.state_dict())
     logger.info('quesnet Meta Embedding loaded')
 
     logger.info("quesnet Word, Image and Meta Embeddings training is done")
@@ -830,34 +841,46 @@ def pretrain_quesnet(
 
     # debug
     # device = torch.device("cpu")
+    pretrained_model_path = os.path.join(pretrain_dir, 'pytorch_model.bin')
+    if pretrain_dir and load_embs and os.path.exists(pretrained_model_path):
+        # For continuing training
+        model = QuesNetForPreTraining.from_pretrained(pretrain_dir)
+        logger.info(f"Load QuesNetForPreTraining from checkpoint: {pretrained_model_path}")
 
     # HLM and DOO training
     dataset.pipeline = partial(model.quesnet.make_batch, device=device, pretrain=True)
     model.train()
     optim = optimizer(model, lr=work_train_params['lr'])
     n_batches = 0
+    n_steps = 0
     for epoch in range(0, work_train_params['n_epochs']):
         train_iter = PrefetchIter(dataset, batch_size=work_train_params['batch_size'])
         bar = enumerate(tqdm(train_iter, initial=train_iter.pos),
                         train_iter.pos)
         for i, batch in critical(bar):
-            n_batches += 1
-            with torch.autograd.set_detect_anomaly(True):
-                loss = model(batch).loss
-                optim.zero_grad()
-                loss.backward()
-                optim.step()
+            batch = model.quesnet.make_batch(batch, device=device, pretrain=True)
+            loss = model(batch).loss
+            optim.zero_grad()
+            loss.backward()
+            optim.step()
+            
+            tensorboard_writer.add_scalar("train_loss", loss.item(), n_steps)
+            n_steps += 1
 
-                if work_train_params['save_every'] > 0 and i % work_train_params['save_every'] == 0:
-                    # model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
-                    model.save_pretrained(f"{output_dir}/checkpoint-{i}")
+            if work_train_params['save_every_steps'] > 0 and n_steps % work_train_params['save_every_steps'] == 0:
+                # model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
+                model.save_pretrained(f"{output_dir}/checkpoint-S{n_steps}")
 
-                if work_train_params['log_steps'] > 0 and i % work_train_params['log_steps'] == 0:
-                    logger.info(f"{epoch}.{i}---loss: {loss.item()}")
+            if work_train_params['log_steps'] > 0 and i % work_train_params['log_steps'] == 0:
+                logger.info(f"{epoch}.{i}---loss: {loss.item()}")
 
-                if work_train_params['max_steps'] > 0 and n_batches % work_train_params['max_steps'] == 0:
-                    break
-
+            if work_train_params['max_steps'] > 0 and n_steps % work_train_params['max_steps'] == 0:
+                break
+        n_batches += 1
+         if work_train_params['save_every_epochs'] > 0 and n_batches % work_train_params['save_every_epochs'] == 0:
+            # model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
+            model.save_pretrained(f"{output_dir}/checkpoint-E{n_batches}") 
+            
         # model.save(os.path.join(output_dir, f'QuesNet_{epoch}'))
 
     model.save_pretrained(output_dir)
