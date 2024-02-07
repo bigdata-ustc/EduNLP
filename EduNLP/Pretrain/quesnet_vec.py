@@ -851,7 +851,7 @@ def pretrain_quesnet(
     dataset.pipeline = partial(model.quesnet.make_batch, device=device, pretrain=True)
     model.train()
     optim = optimizer(model, lr=work_train_params['lr'])
-    n_batches = 0
+    n_epochs = 0
     n_steps = 0
     for epoch in range(0, work_train_params['n_epochs']):
         train_iter = PrefetchIter(dataset, batch_size=work_train_params['batch_size'])
@@ -876,10 +876,10 @@ def pretrain_quesnet(
 
             if work_train_params['max_steps'] > 0 and n_steps % work_train_params['max_steps'] == 0:
                 break
-        n_batches += 1
-         if work_train_params['save_every_epochs'] > 0 and n_batches % work_train_params['save_every_epochs'] == 0:
+        n_epochs += 1
+        if work_train_params['save_every_epochs'] > 0 and n_epochs % work_train_params['save_every_epochs'] == 0:
             # model.save(os.path.join(output_dir, f'QuesNet_{epoch}.{i}'))
-            model.save_pretrained(f"{output_dir}/checkpoint-E{n_batches}") 
+            model.save_pretrained(f"{output_dir}/checkpoint-E{n_epochs}")
             
         # model.save(os.path.join(output_dir, f'QuesNet_{epoch}'))
 
