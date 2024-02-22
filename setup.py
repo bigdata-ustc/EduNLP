@@ -39,19 +39,20 @@ except ModuleNotFoundError:
 vec_deps = [
     'gensim',
     'transformers<4.29.0',
+    "tensorboard",
     'torchvision',
     'datasets'] + ml_pytorch_deps
 
 setup(
     name='EduNLP',
-    version='0.0.9',
+    version='1.0.1',
     extras_require={
         'test': test_deps,
         'doc': docs_deps,
         'tutor': tutor_deps,
         'dev': dev_deps,
         'vec': vec_deps,
-        'full': vec_deps + tutor_deps
+        'full': vec_deps + tutor_deps + dev_deps
     },
     packages=find_packages(),
     include_package_data=True,
