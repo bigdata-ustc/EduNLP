@@ -8,8 +8,8 @@ from ..ModelZoo.utils import pad_sequence
 from .pretrian_utils import PretrainedEduTokenizer, EduDataset
 from ..utils import logger
 
-__all__ = ["ElmoTokenizer", "ElmoDataset", "train_elmo", "train_elmo_for_property_prediction",
-           "train_elmo_for_knowledge_prediction"]
+__all__ = ["ElmoTokenizer", "ElmoDataset", "pretrain_elmo", "pretrain_elmo_for_property_prediction",
+           "pretrain_elmo_for_knowledge_prediction"]
 
 DEFAULT_TRAIN_PARAMS = {
     # default
@@ -75,8 +75,8 @@ class ElmoDataset(EduDataset):
         return batch
 
 
-def train_elmo(train_items: Union[List[dict], List[str]] = None, output_dir: str = None, pretrained_dir: str = None,
-               tokenizer_params=None, tokenizer=None, data_params=None, model_params=None, train_params=None):
+def pretrain_elmo(train_items: Union[List[dict], List[str]] = None, output_dir: str = None, pretrained_dir: str = None,
+                  tokenizer_params=None, tokenizer=None, data_params=None, model_params=None, train_params=None):
     """
     Parameters
     ----------
@@ -158,7 +158,7 @@ def train_elmo(train_items: Union[List[dict], List[str]] = None, output_dir: str
     return output_dir
 
 
-def train_elmo_for_property_prediction(
+def pretrain_elmo_for_property_prediction(
         train_items: list, output_dir: str, pretrained_dir=None, eval_items=None,
         tokenizer_params=None, data_params=None, train_params=None, model_params=None
 ):
@@ -244,7 +244,7 @@ def train_elmo_for_property_prediction(
     return output_dir
 
 
-def train_elmo_for_knowledge_prediction(
+def pretrain_elmo_for_knowledge_prediction(
         train_items: list, output_dir: str, pretrained_dir=None, eval_items=None,
         tokenizer_params=None, data_params=None, train_params=None, model_params=None
 ):

@@ -3,7 +3,7 @@
 
 from longling import load_jsonl
 from EduNLP.Tokenizer import get_tokenizer
-from EduNLP.Pretrain import train_vector
+from EduNLP.Pretrain import pretrain_vector
 from EduNLP.Vector import W2V, RNNModel
 
 
@@ -13,7 +13,7 @@ def etl():
 
 
 items = list(etl())
-model_path = train_vector(items, "./w2v", 10, "sg")
+model_path = pretrain_vector(items, "./w2v", 10, "sg")
 
 w2v = W2V(model_path, "sg")
 rnn = RNNModel("lstm", w2v, 5, device="cpu")

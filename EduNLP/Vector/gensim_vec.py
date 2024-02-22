@@ -264,4 +264,3 @@ class D2V(Vector):
             return [list([self.get_item_wv(x) for x in item]) for item in items]
         else:
             return None
-        

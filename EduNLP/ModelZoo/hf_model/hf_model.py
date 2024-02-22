@@ -2,10 +2,11 @@ import torch
 from torch import nn
 import json
 import os
-from ..base_model import BaseModel
-from ..utils import PropertyPredictionOutput, KnowledgePredictionOutput
 from transformers import AutoModel, PretrainedConfig, AutoConfig
 from typing import List
+from EduNLP.utils.log import logger
+from ..base_model import BaseModel
+from ..utils import PropertyPredictionOutput, KnowledgePredictionOutput
 from ..rnn.harnn import HAM
 
 
@@ -17,10 +18,10 @@ class HfModelForPropertyPrediction(BaseModel):
         super(HfModelForPropertyPrediction, self).__init__()
         bert_config = AutoConfig.from_pretrained(pretrained_model_dir)
         if init:
-            print(f'Load AutoModel from checkpoint: {pretrained_model_dir}')
+            logger.info(f'Load AutoModel from checkpoint: {pretrained_model_dir}')
             self.bert = AutoModel.from_pretrained(pretrained_model_dir)
         else:
-            print(f'Load AutoModel from config: {pretrained_model_dir}')
+            logger.info(f'Load AutoModel from config: {pretrained_model_dir}')
             self.bert = AutoModel(bert_config)
         self.hidden_size = self.bert.config.hidden_size
         self.head_dropout = head_dropout
@@ -86,10 +87,10 @@ class HfModelForKnowledgePrediction(BaseModel):
         super(HfModelForKnowledgePrediction, self).__init__()
         bert_config = AutoConfig.from_pretrained(pretrained_model_dir)
         if init:
-            print(f'Load AutoModel from checkpoint: {pretrained_model_dir}')
+            logger.info(f'Load AutoModel from checkpoint: {pretrained_model_dir}')
             self.bert = AutoModel.from_pretrained(pretrained_model_dir)
         else:
-            print(f'Load AutoModel from config: {pretrained_model_dir}')
+            logger.info(f'Load AutoModel from config: {pretrained_model_dir}')
             self.bert = AutoModel(bert_config)
         self.hidden_size = self.bert.config.hidden_size
         self.head_dropout = head_dropout

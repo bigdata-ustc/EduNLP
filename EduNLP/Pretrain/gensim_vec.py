@@ -11,7 +11,7 @@ from EduNLP.Vector import D2V, BowLoader
 from copy import deepcopy
 import itertools as it
 
-__all__ = ["GensimWordTokenizer", "train_vector", "GensimSegTokenizer"]
+__all__ = ["GensimWordTokenizer", "pretrain_vector", "GensimSegTokenizer"]
 
 
 class GensimWordTokenizer(object):
@@ -164,7 +164,7 @@ class MonitorCallback(CallbackAny2Vec):
         self.epoch += 1
 
 
-def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None, train_params=None):
+def pretrain_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None, train_params=None):
     """
 
     Parameters
@@ -194,7 +194,7 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{2}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$")
     >>> print(token_item[:10])
     [['公式'], [\\FormFigureID{1}], ['如图'], ['[FIGURE]'],...['最大值'], ['[MARK]']]
-    >>> train_vector(token_item[:10], "examples/test_model/w2v/gensim_luna_stem_t_", 100) # doctest: +SKIP
+    >>> pretrain_vector(token_item[:10], "examples/test_model/w2v/gensim_luna_stem_t_", 100) # doctest: +SKIP
     'examples/test_model/w2v/gensim_luna_stem_t_sg_100.kv'
     """
     monitor = MonitorCallback(["word", "I", "less"])
@@ -233,7 +233,7 @@ def train_vector(items, w2v_prefix, embedding_dim=None, method="sg", binary=None
         model = gensim.corpora.Dictionary(items)
         binary = binary if binary is not None else True
     elif method == "tfidf":
-        dictionary_path = train_vector(items, w2v_prefix, method="bow")
+        dictionary_path = pretrain_vector(items, w2v_prefix, method="bow")
         dictionary = BowLoader(dictionary_path)
         corpus = [dictionary.infer_vector(item) for item in items]
         model = gensim.models.TfidfModel(corpus)

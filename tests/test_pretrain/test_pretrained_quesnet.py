@@ -9,6 +9,7 @@ from EduNLP.Vector import T2V
 from EduNLP.Vector.quesnet import QuesNetModel
 from EduNLP.I2V import QuesNet as QuesNetI2V, get_pretrained_i2v
 from EduNLP.utils import abs_current_dir, path_append
+from EduNLP.ModelZoo import load_items
 
 TEST_GPU = False
 
@@ -77,10 +78,11 @@ class TestPretrainQuesNet:
 
         ques_file = path_append(abs_current_dir(__file__),
                                 "../../static/test_data/standard_luna_data.json", to_str=True)
+        ques_items = load_items(ques_file)
         img_dir = path_append(abs_current_dir(__file__),
                               "../../static/test_data/quesnet_img", to_str=True)
         pretrain_quesnet(
-            ques_file,
+            ques_items,
             pretrained_model_dir,
             img_dir=img_dir,
             save_embs=True,

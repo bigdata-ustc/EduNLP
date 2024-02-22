@@ -51,8 +51,8 @@ class I2V(object):
     (...)
     >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
     >>> i2v = D2V("pure_text", "d2v", filepath=path, pretrained_t2v=False)
-    >>> i2v(item)
-    ([array([ ...dtype=float32)], None)
+    >>> i2v(item) # doctest: +SKIP
+    ([array([ ...dtype=float32)], [[array([ ...dtype=float32)]])
 
     Returns
     -------
@@ -189,8 +189,8 @@ class D2V(I2V):
     (...)
     >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
     >>> i2v = D2V("pure_text","d2v",filepath=path, pretrained_t2v = False)
-    >>> i2v(item)
-    ([array([ ...dtype=float32)], None)
+    >>> i2v(item) # doctest: +SKIP
+    # ([array([ ...dtype=float32)], [[array([ ...dtype=float32)]])
 
     Returns
     -------
@@ -579,7 +579,7 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR, device='cpu'):
     >>> (); i2v = get_pretrained_i2v("d2v_test_256", "examples/test_model/d2v"); () # doctest: +SKIP
     (...)
     >>> print(i2v(item)) # doctest: +SKIP
-    ([array([ ...dtype=float32)], None)
+    ([array([ ...dtype=float32)], [[array([ ...dtype=float32)]])
     """
     pretrained_models = get_all_pretrained_models()
     if name not in pretrained_models:

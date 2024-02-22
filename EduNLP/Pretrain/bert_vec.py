@@ -9,8 +9,13 @@ from ..ModelZoo.bert import BertForPropertyPrediction, BertForKnowledgePredictio
 from .pretrian_utils import EduDataset
 from .hugginface_utils import TokenizerForHuggingface
 
-__all__ = ["BertTokenizer", "BertDataset", "finetune_bert", "finetune_bert_for_property_prediction",
-           "finetune_bert_for_knowledge_prediction"]
+__all__ = [
+    "BertTokenizer",
+    "BertDataset",
+    "finetune_bert",
+    "finetune_bert_for_property_prediction",
+    "finetune_bert_for_knowledge_prediction",
+]
 
 DEFAULT_TRAIN_PARAMS = {
     # default
@@ -57,6 +62,7 @@ class BertTokenizer(TokenizerForHuggingface):
     >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
     >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
+
     pass
 
 
@@ -64,8 +70,15 @@ class BertDataset(EduDataset):
     pass
 
 
-def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrained_model="bert-base-chinese",
-                  tokenizer_params=None, data_params=None, model_params=None, train_params=None):
+def finetune_bert(
+    items: Union[List[dict], List[str]],
+    output_dir: str,
+    pretrained_model="bert-base-chinese",
+    tokenizer_params=None,
+    data_params=None,
+    model_params=None,
+    train_params=None,
+):
     """
     Parameters
     ----------
@@ -113,9 +126,10 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
     model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
 
     # dataset configuration
-    dataset = BertDataset(tokenizer, items=items,
-                          stem_key=data_params.get("stem_key", None))
-    mlm_probability = train_params.pop('mlm_probability', 0.15)
+    dataset = BertDataset(
+        tokenizer, items=items, stem_key=data_params.get("stem_key", None)
+    )
+    mlm_probability = train_params.pop("mlm_probability", 0.15)
     data_collator = DataCollatorForLanguageModeling(
         tokenizer=tokenizer.bert_tokenizer, mlm=True, mlm_probability=mlm_probability
     )
@@ -136,15 +150,16 @@ def finetune_bert(items: Union[List[dict], List[str]], output_dir: str, pretrain
     tokenizer.save_pretrained(output_dir)
 
 
-def finetune_bert_for_property_prediction(train_items,
-                                          output_dir,
-                                          pretrained_model="bert-base-chinese",
-                                          eval_items=None,
-                                          tokenizer_params=None,
-                                          data_params=None,
-                                          train_params=None,
-                                          model_params=None
-                                          ):
+def finetune_bert_for_property_prediction(
+    train_items,
+    output_dir,
+    pretrained_model="bert-base-chinese",
+    eval_items=None,
+    tokenizer_params=None,
+    data_params=None,
+    train_params=None,
+    model_params=None,
+):
     """
     Parameters
     ----------
@@ -171,13 +186,19 @@ def finetune_bert_for_property_prediction(train_items,
     # tokenizer configuration
     tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
-    train_dataset = BertDataset(tokenizer=tokenizer, items=train_items,
-                                stem_key=data_params.get("stem_key", "ques_content"),
-                                label_key=data_params.get("label_key", "difficulty"))
+    train_dataset = BertDataset(
+        tokenizer=tokenizer,
+        items=train_items,
+        stem_key=data_params.get("stem_key", "ques_content"),
+        label_key=data_params.get("label_key", "difficulty"),
+    )
     if eval_items is not None:
-        eval_dataset = BertDataset(tokenizer=tokenizer, items=eval_items,
-                                   stem_key=data_params.get("stem_key", "ques_content"),
-                                   label_key=data_params.get("label_key", "difficulty"))
+        eval_dataset = BertDataset(
+            tokenizer=tokenizer,
+            items=eval_items,
+            stem_key=data_params.get("stem_key", "ques_content"),
+            label_key=data_params.get("label_key", "difficulty"),
+        )
     else:
         eval_dataset = None
     # model configuration
@@ -204,15 +225,16 @@ def finetune_bert_for_property_prediction(train_items,
     tokenizer.save_pretrained(output_dir)
 
 
-def finetune_bert_for_knowledge_prediction(train_items,
-                                           output_dir,
-                                           pretrained_model="bert-base-chinese",
-                                           eval_items=None,
-                                           tokenizer_params=None,
-                                           data_params=None,
-                                           train_params=None,
-                                           model_params=None
-                                           ):
+def finetune_bert_for_knowledge_prediction(
+    train_items,
+    output_dir,
+    pretrained_model="bert-base-chinese",
+    eval_items=None,
+    tokenizer_params=None,
+    data_params=None,
+    train_params=None,
+    model_params=None,
+):
     """
     Parameters
     ----------
@@ -239,17 +261,25 @@ def finetune_bert_for_knowledge_prediction(train_items,
     # tokenizer configuration
     tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
-    train_dataset = BertDataset(tokenizer=tokenizer, items=train_items,
-                                stem_key=data_params.get("stem_key", "ques_content"),
-                                label_key=data_params.get("label_key", "know_list"))
+    train_dataset = BertDataset(
+        tokenizer=tokenizer,
+        items=train_items,
+        stem_key=data_params.get("stem_key", "ques_content"),
+        label_key=data_params.get("label_key", "know_list"),
+    )
     if eval_items is not None:
-        eval_dataset = BertDataset(tokenizer=tokenizer, items=eval_items,
-                                   stem_key=data_params.get("stem_key", "ques_content"),
-                                   label_key=data_params.get("label_key", "know_list"))
+        eval_dataset = BertDataset(
+            tokenizer=tokenizer,
+            items=eval_items,
+            stem_key=data_params.get("stem_key", "ques_content"),
+            label_key=data_params.get("label_key", "know_list"),
+        )
     else:
         eval_dataset = None
     # model configuration
-    model = BertForKnowledgePrediction(pretrained_model_dir=pretrained_model, **model_params)
+    model = BertForKnowledgePrediction(
+        pretrained_model_dir=pretrained_model, **model_params
+    )
     model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
