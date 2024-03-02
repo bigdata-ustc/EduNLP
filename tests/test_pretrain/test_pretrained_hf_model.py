@@ -4,8 +4,11 @@ os.environ["WANDB_DISABLED"] = "true"
 import torch
 from EduNLP.ModelZoo.hf_model import HfModelForPropertyPrediction, HfModelForKnowledgePrediction
 from transformers import AutoModel
-from EduNLP.Pretrain import AutoTokenizer, pretrain_hf_auto_model
-from EduNLP.Pretrain import finetune_hf_auto_model_for_property_prediction, finetune_hf_auto_model_for_knowledge_prediction
+from EduNLP.Pretrain import HfAutoTokenizer, pretrain_hf_auto_model
+from EduNLP.Pretrain import (
+    finetune_hf_auto_model_for_property_prediction,
+    finetune_hf_auto_model_for_knowledge_prediction
+)
 from EduNLP.Vector import T2V, HfAutoModel
 from EduNLP.I2V import HfAuto, get_pretrained_i2v
 
@@ -25,15 +28,16 @@ class TestPretrainHfModel:
             "granularity": "char",
             # "stopwords": None,
         }
-        tokenizer = AutoTokenizer(pretrained_model="bert-base-chinese", add_specials=True,
-                                  tokenize_method="ast_formula", text_params=text_params)
-
+        tokenizer = HfAutoTokenizer(pretrained_model="bert-base-chinese",
+                                    add_specials=True,
+                                    tokenize_method="ast_formula",
+                                    text_params=text_params)
         tokenizer_size1 = len(tokenizer)
         tokenizer.set_vocab(standard_luna_data, key=lambda x: x["ques_content"])
         tokenizer_size2 = len(tokenizer)
         assert tokenizer_size1 < tokenizer_size2
         tokenizer.save_pretrained(pretrained_tokenizer_dir)
-        tokenizer = AutoTokenizer.from_pretrained(pretrained_tokenizer_dir)
+        tokenizer = HfAutoTokenizer.from_pretrained(pretrained_tokenizer_dir)
         tokenizer_size3 = len(tokenizer)
         assert tokenizer_size2 == tokenizer_size3
         tokens = tokenizer.tokenize(test_items, key=lambda x: x["ques_content"])
@@ -48,7 +52,7 @@ class TestPretrainHfModel:
         assert isinstance(res["input_ids"], list)
 
     def test_train_model(self, standard_luna_data, pretrained_model_dir, pretrained_tokenizer_dir):
-        tokenizer = AutoTokenizer.from_pretrained(pretrained_tokenizer_dir)
+        tokenizer = HfAutoTokenizer.from_pretrained(pretrained_tokenizer_dir)
         items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
                     如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,\
@@ -70,7 +74,7 @@ class TestPretrainHfModel:
             }
         )
         model = AutoModel.from_pretrained(pretrained_model_dir)
-        tokenizer = AutoTokenizer.from_pretrained(pretrained_model_dir)
+        tokenizer = HfAutoTokenizer.from_pretrained(pretrained_model_dir)
 
         encodes = tokenizer(items[0], lambda x: x['ques_content'])
         model(**encodes)
@@ -122,7 +126,7 @@ class TestPretrainHfModel:
             data_params=data_params
         )
         model = HfModelForPropertyPrediction.from_pretrained(pretrained_pp_dir)
-        tokenizer = AutoTokenizer.from_pretrained(pretrained_pp_dir)
+        tokenizer = HfAutoTokenizer.from_pretrained(pretrained_pp_dir)
 
         encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])
         # TODO: need to handle inference for T2V for batch or single
@@ -164,7 +168,7 @@ class TestPretrainHfModel:
             model_params=model_params
         )
         model = HfModelForKnowledgePrediction.from_pretrained(pretrained_kp_dir)
-        tokenizer = AutoTokenizer.from_pretrained(pretrained_kp_dir)
+        tokenizer = HfAutoTokenizer.from_pretrained(pretrained_kp_dir)
 
         encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])
         # TODO: need to handle inference for T2V for batch or single
@@ -175,10 +179,10 @@ class TestPretrainHfModel:
             {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                 若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
-        tokenizer = AutoTokenizer.from_pretrained(pretrained_model_dir)
+        tokenizer = HfAutoTokenizer.from_pretrained(pretrained_model_dir)
         encodes = tokenizer(items, key=lambda x: x['stem'])
 
-        t2v = AutoModel(pretrained_model_dir)
+        t2v = HfAutoModel(pretrained_model_dir)
         output = t2v(encodes)
         assert output.shape[2] == t2v.vector_size
 

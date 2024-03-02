@@ -383,7 +383,6 @@ class QuesnetDataset(Dataset):
     def __init__(
         self,
         items=None,
-        filename: str = None,
         tokenizer: str = None,
         content_key=lambda x: x["ques_content"],
         answer_key=lambda x: x["ques_answer"],
@@ -391,48 +390,15 @@ class QuesnetDataset(Dataset):
         pipeline=None,
         skip=0
     ):
-        self.filename = filename
         self.skip = skip
         self.content_key = content_key
         self.answer_key = answer_key
         self.option_key = option_key
         self.pipeline = pipeline
-        if items is None and filename is not None:
-            self.load_data_lines()
-        else:
-            self.lines = items
+        self.lines = items
 
         self.tokenizer = tokenizer
         self.meta = tokenizer.meta
-
-    def load_data_lines(self):
-        """Read data by row from a JSON file
-
-        Important: the data file is loaded during initialization.
-        """
-
-        # TODO: All data is read into memory without chunking.
-        #       This may lead to low efficiency.
-        data_dir = self.filename
-        skip = self.skip  # Read from Line skip + 1.
-        self.lines = []
-        self.length = 0
-
-        with open(data_dir, "r", encoding="utf-8") as f:
-            row = 0
-            while True:
-                row += 1
-                line = f.readline()
-                if row <= skip:
-                    continue
-                if not line:
-                    break
-                self.lines.append(json.loads(line.strip()))
-
-            self.length = row - skip - 1
-        assert (
-            self.length > 0
-        ), f"{data_dir} is empty. Or file length is less than skip length."
 
     def __len__(self):
         return len(self.lines)

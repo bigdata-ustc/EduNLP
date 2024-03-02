@@ -11,7 +11,7 @@ from ..Vector import get_pretrained_model_info, get_all_pretrained_models
 from longling import path_append
 from EduData import get_data
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, AutoTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
+from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, HfAutoTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
 __all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "HfAuto", "DisenQ", "QuesNet", "get_pretrained_i2v"]
@@ -70,7 +70,7 @@ class I2V(object):
             self.tokenizer = BertTokenizer.from_pretrained(
                 **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'hf_auto':
-            self.tokenizer = AutoTokenizer.from_pretrained(
+            self.tokenizer = HfAutoTokenizer.from_pretrained(
                 **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'quesnet':
             self.tokenizer = QuesNetTokenizer.from_pretrained(
@@ -655,6 +655,6 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR, device='cpu'):
         raise KeyError(
             "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(pretrained_models))
         )
-    _, t2v = get_pretrained_model_info(name)
-    _class, *params = MODEL_MAP[t2v], name
+    _, i2v = get_pretrained_model_info(name)
+    _class, *params = MODEL_MAP[i2v], name
     return _class.from_pretrained(*params, model_dir=model_dir, device=device)

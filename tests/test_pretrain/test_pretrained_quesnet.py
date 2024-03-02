@@ -5,7 +5,7 @@ import pytest
 from EduNLP.ModelZoo.quesnet import QuesNet
 from EduNLP.Pretrain import QuesNetTokenizer, Question, pretrain_quesnet
 # from EduNLP.Pretrain import train_quesnet_for_property_prediction, train_quesnet_for_knowledge_prediction
-from EduNLP.Vector import T2V
+from EduNLP.Vector import T2V, W2V
 from EduNLP.Vector.quesnet import QuesNetModel
 from EduNLP.I2V import QuesNet as QuesNetI2V, get_pretrained_i2v
 from EduNLP.utils import abs_current_dir, path_append
@@ -81,12 +81,15 @@ class TestPretrainQuesNet:
         ques_items = load_items(ques_file)
         img_dir = path_append(abs_current_dir(__file__),
                               "../../static/test_data/quesnet_img", to_str=True)
+        get_pretrained_i2v("w2v_test_256", pretrained_model_dir)
+        wv = W2V(os.path.join(pretrained_model_dir, "w2v_test_256/w2v_test_256.kv")).wv
         pretrain_quesnet(
             ques_items,
             pretrained_model_dir,
+            pretrain_dir=pretrained_model_dir,
             img_dir=img_dir,
             save_embs=True,
-            load_embs=False,
+            load_embs=True,
             # data_params={
             #     "stem_key": "ques_content"
             # },
@@ -96,11 +99,15 @@ class TestPretrainQuesNet:
                 # "per_device_eval_batch_size": 2,
                 # "no_cuda": not TEST_GPU,
                 'max_steps': 2,
-                'feat_size': 256,
-                'save_every': 1,
-                'emb_size': 256,
+                'feat_size': 300,
+                "log_steps": 1,
+                'save_every_epochs': 1,
+                'save_every_steps': 1,
+                'emb_size': 300,
+                'feat_size': 300,
                 'device': "cpu"
-            }
+            },
+            pretrained_wv=wv,
         )
 
         tokenizer = QuesNetTokenizer.from_pretrained(pretrained_model_dir, img_dir=img_dir)
