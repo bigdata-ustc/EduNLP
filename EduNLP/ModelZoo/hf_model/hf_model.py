@@ -19,11 +19,11 @@ class HfModelForPropertyPrediction(BaseModel):
         bert_config = AutoConfig.from_pretrained(pretrained_model_dir)
         if init:
             logger.info(f'Load AutoModel from checkpoint: {pretrained_model_dir}')
-            self.bert = AutoModel.from_pretrained(pretrained_model_dir)
+            self.model = AutoModel.from_pretrained(pretrained_model_dir)
         else:
             logger.info(f'Load AutoModel from config: {pretrained_model_dir}')
-            self.bert = AutoModel(bert_config)
-        self.hidden_size = self.bert.config.hidden_size
+            self.model = AutoModel(bert_config)
+        self.hidden_size = self.model.config.hidden_size
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
         self.classifier = nn.Linear(self.hidden_size, 1)
@@ -39,7 +39,7 @@ class HfModelForPropertyPrediction(BaseModel):
                 attention_mask=None,
                 token_type_ids=None,
                 labels=None):
-        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         item_embeds = outputs.last_hidden_state[:, 0, :]
         item_embeds = self.dropout(item_embeds)
 
@@ -69,7 +69,7 @@ class HfModelForPropertyPrediction(BaseModel):
         config_path = os.path.join(config_dir, "model_config.json")
         with open(config_path, "w", encoding="utf-8") as wf:
             json.dump(self.config.to_dict(), wf, ensure_ascii=False, indent=2)
-        self.bert.config.save_pretrained(config_dir)
+        self.model.config.save_pretrained(config_dir)
 
 
 class HfModelForKnowledgePrediction(BaseModel):
@@ -88,11 +88,11 @@ class HfModelForKnowledgePrediction(BaseModel):
         bert_config = AutoConfig.from_pretrained(pretrained_model_dir)
         if init:
             logger.info(f'Load AutoModel from checkpoint: {pretrained_model_dir}')
-            self.bert = AutoModel.from_pretrained(pretrained_model_dir)
+            self.model = AutoModel.from_pretrained(pretrained_model_dir)
         else:
             logger.info(f'Load AutoModel from config: {pretrained_model_dir}')
-            self.bert = AutoModel(bert_config)
-        self.hidden_size = self.bert.config.hidden_size
+            self.model = AutoModel(bert_config)
+        self.hidden_size = self.model.config.hidden_size
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
         self.sigmoid = nn.Sigmoid()
@@ -101,7 +101,7 @@ class HfModelForKnowledgePrediction(BaseModel):
         self.ham_classifier = HAM(
             num_classes_list=num_classes_list,
             num_total_classes=num_total_classes,
-            sequence_model_hidden_size=self.bert.config.hidden_size,
+            sequence_model_hidden_size=self.model.config.hidden_size,
             attention_unit_size=attention_unit_size,
             fc_hidden_size=fc_hidden_size,
             beta=beta,
@@ -120,7 +120,7 @@ class HfModelForKnowledgePrediction(BaseModel):
                 attention_mask=None,
                 token_type_ids=None,
                 labels=None):
-        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         item_embeds = outputs.last_hidden_state[:, 0, :]
         item_embeds = self.dropout(item_embeds)
         tokens_embeds = outputs.last_hidden_state
@@ -162,4 +162,4 @@ class HfModelForKnowledgePrediction(BaseModel):
         config_path = os.path.join(config_dir, "model_config.json")
         with open(config_path, "w", encoding="utf-8") as wf:
             json.dump(self.config.to_dict(), wf, ensure_ascii=False, indent=2)
-        self.bert.config.save_pretrained(config_dir)
+        self.model.config.save_pretrained(config_dir)

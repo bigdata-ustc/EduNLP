@@ -12,7 +12,7 @@ from .hugginface_utils import TokenizerForHuggingface
 __all__ = [
     "BertTokenizer",
     "BertDataset",
-    "finetune_bert",
+    "pretrain_bert",
     "finetune_bert_for_property_prediction",
     "finetune_bert_for_knowledge_prediction",
 ]
@@ -70,7 +70,7 @@ class BertDataset(EduDataset):
     pass
 
 
-def finetune_bert(
+def pretrain_bert(
     items: Union[List[dict], List[str]],
     output_dir: str,
     pretrained_model="bert-base-chinese",
@@ -102,7 +102,7 @@ def finetune_bert(
     ----------
     >>> stems = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$",
     ... "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$"]
-    >>> finetune_bert(stems, "examples/test_model/data/data/bert") # doctest: +SKIP
+    >>> pretrain_bert(stems, "examples/test_model/data/data/bert") # doctest: +SKIP
     {'train_runtime': ..., ..., 'epoch': 1.0}
     """
     tokenizer_params = tokenizer_params if tokenizer_params else {}

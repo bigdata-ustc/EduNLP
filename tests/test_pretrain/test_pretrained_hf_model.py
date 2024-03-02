@@ -2,17 +2,17 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ["WANDB_DISABLED"] = "true"
 import torch
-from EduNLP.ModelZoo.bert import BertForPropertyPrediction, BertForKnowledgePrediction
-from transformers import BertModel as HFBertModel
-from EduNLP.Pretrain import BertTokenizer, pretrain_bert
-from EduNLP.Pretrain import finetune_bert_for_property_prediction, finetune_bert_for_knowledge_prediction
-from EduNLP.Vector import T2V, BertModel
-from EduNLP.I2V import Bert, get_pretrained_i2v
+from EduNLP.ModelZoo.hf_model import HfModelForPropertyPrediction, HfModelForKnowledgePrediction
+from transformers import AutoModel
+from EduNLP.Pretrain import AutoTokenizer, pretrain_hf_auto_model
+from EduNLP.Pretrain import finetune_hf_auto_model_for_property_prediction, finetune_hf_auto_model_for_knowledge_prediction
+from EduNLP.Vector import T2V, HfAutoModel
+from EduNLP.I2V import HfAuto, get_pretrained_i2v
 
 TEST_GPU = False
 
 
-class TestPretrainBert:
+class TestPretrainHfModel:
     def test_tokenizer(self, standard_luna_data, pretrained_tokenizer_dir):
         test_items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
@@ -25,7 +25,7 @@ class TestPretrainBert:
             "granularity": "char",
             # "stopwords": None,
         }
-        tokenizer = BertTokenizer(pretrained_model="bert-base-chinese", add_specials=True,
+        tokenizer = AutoTokenizer(pretrained_model="bert-base-chinese", add_specials=True,
                                   tokenize_method="ast_formula", text_params=text_params)
 
         tokenizer_size1 = len(tokenizer)
@@ -33,7 +33,7 @@ class TestPretrainBert:
         tokenizer_size2 = len(tokenizer)
         assert tokenizer_size1 < tokenizer_size2
         tokenizer.save_pretrained(pretrained_tokenizer_dir)
-        tokenizer = BertTokenizer.from_pretrained(pretrained_tokenizer_dir)
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_tokenizer_dir)
         tokenizer_size3 = len(tokenizer)
         assert tokenizer_size2 == tokenizer_size3
         tokens = tokenizer.tokenize(test_items, key=lambda x: x["ques_content"])
@@ -48,7 +48,7 @@ class TestPretrainBert:
         assert isinstance(res["input_ids"], list)
 
     def test_train_model(self, standard_luna_data, pretrained_model_dir, pretrained_tokenizer_dir):
-        tokenizer = BertTokenizer.from_pretrained(pretrained_tokenizer_dir)
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_tokenizer_dir)
         items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
                     如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,\
@@ -56,7 +56,7 @@ class TestPretrainBert:
             {'ques_content': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                     若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
-        pretrain_bert(
+        pretrain_hf_auto_model(
             standard_luna_data,
             pretrained_model_dir,
             data_params={
@@ -69,15 +69,15 @@ class TestPretrainBert:
                 "no_cuda": not TEST_GPU,
             }
         )
-        model = HFBertModel.from_pretrained(pretrained_model_dir)
-        tokenizer = BertTokenizer.from_pretrained(pretrained_model_dir)
+        model = AutoModel.from_pretrained(pretrained_model_dir)
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_model_dir)
 
         encodes = tokenizer(items[0], lambda x: x['ques_content'])
         model(**encodes)
         encodes = tokenizer(items, lambda x: x['ques_content'])
         model(**encodes)
 
-        pretrain_bert(
+        pretrain_hf_auto_model(
             standard_luna_data,
             pretrained_model_dir,
             pretrained_model=pretrained_model_dir,
@@ -105,7 +105,7 @@ class TestPretrainBert:
         }
         train_items = standard_luna_data
         # train without eval_items
-        finetune_bert_for_property_prediction(
+        finetune_hf_auto_model_for_property_prediction(
             train_items,
             pretrained_pp_dir,
             pretrained_model=pretrained_model_dir,
@@ -113,7 +113,7 @@ class TestPretrainBert:
             data_params=data_params
         )
         # train with eval_items
-        finetune_bert_for_property_prediction(
+        finetune_hf_auto_model_for_property_prediction(
             train_items,
             pretrained_pp_dir,
             pretrained_model=pretrained_model_dir,
@@ -121,8 +121,8 @@ class TestPretrainBert:
             train_params=train_params,
             data_params=data_params
         )
-        model = BertForPropertyPrediction.from_pretrained(pretrained_pp_dir)
-        tokenizer = BertTokenizer.from_pretrained(pretrained_pp_dir)
+        model = HfModelForPropertyPrediction.from_pretrained(pretrained_pp_dir)
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_pp_dir)
 
         encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])
         # TODO: need to handle inference for T2V for batch or single
@@ -145,7 +145,7 @@ class TestPretrainBert:
         }
         train_items = standard_luna_data
         # train without eval_items
-        finetune_bert_for_knowledge_prediction(
+        finetune_hf_auto_model_for_knowledge_prediction(
             train_items,
             pretrained_kp_dir,
             pretrained_model=pretrained_model_dir,
@@ -154,7 +154,7 @@ class TestPretrainBert:
             model_params=model_params
         )
         # train with eval_items
-        finetune_bert_for_knowledge_prediction(
+        finetune_hf_auto_model_for_knowledge_prediction(
             train_items,
             pretrained_kp_dir,
             pretrained_model=pretrained_model_dir,
@@ -163,8 +163,8 @@ class TestPretrainBert:
             data_params=data_params,
             model_params=model_params
         )
-        model = BertForKnowledgePrediction.from_pretrained(pretrained_kp_dir)
-        tokenizer = BertTokenizer.from_pretrained(pretrained_kp_dir)
+        model = HfModelForKnowledgePrediction.from_pretrained(pretrained_kp_dir)
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_kp_dir)
 
         encodes = tokenizer(train_items[:8], lambda x: x['ques_content'])
         # TODO: need to handle inference for T2V for batch or single
@@ -175,10 +175,10 @@ class TestPretrainBert:
             {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                 若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
-        tokenizer = BertTokenizer.from_pretrained(pretrained_model_dir)
+        tokenizer = AutoTokenizer.from_pretrained(pretrained_model_dir)
         encodes = tokenizer(items, key=lambda x: x['stem'])
 
-        t2v = BertModel(pretrained_model_dir)
+        t2v = AutoModel(pretrained_model_dir)
         output = t2v(encodes)
         assert output.shape[2] == t2v.vector_size
 
@@ -198,7 +198,7 @@ class TestPretrainBert:
         tokenizer_kwargs = {
             "tokenizer_config_dir": pretrained_model_dir
         }
-        i2v = Bert('bert', 'bert', pretrained_model_dir, tokenizer_kwargs=tokenizer_kwargs)
+        i2v = HfAuto('hf_auto', 'hf_auto', pretrained_model_dir, tokenizer_kwargs=tokenizer_kwargs)
 
         i_vec, t_vec = i2v(items, key=lambda x: x['stem'])
         assert len(i_vec[0]) == i2v.vector_size
@@ -212,7 +212,7 @@ class TestPretrainBert:
         assert len(t_vec[0][0]) == i2v.vector_size
 
     #     output_dir = pretrained_model_dir
-    #     i2v = get_pretrained_i2v("luna_pub_bert_math_base", output_dir)
+    #     i2v = get_pretrained_i2v("luna_pub_hf_auto_model_math_base", output_dir)
     #     i_vec, t_vec = i2v(items, key=lambda x: x['stem'])
     #     assert len(i_vec[0]) == i2v.vector_size
     #     assert len(t_vec[0][0]) == i2v.vector_size

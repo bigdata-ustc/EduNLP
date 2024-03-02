@@ -5,7 +5,7 @@ import pytest
 import torch
 from EduNLP.ModelZoo.rnn import ElmoLM
 from EduNLP.Pretrain import ElmoTokenizer, pretrain_elmo
-from EduNLP.Pretrain import pretrain_elmo_for_property_prediction, pretrain_elmo_for_knowledge_prediction
+from EduNLP.Pretrain import finetune_elmo_for_property_prediction, finetune_elmo_for_knowledge_prediction
 from EduNLP.Vector import T2V, ElmoModel
 from EduNLP.I2V import Elmo, get_pretrained_i2v
 
@@ -111,14 +111,14 @@ class TestPretrainEmlo:
             "no_cuda": not TEST_GPU,
         }
         # train without a pretrained model
-        pretrain_elmo_for_property_prediction(
+        finetune_elmo_for_property_prediction(
             standard_luna_data,
             pretrained_pp_dir,
             train_params=train_params,
             data_params=data_params
         )
         # train with a pretrained model
-        pretrain_elmo_for_property_prediction(
+        finetune_elmo_for_property_prediction(
             standard_luna_data,
             pretrained_pp_dir,
             pretrained_dir=pretrained_model_dir,
@@ -160,7 +160,7 @@ class TestPretrainEmlo:
             "num_total_classes": 1000,
         }
         # train without pretrained model
-        pretrain_elmo_for_knowledge_prediction(
+        finetune_elmo_for_knowledge_prediction(
             standard_luna_data,
             pretrained_kp_dir,
             train_params=train_params,
@@ -168,7 +168,7 @@ class TestPretrainEmlo:
             model_params=model_params
         )
         # train with pretrained model
-        pretrain_elmo_for_knowledge_prediction(
+        finetune_elmo_for_knowledge_prediction(
             standard_luna_data,
             pretrained_kp_dir,
             pretrained_dir=pretrained_model_dir,
