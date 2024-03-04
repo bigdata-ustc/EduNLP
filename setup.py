@@ -7,7 +7,7 @@ tutor_deps = [
     "ipython"
 ]
 test_deps = [
-    'pytest>=4',
+    'pytest<=8.0.2',
     'pytest-cov>=2.6.0',
     'pytest-flake8',
     'flake8<5.0.0'
@@ -38,6 +38,7 @@ except ModuleNotFoundError:
 
 vec_deps = [
     'gensim',
+    'smart-open==6.4.0',
     'transformers<4.29.0',
     "tensorboard",
     'torchvision',
