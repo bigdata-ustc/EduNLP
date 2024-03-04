@@ -38,6 +38,7 @@ except ModuleNotFoundError:
 
 vec_deps = [
     'gensim',
+    'smart-open==6.4.0',
     'transformers<4.29.0',
     "tensorboard",
     'torchvision',
