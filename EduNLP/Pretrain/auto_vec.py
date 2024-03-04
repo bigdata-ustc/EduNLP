@@ -1,20 +1,23 @@
 import os
 from typing import List, Union
-from transformers import BertForMaskedLM
+from transformers import AutoModelForMaskedLM
 from transformers import DataCollatorForLanguageModeling, DataCollatorWithPadding
 from transformers import Trainer, TrainingArguments
 from copy import deepcopy
 
-from ..ModelZoo.bert import BertForPropertyPrediction, BertForKnowledgePrediction
+from ..ModelZoo.hf_model import (
+    HfModelForPropertyPrediction,
+    HfModelForKnowledgePrediction,
+)
 from .pretrian_utils import EduDataset
 from .hugginface_utils import TokenizerForHuggingface
 
 __all__ = [
-    "BertTokenizer",
-    "BertDataset",
-    "pretrain_bert",
-    "finetune_bert_for_property_prediction",
-    "finetune_bert_for_knowledge_prediction",
+    "HfAutoTokenizer",
+    "HfAutoDataset",
+    "pretrain_hf_auto_model",
+    "finetune_hf_auto_model_for_property_prediction",
+    "finetune_hf_auto_model_for_knowledge_prediction",
 ]
 
 DEFAULT_TRAIN_PARAMS = {
@@ -39,11 +42,11 @@ DEFAULT_TRAIN_PARAMS = {
 }
 
 
-class BertTokenizer(TokenizerForHuggingface):
+class HfAutoTokenizer(TokenizerForHuggingface):
     """
     Examples
     ----------
-    >>> tokenizer = BertTokenizer(add_special_tokens=True)
+    >>> tokenizer = HfAutoTokenizer(add_special_tokens=True)
     >>> item = "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"
     >>> token_item = tokenizer(item)
@@ -60,17 +63,17 @@ class BertTokenizer(TokenizerForHuggingface):
     >>> print(len(tokenizer.tokenize(items)))
     2
     >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
-    >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
+    >>> tokenizer = HfAutoTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
 
     pass
 
 
-class BertDataset(EduDataset):
+class HfAutoDataset(EduDataset):
     pass
 
 
-def pretrain_bert(
+def pretrain_hf_auto_model(
     items: Union[List[dict], List[str]],
     output_dir: str,
     pretrained_model="bert-base-chinese",
@@ -102,7 +105,7 @@ def pretrain_bert(
     ----------
     >>> stems = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$",
     ... "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$"]
-    >>> pretrain_bert(stems, "examples/test_model/data/data/bert") # doctest: +SKIP
+    >>> pretrain_hf_auto_model(stems, "examples/test_model/data/data/bert") # doctest: +SKIP
     {'train_runtime': ..., ..., 'epoch': 1.0}
     """
     tokenizer_params = tokenizer_params if tokenizer_params else {}
@@ -111,22 +114,22 @@ def pretrain_bert(
     train_params = train_params if train_params is not None else {}
     # tokenizer configuration
     if os.path.exists(pretrained_model):
-        tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
+        tokenizer = HfAutoTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     else:
         work_tokenizer_params = {
             "add_specials": True,
             "tokenize_method": "pure_text",
         }
         work_tokenizer_params.update(tokenizer_params)
-        tokenizer = BertTokenizer(pretrained_model, **work_tokenizer_params)
+        tokenizer = HfAutoTokenizer(pretrained_model, **work_tokenizer_params)
         # TODO: tokenizer.set_vocab()
     # model configuration
-    model = BertForMaskedLM.from_pretrained(pretrained_model, **model_params)
+    model = AutoModelForMaskedLM.from_pretrained(pretrained_model, **model_params)
     # resize embedding for additional special tokens
     model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
 
     # dataset configuration
-    dataset = BertDataset(
+    dataset = HfAutoDataset(
         tokenizer, items=items, stem_key=data_params.get("stem_key", None)
     )
     mlm_probability = train_params.pop("mlm_probability", 0.15)
@@ -150,7 +153,7 @@ def pretrain_bert(
     tokenizer.save_pretrained(output_dir)
 
 
-def finetune_bert_for_property_prediction(
+def finetune_hf_auto_model_for_property_prediction(
     train_items,
     output_dir,
     pretrained_model="bert-base-chinese",
@@ -184,16 +187,16 @@ def finetune_bert_for_property_prediction(
     model_params = model_params if model_params is not None else {}
     train_params = train_params if train_params is not None else {}
     # tokenizer configuration
-    tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
+    tokenizer = HfAutoTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
-    train_dataset = BertDataset(
+    train_dataset = HfAutoDataset(
         tokenizer=tokenizer,
         items=train_items,
         stem_key=data_params.get("stem_key", "ques_content"),
         label_key=data_params.get("label_key", "difficulty"),
     )
     if eval_items is not None:
-        eval_dataset = BertDataset(
+        eval_dataset = HfAutoDataset(
             tokenizer=tokenizer,
             items=eval_items,
             stem_key=data_params.get("stem_key", "ques_content"),
@@ -202,8 +205,8 @@ def finetune_bert_for_property_prediction(
     else:
         eval_dataset = None
     # model configuration
-    model = BertForPropertyPrediction(pretrained_model, **model_params)
-    model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
+    model = HfModelForPropertyPrediction(pretrained_model, **model_params)
+    model.model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
     work_train_params["output_dir"] = output_dir
@@ -225,7 +228,7 @@ def finetune_bert_for_property_prediction(
     tokenizer.save_pretrained(output_dir)
 
 
-def finetune_bert_for_knowledge_prediction(
+def finetune_hf_auto_model_for_knowledge_prediction(
     train_items,
     output_dir,
     pretrained_model="bert-base-chinese",
@@ -259,16 +262,16 @@ def finetune_bert_for_knowledge_prediction(
     model_params = model_params if model_params is not None else {}
     train_params = train_params if train_params is not None else {}
     # tokenizer configuration
-    tokenizer = BertTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
+    tokenizer = HfAutoTokenizer.from_pretrained(pretrained_model, **tokenizer_params)
     # dataset configuration
-    train_dataset = BertDataset(
+    train_dataset = HfAutoDataset(
         tokenizer=tokenizer,
         items=train_items,
         stem_key=data_params.get("stem_key", "ques_content"),
         label_key=data_params.get("label_key", "know_list"),
     )
     if eval_items is not None:
-        eval_dataset = BertDataset(
+        eval_dataset = HfAutoDataset(
             tokenizer=tokenizer,
             items=eval_items,
             stem_key=data_params.get("stem_key", "ques_content"),
@@ -277,10 +280,8 @@ def finetune_bert_for_knowledge_prediction(
     else:
         eval_dataset = None
     # model configuration
-    model = BertForKnowledgePrediction(
-        pretrained_model_dir=pretrained_model, **model_params
-    )
-    model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
+    model = HfModelForKnowledgePrediction(pretrained_model_dir=pretrained_model, **model_params)
+    model.model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
     work_train_params["output_dir"] = output_dir

@@ -8,7 +8,7 @@ from copy import deepcopy
 
 from .ast import str2ast, get_edges, link_variable
 
-CONST_MATHORD = {r"\pi"}
+CONST_MATHORD = {"\\pi"}
 
 __all__ = ["Formula", "FormulaGroup", "CONST_MATHORD", "link_formulas"]
 

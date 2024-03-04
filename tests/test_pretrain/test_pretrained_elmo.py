@@ -4,8 +4,8 @@ os.environ["WANDB_DISABLED"] = "true"
 import pytest
 import torch
 from EduNLP.ModelZoo.rnn import ElmoLM
-from EduNLP.Pretrain import ElmoTokenizer, train_elmo
-from EduNLP.Pretrain import train_elmo_for_property_prediction, train_elmo_for_knowledge_prediction
+from EduNLP.Pretrain import ElmoTokenizer, pretrain_elmo
+from EduNLP.Pretrain import finetune_elmo_for_property_prediction, finetune_elmo_for_knowledge_prediction
 from EduNLP.Vector import T2V, ElmoModel
 from EduNLP.I2V import Elmo, get_pretrained_i2v
 
@@ -44,7 +44,7 @@ class TestPretrainEmlo:
         res = tokenizer(test_items, key=lambda x: x["ques_content"], return_tensors=False, return_text=True)
         assert isinstance(res["seq_idx"], list)
 
-    def test_train_elmo(self, standard_luna_data, pretrained_model_dir):
+    def test_pretrain_elmo(self, standard_luna_data, pretrained_model_dir):
         test_items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
                     如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,\
@@ -52,7 +52,7 @@ class TestPretrainEmlo:
             {'ques_content': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                     若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
-        train_elmo(
+        pretrain_elmo(
             standard_luna_data,
             pretrained_model_dir,
             data_params={
@@ -68,7 +68,7 @@ class TestPretrainEmlo:
 
         # train with a pretrained model
         str_items = [item["ques_content"] for item in standard_luna_data]
-        train_elmo(
+        pretrain_elmo(
             str_items,
             pretrained_model_dir,
             pretrained_dir=pretrained_model_dir,
@@ -111,14 +111,14 @@ class TestPretrainEmlo:
             "no_cuda": not TEST_GPU,
         }
         # train without a pretrained model
-        train_elmo_for_property_prediction(
+        finetune_elmo_for_property_prediction(
             standard_luna_data,
             pretrained_pp_dir,
             train_params=train_params,
             data_params=data_params
         )
         # train with a pretrained model
-        train_elmo_for_property_prediction(
+        finetune_elmo_for_property_prediction(
             standard_luna_data,
             pretrained_pp_dir,
             pretrained_dir=pretrained_model_dir,
@@ -160,7 +160,7 @@ class TestPretrainEmlo:
             "num_total_classes": 1000,
         }
         # train without pretrained model
-        train_elmo_for_knowledge_prediction(
+        finetune_elmo_for_knowledge_prediction(
             standard_luna_data,
             pretrained_kp_dir,
             train_params=train_params,
@@ -168,7 +168,7 @@ class TestPretrainEmlo:
             model_params=model_params
         )
         # train with pretrained model
-        train_elmo_for_knowledge_prediction(
+        finetune_elmo_for_knowledge_prediction(
             standard_luna_data,
             pretrained_kp_dir,
             pretrained_dir=pretrained_model_dir,

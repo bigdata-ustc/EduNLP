@@ -56,7 +56,7 @@ class CustomTokenizer(Tokenizer):
         for item in items:
             yield self._tokenize(item, key=key, **kwargs)
 
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None, **kwargs):
         """Tokenize one item, return token list
 
         Parameters
@@ -66,7 +66,8 @@ class CustomTokenizer(Tokenizer):
         key : function, optional
             determine how to get the text of item, by default lambdax: x
         """
-        return tokenize(seg(key(item), symbol=self.symbol, figures=self.figures),
+        symbol = self.symbol if symbol is None else symbol
+        return tokenize(seg(key(item), symbol=symbol, figures=self.figures),
                         **self.tokenization_params, **kwargs).tokens
 
 
@@ -190,8 +191,9 @@ class PureTextTokenizer(Tokenizer):
         for item in items:
             yield self._tokenize(item, key=key, **kwargs)
 
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
-        return tokenize(seg(key(item), symbol=self.symbol), **self.tokenization_params, **kwargs).tokens
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None, **kwargs):
+        symbol = self.symbol if symbol is None else symbol
+        return tokenize(seg(key(item), symbol=symbol), **self.tokenization_params, **kwargs).tokens
 
 
 class AstFormulaTokenizer(Tokenizer):
@@ -233,9 +235,10 @@ class AstFormulaTokenizer(Tokenizer):
         for item in items:
             yield self._tokenize(item, key=key, **kwargs)
 
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, **kwargs):
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None, **kwargs):
         mode = kwargs.pop("mode", 0)
-        ret = sif4sci(key(item), figures=self.figures, symbol=self.symbol, mode=mode,
+        symbol = self.symbol if symbol is None else symbol
+        ret = sif4sci(key(item), figures=self.figures, mode=mode, symbol=symbol,
                       tokenization_params=self.tokenization_params, errors="ignore", **kwargs)
         ret = [] if ret is None else ret.tokens
         return ret

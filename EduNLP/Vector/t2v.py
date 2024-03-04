@@ -9,6 +9,7 @@ from EduData import get_data
 from .rnn import RNNModel
 from .gensim_vec import W2V, D2V
 from .bert_vec import BertModel
+from .auto_vec import HfAutoModel
 from .quesnet import QuesNetModel
 from .elmo_vec import ElmoModel
 from .meta import Vector
@@ -24,6 +25,7 @@ MODELS = {
     "gru": RNNModel,
     "elmo": ElmoModel,
     'bert': BertModel,
+    'hf_auto': HfAutoModel,
     'quesnet': QuesNetModel,
     "disenq": DisenQModel,
 }

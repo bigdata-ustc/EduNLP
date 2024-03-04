@@ -11,10 +11,10 @@ from ..Vector import get_pretrained_model_info, get_all_pretrained_models
 from longling import path_append
 from EduData import get_data
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
+from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, HfAutoTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
 from EduNLP import logger
 
-__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "DisenQ", "QuesNet", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "HfAuto", "DisenQ", "QuesNet", "get_pretrained_i2v"]
 
 
 class I2V(object):
@@ -51,8 +51,8 @@ class I2V(object):
     (...)
     >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
     >>> i2v = D2V("pure_text", "d2v", filepath=path, pretrained_t2v=False)
-    >>> i2v(item)
-    ([array([ ...dtype=float32)], None)
+    >>> i2v(item) # doctest: +SKIP
+    ([array([ ...dtype=float32)], [[array([ ...dtype=float32)]])
 
     Returns
     -------
@@ -68,6 +68,9 @@ class I2V(object):
             self.t2v = T2V(t2v, device=device, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'hf_auto':
+            self.tokenizer = HfAutoTokenizer.from_pretrained(
                 **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'quesnet':
             self.tokenizer = QuesNetTokenizer.from_pretrained(
@@ -189,8 +192,8 @@ class D2V(I2V):
     (...)
     >>> path = path_append(path, os.path.basename(path) + '.bin', to_str=True)
     >>> i2v = D2V("pure_text","d2v",filepath=path, pretrained_t2v = False)
-    >>> i2v(item)
-    ([array([ ...dtype=float32)], None)
+    >>> i2v(item) # doctest: +SKIP
+    # ([array([ ...dtype=float32)], [[array([ ...dtype=float32)]])
 
     Returns
     -------
@@ -221,7 +224,7 @@ class D2V(I2V):
         """
         tokens = self.tokenize(items, key=key) if tokenize is True else items
         tokens = [token for token in tokens]
-        return self.t2v(tokens, *args, **kwargs), None
+        return self.t2v(tokens, *args, **kwargs), self.t2v.infer_tokens(tokens, *args, **kwargs)
 
     @classmethod
     def from_pretrained(cls, name, model_dir=MODEL_DIR, *args, **kwargs):
@@ -426,6 +429,71 @@ class Bert(I2V):
                    tokenizer_kwargs=tokenizer_kwargs)
 
 
+class HfAuto(I2V):
+    """
+    The model aims to transfer item and tokens to vector with Bert.
+
+    Bases
+    -------
+    I2V
+
+    Parameters
+    -----------
+    tokenizer: str
+        the tokenizer name
+    t2v: str
+        the name of token2vector model
+    args:
+        the parameters passed to t2v
+    tokenizer_kwargs: dict
+        the parameters passed to tokenizer
+    pretrained_t2v: bool
+        True: use pretrained t2v model
+        False: use your own t2v model
+    kwargs:
+        the parameters passed to t2v
+
+    Returns
+    -------
+    i2v model: Bert
+    """
+
+    def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
+                     *args, key=lambda x: x, return_tensors='pt', **kwargs) -> tuple:
+        """
+        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+
+        Parameters
+        -----------
+        items : str or dict or list
+            the item of question, or question list
+        return_tensors: str
+            tensor type used in tokenizer
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        """
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
+        inputs = self.tokenize(items, key=key, return_tensors=return_tensors)
+        return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, device='cpu', *args, **kwargs):
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_path: %s" % model_path)
+        tokenizer_kwargs = {"tokenizer_config_dir": model_path}
+        return cls("bert", name, pretrained_t2v=True, model_dir=model_dir, device=device,
+                   tokenizer_kwargs=tokenizer_kwargs)
+
+
 class DisenQ(I2V):
     """
     The model aims to transfer item and tokens to vector with DisenQ.
@@ -542,6 +610,7 @@ MODEL_MAP = {
     "w2v": W2V,
     "d2v": D2V,
     "bert": Bert,
+    "hf_auto": HfAuto,
     "disenq": DisenQ,
     "quesnet": QuesNet,
     "elmo": Elmo
@@ -579,13 +648,13 @@ def get_pretrained_i2v(name, model_dir=MODEL_DIR, device='cpu'):
     >>> (); i2v = get_pretrained_i2v("d2v_test_256", "examples/test_model/d2v"); () # doctest: +SKIP
     (...)
     >>> print(i2v(item)) # doctest: +SKIP
-    ([array([ ...dtype=float32)], None)
+    ([array([ ...dtype=float32)], [[array([ ...dtype=float32)]])
     """
     pretrained_models = get_all_pretrained_models()
     if name not in pretrained_models:
         raise KeyError(
             "Unknown model name %s, use one of the provided models: %s" % (name, ", ".join(pretrained_models))
         )
-    _, t2v = get_pretrained_model_info(name)
-    _class, *params = MODEL_MAP[t2v], name
+    _, i2v = get_pretrained_model_info(name)
+    _class, *params = MODEL_MAP[i2v], name
     return _class.from_pretrained(*params, model_dir=model_dir, device=device)

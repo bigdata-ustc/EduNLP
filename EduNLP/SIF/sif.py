@@ -217,9 +217,9 @@ def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str 
     >>> tl1.get_segments()[0]
     ['\\SIFTag{stem}']
     >>> tl1.get_segments()[1:3]
-    [['[TEXT_BEGIN]', '[TEXT_END]'], ['[FORMULA_BEGIN]', 'mathord', '=', 'textord', '[FORMULA_END]']]
+    [['[TEXT_BEGIN]', '[TEXT_END]'], ['[FORMULA_BEGIN]', 'mathord', '=', '2', '[FORMULA_END]']]
     >>> tl1.get_segments(add_seg_type=False)[0:3]
-    [['\\SIFTag{stem}'], ['mathord', '=', 'textord'], ['mathord', '=', 'mathord', '{ }', '\\sqrt']]
+    [['\\SIFTag{stem}'], ['mathord', '=', '2'], ['mathord', '=', 'mathord', '{ }', '\\sqrt']]
     >>> test_item_2 = {"options": [r"$x < y$", r"$y = x$", r"$y < x$"]}
     >>> test_item_2
     {'options': ['$x < y$', '$y = x$', '$y < x$']}

@@ -64,7 +64,9 @@ def test_AstformulaTokenizer():
     tokenizer = get_tokenizer("ast_formula")
     tokens = tokenizer(items)
     ret = next(tokens)
-    ans = ['文具店', 'textord', 'textord', 'textord', '练习本', '卖出', '剩', 'textord', '包', '每包', 'textord', 'textord', '卖出']
+    # ans = ['文具店', 'textord', 'textord', 'textord',
+    # '练习本', '卖出', '剩', 'textord', '包', '每包', 'textord', 'textord', '卖出']
+    ans = ['文具店', '6', '0', '0', '练习本', '卖出', '剩', '4', '包', '每包', '2', '5', '卖出']
     assert ret == ans
 
 

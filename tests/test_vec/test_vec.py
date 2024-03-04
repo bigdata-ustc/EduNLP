@@ -4,7 +4,7 @@
 import torch
 import numpy as np
 import pytest
-from EduNLP.Pretrain import train_vector, GensimWordTokenizer
+from EduNLP.Pretrain import pretrain_vector, GensimWordTokenizer
 from EduNLP.Vector import W2V, D2V, RNNModel, T2V, Embedding
 from EduNLP.I2V import D2V as I_D2V, W2V as I_W2V
 from EduNLP.Tokenizer import get_tokenizer
@@ -65,7 +65,7 @@ def stem_data_general(data):
 @pytest.mark.parametrize("binary", [True, False, None])
 def test_w2v(stem_tokens, tmpdir, method, binary):
     filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
-    filepath = train_vector(
+    filepath = pretrain_vector(
         stem_tokens,
         filepath_prefix,
         10,
@@ -102,7 +102,7 @@ def test_w2v(stem_tokens, tmpdir, method, binary):
 def test_w2v_i2v(stem_text_tokens, tmpdir, stem_data):
     method = "sg"
     filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
-    filepath = train_vector(
+    filepath = pretrain_vector(
         stem_text_tokens,
         filepath_prefix,
         10,
@@ -134,7 +134,7 @@ def test_embedding():
 def test_rnn(stem_tokens, tmpdir):
     method = "sg"
     filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
-    filepath = train_vector(
+    filepath = pretrain_vector(
         stem_tokens,
         filepath_prefix,
         10,
@@ -172,7 +172,7 @@ def test_rnn(stem_tokens, tmpdir):
 def test_d2v(stem_text_tokens, tmpdir, stem_data):
     method = "d2v"
     filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
-    filepath = train_vector(
+    filepath = pretrain_vector(
         stem_text_tokens,
         filepath_prefix,
         10,
@@ -189,7 +189,7 @@ def test_d2v(stem_text_tokens, tmpdir, stem_data):
     i2v = I_D2V("pure_text", "d2v", filepath)
     i_vec, t_vec = i2v(stem_data[:2])
     assert len(i_vec[0]) == i2v.vector_size
-    assert t_vec is None
+    assert len(t_vec[0][0]) == i2v.vector_size
 
     cfg_path = str(tmpdir / method / "i2v_config.json")
     i2v.save(config_path=cfg_path)
@@ -199,13 +199,13 @@ def test_d2v(stem_text_tokens, tmpdir, stem_data):
     assert len(i_vec[0]) == i2v.vector_size
 
     t_vec = i2v.infer_token_vector(stem_data[:1])
-    assert t_vec is None
+    assert len(t_vec[0][0]) == i2v.vector_size
 
 
 @pytest.mark.parametrize("method", ["bow", "tfidf"])
 def test_d2v_bow_tfidf(stem_data_general, tmpdir, method):
     filepath_prefix = str(tmpdir.mkdir(method).join("stem_tf_"))
-    filepath = train_vector(
+    filepath = pretrain_vector(
         stem_data_general,
         filepath_prefix,
         method=method
@@ -218,7 +218,7 @@ def test_d2v_bow_tfidf(stem_data_general, tmpdir, method):
 def test_exception(stem_tokens, tmpdir):
     filepath_prefix = str(tmpdir.mkdir("error").join("stem_tf_"))
     with pytest.raises(ValueError):
-        train_vector(
+        pretrain_vector(
             stem_tokens,
             filepath_prefix,
             embedding_dim=10,

@@ -7,7 +7,7 @@ from EduNLP.ModelZoo.disenqnet import DisenQNet
 from EduNLP.ModelZoo.disenqnet import DisenQNetForKnowledgePrediction, DisenQNetForPropertyPrediction
 from EduNLP.Pretrain import finetune_disenqnet_for_knowledge_prediction
 from EduNLP.Pretrain import finetune_disenqnet_for_property_prediction
-from EduNLP.Pretrain import DisenQTokenizer, train_disenqnet
+from EduNLP.Pretrain import DisenQTokenizer, pretrain_disenqnet
 from EduNLP.Vector import T2V, DisenQModel
 from EduNLP.I2V import DisenQ, get_pretrained_i2v
 
@@ -55,7 +55,7 @@ class TestPretrainDisenQNet:
             {'ques_content': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                     若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
-        train_disenqnet(
+        pretrain_disenqnet(
             standard_luna_data,
             pretrained_model_dir,
             data_params={
@@ -72,7 +72,7 @@ class TestPretrainDisenQNet:
             }
         )
         # train with a pretrained model
-        train_disenqnet(
+        pretrain_disenqnet(
             standard_luna_data,
             pretrained_model_dir,
             pretrained_dir=pretrained_model_dir,

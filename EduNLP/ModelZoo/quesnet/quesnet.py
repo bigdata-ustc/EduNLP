@@ -95,16 +95,10 @@ class QuesNet(BaseModel, FeatureExtractor):
         self.we.weight.detach().copy_(torch.from_numpy(emb))
 
     def load_img(self, img_layer: nn.Module):
-        if self.config.emb_size != img_layer.emb_size:
-            raise ValueError("Unmatched pre-trained ImageAE and embedding size")
-        else:
-            self.ie.load_state_dict(img_layer.state_dict())
+        self.ie.load_state_dict(img_layer)
 
     def load_meta(self, meta_layer: nn.Module):
-        if self.config.emb_size != meta_layer.emb_size or self.meta_size != meta_layer.meta_size:
-            raise ValueError("Unmatched pre-trained MetaAE and embedding size or meta size")
-        else:
-            self.me.load_state_dict(meta_layer.state_dict())
+        self.me.load_state_dict(meta_layer)
 
     def make_batch(self, data, device, pretrain=False):
         """Returns embeddings"""
@@ -122,16 +116,18 @@ class QuesNet(BaseModel, FeatureExtractor):
         for q in data:
             meta = torch.zeros(len(self.stoi[self.meta])).to(device)
             meta[q.labels.get(self.meta) or []] = 1
-            _lembs = [self.we(torch.tensor([0], device=device)),
-                      self.we(torch.tensor([0], device=device)),
+            _lembs = [torch.zeros(1, self.emb_size).to(device),
+                      torch.zeros(1, self.emb_size).to(device),
                       self.me.enc(meta.unsqueeze(0)) * self.lambda_input[2]]
             _rembs = [self.me.enc(meta.unsqueeze(0)) * self.lambda_input[2]]
-            _embs = [self.we(torch.tensor([0], device=device)),
-                     self.we(torch.tensor([0], device=device)),
+            _embs = [torch.zeros(1, self.emb_size).to(device),
+                     torch.zeros(1, self.emb_size).to(device),
                      self.me.enc(meta.unsqueeze(0)) * self.lambda_input[2]]
             _gt = [torch.tensor([0], device=device), meta]
             for w in q.content:
                 if isinstance(w, int):
+                    if w >= self.vocab_size:
+                        w = self.vocab_size - 1
                     word = torch.tensor([w], device=device)
                     item = self.we(word) * self.lambda_input[0]
                     _lembs.append(item)
@@ -146,10 +142,10 @@ class QuesNet(BaseModel, FeatureExtractor):
                     _embs.append(item)
                     _gt.append(im)
             _gt.append(torch.tensor([0], device=device))
-            _rembs.append(self.we(torch.tensor([0], device=device)))
-            _rembs.append(self.we(torch.tensor([0], device=device)))
-            _embs.append(self.we(torch.tensor([0], device=device)))
-            _embs.append(self.we(torch.tensor([0], device=device)))
+            _rembs.append(torch.zeros(1, self.emb_size).to(device))
+            _rembs.append(torch.zeros(1, self.emb_size).to(device))
+            _embs.append(torch.zeros(1, self.emb_size).to(device))
+            _embs.append(torch.zeros(1, self.emb_size).to(device))
 
             lembs.append(torch.cat(_lembs, dim=0))
             rembs.append(torch.cat(_rembs, dim=0))
@@ -308,7 +304,7 @@ class QuesNetForPreTraining(BaseModel):
         self.config = PretrainedConfig.from_dict(self.config)
 
     def forward(self, batch):
-        left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output, false_opt_input = batch[0]
+        left, right, words, ims, metas, wmask, imask, mmask, inputs, ans_input, ans_output, false_opt_input = batch
 
         # high-level loss
         outputs = self.quesnet(inputs)
@@ -316,7 +312,7 @@ class QuesNetForPreTraining(BaseModel):
         h = outputs.hidden
 
         x = ans_input.packed()
-
+        # (4,1,256), (4,3,256)
         y, _ = self.ans_decode(PackedSequence(self.quesnet.we(x[0].data), x.batch_sizes),
                                h.repeat(self.config.layers, 1, 1))
         floss = F.cross_entropy(self.ans_output(y.data),
@@ -333,45 +329,44 @@ class QuesNetForPreTraining(BaseModel):
                                                                torch.zeros_like(self.ans_judge(y.data)))
         loss = floss * self.lambda_loss[1]
         # low-level loss
-        left_hid = self.quesnet(left).pack_embeded.data[:, :self.rnn_size].clone()
-        right_hid = self.quesnet(right).pack_embeded.data[:, self.rnn_size:].clone()
+        left_hid = self.quesnet(left).pack_embeded.data[:, :self.rnn_size]
+        right_hid = self.quesnet(right).pack_embeded.data[:, self.rnn_size:]
 
         wloss = iloss = mloss = None
-
         if words is not None:
-            lwfea = torch.masked_select(left_hid.clone(), wmask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size).clone()
-            lout = self.lwoutput(lwfea.clone())
-            rwfea = torch.masked_select(right_hid.clone(), wmask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size).clone()
-            rout = self.rwoutput(rwfea.clone())
-            out = self.woutput(torch.cat([lwfea.clone(), rwfea.clone()], dim=1).clone())
+            lwfea = torch.masked_select(left_hid, wmask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size)
+            lout = self.lwoutput(lwfea)
+            rwfea = torch.masked_select(right_hid, wmask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size)
+            rout = self.rwoutput(rwfea)
+            out = self.woutput(torch.cat([lwfea, rwfea], dim=1))
             wloss = (F.cross_entropy(out, words) + F.cross_entropy(lout, words) + F.
                      cross_entropy(rout, words)) * self.quesnet.lambda_input[0] / 3
             wloss *= self.lambda_loss[0]
             loss = loss + wloss
 
         if ims is not None:
-            lifea = torch.masked_select(left_hid.clone(), imask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size).clone()
-            lout = self.lioutput(lifea.clone())
-            rifea = torch.masked_select(right_hid.clone(), imask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size).clone()
-            rout = self.rioutput(rifea.clone())
-            out = self.ioutput(torch.cat([lifea.clone(), rifea.clone()], dim=1).clone())
+            lifea = torch.masked_select(left_hid, imask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size)
+            lout = self.lioutput(lifea)
+            rifea = torch.masked_select(right_hid, imask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size)
+            rout = self.rioutput(rifea)
+            out = self.ioutput(torch.cat([lifea, rifea], dim=1))
             iloss = (self.quesnet.ie.loss(ims, out) + self.quesnet.ie.loss(ims, lout) + self.quesnet.ie.
                      loss(ims, rout)) * self.quesnet.lambda_input[1] / 3
             iloss *= self.lambda_loss[0]
             loss = loss + iloss
 
         if metas is not None:
-            lmfea = torch.masked_select(left_hid.clone(), mmask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size).clone()
-            lout = self.lmoutput(lmfea.clone())
-            rmfea = torch.masked_select(right_hid.clone(), mmask.unsqueeze(1).bool()) \
-                .view(-1, self.rnn_size).clone()
-            rout = self.rmoutput(rmfea.clone())
-            out = self.moutput(torch.cat([lmfea.clone(), rmfea.clone()], dim=1).clone())
+            lmfea = torch.masked_select(left_hid, mmask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size)
+            lout = self.lmoutput(lmfea)
+            rmfea = torch.masked_select(right_hid, mmask.unsqueeze(1).bool()) \
+                .view(-1, self.rnn_size)
+            rout = self.rmoutput(rmfea)
+            out = self.moutput(torch.cat([lmfea, rmfea], dim=1))
             mloss = (self.quesnet.me.loss(metas, out) + self.quesnet.me.loss(metas, lout) + self.quesnet.me.
                      loss(metas, rout)) * self.quesnet.lambda_input[2] / 3
             mloss *= self.lambda_loss[0]

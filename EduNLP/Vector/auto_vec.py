@@ -1,15 +1,15 @@
-from transformers import BertModel as HfBertModel
+from transformers import AutoModel
 from .meta import Vector
 import torch
 
 
-class BertModel(Vector):
+class HfAutoModel(Vector):
     """
     Examples
     --------
     >>> from EduNLP.Pretrain import BertTokenizer
     >>> tokenizer = BertTokenizer("bert-base-chinese", add_special_tokens=False)
-    >>> model = BertModel("bert-base-chinese")
+    >>> model = HfAutoModel("bert-base-chinese")
     >>> item = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$，若$x,y$满足约束",
     ... "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$，若$x,y$满足约束"]
     >>> inputs = tokenizer(item, return_tensors='pt')
@@ -29,7 +29,7 @@ class BertModel(Vector):
 
     def __init__(self, pretrained_dir, device="cpu"):
         self.device = device
-        self.model = HfBertModel.from_pretrained(pretrained_dir).to(self.device)
+        self.model = AutoModel.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
     def __call__(self, items: dict):
