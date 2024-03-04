@@ -117,3 +117,6 @@ jieba.cache
 *.kv
 *.zip
 examples/test_model
+*.pt
+*.npy
+*.bin
