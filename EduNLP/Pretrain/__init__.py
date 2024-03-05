@@ -9,3 +9,4 @@ from .quesnet_vec import QuesNetTokenizer, pretrain_quesnet, Question
 from .disenqnet_vec import *
 from .pretrian_utils import *
 from .hugginface_utils import *
+from .jiuzhang_vec import *
