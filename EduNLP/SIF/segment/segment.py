@@ -5,6 +5,7 @@ import numpy as np
 import re
 from contextlib import contextmanager
 from ..constants import Symbol, TEXT_SYMBOL, FORMULA_SYMBOL, FIGURE_SYMBOL, QUES_MARK_SYMBOL, TAG_SYMBOL, SEP_SYMBOL
+from ..parser.ocr import ocr
 
 
 class TextSegment(str):
@@ -93,7 +94,7 @@ class SegmentList(object):
     >>> SegmentList(test_item)
     ['如图所示，则三角形', 'ABC', '的面积是', '\\\\SIFBlank', '。', \\FigureID{1}]
     """
-    def __init__(self, item, figures: dict = None):
+    def __init__(self, item, figures: dict = None, convert_image_to_latex=False):
         self._segments = []
         self._text_segments = []
         self._formula_segments = []
@@ -112,9 +113,15 @@ class SegmentList(object):
             if not re.match(r"\$.+?\$", segment):
                 self.append(TextSegment(segment))
             elif re.match(r"\$\\FormFigureID\{.+?}\$", segment):
-                self.append(FigureFormulaSegment(segment[1:-1], is_base64=False, figure_instances=figures))
+                if convert_image_to_latex:
+                    self.append(LatexFormulaSegment(ocr(segment[1:-1], is_base64=False, figure_instances=figures)))
+                else:
+                    self.append(FigureFormulaSegment(segment[1:-1], is_base64=False, figure_instances=figures))
             elif re.match(r"\$\\FormFigureBase64\{.+?}\$", segment):
-                self.append(FigureFormulaSegment(segment[1:-1], is_base64=True, figure_instances=figures))
+                if convert_image_to_latex:
+                    self.append(LatexFormulaSegment(ocr(segment[1:-1], is_base64=True, figure_instances=figures)))
+                else:
+                    self.append(FigureFormulaSegment(segment[1:-1], is_base64=True, figure_instances=figures))
             elif re.match(r"\$\\FigureID\{.+?}\$", segment):
                 self.append(FigureSegment(segment[1:-1], is_base64=False, figure_instances=figures))
             elif re.match(r"\$\\FigureBase64\{.+?}\$", segment):
@@ -271,7 +278,7 @@ class SegmentList(object):
         }
 
 
-def seg(item, figures=None, symbol=None):
+def seg(item, figures=None, symbol=None, convert_image_to_latex=False):
     r"""
     It is a interface for SegmentList. And show it in an appropriate way.
 
@@ -346,7 +353,7 @@ def seg(item, figures=None, symbol=None):
     >>> s2.text_segments
     ['已知', '，则以下说法中正确的是']
     """
-    segments = SegmentList(item, figures)
+    segments = SegmentList(item, figures, convert_image_to_latex)
     if symbol is not None:
         segments.symbolize(symbol)
     return segments
