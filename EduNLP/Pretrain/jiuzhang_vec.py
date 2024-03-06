@@ -12,8 +12,8 @@ from .hugginface_utils import TokenizerForHuggingface
 __all__ = [
     "JiuzhangTokenizer",
     "JiuzhangDataset",
-    "finetune_for_property_prediction",
-    "finetune_for_knowledge_prediction",
+    "finetune_jiuzhang_for_property_prediction",
+    "finetune_jiuzhang_for_knowledge_prediction",
 ]
 
 DEFAULT_TRAIN_PARAMS = {
@@ -41,7 +41,7 @@ class JiuzhangTokenizer(TokenizerForHuggingface):
     """
     Examples
     ----------
-    >>> tokenizer = BertTokenizer(add_special_tokens=True)
+    >>> tokenizer = JiuzhangTokenizer(add_special_tokens=True)
     >>> item = "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$,\
     ... 若$x,y$满足约束条件公式$\\FormFigureBase64{wrong2?}$,$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$"
     >>> token_item = tokenizer(item)
@@ -58,7 +58,7 @@ class JiuzhangTokenizer(TokenizerForHuggingface):
     >>> print(len(tokenizer.tokenize(items)))
     2
     >>> tokenizer.save_pretrained('test_dir') # doctest: +SKIP
-    >>> tokenizer = BertTokenizer.from_pretrained('test_dir') # doctest: +SKIP
+    >>> tokenizer = JiuzhangTokenizer.from_pretrained('test_dir') # doctest: +SKIP
     """
 
     pass
@@ -68,7 +68,7 @@ class JiuzhangDataset(EduDataset):
     pass
 
 
-def finetune_for_property_prediction(
+def finetune_jiuzhang_for_property_prediction(
     train_items,
     output_dir,
     pretrained_model="bert-base-chinese",
@@ -143,7 +143,7 @@ def finetune_for_property_prediction(
     tokenizer.save_pretrained(output_dir)
 
 
-def finetune_for_knowledge_prediction(
+def finetune_jiuzhang_for_knowledge_prediction(
     train_items,
     output_dir,
     pretrained_model="bert-base-chinese",
@@ -198,7 +198,7 @@ def finetune_for_knowledge_prediction(
     model = JiuzhangForKnowledgePrediction(
         pretrained_model_dir=pretrained_model, **model_params
     )
-    model.bert.resize_token_embeddings(len(tokenizer.bert_tokenizer))
+    model.jiuzhang.resize_token_embeddings(len(tokenizer.bert_tokenizer))
     # training configuration
     work_train_params = deepcopy(DEFAULT_TRAIN_PARAMS)
     work_train_params["output_dir"] = output_dir

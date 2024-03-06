@@ -3,7 +3,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ["WANDB_DISABLED"] = "true"
 import torch
 from EduNLP.ModelZoo.jiuzhang import JiuzhangForPropertyPrediction, JiuzhangForKnowledgePrediction
-from EduNLP.ModelZoo.jiuzhang.jiuzhang_model import CPTModel as HFJiuzhangModel
+from EduNLP.ModelZoo.jiuzhang.modeling import CPTModel as HFJiuzhangModel
 from EduNLP.Pretrain import JiuzhangTokenizer
 from EduNLP.Pretrain import finetune_for_property_prediction, finetune_for_knowledge_prediction
 from EduNLP.Vector import T2V, JiuzhangModel

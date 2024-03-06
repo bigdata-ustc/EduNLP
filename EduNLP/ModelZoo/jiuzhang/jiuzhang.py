@@ -7,8 +7,8 @@ from ..utils import PropertyPredictionOutput, KnowledgePredictionOutput
 from transformers import  PretrainedConfig
 from typing import List
 from ..rnn.harnn import HAM
-from transformers import BartConfig as CPTConfig
-from .jiuzhang_model import CPTModel as JiuzhangModel
+from transformers import BartConfig as JiuzhangConfig
+from .modeling import CPTModel as JiuzhangModel
 
 
 __all__ = ["JiuzhangForPropertyPrediction", "JiuzhangForKnowledgePrediction"]
@@ -17,7 +17,7 @@ __all__ = ["JiuzhangForPropertyPrediction", "JiuzhangForKnowledgePrediction"]
 class JiuzhangForPropertyPrediction(BaseModel):
     def __init__(self, pretrained_model_dir=None, head_dropout=0.5, init=True):
         super(JiuzhangForPropertyPrediction, self).__init__()
-        jiuzhang_config = CPTConfig.from_pretrained(pretrained_model_dir)
+        jiuzhang_config = JiuzhangConfig.from_pretrained(pretrained_model_dir)
         if init:
             print(f'Load Jiuzhang from checkpoint: {pretrained_model_dir}')
             self.jiuzhang = JiuzhangModel.from_pretrained(pretrained_model_dir)
@@ -86,7 +86,7 @@ class JiuzhangForKnowledgePrediction(BaseModel):
                  init=True
                  ):
         super(JiuzhangForKnowledgePrediction, self).__init__()
-        jiuzhang_config = CPTConfig.from_pretrained(pretrained_model_dir)
+        jiuzhang_config = JiuzhangConfig.from_pretrained(pretrained_model_dir)
         if init:
             print(f'Load Jiuzhang from checkpoint: {pretrained_model_dir}')
             self.jiuzhang = JiuzhangModel.from_pretrained(pretrained_model_dir)

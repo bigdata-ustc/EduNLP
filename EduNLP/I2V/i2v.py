@@ -14,7 +14,7 @@ from ..Tokenizer import Tokenizer, get_tokenizer
 from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, HfAutoTokenizer, DisenQTokenizer, QuesNetTokenizer, Question, JiuzhangTokenizer
 from EduNLP import logger
 
-__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "HfAuto", "DisenQ", "QuesNet", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "HfAuto", "DisenQ", "QuesNet", "get_pretrained_i2v", "Jiuzhang"]
 
 
 class I2V(object):
@@ -68,6 +68,9 @@ class I2V(object):
             self.t2v = T2V(t2v, device=device, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'jiuzhang':
+            self.tokenizer = JiuzhangTokenizer.from_pretrained(
                 **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'hf_auto':
             self.tokenizer = HfAutoTokenizer.from_pretrained(

@@ -1,4 +1,4 @@
-from ..ModelZoo.jiuzhang.jiuzhang_model import CPTModel as HfJiuzhangModel
+from EduNLP.ModelZoo.jiuzhang import JiuzhangModel
 from .meta import Vector
 import torch
 
@@ -7,8 +7,8 @@ class JiuzhangModel(Vector):
     """
     Examples
     --------
-    >>> from EduNLP.Pretrain import BertTokenizer
-    >>> tokenizer = BertTokenizer("bert-base-chinese", add_special_tokens=False)
+    >>> from EduNLP.Pretrain import JiuzhangTokenizer
+    >>> tokenizer = JiuzhangTokenizer("bert-base-chinese", add_special_tokens=False)
     >>> model = JiuzhangModel("bert-base-chinese")
     >>> item = ["有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$，若$x,y$满足约束",
     ... "有公式$\\FormFigureID{wrong1?}$，如图$\\FigureID{088f15ea-xxx}$，若$x,y$满足约束"]
@@ -29,7 +29,7 @@ class JiuzhangModel(Vector):
 
     def __init__(self, pretrained_dir, device="cpu"):
         self.device = device
-        self.model = HfJiuzhangModel.from_pretrained(pretrained_dir).to(self.device)
+        self.model = JiuzhangModel.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
     def __call__(self, items: dict):
