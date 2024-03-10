@@ -77,7 +77,7 @@ def tokenize(text,
                 token for token in word_tokenize(text)
                 if token not in stopwords and token.strip()
             ]
-        except:
+        except OSError:
             nltk.download('punkt')
         return [
             token for token in word_tokenize(text)
@@ -101,7 +101,7 @@ def tokenize(text,
             huggingface_tokenizer.models.BPE())
         try:
             tokenizer.load(bpe_json, pretty=True)
-        except:
+        except OSError:
             if (bpe_trainfile is None):
                 raise OSError("bpe train file not found, using %s." %
                               bpe_trainfile)
