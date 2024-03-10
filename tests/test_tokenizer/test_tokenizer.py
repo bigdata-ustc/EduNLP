@@ -50,6 +50,27 @@ def test_CharTokenizer():
     assert ret == ans
 
 
+def test_Tokenizer():
+    items = [{
+        "stem":
+        "The stationery store has $600$ exercise books, and after selling some,\
+        there are still $4$ packs left, $25$ each, how many are sold?",
+    }]
+    ans = [
+        'The', 'stationery', 'store', 'has', '$', '600', '$', 'exercise',
+        'books', 'and', 'after', 'selling', 'some', 'there', 'are', 'still',
+        '$', '4', '$', 'packs', 'left', '$', '25', '$', 'each', 'how', 'many',
+        'are', 'sold'
+    ]
+    for tok in ['nltk', 'spacy']:
+        tokenizer = get_tokenizer("char",
+                                  stop_words=set(",?"),
+                                  text_params={"tokenizer": tok})
+        tokens = tokenizer(items, key=lambda x: x['stem'])
+        ret = next(tokens)
+        assert ret == ans
+
+
 def test_SpaceTokenizer():
     items = ['文具店有 $600$ 本练习本，卖出一些后，还剩 $4$ 包，每包 $25$ 本，卖出多少本？']
     tokenizer = get_tokenizer("space", stop_words=[])
