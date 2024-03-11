@@ -92,8 +92,8 @@ def tokenize(text,
             spacy_tokenizer = spacy.load(tok_model)
 
         return [
-            str(token.text) for token in spacy_tokenizer(text)
-            if str(token.text) not in stopwords
+            token.text for token in spacy_tokenizer(text)
+            if token.text not in stopwords
         ]
 
     elif (tokenizer == 'bpe'):
