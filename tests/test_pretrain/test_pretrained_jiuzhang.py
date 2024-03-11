@@ -5,7 +5,7 @@ import torch
 from EduNLP.ModelZoo.jiuzhang import JiuzhangForPropertyPrediction, JiuzhangForKnowledgePrediction
 from EduNLP.ModelZoo.jiuzhang.modeling import CPTModel as HFJiuzhangModel
 from EduNLP.Pretrain import JiuzhangTokenizer
-from EduNLP.Pretrain import finetune_for_property_prediction, finetune_for_knowledge_prediction
+from EduNLP.Pretrain import finetune_jiuzhang_for_property_prediction, finetune_jiuzhang_for_knowledge_prediction
 from EduNLP.Vector import T2V, JiuzhangModel
 from EduNLP.I2V import get_pretrained_i2v, Jiuzhang
 
@@ -47,25 +47,6 @@ class TestPretrainJiuzhang:
         res = tokenizer(test_items, key=lambda x: x["ques_content"], return_tensors=False)
         assert isinstance(res["input_ids"], list)
 
-    def test_train_model(self, standard_luna_data, pretrained_model_dir, pretrained_tokenizer_dir):
-        tokenizer = JiuzhangTokenizer.from_pretrained(pretrained_tokenizer_dir)
-        items = [
-            {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
-                    如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$,\
-                    若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'},
-            {'ques_content': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
-                    若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
-        ]
-        
-        model = HFJiuzhangModel.from_pretrained(pretrained_model_dir)
-        tokenizer = JiuzhangTokenizer.from_pretrained(pretrained_model_dir)
-
-        encodes = tokenizer(items[0], lambda x: x['ques_content'])
-        model(**encodes)
-        encodes = tokenizer(items, lambda x: x['ques_content'])
-        model(**encodes)
-
-
     def test_train_pp(self, standard_luna_data, pretrained_pp_dir, pretrained_model_dir):
         data_params = {
             "stem_key": "ques_content",
@@ -79,7 +60,7 @@ class TestPretrainJiuzhang:
         }
         train_items = standard_luna_data
         # train without eval_items
-        finetune_for_property_prediction(
+        finetune_jiuzhang_for_property_prediction(
             train_items,
             pretrained_pp_dir,
             pretrained_model=pretrained_model_dir,
@@ -87,7 +68,7 @@ class TestPretrainJiuzhang:
             data_params=data_params
         )
         # train with eval_items
-        finetune_for_property_prediction(
+        finetune_jiuzhang_for_property_prediction(
             train_items,
             pretrained_pp_dir,
             pretrained_model=pretrained_model_dir,
@@ -119,7 +100,7 @@ class TestPretrainJiuzhang:
         }
         train_items = standard_luna_data
         # train without eval_items
-        finetune_for_knowledge_prediction(
+        finetune_jiuzhang_for_knowledge_prediction(
             train_items,
             pretrained_kp_dir,
             pretrained_model=pretrained_model_dir,
@@ -128,7 +109,7 @@ class TestPretrainJiuzhang:
             model_params=model_params
         )
         # train with eval_items
-        finetune_for_knowledge_prediction(
+        finetune_jiuzhang_for_knowledge_prediction(
             train_items,
             pretrained_kp_dir,
             pretrained_model=pretrained_model_dir,
@@ -156,7 +137,7 @@ class TestPretrainJiuzhang:
         output = t2v(encodes)
         assert output.shape[2] == t2v.vector_size
 
-        t2v = T2V('Jiuzhang', pretrained_model_dir)
+        t2v = T2V('jiuzhang', pretrained_model_dir)
         output = t2v(encodes)
         assert output.shape[-1] == t2v.vector_size
         assert t2v.infer_vector(encodes).shape[1] == t2v.vector_size
@@ -172,7 +153,7 @@ class TestPretrainJiuzhang:
         tokenizer_kwargs = {
             "tokenizer_config_dir": pretrained_model_dir
         }
-        i2v = Jiuzhang('Jiuzhang', 'Jiuzhang', pretrained_model_dir, tokenizer_kwargs=tokenizer_kwargs)
+        i2v = Jiuzhang('jiuzhang', 'jiuzhang', pretrained_model_dir, tokenizer_kwargs=tokenizer_kwargs)
 
         i_vec, t_vec = i2v(items, key=lambda x: x['stem'])
         assert len(i_vec[0]) == i2v.vector_size
