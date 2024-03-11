@@ -90,9 +90,11 @@ def tokenize(text,
         except OSError:
             spacy.cli.download(tok_model)
             spacy_tokenizer = spacy.load(tok_model)
-
+            output = spacy_tokenizer(text)
+            output = output.text
+            print("spacy out", output)
         return [
-            token.text for token in spacy_tokenizer(text)
+            token.text for token in output
             if token.text not in stopwords
         ]
 
@@ -105,8 +107,9 @@ def tokenize(text,
             special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
         tokenizer.train(files=[bpe_trainfile], trainer=trainer)
         output = tokenizer.encode(text)
+        output = output.tokens
         return [
-            token for token in output.tokens if token not in stopwords
+            token for token in output[0] if token not in stopwords
         ]
     else:
         raise TypeError("Invalid Spliter: %s" % tokenizer)
