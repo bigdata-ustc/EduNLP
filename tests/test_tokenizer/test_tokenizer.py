@@ -6,6 +6,7 @@ from EduNLP.Tokenizer import get_tokenizer
 from EduNLP.Pretrain import DisenQTokenizer
 from EduNLP.utils import abs_current_dir, path_append
 
+
 def test_tokenizer():
     with pytest.raises(KeyError):
         get_tokenizer("error")
@@ -78,7 +79,8 @@ def test_TokenizerBPE():
          ', ', '$', '25', '$ ', 'e', 'a', 'c', 'h', ', ', 'h', 'ow', ' m', 'an', 'y',
          ' ', 'are', ' ', 's', 'o', 'l', 'd']
     ]
-    data_path = path_append(abs_current_dir(__file__), "../../static/test_data/standard_luna_data.json", to_str=True)
+    data_path = path_append(abs_current_dir(__file__),
+                            "../../static/test_data/standard_luna_data.json", to_str=True)
     tokenizer = get_tokenizer("pure_text", text_params={"tokenizer": 'bpe', "stopwords": set(",?"),
                               "bpe_trainfile": data_path})
     tokens = tokenizer(items)

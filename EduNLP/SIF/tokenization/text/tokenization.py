@@ -104,8 +104,9 @@ def tokenize(text,
         trainer = BpeTrainer(
             special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
         tokenizer.train(files=[bpe_trainfile], trainer=trainer)
+        output = tokenizer.encode(text)
         return [
-            token for token in tokenizer.encode(text) if token not in stopwords
+            token for token in output.tokens if token not in stopwords
         ]
     else:
         raise TypeError("Invalid Spliter: %s" % tokenizer)
