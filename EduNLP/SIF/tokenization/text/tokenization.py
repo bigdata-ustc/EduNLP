@@ -103,8 +103,7 @@ def tokenize(text,
             tokenizer.load(bpe_json, pretty=True)
         except LookupError:
             if (bpe_trainfile is None):
-                raise LookupError("bpe train file not found, using %s." %
-                              bpe_trainfile)
+                raise LookupError("bpe train file not found, using %s." %bpe_trainfile)
             trainer = BpeTrainer(
                 special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
             tokenizer.train(files=[bpe_trainfile], trainer=trainer)

@@ -61,10 +61,11 @@ def test_Tokenizer():
     ]
     for tok in ['nltk', 'spacy']:
         tokenizer = get_tokenizer("pure_text",
-                                  text_params={"tokenizer": tok, "stop_words":set(",?")})
+                                  text_params={"tokenizer": tok, "stopwords": set(",?")})
         tokens = tokenizer(items)
         ret = next(tokens)
         assert ret == ans
+
 
 def test_TokenizerBPE():
     items = ['The stationery store has $600$ exercise books, and after selling some,\
@@ -79,10 +80,13 @@ def test_TokenizerBPE():
          ' ', 'are', ' ', 's', 'o', 'l', 'd']
     ]
     tokenizer = get_tokenizer("pure_text",
-                                text_params={"tokenizer": 'bpe', "bpe_trainfile":"../../static/test_data/standard_luna_data.json", "stop_words":set(",?")})
+                             text_params={"tokenizer": 'bpe',
+                             "bpe_trainfile": "../../static/test_data/standard_luna_data.json",
+                             "stopwords": set(",?")})
     tokens = tokenizer(items)
     ret = next(tokens)
     assert ret == ans
+
 
 def test_SpaceTokenizer():
     items = ['文具店有 $600$ 本练习本，卖出一些后，还剩 $4$ 包，每包 $25$ 本，卖出多少本？']
