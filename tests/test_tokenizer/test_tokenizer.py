@@ -78,10 +78,8 @@ def test_TokenizerBPE():
          ', ', '$', '25', '$ ', 'e', 'a', 'c', 'h', ', ', 'h', 'ow', ' m', 'an', 'y',
          ' ', 'are', ' ', 's', 'o', 'l', 'd']
     ]
-    tokenizer = get_tokenizer("pure_text",
-                             text_params={"tokenizer": 'bpe',
-                             "bpe_trainfile": "../../static/test_data/standard_luna_data.json",
-                             "stopwords": set(",?")})
+    tokenizer = get_tokenizer("pure_text", text_params={"tokenizer": 'bpe', "stopwords": set(",?"),
+                              "bpe_trainfile": "../../../../static/test_data/standard_luna_data.json"})
     tokens = tokenizer(items)
     ret = next(tokens)
     assert ret == ans

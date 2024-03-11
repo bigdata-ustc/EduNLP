@@ -87,7 +87,7 @@ def tokenize(text,
     elif (tokenizer == 'spacy'):
         try:
             spacy_tokenizer = spacy.load(tok_model)
-        except LookupError:
+        except OSError:
             spacy.cli.download(tok_model)
             spacy_tokenizer = spacy.load(tok_model)
 
