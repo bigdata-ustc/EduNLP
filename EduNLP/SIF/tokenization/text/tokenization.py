@@ -77,7 +77,7 @@ def tokenize(text,
                 token for token in word_tokenize(text)
                 if token not in stopwords and token.strip()
             ]
-        except OSError:
+        except LookupError:
             nltk.download('punkt')
         return [
             token for token in word_tokenize(text)
@@ -87,7 +87,7 @@ def tokenize(text,
     elif (tokenizer == 'spacy'):
         try:
             spacy_tokenizer = spacy.load(tok_model)
-        except OSError:
+        except LookupError:
             spacy.cli.download(tok_model)
             spacy_tokenizer = spacy.load(tok_model)
 
@@ -101,9 +101,9 @@ def tokenize(text,
             huggingface_tokenizer.models.BPE())
         try:
             tokenizer.load(bpe_json, pretty=True)
-        except OSError:
+        except LookupError:
             if (bpe_trainfile is None):
-                raise OSError("bpe train file not found, using %s." %
+                raise LookupError("bpe train file not found, using %s." %
                               bpe_trainfile)
             trainer = BpeTrainer(
                 special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])

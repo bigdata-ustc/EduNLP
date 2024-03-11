@@ -61,12 +61,28 @@ def test_Tokenizer():
     ]
     for tok in ['nltk', 'spacy']:
         tokenizer = get_tokenizer("pure_text",
-                                  stop_words=set(",?"),
-                                  text_params={"tokenizer": tok})
+                                  text_params={"tokenizer": tok, "stop_words":set(",?")})
         tokens = tokenizer(items)
         ret = next(tokens)
         assert ret == ans
 
+def test_TokenizerBPE():
+    items = ['The stationery store has $600$ exercise books, and after selling some,\
+        there are still $4$ packs left, $25$ each, how many are sold?']
+    ans = [
+        ['h', 'e', ' ', 'st', 'at', 'io', 'n', 'er', 'y', ' ', 'st', 'o', 're', ' ',
+         'h', 'as', ' $', '6', '00', '$ ', 'e', 'x', 'er', 'ci', 's', 'e', ' b', 'o',
+         'o', 'k', 's', ', ', 'an', 'd', ' a', 'ft', 'er', ' ', 's', 'e', 'l', 'l',
+         'in', 'g', ' ', 's', 'ome', ', ', 't', 'h', 'e', 're', ' ', 'are', ' ',
+         'st', 'i', 'l', 'l', ' $', '4', '$ ', 'p', 'a', 'c', 'k', 's', ' ', 'left',
+         ', ', '$', '25', '$ ', 'e', 'a', 'c', 'h', ', ', 'h', 'ow', ' m', 'an', 'y',
+         ' ', 'are', ' ', 's', 'o', 'l', 'd']
+    ]
+    tokenizer = get_tokenizer("pure_text",
+                                text_params={"tokenizer": 'bpe', "bpe_trainfile":"../../static/test_data/standard_luna_data.json", "stop_words":set(",?")})
+    tokens = tokenizer(items)
+    ret = next(tokens)
+    assert ret == ans
 
 def test_SpaceTokenizer():
     items = ['文具店有 $600$ 本练习本，卖出一些后，还剩 $4$ 包，每包 $25$ 本，卖出多少本？']
