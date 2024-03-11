@@ -99,15 +99,11 @@ def tokenize(text,
     elif (tokenizer == 'bpe'):
         tokenizer = huggingface_tokenizer.Tokenizer(
             huggingface_tokenizer.models.BPE())
-        try:
-            tokenizer.load(bpe_json, pretty=True)
-        except LookupError:
-            if (bpe_trainfile is None):
-                raise LookupError("bpe train file not found, using %s." %bpe_trainfile)
-            trainer = BpeTrainer(
-                special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
-            tokenizer.train(files=[bpe_trainfile], trainer=trainer)
-            tokenizer.save(bpe_json, pretty=True)
+        if (bpe_trainfile is None):
+            raise LookupError("bpe train file not found, using %s." % bpe_trainfile)
+        trainer = BpeTrainer(
+            special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
+        tokenizer.train(files=[bpe_trainfile], trainer=trainer)
         return [
             token for token in tokenizer.encode(text) if token not in stopwords
         ]
