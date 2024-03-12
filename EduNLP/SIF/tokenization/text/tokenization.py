@@ -109,8 +109,6 @@ def tokenize(text,
         output = tokenizer.encode(text)
         output = output.tokens
         output = output[0]
-        return [
-            token for token in output if token not in stopwords
-        ]
+        return output
     else:
         raise TypeError("Invalid Spliter: %s" % tokenizer)
