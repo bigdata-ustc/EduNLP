@@ -71,13 +71,13 @@ def test_TokenizerBPE():
     items = ['The stationery store has $600$ exercise books, and after selling some,\
         there are still $4$ packs left, $25$ each, how many are sold?']
     ans = [
-        ['h', 'e', ' ', 'st', 'at', 'io', 'n', 'er', 'y', ' ', 'st', 'o', 're', ' ',
+        'h', 'e', ' ', 'st', 'at', 'io', 'n', 'er', 'y', ' ', 'st', 'o', 're', ' ',
          'h', 'as', ' $', '6', '00', '$ ', 'e', 'x', 'er', 'ci', 's', 'e', ' b', 'o',
          'o', 'k', 's', ', ', 'an', 'd', ' a', 'ft', 'er', ' ', 's', 'e', 'l', 'l',
          'in', 'g', ' ', 's', 'ome', ', ', 't', 'h', 'e', 're', ' ', 'are', ' ',
          'st', 'i', 'l', 'l', ' $', '4', '$ ', 'p', 'a', 'c', 'k', 's', ' ', 'left',
          ', ', '$', '25', '$ ', 'e', 'a', 'c', 'h', ', ', 'h', 'ow', ' m', 'an', 'y',
-         ' ', 'are', ' ', 's', 'o', 'l', 'd']
+         ' ', 'are', ' ', 's', 'o', 'l', 'd'
     ]
     data_path = path_append(abs_current_dir(__file__),
                             "../../static/test_data/standard_luna_data.json", to_str=True)

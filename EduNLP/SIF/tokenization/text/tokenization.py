@@ -7,7 +7,9 @@ import nltk
 import spacy
 import tokenizers as huggingface_tokenizer
 from tokenizers.trainers import BpeTrainer
-from .stopwords import DEFAULT_STOPWORDS
+from .stopwords import DEFAULT_STOPWORDSfrom tokenizers import Tokenizer
+from tokenizers import Tokenizer
+
 
 jieba.setLogLevel(logging.INFO)
 
@@ -90,25 +92,26 @@ def tokenize(text,
         except OSError:
             spacy.cli.download(tok_model)
             spacy_tokenizer = spacy.load(tok_model)
-            output = spacy_tokenizer(text)
-            output = output.text
-            print("spacy out", output)
+            output = spacy_tokenizer(str(text))
         return [
             token.text for token in output
             if token.text not in stopwords
         ]
 
     elif (tokenizer == 'bpe'):
-        tokenizer = huggingface_tokenizer.Tokenizer(
-            huggingface_tokenizer.models.BPE())
-        if (bpe_trainfile is None):
-            raise LookupError("bpe train file not found, using %s." % bpe_trainfile)
-        trainer = BpeTrainer(
-            special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
-        tokenizer.train(files=[bpe_trainfile], trainer=trainer)
+        try:
+            tokenizer = Tokenizer.from_file('bpeTokenizer.json')
+        except OSError: 
+            tokenizer = huggingface_tokenizer.Tokenizer(
+                huggingface_tokenizer.models.BPE())
+            if (bpe_trainfile is None):
+                raise LookupError("bpe train file not found, using %s." % bpe_trainfile)
+            trainer = BpeTrainer(
+                special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
+            tokenizer.train(files=[bpe_trainfile], trainer=trainer)
+            tokenizer.save('bpeTokenizer.json', pretty=True)
         output = tokenizer.encode(text)
         output = output.tokens
-        output = output[0]
         return output[0]
     else:
         raise TypeError("Invalid Spliter: %s" % tokenizer)
