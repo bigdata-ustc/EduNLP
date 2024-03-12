@@ -109,6 +109,6 @@ def tokenize(text,
         output = tokenizer.encode(text)
         output = output.tokens
         output = output[0]
-        return output
+        return output[0]
     else:
         raise TypeError("Invalid Spliter: %s" % tokenizer)
