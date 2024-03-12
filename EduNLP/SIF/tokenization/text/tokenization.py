@@ -7,8 +7,8 @@ import nltk
 import spacy
 import tokenizers as huggingface_tokenizer
 from tokenizers.trainers import BpeTrainer
-from .stopwords import DEFAULT_STOPWORDSfrom tokenizers import Tokenizer
-from tokenizers import Tokenizer
+from .stopwords import DEFAULT_STOPWORDS
+from tokenizers import Tokenizer as HGTokenizer
 
 
 jieba.setLogLevel(logging.INFO)
@@ -100,8 +100,8 @@ def tokenize(text,
 
     elif (tokenizer == 'bpe'):
         try:
-            tokenizer = Tokenizer.from_file('bpeTokenizer.json')
-        except OSError: 
+            tokenizer = HGTokenizer.from_file('bpeTokenizer.json')
+        except OSError:
             tokenizer = huggingface_tokenizer.Tokenizer(
                 huggingface_tokenizer.models.BPE())
             if (bpe_trainfile is None):
