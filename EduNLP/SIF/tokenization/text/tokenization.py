@@ -101,7 +101,7 @@ def tokenize(text,
     elif (tokenizer == 'bpe'):
         try:
             tokenizer = HGTokenizer.from_file('bpeTokenizer.json')
-        except OSError:
+        except :
             tokenizer = huggingface_tokenizer.Tokenizer(
                 huggingface_tokenizer.models.BPE())
             if (bpe_trainfile is None):

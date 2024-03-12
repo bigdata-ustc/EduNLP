@@ -51,20 +51,34 @@ def test_CharTokenizer():
     assert ret == ans
 
 
-def test_Tokenizer():
-    items = ["""The stationery store has 600 exercise books, and after selling
-              some, there are still 4 packs left, 25 each, how many are sold?"""]
+def test_TokenizerNLTK():
+    items = ["The stationery store has 600 exercise books, and after selling\
+              some, there are still 4 packs left, 25 each, how many are sold?"]
     ans = [
         'The', 'stationery', 'store', 'has', '600', 'exercise',
         'books', 'and', 'after', 'selling', 'some', 'there', 'are', 'still',
         '4', 'packs', 'left', '25', 'each', 'how', 'many', 'are', 'sold'
     ]
-    for tok in ['nltk', 'spacy']:
-        tokenizer = get_tokenizer("pure_text",
-                                  text_params={"tokenizer": tok, "stopwords": set(",?")})
-        tokens = tokenizer(items)
-        ret = next(tokens)
-        assert ret == ans
+    tokenizer = get_tokenizer("pure_text",
+                              text_params={"tokenizer": 'nltk', "stopwords": set(",?")})
+    tokens = tokenizer(items)
+    ret = next(tokens)
+    assert ret == ans
+
+
+def test_TokenizerSpacy():
+    items = ["The stationery store has 600 exercise books, and after selling\
+              some, there are still 4 packs left, 25 each, how many are sold?"]
+    ans = [
+        'The', 'stationery', 'store', 'has', '600', 'exercise',
+        'books', 'and', 'after', 'selling', '              ', 'some', 'there', 'are', 'still',
+        '4', 'packs', 'left', '25', 'each', 'how', 'many', 'are', 'sold'
+    ]
+    tokenizer = get_tokenizer("pure_text",
+                              text_params={"tokenizer": 'spacy', "stopwords": set(",?")})
+    tokens = tokenizer(items)
+    ret = next(tokens)
+    assert ret == ans
 
 
 def test_TokenizerBPE():
