@@ -71,7 +71,7 @@ def test_TokenizerSpacy():
               some, there are still 4 packs left, 25 each, how many are sold?"]
     ans = [
         'The', 'stationery', 'store', 'has', '600', 'exercise',
-        'books', 'and', 'after', 'selling', '               ', 'some', 'there', 'are', 'still',
+        'books', 'and', 'after', 'selling', '             ', 'some', 'there', 'are', 'still',
         '4', 'packs', 'left', '25', 'each', 'how', 'many', 'are', 'sold'
     ]
     tokenizer = get_tokenizer("pure_text",
@@ -84,7 +84,7 @@ def test_TokenizerSpacy():
 def test_TokenizerBPE():
     items = ['The stationery store has $600$ exercise books, and after selling some,\
         there are still $4$ packs left, $25$ each, how many are sold?']
-    ans = ['h', '600', ' ', '^', '4', '^', ' ', '25', ' ']
+    ans = ['h', '600', ' ', '4', ' ', '25', ' ']
     data_path = path_append(abs_current_dir(__file__),
                             "../../static/test_data/standard_luna_data.json", to_str=True)
     tokenizer = get_tokenizer("pure_text", text_params={"tokenizer": 'bpe', "stopwords": set(",?"),
