@@ -4,6 +4,7 @@
 import pytest
 from EduNLP.Tokenizer import get_tokenizer
 from EduNLP.Pretrain import DisenQTokenizer
+from EduNLP.utils import abs_current_dir, path_append
 
 
 def test_tokenizer():
@@ -47,6 +48,49 @@ def test_CharTokenizer():
     ret = next(tokens)
     ans = ['文', '具', '店', '有', '$', '600', '$', '本', '练', '习', '本', '卖', '出', '一',
            '些', '后', '还', '剩', '$', '4', '$', '包', '每', '包', '$', '25', '$', '本', '卖', '出', '多', '少', '本']
+    assert ret == ans
+
+
+def test_TokenizerNLTK():
+    items = ["The stationery store has 600 exercise books, and after selling\
+              some, there are still 4 packs left, 25 each, how many are sold?"]
+    ans = [
+        'The', 'stationery', 'store', 'has', '600', 'exercise',
+        'books', 'and', 'after', 'selling', 'some', 'there', 'are', 'still',
+        '4', 'packs', 'left', '25', 'each', 'how', 'many', 'are', 'sold'
+    ]
+    tokenizer = get_tokenizer("pure_text",
+                              text_params={"tokenizer": 'nltk', "stopwords": set(",?")})
+    tokens = tokenizer(items)
+    ret = next(tokens)
+    assert ret == ans
+
+
+def test_TokenizerSpacy():
+    items = ["The stationery store has 600 exercise books, and after selling\
+              some, there are still 4 packs left, 25 each, how many are sold?"]
+    ans = [
+        'The', 'stationery', 'store', 'has', '600', 'exercise',
+        'books', 'and', 'after', 'selling', '             ', 'some', 'there', 'are', 'still',
+        '4', 'packs', 'left', '25', 'each', 'how', 'many', 'are', 'sold'
+    ]
+    tokenizer = get_tokenizer("pure_text",
+                              text_params={"tokenizer": 'spacy', "stopwords": set(",?")})
+    tokens = tokenizer(items)
+    ret = next(tokens)
+    assert ret == ans
+
+
+def test_TokenizerBPE():
+    items = ['The stationery store has $600$ exercise books, and after selling some,\
+        there are still $4$ packs left, $25$ each, how many are sold?']
+    ans = ['h', '600', ' ', '4', ' ', '25', ' ']
+    data_path = path_append(abs_current_dir(__file__),
+                            "../../static/test_data/standard_luna_data.json", to_str=True)
+    tokenizer = get_tokenizer("pure_text", text_params={"tokenizer": 'bpe', "stopwords": set(",?"),
+                              "bpe_trainfile": data_path})
+    tokens = tokenizer(items)
+    ret = next(tokens)
     assert ret == ans
 
 
