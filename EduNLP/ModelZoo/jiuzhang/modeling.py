@@ -649,6 +649,7 @@ class CPTModel(CPTPretrainedModel):
         output_attentions=None,
         output_hidden_states=None,
         return_dict=None,
+        token_type_ids = None,
     ):
 
         # different to other models, CPT automatically creates decoder_input_ids from

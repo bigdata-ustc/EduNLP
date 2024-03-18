@@ -41,6 +41,7 @@ class JiuzhangForPropertyPrediction(BaseModel):
                 token_type_ids=None,
                 labels=None):
         outputs = self.jiuzhang(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
+        # outputs = self.jiuzhang(input_ids=input_ids, attention_mask=attention_mask)
         item_embeds = outputs.last_hidden_state[:, 0, :]
         item_embeds = self.dropout(item_embeds)
 
