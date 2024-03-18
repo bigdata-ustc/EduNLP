@@ -29,7 +29,7 @@ class JiuzhangModel(Vector):
 
     def __init__(self, pretrained_dir, device="cpu"):
         self.device = device
-        self.model = Jiuzhang.from_pretrained(pretrained_dir).to(self.device)
+        self.model = Jiuzhang.from_pretrained(pretrained_dir,ignore_mismatched_sizes=True).to(self.device)
         self.model.eval()
 
     def __call__(self, items: dict):

@@ -142,6 +142,10 @@ class TestPretrainJiuzhang:
         tokenizer = JiuzhangTokenizer.from_pretrained(pretrained_model_dir)
         encodes = tokenizer(items, key=lambda x: x['stem'])
 
+        model = HFJiuzhangModel.from_pretrained("fnlp/cpt-base")
+        model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
+        model.save_pretrained(pretrained_model_dir)
+        
         t2v = JiuzhangModel(pretrained_model_dir)
         output = t2v(encodes)
         assert output.shape[2] == t2v.vector_size

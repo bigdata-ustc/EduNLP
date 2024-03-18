@@ -20,7 +20,7 @@ class JiuzhangForPropertyPrediction(BaseModel):
         jiuzhang_config = JiuzhangConfig.from_pretrained(pretrained_model_dir)
         if init:
             print(f'Load Jiuzhang from checkpoint: {pretrained_model_dir}')
-            self.jiuzhang = JiuzhangModel.from_pretrained(pretrained_model_dir)
+            self.jiuzhang = JiuzhangModel.from_pretrained(pretrained_model_dir, ignore_mismatched_sizes=True)
         else:
             print(f'Load Jiuzhang from config: {pretrained_model_dir}')
             self.jiuzhang = JiuzhangModel(jiuzhang_config)
@@ -90,7 +90,7 @@ class JiuzhangForKnowledgePrediction(BaseModel):
         jiuzhang_config = JiuzhangConfig.from_pretrained(pretrained_model_dir)
         if init:
             print(f'Load Jiuzhang from checkpoint: {pretrained_model_dir}')
-            self.jiuzhang = JiuzhangModel.from_pretrained(pretrained_model_dir)
+            self.jiuzhang = JiuzhangModel.from_pretrained(pretrained_model_dir, ignore_mismatched_sizes=True)
         else:
             print(f'Load Jiuzhang from config: {pretrained_model_dir}')
             self.jiuzhang = JiuzhangModel(jiuzhang_config)
