@@ -1,4 +1,4 @@
-from EduNLP.ModelZoo.jiuzhang import JiuzhangModel
+from EduNLP.ModelZoo.jiuzhang import JiuzhangModel as Jiuzhang
 from .meta import Vector
 import torch
 
@@ -29,7 +29,7 @@ class JiuzhangModel(Vector):
 
     def __init__(self, pretrained_dir, device="cpu"):
         self.device = device
-        self.model = JiuzhangModel.from_pretrained(pretrained_dir).to(self.device)
+        self.model = Jiuzhang.from_pretrained(pretrained_dir).to(self.device)
         self.model.eval()
 
     def __call__(self, items: dict):

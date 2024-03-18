@@ -67,7 +67,6 @@ class JiuzhangTokenizer(TokenizerForHuggingface):
 class JiuzhangDataset(EduDataset):
     pass
 
-
 def finetune_jiuzhang_for_property_prediction(
     train_items,
     output_dir,

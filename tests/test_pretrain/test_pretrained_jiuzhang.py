@@ -10,9 +10,15 @@ from EduNLP.Vector import T2V, JiuzhangModel
 from EduNLP.I2V import get_pretrained_i2v, Jiuzhang
 
 TEST_GPU = False
+from transformers import AutoConfig
+
 
 
 class TestPretrainJiuzhang:
+    def save_model(self, pretrained_model_dir):
+        model = HFJiuzhangModel.from_pretrained("fnlp/cpt-base")
+        model.save_pretrained(pretrained_model_dir)
+        
     def test_tokenizer(self, standard_luna_data, pretrained_tokenizer_dir):
         test_items = [
             {'ques_content': '有公式$\\FormFigureID{wrong1?}$和公式$\\FormFigureBase64{wrong2?}$，\
@@ -25,7 +31,7 @@ class TestPretrainJiuzhang:
             "granularity": "char",
             # "stopwords": None,
         }
-        tokenizer = JiuzhangTokenizer(pretrained_model="Jiuzhang-base-chinese", add_specials=True,
+        tokenizer = JiuzhangTokenizer(pretrained_model="fnlp/cpt-base", add_specials=True,
                                   tokenize_method="ast_formula", text_params=text_params)
 
         tokenizer_size1 = len(tokenizer)
@@ -60,6 +66,9 @@ class TestPretrainJiuzhang:
         }
         train_items = standard_luna_data
         # train without eval_items
+        
+        model = HFJiuzhangModel.from_pretrained("fnlp/cpt-base")
+        model.save_pretrained(pretrained_model_dir)
         finetune_jiuzhang_for_property_prediction(
             train_items,
             pretrained_pp_dir,
