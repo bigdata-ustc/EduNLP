@@ -3,20 +3,16 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ["WANDB_DISABLED"] = "true"
 import torch
 from EduNLP.ModelZoo.jiuzhang import JiuzhangForPropertyPrediction, JiuzhangForKnowledgePrediction
-from EduNLP.ModelZoo.jiuzhang.modeling import CPTModel as HFJiuzhangModel
+from EduNLP.ModelZoo.jiuzhang import Jiuzhang as HFJiuzhang
 from EduNLP.Pretrain import JiuzhangTokenizer
 from EduNLP.Pretrain import finetune_jiuzhang_for_property_prediction, finetune_jiuzhang_for_knowledge_prediction
 from EduNLP.Vector import T2V, JiuzhangModel
 from EduNLP.I2V import get_pretrained_i2v, Jiuzhang
 
 TEST_GPU = False
-from transformers import AutoConfig
 
 
 class TestPretrainJiuzhang:
-    def save_model(self, pretrained_model_dir):
-        model = HFJiuzhangModel.from_pretrained("fnlp/cpt-base")
-        model.save_pretrained(pretrained_model_dir)
 
     def test_tokenizer(self, standard_luna_data, pretrained_model_dir):
         test_items = [
@@ -52,18 +48,19 @@ class TestPretrainJiuzhang:
         res = tokenizer(test_items, key=lambda x: x["ques_content"], return_tensors=False)
         assert isinstance(res["input_ids"], list)
 
+    def test_save_model(self, pretrained_model_dir):
+        model = HFJiuzhang.from_pretrained("fnlp/cpt-base")
+        tokenizer = JiuzhangTokenizer.from_pretrained(pretrained_model_dir)
+        model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
+        model.save_pretrained(pretrained_model_dir)
+
     def test_t2v(self, pretrained_model_dir):
-        pretrained_model_dir = pretrained_model_dir
         items = [
             {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                 若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
         ]
         tokenizer = JiuzhangTokenizer.from_pretrained(pretrained_model_dir)
         encodes = tokenizer(items, key=lambda x: x['stem'])
-
-        model = HFJiuzhangModel.from_pretrained("fnlp/cpt-base")
-        model.resize_token_embeddings(len(tokenizer.bert_tokenizer))
-        model.save_pretrained(pretrained_model_dir)
 
         t2v = JiuzhangModel(pretrained_model_dir)
         output = t2v(encodes)
@@ -78,7 +75,6 @@ class TestPretrainJiuzhang:
         t2v.infer_vector(encodes, pooling_strategy='average')
 
     def test_i2v(self, pretrained_model_dir):
-        pretrained_model_dir = pretrained_model_dir
         items = [
             {'stem': '如图$\\FigureID{088f15ea-8b7c-11eb-897e-b46bfc50aa29}$, \
                 若$x,y$满足约束条件$\\SIFSep$，则$z=x+7 y$的最大值为$\\SIFBlank$'}
@@ -100,7 +96,6 @@ class TestPretrainJiuzhang:
         assert len(t_vec[0][0]) == i2v.vector_size
 
     def test_train_pp(self, standard_luna_data, pretrained_model_dir):
-        self.save_model(pretrained_model_dir)
         data_params = {
             "stem_key": "ques_content",
             "label_key": "difficulty"
@@ -114,8 +109,6 @@ class TestPretrainJiuzhang:
         train_items = standard_luna_data
         # train without eval_items
 
-        model = HFJiuzhangModel.from_pretrained("fnlp/cpt-base")
-        model.save_pretrained(pretrained_model_dir)
         finetune_jiuzhang_for_property_prediction(
             train_items,
             pretrained_model_dir,
@@ -140,8 +133,6 @@ class TestPretrainJiuzhang:
         model(**encodes)
 
     def test_train_kp(self, standard_luna_data, pretrained_model_dir):
-        # pretrained_model_dir = 'D:\\EduNLP'
-        self.save_model(pretrained_model_dir)
         data_params = {
             "stem_key": "ques_content",
             "label_key": "know_list"

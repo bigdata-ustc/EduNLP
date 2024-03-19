@@ -1,4 +1,4 @@
-from EduNLP.ModelZoo.jiuzhang import JiuzhangModel as Jiuzhang
+from EduNLP.ModelZoo.jiuzhang import Jiuzhang
 from .meta import Vector
 import torch
 
