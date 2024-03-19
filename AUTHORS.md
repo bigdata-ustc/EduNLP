@@ -22,4 +22,6 @@
 
 [Shangzi Xue](https://github.com/ShangziXue)
 
+[Chaokun Wang](https://github.com/Bone-Fish)
+
 The stared contributors are the corresponding authors. 
