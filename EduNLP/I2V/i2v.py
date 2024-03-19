@@ -11,10 +11,11 @@ from ..Vector import get_pretrained_model_info, get_all_pretrained_models
 from longling import path_append
 from EduData import get_data
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, HfAutoTokenizer, DisenQTokenizer, QuesNetTokenizer, Question
+from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, HfAutoTokenizer
+from EduNLP.Pretrain import DisenQTokenizer, QuesNetTokenizer, JiuzhangTokenizer
 from EduNLP import logger
 
-__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "HfAuto", "DisenQ", "QuesNet", "get_pretrained_i2v"]
+__all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "HfAuto", "DisenQ", "QuesNet", "get_pretrained_i2v", "Jiuzhang"]
 
 
 class I2V(object):
@@ -68,6 +69,9 @@ class I2V(object):
             self.t2v = T2V(t2v, device=device, *args, **kwargs)
         if tokenizer == 'bert':
             self.tokenizer = BertTokenizer.from_pretrained(
+                **tokenizer_kwargs if tokenizer_kwargs is not None else {})
+        elif tokenizer == 'jiuzhang':
+            self.tokenizer = JiuzhangTokenizer.from_pretrained(
                 **tokenizer_kwargs if tokenizer_kwargs is not None else {})
         elif tokenizer == 'hf_auto':
             self.tokenizer = HfAutoTokenizer.from_pretrained(
@@ -606,6 +610,71 @@ class QuesNet(I2V):
                    tokenizer_kwargs=tokenizer_kwargs)
 
 
+class Jiuzhang(I2V):
+    """
+    The model aims to transfer item and tokens to vector with Jiuzhang.
+
+    Bases
+    -------
+    I2V
+
+    Parameters
+    -----------
+    tokenizer: str
+        the tokenizer name
+    t2v: str
+        the name of token2vector model
+    args:
+        the parameters passed to t2v
+    tokenizer_kwargs: dict
+        the parameters passed to tokenizer
+    pretrained_t2v: bool
+        True: use pretrained t2v model
+        False: use your own t2v model
+    kwargs:
+        the parameters passed to t2v
+
+    Returns
+    -------
+    i2v model: Jiuzhang
+    """
+
+    def infer_vector(self, items: Tuple[List[str], List[dict], str, dict],
+                     *args, key=lambda x: x, return_tensors='pt', **kwargs) -> tuple:
+        """
+        It is a function to switch item to vector. And before using the function, it is nesseary to load model.
+
+        Parameters
+        -----------
+        items : str or dict or list
+            the item of question, or question list
+        return_tensors: str
+            tensor type used in tokenizer
+        args:
+            the parameters passed to t2v
+        kwargs:
+            the parameters passed to t2v
+
+        Returns
+        --------
+        vector:list
+        """
+        is_batch = isinstance(items, list)
+        items = items if is_batch else [items]
+        inputs = self.tokenize(items, key=key, return_tensors=return_tensors)
+        return self.t2v.infer_vector(inputs, *args, **kwargs), self.t2v.infer_tokens(inputs, *args, **kwargs)
+
+    @classmethod
+    def from_pretrained(cls, name, model_dir=MODEL_DIR, device='cpu', *args, **kwargs):
+        model_path = path_append(model_dir, get_pretrained_model_info(name)[0].split('/')[-1], to_str=True)
+        for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+            model_path = model_path.replace(i, "")
+        logger.info("model_path: %s" % model_path)
+        tokenizer_kwargs = {"tokenizer_config_dir": model_path}
+        return cls("jiuzhang", name, pretrained_t2v=True, model_dir=model_dir, device=device,
+                   tokenizer_kwargs=tokenizer_kwargs)
+
+
 MODEL_MAP = {
     "w2v": W2V,
     "d2v": D2V,
@@ -613,7 +682,8 @@ MODEL_MAP = {
     "hf_auto": HfAuto,
     "disenq": DisenQ,
     "quesnet": QuesNet,
-    "elmo": Elmo
+    "elmo": Elmo,
+    "jiuzhang": Jiuzhang,
 }
 
 

@@ -15,6 +15,7 @@ from .elmo_vec import ElmoModel
 from .meta import Vector
 from EduNLP.constant import MODEL_DIR
 from .disenqnet import DisenQModel
+from .jiuzhang_vec import JiuzhangModel
 
 
 MODELS = {
@@ -28,6 +29,7 @@ MODELS = {
     'hf_auto': HfAutoModel,
     'quesnet': QuesNetModel,
     "disenq": DisenQModel,
+    "jiuzhang": JiuzhangModel,
 }
 
 

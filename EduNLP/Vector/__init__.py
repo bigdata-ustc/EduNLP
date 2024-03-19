@@ -11,3 +11,4 @@ from .auto_vec import HfAutoModel
 from .quesnet import QuesNetModel
 from .disenqnet import DisenQModel
 from .elmo_vec import ElmoModel
+from .jiuzhang_vec import JiuzhangModel
