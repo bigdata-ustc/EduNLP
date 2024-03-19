@@ -97,7 +97,7 @@ def to_sif(item, check_formula=True, parser: Parser = None):
 
 
 def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str = None, tokenization=True,
-            tokenization_params=None, errors="raise"):
+            tokenization_params=None, convert_image_to_latex=False, errors="raise"):
     r"""
 
     Default to use linear Tokenizer, change the tokenizer by specifying tokenization_params
@@ -260,7 +260,7 @@ def sif4sci(item: str, figures: (dict, bool) = None, mode: int = 2, symbol: str 
                 "Unknown mode %s, use only 0 or 1 or 2." % mode
             )
 
-        ret = seg(item, figures, symbol)
+        ret = seg(item, figures, symbol, convert_image_to_latex)
 
         if tokenization is True:
             ret = tokenize(ret, **(tokenization_params if tokenization_params is not None else {}))

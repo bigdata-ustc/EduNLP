@@ -61,6 +61,9 @@ setup(
         'networkx',
         'numpy>=1.17.0',
         'jieba',
+        'nltk',
+        'spacy',
+        'tokenizers',
         'js2py',
         'EduData>=0.0.16',
         'PyBaize>=0.0.3'

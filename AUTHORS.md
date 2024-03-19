@@ -22,6 +22,8 @@
 
 [Shangzi Xue](https://github.com/ShangziXue)
 
-[Chaokun Wang](https://github.com/Bone-Fish)
+[Heng Yu](https://github.com/GNEHUY)
 
-The stared contributors are the corresponding authors. 
+[Tianyun Ji](https://github.com/KINGNEWBLUSH)
+
+[Chaokun Wang](https://github.com/Bone-Fish)

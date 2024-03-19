@@ -56,7 +56,8 @@ class CustomTokenizer(Tokenizer):
         for item in items:
             yield self._tokenize(item, key=key, **kwargs)
 
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None, **kwargs):
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None,
+                  convert_image_to_latex=False, **kwargs):
         """Tokenize one item, return token list
 
         Parameters
@@ -67,7 +68,8 @@ class CustomTokenizer(Tokenizer):
             determine how to get the text of item, by default lambdax: x
         """
         symbol = self.symbol if symbol is None else symbol
-        return tokenize(seg(key(item), symbol=symbol, figures=self.figures),
+        return tokenize(seg(key(item), symbol=symbol, figures=self.figures,
+                            convert_image_to_latex=convert_image_to_latex),
                         **self.tokenization_params, **kwargs).tokens
 
 
@@ -191,9 +193,11 @@ class PureTextTokenizer(Tokenizer):
         for item in items:
             yield self._tokenize(item, key=key, **kwargs)
 
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None, **kwargs):
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None,
+                  convert_image_to_latex=False, **kwargs):
         symbol = self.symbol if symbol is None else symbol
-        return tokenize(seg(key(item), symbol=symbol), **self.tokenization_params, **kwargs).tokens
+        return tokenize(seg(key(item), symbol=symbol, convert_image_to_latex=convert_image_to_latex),
+                        **self.tokenization_params, **kwargs).tokens
 
 
 class AstFormulaTokenizer(Tokenizer):
@@ -235,11 +239,13 @@ class AstFormulaTokenizer(Tokenizer):
         for item in items:
             yield self._tokenize(item, key=key, **kwargs)
 
-    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None, **kwargs):
+    def _tokenize(self, item: Union[str, dict], key=lambda x: x, symbol: str = None,
+                  convert_image_to_latex=False, **kwargs):
         mode = kwargs.pop("mode", 0)
         symbol = self.symbol if symbol is None else symbol
         ret = sif4sci(key(item), figures=self.figures, mode=mode, symbol=symbol,
-                      tokenization_params=self.tokenization_params, errors="ignore", **kwargs)
+                      tokenization_params=self.tokenization_params, convert_image_to_latex=convert_image_to_latex,
+                      errors="ignore", **kwargs)
         ret = [] if ret is None else ret.tokens
         return ret
 
