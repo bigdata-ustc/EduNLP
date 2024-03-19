@@ -37,6 +37,7 @@ DEFAULT_TRAIN_PARAMS = {
     # no_cuda: True,
 }
 
+
 class JiuzhangTokenizer(TokenizerForHuggingface):
     """
     Examples
@@ -66,6 +67,7 @@ class JiuzhangTokenizer(TokenizerForHuggingface):
 
 class JiuzhangDataset(EduDataset):
     pass
+
 
 def finetune_jiuzhang_for_property_prediction(
     train_items,

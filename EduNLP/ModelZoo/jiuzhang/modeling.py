@@ -205,7 +205,8 @@ class CPTAttention(nn.Module):
             bsz * self.num_heads,
             tgt_len,
             src_len,
-        ), f"Attention weights should be of size {(bsz * self.num_heads, tgt_len, src_len)}, but is {attn_weights.size()}"
+        ), f"Attention weights should be of size {(bsz * self.num_heads, tgt_len, src_len)}, \
+            but is {attn_weights.size()}"
 
         if attention_mask is not None:
             assert attention_mask.size() == (
@@ -245,7 +246,8 @@ class CPTAttention(nn.Module):
             bsz * self.num_heads,
             tgt_len,
             self.head_dim,
-        ), f"`attn_output` should be of size {(bsz, self.num_heads, tgt_len, self.head_dim)}, but is {attn_output.size()}"
+        ), f"`attn_output` should be of size {(bsz, self.num_heads, tgt_len, self.head_dim)}, \
+            but is {attn_output.size()}"
 
         attn_output = (
             attn_output.view(bsz, self.num_heads, tgt_len, self.head_dim)
@@ -302,7 +304,8 @@ class CPTDecoderLayer(nn.Module):
             hidden_states (:obj:`torch.FloatTensor`): input to the layer of shape `(seq_len, batch, embed_dim)`
             attention_mask (:obj:`torch.FloatTensor`): attention mask of size
                 `(batch, 1, tgt_len, src_len)` where padding elements are indicated by very large negative values.
-            encoder_hidden_states (:obj:`torch.FloatTensor`): cross attention input to the layer of shape `(seq_len, batch, embed_dim)`
+            encoder_hidden_states (:obj:`torch.FloatTensor`): cross attention input to the layer of shape
+            `(seq_len, batch, embed_dim)`
             encoder_attention_mask (:obj:`torch.FloatTensor`): encoder attention mask of size
                 `(batch, 1, tgt_len, src_len)` where padding elements are indicated by very large negative values.
             layer_head_mask (:obj:`torch.FloatTensor`): mask for attention heads in a given layer of size
@@ -649,7 +652,7 @@ class CPTModel(CPTPretrainedModel):
         output_attentions=None,
         output_hidden_states=None,
         return_dict=None,
-        token_type_ids = None,
+        token_type_ids=None,
     ):
 
         # different to other models, CPT automatically creates decoder_input_ids from
@@ -716,7 +719,8 @@ class CPTModel(CPTPretrainedModel):
             decoder_attentions=decoder_outputs.attentions,
             cross_attentions=decoder_outputs.cross_attentions,
             # modify
-            # encoder_last_hidden_state=encoder_outputs.last_hidden_state if isinstance(encoder_outputs, dict) else None,
+            # encoder_last_hidden_state=encoder_outputs.last_hidden_state \
+            # if isinstance(encoder_outputs, dict) else None,
             # encoder_hidden_states=encoder_outputs.hidden_states if isinstance(encoder_outputs, dict) else None,
             # encoder_attentions=encoder_outputs.attentions if isinstance(encoder_outputs, dict) else None,
             encoder_last_hidden_state=encoder_hidden_states,
@@ -1063,7 +1067,6 @@ class CPTForPretraining(CPTPretrainedModel):
 
     def set_output_embeddings(self, new_embeddings):
         self.lm_head = new_embeddings
-    
 
     def forward(
         self,
@@ -1091,7 +1094,7 @@ class CPTForPretraining(CPTPretrainedModel):
             token_type_ids=torch.ones_like(input_ids),
             output_hidden_states=True,
         )
-        encoder_outputs_for_decoder = encoder_outputs.hidden_states[-self.num_decoder_layers-1]
+        encoder_outputs_for_decoder = encoder_outputs.hidden_states[-self.num_decoder_layers - 1]
         encoder_output = encoder_outputs.last_hidden_state
 
         decoder_lm_logits = None
@@ -1179,7 +1182,7 @@ class CPTForSC(CPTPretrainedModel):
             token_type_ids=torch.ones_like(input_ids),
             output_hidden_states=True,
         )
-        encoder_outputs_for_decoder = encoder_outputs.hidden_states[-self.num_decoder_layers-1]
+        encoder_outputs_for_decoder = encoder_outputs.hidden_states[-self.num_decoder_layers - 1]
         encoder_output = encoder_outputs.last_hidden_state
 
         decoder_lm_logits = None
@@ -1202,7 +1205,7 @@ class CPTForSC(CPTPretrainedModel):
             reorder_lm_logits = decoder_lm_logits
         else:
             reorder_lm_logits = torch.cat([decoder_lm_logits, encoder_lm_logits], dim=0)
-        
+
         return reorder_lm_logits
 
     def forward(
@@ -1247,14 +1250,14 @@ class CPTForSC(CPTPretrainedModel):
                 num_use_decoder=num_use_decoder,
             )
             lm_loss = loss_fct(lm_logits.view(-1, self.config.vocab_size), labels.view(-1))
-        
+
         generate_input_ids = lm_logits.argmax(-1)
         not_masked_indices = (labels == -100)
         generate_input_ids[not_masked_indices] = input_ids[not_masked_indices]
 
         if self.cross:
             # cross the adv process
-            use_decoder = torch.bernoulli(torch.tensor([self.decoder_rate]*input_ids.size(0))).long()
+            use_decoder = torch.bernoulli(torch.tensor([self.decoder_rate] * input_ids.size(0))).long()
         else:
             # adv process need reverse the use_decoder
             use_decoder = torch.ones_like(use_decoder)

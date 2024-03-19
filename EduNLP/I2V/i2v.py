@@ -11,7 +11,8 @@ from ..Vector import get_pretrained_model_info, get_all_pretrained_models
 from longling import path_append
 from EduData import get_data
 from ..Tokenizer import Tokenizer, get_tokenizer
-from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, HfAutoTokenizer, DisenQTokenizer, QuesNetTokenizer, Question, JiuzhangTokenizer
+from EduNLP.Pretrain import ElmoTokenizer, BertTokenizer, HfAutoTokenizer
+from EduNLP.Pretrain import DisenQTokenizer, QuesNetTokenizer, JiuzhangTokenizer
 from EduNLP import logger
 
 __all__ = ["I2V", "D2V", "W2V", "Elmo", "Bert", "HfAuto", "DisenQ", "QuesNet", "get_pretrained_i2v", "Jiuzhang"]

@@ -4,7 +4,7 @@ import json
 import os
 from ..base_model import BaseModel
 from ..utils import PropertyPredictionOutput, KnowledgePredictionOutput
-from transformers import  PretrainedConfig
+from transformers import PretrainedConfig
 from typing import List
 from ..rnn.harnn import HAM
 from transformers import BartConfig as JiuzhangConfig
