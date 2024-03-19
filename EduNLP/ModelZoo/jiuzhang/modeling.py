@@ -28,16 +28,10 @@ from transformers.modeling_outputs import (
     BaseModelOutput,
     BaseModelOutputWithPastAndCrossAttentions,
     Seq2SeqModelOutput,
-    Seq2SeqLMOutput,
-    Seq2SeqSequenceClassifierOutput,
 )
 from transformers.modeling_utils import PreTrainedModel
-from transformers.utils import logging
 from transformers import BartConfig as CPTConfig
 from transformers import BertModel, BertConfig
-
-
-logger = logging.get_logger(__name__)
 
 
 def shift_tokens_right(input_ids: torch.Tensor, pad_token_id: int, decoder_start_token_id: int):
@@ -82,17 +76,6 @@ def _expand_mask(mask: torch.Tensor, dtype: torch.dtype, tgt_len: Optional[int] 
     inverted_mask = 1.0 - expanded_mask
 
     return inverted_mask.masked_fill(inverted_mask.bool(), torch.finfo(dtype).min)
-
-
-def attention_mask_func(attention_scores, attention_mask):
-    return attention_scores + attention_mask
-
-
-def init_method(std):
-    def init_(tensor):
-        return torch.nn.init.normal_(tensor, mean=0.0, std=std)
-
-    return init_
 
 
 class CPTLearnedPositionalEmbedding(nn.Embedding):
