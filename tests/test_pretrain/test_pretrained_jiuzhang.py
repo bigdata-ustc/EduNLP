@@ -100,7 +100,6 @@ class TestPretrainJiuzhang:
         assert len(t_vec[0][0]) == i2v.vector_size
 
     def test_train_pp(self, standard_luna_data, pretrained_model_dir):
-        # pretrained_model_dir = 'D:\\EduNLP'
         self.save_model(pretrained_model_dir)
         data_params = {
             "stem_key": "ques_content",
