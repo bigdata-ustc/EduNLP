@@ -8,7 +8,7 @@ from transformers import PretrainedConfig
 from typing import List
 from ..rnn.harnn import HAM
 from transformers import BartConfig as JiuzhangConfig
-from .modeling import CPTModel as JiuzhangModel
+from .modeling import CPTModel as Jiuzhang
 
 
 __all__ = ["JiuzhangForPropertyPrediction", "JiuzhangForKnowledgePrediction"]
@@ -20,10 +20,10 @@ class JiuzhangForPropertyPrediction(BaseModel):
         jiuzhang_config = JiuzhangConfig.from_pretrained(pretrained_model_dir)
         if init:
             print(f'Load Jiuzhang from checkpoint: {pretrained_model_dir}')
-            self.jiuzhang = JiuzhangModel.from_pretrained(pretrained_model_dir, ignore_mismatched_sizes=True)
+            self.jiuzhang = Jiuzhang.from_pretrained(pretrained_model_dir, ignore_mismatched_sizes=True)
         else:
             print(f'Load Jiuzhang from config: {pretrained_model_dir}')
-            self.jiuzhang = JiuzhangModel(jiuzhang_config)
+            self.jiuzhang = Jiuzhang(jiuzhang_config)
         self.hidden_size = self.jiuzhang.config.hidden_size
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)
@@ -90,10 +90,10 @@ class JiuzhangForKnowledgePrediction(BaseModel):
         jiuzhang_config = JiuzhangConfig.from_pretrained(pretrained_model_dir)
         if init:
             print(f'Load Jiuzhang from checkpoint: {pretrained_model_dir}')
-            self.jiuzhang = JiuzhangModel.from_pretrained(pretrained_model_dir, ignore_mismatched_sizes=True)
+            self.jiuzhang = Jiuzhang.from_pretrained(pretrained_model_dir, ignore_mismatched_sizes=True)
         else:
             print(f'Load Jiuzhang from config: {pretrained_model_dir}')
-            self.jiuzhang = JiuzhangModel(jiuzhang_config)
+            self.jiuzhang = Jiuzhang(jiuzhang_config)
         self.hidden_size = self.jiuzhang.config.hidden_size
         self.head_dropout = head_dropout
         self.dropout = nn.Dropout(head_dropout)

@@ -1,2 +1,2 @@
 from .jiuzhang import *
-from .modeling import CPTModel as JiuzhangModel
+from .modeling import CPTModel as Jiuzhang

@@ -1,7 +1,4 @@
-import os
-from typing import List, Union
-from transformers import BertForMaskedLM
-from transformers import DataCollatorForLanguageModeling, DataCollatorWithPadding
+from transformers import DataCollatorWithPadding
 from transformers import Trainer, TrainingArguments
 from copy import deepcopy
 
